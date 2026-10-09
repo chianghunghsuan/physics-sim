@@ -206,7 +206,7 @@
   <main>
     <header>
       <h1>駐波疊加與反射模擬器</h1>
-      <p class="subtitle">右行波從左向右前進；左行波不是獨立無界波，而是右行波在右端固定端反射後的鏡像反向波。視窗長度固定為弦長 L；調整波速 v 與頻率 f 會改變波長 λ。只有 L / (λ/2) 接近整數時，左右邊界才同時符合節點條件，形成穩定駐波模式。</p>
+      <p class="subtitle">右行波從左向右前進；左行波不是獨立無界波，而是右行波在右端固定端反射後的鏡像反向波。只要入射波與反射波同頻同振幅，就會出現節點與腹點；但只有 L / (λ/2) 接近整數時，左右邊界才同時符合節點條件，成為兩端固定弦的正常模態。</p>
     </header>
 
     <div class="content">
@@ -215,7 +215,7 @@
           <span class="right-color"><i class="dot"></i>向右行進波</span>
           <span class="left-color"><i class="dot"></i>右端反射波</span>
           <span class="sum-color"><i class="dot"></i>疊加結果</span>
-          <span class="node-color"><i class="dot"></i>節點 / 邊界</span>
+          <span class="node-color"><i class="dot"></i>反射節點 / 邊界</span>
         </div>
         <div class="actions">
           <button type="button" id="play">暫停</button>
@@ -225,9 +225,9 @@
 
       <div class="values" aria-live="polite">
         <div class="badge" id="wave-value">波長 λ = 1.00 m<small>λ = v / f</small></div>
-        <div class="badge" id="fit-value">L / (λ/2) = 2.00<small>整數時穩定</small></div>
+        <div class="badge" id="fit-value">L / (λ/2) = 2.00<small>整數時兩端吻合</small></div>
         <div class="badge" id="mode-value">第 2 模式<small>兩端都在節點</small></div>
-        <div class="badge" id="status-value">穩定駐波<small>邊界條件吻合</small></div>
+        <div class="badge" id="status-value">兩端吻合的正常模態<small>左右邊界都落在節點</small></div>
       </div>
 
       <div class="plot-wrap">
@@ -275,7 +275,7 @@
 
       <section class="teacher-note">
         <p><strong>上課順序：</strong>先只勾「向右行進波」，讓學生看到波往右跑；再勾「右端反射波」，看反射波往左跑；最後勾「疊加結果」，觀察節點與腹點。</p>
-        <p><strong>判斷重點：</strong>這裡的左行波是由右端反射而來，所以右端一定符合反射邊界。若左端也剛好落在節點上，整段弦才是穩定駐波模式；若沒有，畫面會標示邊界不吻合。</p>
+        <p><strong>判斷重點：</strong>這裡的左行波是由右端反射而來，所以右端一定符合反射邊界，也會出現由反射造成的節點。若左端也剛好落在節點上，整段弦才是兩端固定弦的正常模態；若沒有，代表左端邊界不吻合，不代表完全沒有節點。</p>
       </section>
     </div>
   </main>
@@ -397,12 +397,12 @@
       readouts.speed.textContent = `${s.playback.toFixed(2)}x`;
       readouts.phase.textContent = s.fixed ? '固定端反相' : '自由端不反相';
       readouts.wave.innerHTML = `波長 λ = ${s.lambda.toFixed(3)} m<small>λ = v / f</small>`;
-      readouts.fit.innerHTML = `L / (λ/2) = ${s.halfWaves.toFixed(2)}<small>接近整數時穩定</small>`;
-      readouts.mode.innerHTML = `最近第 ${s.nearest} 模式<small>穩定頻率 ${(s.nearest * s.v / (2 * s.L)).toFixed(2)} Hz</small>`;
+      readouts.fit.innerHTML = `L / (λ/2) = ${s.halfWaves.toFixed(2)}<small>接近整數時兩端吻合</small>`;
+      readouts.mode.innerHTML = `最近第 ${s.nearest} 模式<small>兩端吻合頻率 ${(s.nearest * s.v / (2 * s.L)).toFixed(2)} Hz</small>`;
       readouts.status.classList.toggle('warning', !s.stable);
       readouts.status.innerHTML = s.stable
-        ? '穩定駐波<small>左右邊界條件吻合</small>'
-        : '邊界不吻合<small>不是固定長度弦的穩定模式</small>';
+        ? '兩端吻合的正常模態<small>左右邊界都落在節點</small>'
+        : '有節點但非正常模態<small>右端反射造成節點；左端不吻合</small>';
       updatePresets(s);
     }
 
