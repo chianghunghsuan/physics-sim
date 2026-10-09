@@ -341,7 +341,7 @@
         <div class="module-head">
           <div>
             <h2>都卜勒效應</h2>
-            <p class="module-copy">切換波源移動或觀察者移動，觀察波面在前方變密、後方變疏。頻率變化不是波速變了，而是觀察者每秒遇到的波峰數改變。</p>
+            <p class="module-copy">切換波源移動或觀察者移動。波源模式會逐次留下「發波位置」：波源先在某處發出一圈波，移動到下一個位置後再發下一圈，因此前方波面自然被壓縮、後方波面自然被拉開。</p>
           </div>
           <div class="legend" aria-label="都卜勒圖例">
             <span class="blue"><i class="dot"></i>波面</span>
@@ -384,20 +384,20 @@
             <input id="dop-f" type="range" min="0.5" max="4" step="0.05" value="1.4">
           </div>
           <div class="control">
-            <label for="dop-vs">波源速率 vs：<span id="dop-vs-out">5.0 m/s</span></label>
-            <input id="dop-vs" type="range" min="0" max="18" step="0.5" value="5">
+            <label for="dop-vs">波源速率 vs：<span id="dop-vs-out">8.0 m/s</span></label>
+            <input id="dop-vs" type="range" min="0" max="18" step="0.5" value="8">
           </div>
           <div class="control">
             <label for="dop-vo">觀察者速率 vo：<span id="dop-vo-out">4.0 m/s</span></label>
             <input id="dop-vo" type="range" min="0" max="18" step="0.5" value="4">
           </div>
           <div class="control">
-            <label for="dop-speed">播放速度：<span id="dop-speed-out">0.35x</span></label>
-            <input id="dop-speed" type="range" min="0.1" max="1.5" step="0.05" value="0.35">
+            <label for="dop-speed">播放速度：<span id="dop-speed-out">0.50x</span></label>
+            <input id="dop-speed" type="range" min="0.1" max="1.5" step="0.05" value="0.5">
           </div>
         </div>
         <section class="teacher-note">
-          <p><strong>講法：</strong>先選「波源移動」，讓學生看前方波面被壓縮；再改成「觀察者移動」，提醒波面本身沒被壓縮，但觀察者穿越波峰的頻率變了。</p>
+          <p><strong>講法：</strong>先選「波源移動」，指著橘色小點說明每一圈波面都是從過去的位置發出的；再看現在的波源已經往前走，所以前方波面中心彼此更近。接著改成「觀察者移動」，比較波面沒有被壓縮時，觀察者仍會因為穿越波峰速率改變而聽到頻率不同。</p>
           <p><strong>強調：</strong>介質中的波速由介質決定。都卜勒效應改變的是觀察到的頻率與波長，不是聲波在空氣中的速率。</p>
         </section>
       </section>
@@ -926,15 +926,44 @@
       status.classList.toggle('warning', sonic);
       status.innerHTML = sonic
         ? '超音速堆疊<small>前方波面重疊形成震波錐</small>'
-        : `${approaching ? '互相接近' : '互相遠離'}<small>${mode === 'source' ? '波源移動造成前後波長不同' : (mode === 'observer' ? '觀察者穿越波峰速率改變' : '兩種效果同時發生')}</small>`;
+        : `${approaching ? '互相接近' : '互相遠離'}<small>${mode === 'source' ? '每次發波的位置不同，前後波面間距不同' : (mode === 'observer' ? '波面中心不變，觀察者穿越波峰速率改變' : '發波位置改變與觀察者運動同時發生')}</small>`;
 
-      const cx = w * 0.34;
-      const cy = h * 0.52;
-      const ox = w * 0.76;
-      const oy = h * 0.52;
-      const cPx = 74;
-      const vsPx = 74 * vs / Math.max(1, c);
-      const voPx = 70 * vo / Math.max(1, c);
+      const cy = h * 0.54;
+      const sourceMoves = mode === 'source' || mode === 'both';
+      const observerMoves = mode === 'observer' || mode === 'both';
+      const waveSpeedPx = Math.min(210, Math.max(110, w * 0.13)) * (0.65 + c / 32);
+      const vsPx = waveSpeedPx * vs / Math.max(1, c);
+      const voPx = waveSpeedPx * vo / Math.max(1, c);
+      const leftX = w * 0.16;
+      const rightX = w * 0.84;
+      const sourceStart = approaching ? leftX : w * 0.48;
+      const observerStart = approaching ? rightX : w * 0.61;
+      const sourceTravel = sourceMoves ? (approaching ? rightX - sourceStart - 110 : sourceStart - leftX + 20) : Infinity;
+      const observerTravel = observerMoves ? (approaching ? observerStart - leftX - 110 : rightX - observerStart + 20) : Infinity;
+      const sourceDuration = sourceMoves && vsPx > 0.01 ? sourceTravel / vsPx : Infinity;
+      const observerDuration = observerMoves && voPx > 0.01 ? observerTravel / voPx : Infinity;
+      const movingDuration = Math.min(sourceDuration, observerDuration);
+      const cycleDuration = Number.isFinite(movingDuration)
+        ? Math.max(4 / f, Math.min(12, movingDuration))
+        : 8;
+      const localTime = time % cycleDuration;
+      const cx = sourceStart + (sourceMoves ? sourceDir * vsPx * localTime : 0);
+      const ox = observerStart + (observerMoves ? obsDir * voPx * localTime : 0);
+      const oy = cy;
+      const period = 1 / f;
+      const emissions = [];
+      const lastIndex = Math.floor(localTime / period);
+      for (let i = 0; i <= lastIndex; i += 1) {
+        const emittedAt = i * period;
+        const age = localTime - emittedAt;
+        emissions.push({
+          x: sourceStart + (sourceMoves ? sourceDir * vsPx * emittedAt : 0),
+          y: cy,
+          age,
+          r: waveSpeedPx * age
+        });
+      }
+
       ctx.strokeStyle = css('--line');
       ctx.lineWidth = 1;
       ctx.beginPath();
@@ -943,19 +972,53 @@
       ctx.stroke();
 
       ctx.save();
+      ctx.strokeStyle = 'rgba(234, 88, 12, 0.25)';
+      ctx.lineWidth = 5;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(sourceStart, cy - 42);
+      ctx.lineTo(cx, cy - 42);
+      ctx.stroke();
+      ctx.strokeStyle = 'rgba(21, 128, 61, 0.22)';
+      ctx.beginPath();
+      ctx.moveTo(observerStart, cy + 42);
+      ctx.lineTo(ox, cy + 42);
+      ctx.stroke();
+      ctx.restore();
+
+      ctx.save();
       ctx.strokeStyle = css('--blue');
-      ctx.lineWidth = 1.6;
-      ctx.globalAlpha = 0.28;
-      const phase = (time * f) % 1;
+      ctx.lineWidth = 1.8;
       const maxR = Math.hypot(w, h);
-      for (let n = 0; n < 28; n += 1) {
-        const age = (n + phase) / f;
-        const r = cPx * age;
-        if (r > maxR) continue;
-        const ex = cx - sourceDir * vsPx * age;
+      emissions.forEach(({ x, y, age, r }) => {
+        if (r <= 0 || r > maxR) return;
+        ctx.globalAlpha = Math.max(0.16, 0.48 - age * 0.03);
         ctx.beginPath();
-        ctx.arc(ex, cy, r, 0, Math.PI * 2);
+        ctx.arc(x, y, r, 0, Math.PI * 2);
         ctx.stroke();
+      });
+      ctx.restore();
+
+      ctx.save();
+      ctx.fillStyle = css('--orange');
+      emissions.forEach(({ x, y, age }, index) => {
+        const alpha = Math.max(0.25, 1 - age / cycleDuration);
+        ctx.globalAlpha = alpha;
+        ctx.beginPath();
+        ctx.arc(x, y, index === emissions.length - 1 ? 5.5 : 4, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      ctx.globalAlpha = 1;
+      ctx.font = '13px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillStyle = css('--orange');
+      if (sourceMoves) {
+        const recent = emissions.slice(-4);
+        recent.forEach(({ x }, idx) => {
+          ctx.fillText(idx === recent.length - 1 ? '剛發波' : '發波點', x, cy - 58 - idx * 13);
+        });
+      } else {
+        ctx.fillText('固定發波位置', sourceStart, cy - 58);
       }
       ctx.restore();
 
@@ -990,8 +1053,14 @@
       drawCenteredText(ctx, '觀察者', ox, oy - 32, css('--green'));
       const frontLambda = approaching ? (c - Math.min(vs, c * 0.98)) / f : (c + vs) / f;
       const backLambda = approaching ? (c + vs) / f : (c - Math.min(vs, c * 0.98)) / f;
-      drawCenteredText(ctx, `前方波長約 ${frontLambda.toFixed(1)} m`, w * 0.62, 44, css('--muted'));
-      drawCenteredText(ctx, `後方波長約 ${backLambda.toFixed(1)} m`, w * 0.22, 44, css('--muted'));
+      if (sourceMoves) {
+        drawCenteredText(ctx, `運動前方相鄰發波點較近：λ前約 ${frontLambda.toFixed(1)} m`, w * 0.64, 44, css('--muted'));
+        drawCenteredText(ctx, `運動後方相鄰發波點較遠：λ後約 ${backLambda.toFixed(1)} m`, w * 0.26, 44, css('--muted'));
+        drawCenteredText(ctx, `每 ${period.toFixed(2)} s 發出一圈波；橘點保留當時的發波位置`, w / 2, h - 24, css('--muted'));
+      } else {
+        drawCenteredText(ctx, `波源不動：左右波面間距都約 ${lambda.toFixed(1)} m`, w / 2, 44, css('--muted'));
+        drawCenteredText(ctx, `橘點重疊在固定發波位置；綠色觀察者移動穿越波峰`, w / 2, h - 24, css('--muted'));
+      }
     }
 
     function drawRipple() {
