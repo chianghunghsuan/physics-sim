@@ -166,6 +166,16 @@
       width: 100%;
       accent-color: var(--accent);
     }
+    select {
+      width: 100%;
+      padding: 8px 10px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #ffffff;
+      color: var(--ink);
+      font: inherit;
+      font-weight: 700;
+    }
     input[type="range"]:disabled {
       opacity: .45;
     }
@@ -205,7 +215,7 @@
   <main>
     <header>
       <h1>駐波疊加與同調模擬器</h1>
-      <p class="subtitle">先看單一向右行進波，再打開向左波，最後看疊加。若左右波同頻、等振幅，疊加圖形會穩定；若頻率不同，節點會漂移或拍動；若振幅不同，節點不會真正歸零。右端固定時條件是 L = nλ/2；右端自由時條件是 L = (2n-1)λ/4。</p>
+      <p class="subtitle">先看單一向右行進波，再打開向左波，最後看疊加。若左右波同頻、等振幅，疊加圖形會穩定；若頻率不同，節點會漂移或拍動；若振幅不同，節點不會真正歸零。右端可設定固定或自由，系統會計算左端此刻是節點、腹點或一般點，並列出所有合理正常模態。</p>
     </header>
 
     <div class="content">
@@ -259,12 +269,15 @@
           <input id="amp-left" type="range" min="0" max="1.2" step="0.1" value="1">
         </div>
         <div class="control">
-          <label for="speed">播放速度：<span id="speed-readout">0.60x</span></label>
-          <input id="speed" type="range" min="0.1" max="2" step="0.05" value="0.6">
+          <label for="speed">播放速度：<span id="speed-readout">0.25x</span></label>
+          <input id="speed" type="range" min="0.1" max="2" step="0.05" value="0.25">
         </div>
         <div class="control">
-          <label for="phase">右端反射相位：<span id="phase-readout">固定端反相</span></label>
-          <input id="phase" type="range" min="0" max="1" step="1" value="1">
+          <label for="right-boundary">右端邊界</label>
+          <select id="right-boundary">
+            <option value="fixed" selected>固定端：反相、節點</option>
+            <option value="free">自由端：不反相、腹點</option>
+          </select>
         </div>
       </div>
 
@@ -280,17 +293,17 @@
       </div>
 
       <div class="checks">
-        <label class="check"><input type="checkbox" id="lock-reflection" checked>鎖定成右端固定反射</label>
+        <label class="check"><input type="checkbox" id="lock-reflection" checked>鎖定左右波同頻等振幅</label>
         <label class="check"><input type="checkbox" id="show-right" checked>顯示向右行進波</label>
         <label class="check"><input type="checkbox" id="show-left">顯示向左行進波</label>
-        <label class="check"><input type="checkbox" id="show-sum" checked>顯示疊加結果</label>
-        <label class="check"><input type="checkbox" id="show-nodes" checked>顯示同調節點參考</label>
-        <label class="check"><input type="checkbox" id="show-envelope" checked>顯示同調包絡</label>
+        <label class="check"><input type="checkbox" id="show-sum">顯示疊加結果</label>
+        <label class="check"><input type="checkbox" id="show-nodes">顯示同調節點參考</label>
+        <label class="check"><input type="checkbox" id="show-envelope">顯示同調包絡</label>
       </div>
 
       <section class="teacher-note">
-        <p><strong>上課順序：</strong>先只顯示向右行進波；接著勾向左行進波，讓學生看到兩列波反向移動；最後顯示疊加結果。解除「鎖定成右端固定反射」後，把左右頻率調開，就能看到節點漂移與不穩定疊加。</p>
-        <p><strong>關鍵觀念：</strong>同頻等振幅才會有固定且真正歸零的節點。不同頻會產生拍頻與移動的干涉圖樣；同頻但振幅不同時，最小振幅是 |AR - AL|，所以沒有真正靜止的節點。若右端是自由端，右端是腹點；左端是節點時依然可以是穩定模態，條件是 L = (2n-1)λ/4。</p>
+        <p><strong>上課順序：</strong>先只顯示向右行進波；接著勾向左行進波，讓學生看到兩列波反向移動；最後顯示疊加結果。解除「鎖定左右波同頻等振幅」後，把左右頻率或振幅調開，就能看到節點漂移、拍動，或節點不真正歸零。</p>
+        <p><strong>關鍵觀念：</strong>同頻等振幅才會有固定且真正歸零的節點。不同頻會產生拍頻與移動的干涉圖樣；同頻但振幅不同時，最小振幅是 |AR - AL|，所以沒有真正靜止的節點。右端固定時右端必為節點，右端自由時右端必為腹點；若左端剛好是節點或腹點，就可以分別對應固定端或自由端的正常模態。</p>
       </section>
     </div>
   </main>
@@ -307,7 +320,7 @@
     const ampRightInput = document.getElementById('amp-right');
     const ampLeftInput = document.getElementById('amp-left');
     const speedInput = document.getElementById('speed');
-    const phaseInput = document.getElementById('phase');
+    const rightBoundaryInput = document.getElementById('right-boundary');
     const lockInput = document.getElementById('lock-reflection');
     const showRightInput = document.getElementById('show-right');
     const showLeftInput = document.getElementById('show-left');
@@ -323,7 +336,6 @@
       ampRight: document.getElementById('amp-right-readout'),
       ampLeft: document.getElementById('amp-left-readout'),
       speed: document.getElementById('speed-readout'),
-      phase: document.getElementById('phase-readout'),
       lambda: document.getElementById('lambda-value'),
       delta: document.getElementById('delta-value'),
       amp: document.getElementById('amp-value'),
@@ -359,7 +371,7 @@
       const AR = Number(ampRightInput.value);
       const AL = Number(ampLeftInput.value);
       const playback = Number(speedInput.value);
-      const fixed = Number(phaseInput.value) === 1;
+      const rightFixed = rightBoundaryInput.value === 'fixed';
       const lambdaR = v / fR;
       const lambdaL = v / fL;
       const kR = 2 * Math.PI / lambdaR;
@@ -370,17 +382,31 @@
       const ampDiff = Math.abs(AR - AL);
       const coherent = deltaF < 0.001;
       const equalAmp = ampDiff < 0.001;
-      const boundaryValue = fixed ? 2 * L / lambdaR : 4 * L / lambdaR;
-      const modeNumber = fixed
-        ? Math.max(1, Math.round(boundaryValue))
-        : Math.max(1, Math.round((boundaryValue + 1) / 2));
-      const targetValue = fixed ? modeNumber : 2 * modeNumber - 1;
+      const boundaryValue = 4 * L / lambdaR;
+      const targetValue = Math.max(1, Math.round(boundaryValue));
       const boundaryMismatch = Math.abs(boundaryValue - targetValue);
       const boundaryStable = boundaryMismatch < 0.06;
-      const boundaryFrequency = fixed
-        ? modeNumber * v / (2 * L)
-        : (2 * modeNumber - 1) * v / (4 * L);
-      return { v, L, fR, fL, AR, AL, playback, fixed, lambdaR, lambdaL, kR, kL, omegaR, omegaL, deltaF, ampDiff, coherent, equalAmp, boundaryValue, modeNumber, targetValue, boundaryMismatch, boundaryStable, boundaryFrequency };
+      const boundaryFrequency = targetValue * v / (4 * L);
+      const leftIsNode = rightFixed ? targetValue % 2 === 0 : targetValue % 2 === 1;
+      const leftKind = leftIsNode ? 'node' : 'antinode';
+      const leftKindLabel = leftIsNode ? '節點' : '腹點';
+      const rightKindLabel = rightFixed ? '節點' : '腹點';
+      const leftBoundaryName = leftIsNode ? '固定' : '自由';
+      const rightBoundaryName = rightFixed ? '固定' : '自由';
+      const boundaryLabel = `${leftBoundaryName}-${rightBoundaryName}`;
+      const modeNumber = targetValue % 2 === 0 ? targetValue / 2 : (targetValue + 1) / 2;
+      const modeFormula = targetValue % 2 === 0
+        ? `L = ${modeNumber}λ/2`
+        : `L = ${(2 * modeNumber - 1)}λ/4`;
+      return {
+        v, L, fR, fL, AR, AL, playback,
+        rightFixed, boundaryLabel, leftKind, leftKindLabel, rightKindLabel,
+        leftBoundaryName, rightBoundaryName, modeFormula,
+        lambdaR, lambdaL, kR, kL, omegaR, omegaL,
+        deltaF, ampDiff, coherent, equalAmp,
+        boundaryValue, modeNumber, targetValue,
+        boundaryMismatch, boundaryStable, boundaryFrequency
+      };
     }
 
     function yRight(x, s) {
@@ -389,7 +415,7 @@
 
     function yLeft(x, s) {
       const mirrored = Math.sin(s.kL * (2 * s.L - x) - s.omegaL * time);
-      return s.fixed ? -s.AL * mirrored : s.AL * mirrored;
+      return s.rightFixed ? -s.AL * mirrored : s.AL * mirrored;
     }
 
     function ySum(x, s) {
@@ -398,7 +424,7 @@
 
     function envelope(x, s) {
       if (!s.coherent) return null;
-      const phaseShape = s.fixed ? Math.sin(s.kR * (s.L - x)) : Math.cos(s.kR * (s.L - x));
+      const phaseShape = s.rightFixed ? Math.sin(s.kR * (s.L - x)) : Math.cos(s.kR * (s.L - x));
       const max = Math.abs(s.AR + s.AL) * Math.abs(phaseShape);
       const min = Math.abs(s.AR - s.AL) * Math.abs(phaseShape);
       return { max, min };
@@ -422,13 +448,12 @@
       readouts.ampRight.textContent = s.AR.toFixed(1);
       readouts.ampLeft.textContent = s.AL.toFixed(1);
       readouts.speed.textContent = `${s.playback.toFixed(2)}x`;
-      readouts.phase.textContent = s.fixed ? '固定端反相' : '自由端不反相';
       readouts.lambda.innerHTML = `λ右 = ${s.lambdaR.toFixed(3)} m<small>λ左 = ${s.lambdaL.toFixed(3)} m</small>`;
       readouts.delta.innerHTML = `Δf = ${s.deltaF.toFixed(2)} Hz<small>${s.coherent ? '同頻，圖形可固定' : `拍頻週期約 ${(1 / s.deltaF).toFixed(2)} s`}</small>`;
       const ratio = s.AL === 0 ? '∞' : (s.AR / s.AL).toFixed(2);
       readouts.amp.innerHTML = `振幅比 AR/AL = ${ratio}<small>最小振幅約 |AR - AL| = ${s.ampDiff.toFixed(1)}A</small>`;
-      let text = s.fixed ? '兩端固定正常模態' : '固定-自由正常模態';
-      let small = s.fixed ? `L = ${s.modeNumber}λ/2` : `L = ${(2 * s.modeNumber - 1)}λ/4`;
+      let text = '穩定駐波';
+      let small = `右端為${s.rightKindLabel}，左端目前接近${s.leftKindLabel}`;
       let warn = false;
       if (!s.coherent) {
         text = '不同調疊加';
@@ -439,9 +464,11 @@
         small = '有固定包絡，但節點不會真正歸零';
         warn = true;
       } else if (!s.boundaryStable) {
-        text = s.fixed ? '有節點但非兩端固定模態' : '有節點但非固定-自由模態';
-        small = s.fixed ? '左右端不都落在節點' : '右端腹點成立，但左端不在節點';
-        warn = true;
+        text = '穩定駐波，但左端不是邊界點';
+        small = `右端為${s.rightKindLabel}；若要讓左端成為節點或腹點，請跳到下方頻率`;
+      } else {
+        text = `${s.boundaryLabel}正常模態`;
+        small = `左端為${s.leftKindLabel}、右端為${s.rightKindLabel}；${s.modeFormula}`;
       }
       readouts.status.classList.toggle('warning', warn);
       readouts.status.innerHTML = `${text}<small>${small}</small>`;
@@ -450,21 +477,29 @@
 
     function updateModePresets(s) {
       const values = [];
-      for (let n = 1; n <= 8; n += 1) {
-        const f = s.fixed ? n * s.v / (2 * s.L) : (2 * n - 1) * s.v / (4 * s.L);
-        if (f >= Number(freqRightInput.min) && f <= Number(freqRightInput.max)) {
-          values.push({ n, f });
+      const minF = Number(freqRightInput.min);
+      const maxF = Number(freqRightInput.max);
+      const maxVisibleModes = 16;
+      for (let m = 1; values.length < maxVisibleModes; m += 1) {
+        const f = m * s.v / (4 * s.L);
+        if (f > maxF) break;
+        if (f >= minF) {
+          const leftIsNode = s.rightFixed ? m % 2 === 0 : m % 2 === 1;
+          const leftKindLabel = leftIsNode ? '節點' : '腹點';
+          const leftBoundaryName = leftIsNode ? '固定' : '自由';
+          const rightBoundaryName = s.rightFixed ? '固定' : '自由';
+          values.push({ m, f, leftKindLabel, label: `${leftBoundaryName}-${rightBoundaryName}` });
         }
       }
-      const signature = `${s.fixed ? 'fixed' : 'free'}|${values.map(item => `${item.n}:${item.f.toFixed(2)}`).join('|')}`;
+      const signature = `${s.rightFixed ? 'fixed' : 'free'}|${values.map(item => `${item.m}:${item.f.toFixed(2)}`).join('|')}`;
       if (signature === modePresetSignature) return;
       modePresetSignature = signature;
       modePresets.innerHTML = '<strong>快速跳到目前邊界的正常模態：</strong>';
-      values.forEach(({ n, f }) => {
+      values.forEach(({ m, f, leftKindLabel, label }) => {
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'preset';
-        btn.textContent = s.fixed ? `固定-固定 n=${n}，f=${f.toFixed(2)} Hz` : `固定-自由 n=${n}，f=${f.toFixed(2)} Hz`;
+        btn.textContent = `${label}：左端${leftKindLabel}，f=${f.toFixed(2)} Hz`;
         btn.addEventListener('click', () => {
           lockInput.checked = true;
           freqRightInput.value = f.toFixed(2);
@@ -543,7 +578,7 @@
       const plotW = w - padX * 2;
       const nodeColor = css('--node');
       const spacing = s.lambdaR / 2;
-      const start = s.fixed ? s.L : s.L - s.lambdaR / 4;
+      const start = s.rightFixed ? s.L : s.L - s.lambdaR / 4;
       const nodes = [];
       for (let x = start; x >= 0; x -= spacing) nodes.push(x);
       for (let x = start + spacing; x <= s.L; x += spacing) nodes.push(x);
@@ -573,7 +608,10 @@
       const h = rect.height;
       const padX = 44;
       const base = h / 2;
-      [['左端', padX, 'left'], ['右端', w - padX, 'right']].forEach(([text, px, align]) => {
+      [
+        [s.boundaryStable ? `左端${s.leftKindLabel}` : '左端一般點', padX, 'left'],
+        [s.rightFixed ? '右端固定' : '右端自由', w - padX, 'right']
+      ].forEach(([text, px, align]) => {
         ctx.save();
         ctx.strokeStyle = css('--node');
         ctx.lineWidth = 2;
@@ -655,7 +693,7 @@
       draw();
     }
 
-    [velocityInput, lengthInput, freqRightInput, freqLeftInput, ampRightInput, ampLeftInput, speedInput, phaseInput, lockInput, showRightInput, showLeftInput, showSumInput, showNodesInput, showEnvelopeInput].forEach(input => {
+    [velocityInput, lengthInput, freqRightInput, freqLeftInput, ampRightInput, ampLeftInput, speedInput, rightBoundaryInput, lockInput, showRightInput, showLeftInput, showSumInput, showNodesInput, showEnvelopeInput].forEach(input => {
       input.addEventListener('input', draw);
       input.addEventListener('change', draw);
     });
