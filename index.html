@@ -205,7 +205,7 @@
   <main>
     <header>
       <h1>駐波疊加與同調模擬器</h1>
-      <p class="subtitle">先看單一向右行進波，再打開向左波，最後看疊加。若左右波同頻、等振幅，疊加圖形會穩定；若頻率不同，節點會漂移或拍動；若振幅不同，節點不會真正歸零。右行波與左行波可鎖定成固定端反射，也可解除鎖定做不同調示範。</p>
+      <p class="subtitle">先看單一向右行進波，再打開向左波，最後看疊加。若左右波同頻、等振幅，疊加圖形會穩定；若頻率不同，節點會漂移或拍動；若振幅不同，節點不會真正歸零。右端固定時條件是 L = nλ/2；右端自由時條件是 L = (2n-1)λ/4。</p>
     </header>
 
     <div class="content">
@@ -226,7 +226,7 @@
         <div class="badge" id="lambda-value">λ右 = 1.00 m<small>λ = v / f</small></div>
         <div class="badge" id="delta-value">Δf = 0.00 Hz<small>同頻時圖形穩定</small></div>
         <div class="badge" id="amp-value">振幅比 = 1.00<small>等振幅才有真正節點</small></div>
-        <div class="badge" id="status-value">同調穩定疊加<small>可形成固定節點與腹點</small></div>
+        <div class="badge" id="status-value">兩端固定正常模態<small>L = nλ/2</small></div>
       </div>
 
       <div class="plot-wrap">
@@ -275,6 +275,10 @@
         <button type="button" class="preset" id="preset-unequal">左右不同振幅</button>
       </div>
 
+      <div class="presets" id="mode-presets">
+        <strong>快速跳到目前邊界的正常模態：</strong>
+      </div>
+
       <div class="checks">
         <label class="check"><input type="checkbox" id="lock-reflection" checked>鎖定成右端固定反射</label>
         <label class="check"><input type="checkbox" id="show-right" checked>顯示向右行進波</label>
@@ -286,7 +290,7 @@
 
       <section class="teacher-note">
         <p><strong>上課順序：</strong>先只顯示向右行進波；接著勾向左行進波，讓學生看到兩列波反向移動；最後顯示疊加結果。解除「鎖定成右端固定反射」後，把左右頻率調開，就能看到節點漂移與不穩定疊加。</p>
-        <p><strong>關鍵觀念：</strong>同頻等振幅才會有固定且真正歸零的節點。不同頻會產生拍頻與移動的干涉圖樣；同頻但振幅不同時，最小振幅是 |AR - AL|，所以沒有真正靜止的節點。</p>
+        <p><strong>關鍵觀念：</strong>同頻等振幅才會有固定且真正歸零的節點。不同頻會產生拍頻與移動的干涉圖樣；同頻但振幅不同時，最小振幅是 |AR - AL|，所以沒有真正靜止的節點。若右端是自由端，右端是腹點；左端是節點時依然可以是穩定模態，條件是 L = (2n-1)λ/4。</p>
       </section>
     </div>
   </main>
@@ -310,6 +314,7 @@
     const showSumInput = document.getElementById('show-sum');
     const showNodesInput = document.getElementById('show-nodes');
     const showEnvelopeInput = document.getElementById('show-envelope');
+    const modePresets = document.getElementById('mode-presets');
     const readouts = {
       velocity: document.getElementById('velocity-readout'),
       length: document.getElementById('length-readout'),
@@ -327,6 +332,7 @@
     let running = true;
     let time = 0;
     let last = performance.now();
+    let modePresetSignature = '';
 
     function css(name) {
       return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
@@ -364,7 +370,17 @@
       const ampDiff = Math.abs(AR - AL);
       const coherent = deltaF < 0.001;
       const equalAmp = ampDiff < 0.001;
-      return { v, L, fR, fL, AR, AL, playback, fixed, lambdaR, lambdaL, kR, kL, omegaR, omegaL, deltaF, ampDiff, coherent, equalAmp };
+      const boundaryValue = fixed ? 2 * L / lambdaR : 4 * L / lambdaR;
+      const modeNumber = fixed
+        ? Math.max(1, Math.round(boundaryValue))
+        : Math.max(1, Math.round((boundaryValue + 1) / 2));
+      const targetValue = fixed ? modeNumber : 2 * modeNumber - 1;
+      const boundaryMismatch = Math.abs(boundaryValue - targetValue);
+      const boundaryStable = boundaryMismatch < 0.06;
+      const boundaryFrequency = fixed
+        ? modeNumber * v / (2 * L)
+        : (2 * modeNumber - 1) * v / (4 * L);
+      return { v, L, fR, fL, AR, AL, playback, fixed, lambdaR, lambdaL, kR, kL, omegaR, omegaL, deltaF, ampDiff, coherent, equalAmp, boundaryValue, modeNumber, targetValue, boundaryMismatch, boundaryStable, boundaryFrequency };
     }
 
     function yRight(x, s) {
@@ -411,8 +427,8 @@
       readouts.delta.innerHTML = `Δf = ${s.deltaF.toFixed(2)} Hz<small>${s.coherent ? '同頻，圖形可固定' : `拍頻週期約 ${(1 / s.deltaF).toFixed(2)} s`}</small>`;
       const ratio = s.AL === 0 ? '∞' : (s.AR / s.AL).toFixed(2);
       readouts.amp.innerHTML = `振幅比 AR/AL = ${ratio}<small>最小振幅約 |AR - AL| = ${s.ampDiff.toFixed(1)}A</small>`;
-      let text = '同調穩定疊加';
-      let small = '可形成固定節點與腹點';
+      let text = s.fixed ? '兩端固定正常模態' : '固定-自由正常模態';
+      let small = s.fixed ? `L = ${s.modeNumber}λ/2` : `L = ${(2 * s.modeNumber - 1)}λ/4`;
       let warn = false;
       if (!s.coherent) {
         text = '不同調疊加';
@@ -422,9 +438,44 @@
         text = '同頻但振幅不同';
         small = '有固定包絡，但節點不會真正歸零';
         warn = true;
+      } else if (!s.boundaryStable) {
+        text = s.fixed ? '有節點但非兩端固定模態' : '有節點但非固定-自由模態';
+        small = s.fixed ? '左右端不都落在節點' : '右端腹點成立，但左端不在節點';
+        warn = true;
       }
       readouts.status.classList.toggle('warning', warn);
       readouts.status.innerHTML = `${text}<small>${small}</small>`;
+      updateModePresets(s);
+    }
+
+    function updateModePresets(s) {
+      const values = [];
+      for (let n = 1; n <= 8; n += 1) {
+        const f = s.fixed ? n * s.v / (2 * s.L) : (2 * n - 1) * s.v / (4 * s.L);
+        if (f >= Number(freqRightInput.min) && f <= Number(freqRightInput.max)) {
+          values.push({ n, f });
+        }
+      }
+      const signature = `${s.fixed ? 'fixed' : 'free'}|${values.map(item => `${item.n}:${item.f.toFixed(2)}`).join('|')}`;
+      if (signature === modePresetSignature) return;
+      modePresetSignature = signature;
+      modePresets.innerHTML = '<strong>快速跳到目前邊界的正常模態：</strong>';
+      values.forEach(({ n, f }) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'preset';
+        btn.textContent = s.fixed ? `固定-固定 n=${n}，f=${f.toFixed(2)} Hz` : `固定-自由 n=${n}，f=${f.toFixed(2)} Hz`;
+        btn.addEventListener('click', () => {
+          lockInput.checked = true;
+          freqRightInput.value = f.toFixed(2);
+          ampRightInput.value = '1';
+          showLeftInput.checked = true;
+          showSumInput.checked = true;
+          time = 0;
+          draw();
+        });
+        modePresets.appendChild(btn);
+      });
     }
 
     function drawPath(fn, s, color, lineWidth, dash, alpha = 1) {
