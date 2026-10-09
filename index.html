@@ -1,0 +1,504 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>駐波疊加模擬器</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --bg: #eef2f6;
+      --paper: #ffffff;
+      --ink: #1f2933;
+      --muted: #5b6673;
+      --line: #d7dde5;
+      --right: #2563eb;
+      --left: #ea580c;
+      --sum: #15803d;
+      --node: #be123c;
+      --soft: #f8fafc;
+      --accent: #0f766e;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: "Noto Sans TC", "Microsoft JhengHei", Arial, sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+      line-height: 1.65;
+    }
+
+    main {
+      width: min(1180px, calc(100% - 28px));
+      margin: 22px auto 42px;
+      background: var(--paper);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 14px 34px rgba(15, 23, 42, .09);
+    }
+
+    header {
+      padding: 24px 30px 18px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, #ffffff, #f7fafc);
+    }
+
+    h1, h2 {
+      margin: 0;
+      line-height: 1.35;
+      letter-spacing: 0;
+    }
+
+    h1 { font-size: clamp(24px, 3vw, 34px); }
+
+    .subtitle {
+      margin: 8px 0 0;
+      color: var(--muted);
+      max-width: 900px;
+    }
+
+    .content {
+      padding: 22px 30px 30px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    .legend {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      align-items: center;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      white-space: nowrap;
+    }
+
+    .dot {
+      width: 18px;
+      height: 4px;
+      border-radius: 999px;
+      display: inline-block;
+      background: currentColor;
+    }
+
+    .right { color: var(--right); }
+    .left { color: var(--left); }
+    .sum { color: var(--sum); }
+    .node { color: var(--node); }
+
+    .values {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin: 10px 0 14px;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 30px;
+      padding: 3px 10px;
+      border-radius: 999px;
+      background: #e7f5f2;
+      color: #134e4a;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .plot-wrap {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #ffffff;
+    }
+
+    canvas {
+      width: 100%;
+      height: min(52vh, 430px);
+      min-height: 310px;
+      display: block;
+    }
+
+    .controls {
+      margin-top: 16px;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      align-items: end;
+    }
+
+    .control {
+      min-width: 0;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: var(--soft);
+    }
+
+    label {
+      display: block;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent);
+    }
+
+    .checks {
+      display: flex;
+      gap: 18px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+      align-items: center;
+    }
+
+    .check {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 700;
+    }
+
+    .check input { width: 18px; height: 18px; accent-color: var(--accent); }
+
+    button {
+      border: 0;
+      border-radius: 8px;
+      padding: 9px 16px;
+      background: var(--accent);
+      color: #ffffff;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    button.secondary {
+      background: #334155;
+    }
+
+    .teacher-note {
+      margin-top: 18px;
+      padding: 14px 16px;
+      border-left: 4px solid var(--accent);
+      background: #e7f5f2;
+      color: #134e4a;
+    }
+
+    .teacher-note p {
+      margin: 4px 0;
+    }
+
+    @media (max-width: 760px) {
+      main { width: calc(100% - 16px); margin-top: 8px; }
+      header, .content { padding-left: 18px; padding-right: 18px; }
+      .controls { grid-template-columns: 1fr; }
+      canvas { height: 330px; min-height: 280px; }
+    }
+
+    @media print {
+      body { background: #ffffff; }
+      main { width: 100%; margin: 0; border: 0; box-shadow: none; }
+      button, .controls, .checks { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>駐波疊加模擬器</h1>
+      <p class="subtitle">同時顯示右行波、左行波與合成駐波。這是課本理想模型：兩個等振幅、反方向行進波相加，所以節點固定不動，腹點最大振幅為 2A。</p>
+    </header>
+
+    <div class="content">
+      <div class="topbar">
+        <div class="legend" aria-label="圖例">
+          <span class="right"><i class="dot"></i>右行波</span>
+          <span class="left"><i class="dot"></i>左行波</span>
+          <span class="sum"><i class="dot"></i>合成駐波</span>
+          <span class="node"><i class="dot"></i>節點</span>
+        </div>
+        <div>
+          <button type="button" id="play">暫停</button>
+          <button type="button" class="secondary" id="reset">重設時間</button>
+        </div>
+      </div>
+
+      <div class="values" aria-live="polite">
+        <span class="badge" id="mode-value">第 2 諧波</span>
+        <span class="badge" id="amp-value">入射振幅 A = 1.0，腹點最大 = 2.0A</span>
+        <span class="badge" id="freq-value">頻率 f = 0.80 Hz</span>
+      </div>
+
+      <div class="plot-wrap">
+        <canvas id="canvas" role="img" aria-label="兩個等振幅反向行進波疊加成理想駐波，節點固定不動，腹點最大振幅是入射波的兩倍。"></canvas>
+      </div>
+
+      <div class="controls">
+        <div class="control">
+          <label for="mode">諧波數 n：<span id="mode-readout">2</span></label>
+          <input id="mode" type="range" min="1" max="6" step="1" value="2">
+        </div>
+        <div class="control">
+          <label for="amplitude">入射振幅 A：<span id="amp-readout">1.0</span></label>
+          <input id="amplitude" type="range" min="0.2" max="1.2" step="0.1" value="1">
+        </div>
+        <div class="control">
+          <label for="frequency">頻率 f：<span id="freq-readout">0.80 Hz</span></label>
+          <input id="frequency" type="range" min="0.1" max="2" step="0.05" value="0.8">
+        </div>
+      </div>
+
+      <div class="checks">
+        <label class="check"><input type="checkbox" id="show-components" checked>顯示右行波與左行波</label>
+        <label class="check"><input type="checkbox" id="show-particles" checked>顯示繩上質點</label>
+        <label class="check"><input type="checkbox" id="show-envelope" checked>顯示最大振幅包絡</label>
+      </div>
+
+      <section class="teacher-note">
+        <p><strong>上課講法：</strong>先打開「顯示右行波與左行波」，讓學生看到兩列波反向行進；再關掉，只留下合成駐波，觀察節點固定、腹點上下振動最大。</p>
+        <p><strong>提醒：</strong>這是理想疊加模型，適合講「節點、腹點、2A」。PhET 比較適合講「固定端反射」與「持續驅動下的共振放大」。</p>
+      </section>
+    </div>
+  </main>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    const playBtn = document.getElementById('play');
+    const resetBtn = document.getElementById('reset');
+    const modeInput = document.getElementById('mode');
+    const ampInput = document.getElementById('amplitude');
+    const freqInput = document.getElementById('frequency');
+    const showComponentsInput = document.getElementById('show-components');
+    const showParticlesInput = document.getElementById('show-particles');
+    const showEnvelopeInput = document.getElementById('show-envelope');
+    const modeValue = document.getElementById('mode-value');
+    const ampValue = document.getElementById('amp-value');
+    const freqValue = document.getElementById('freq-value');
+    const modeReadout = document.getElementById('mode-readout');
+    const ampReadout = document.getElementById('amp-readout');
+    const freqReadout = document.getElementById('freq-readout');
+
+    let running = true;
+    let t = 0;
+    let last = performance.now();
+
+    function css(name) {
+      return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    }
+
+    function resizeCanvas() {
+      const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+      const rect = canvas.getBoundingClientRect();
+      const width = Math.max(320, Math.round(rect.width));
+      const height = Math.round(rect.height || 360);
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    }
+
+    function state() {
+      return {
+        n: Number(modeInput.value),
+        A: Number(ampInput.value),
+        f: Number(freqInput.value),
+        showComponents: showComponentsInput.checked,
+        showParticles: showParticlesInput.checked,
+        showEnvelope: showEnvelopeInput.checked
+      };
+    }
+
+    function yRight(x, s) {
+      return s.A * Math.sin(s.n * Math.PI * x - 2 * Math.PI * s.f * t);
+    }
+
+    function yLeft(x, s) {
+      return s.A * Math.sin(s.n * Math.PI * x + 2 * Math.PI * s.f * t);
+    }
+
+    function ySum(x, s) {
+      return yRight(x, s) + yLeft(x, s);
+    }
+
+    function envelope(x, s) {
+      return 2 * s.A * Math.abs(Math.sin(s.n * Math.PI * x));
+    }
+
+    function drawPath(fn, s, color, lineWidth, dash) {
+      const rect = canvas.getBoundingClientRect();
+      const w = rect.width;
+      const h = rect.height;
+      const padX = 38;
+      const base = h / 2;
+      const scaleY = Math.min(86, h * 0.24) / Math.max(1, s.A);
+      ctx.beginPath();
+      for (let i = 0; i <= 480; i += 1) {
+        const xNorm = i / 480;
+        const px = padX + xNorm * (w - padX * 2);
+        const py = base - fn(xNorm, s) * scaleY;
+        if (i === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      }
+      ctx.save();
+      ctx.strokeStyle = color;
+      ctx.lineWidth = lineWidth;
+      if (dash) ctx.setLineDash(dash);
+      ctx.lineJoin = 'round';
+      ctx.lineCap = 'round';
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawEnvelope(s) {
+      const rect = canvas.getBoundingClientRect();
+      const w = rect.width;
+      const h = rect.height;
+      const padX = 38;
+      const base = h / 2;
+      const scaleY = Math.min(86, h * 0.24) / Math.max(1, s.A);
+      ctx.save();
+      ctx.strokeStyle = css('--line');
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([6, 7]);
+      for (const sign of [1, -1]) {
+        ctx.beginPath();
+        for (let i = 0; i <= 480; i += 1) {
+          const xNorm = i / 480;
+          const px = padX + xNorm * (w - padX * 2);
+          const py = base - sign * envelope(xNorm, s) * scaleY;
+          if (i === 0) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        }
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    function draw() {
+      resizeCanvas();
+      const s = state();
+      const rect = canvas.getBoundingClientRect();
+      const w = rect.width;
+      const h = rect.height;
+      const padX = 38;
+      const base = h / 2;
+      const scaleY = Math.min(86, h * 0.24) / Math.max(1, s.A);
+
+      modeValue.textContent = `第 ${s.n} 諧波`;
+      ampValue.textContent = `入射振幅 A = ${s.A.toFixed(1)}，腹點最大 = ${(2 * s.A).toFixed(1)}A`;
+      freqValue.textContent = `頻率 f = ${s.f.toFixed(2)} Hz`;
+      modeReadout.textContent = s.n;
+      ampReadout.textContent = s.A.toFixed(1);
+      freqReadout.textContent = `${s.f.toFixed(2)} Hz`;
+
+      ctx.clearRect(0, 0, w, h);
+
+      ctx.save();
+      ctx.strokeStyle = css('--line');
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(padX, base);
+      ctx.lineTo(w - padX, base);
+      ctx.stroke();
+      ctx.restore();
+
+      if (s.showEnvelope) drawEnvelope(s);
+
+      for (let m = 0; m <= s.n; m += 1) {
+        const xNorm = m / s.n;
+        const px = padX + xNorm * (w - padX * 2);
+        ctx.save();
+        ctx.strokeStyle = css('--node');
+        ctx.globalAlpha = 0.55;
+        ctx.setLineDash([4, 5]);
+        ctx.beginPath();
+        ctx.moveTo(px, base - scaleY * s.A * 2.2);
+        ctx.lineTo(px, base + scaleY * s.A * 2.2);
+        ctx.stroke();
+        ctx.fillStyle = css('--node');
+        ctx.globalAlpha = 1;
+        ctx.beginPath();
+        ctx.arc(px, base, 5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+
+      if (s.showComponents) {
+        drawPath(yRight, s, css('--right'), 2, [8, 7]);
+        drawPath(yLeft, s, css('--left'), 2, [2, 7]);
+      }
+      drawPath(ySum, s, css('--sum'), 4, null);
+
+      if (s.showParticles) {
+        for (let i = 0; i <= 40; i += 1) {
+          const xNorm = i / 40;
+          const px = padX + xNorm * (w - padX * 2);
+          const py = base - ySum(xNorm, s) * scaleY;
+          ctx.save();
+          ctx.fillStyle = css('--ink');
+          ctx.globalAlpha = 0.72;
+          ctx.beginPath();
+          ctx.arc(px, py, 3, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+      }
+
+      ctx.save();
+      ctx.fillStyle = css('--muted');
+      ctx.font = '14px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText('固定端', padX, base + scaleY * s.A * 2.52);
+      ctx.textAlign = 'right';
+      ctx.fillText('固定端', w - padX, base + scaleY * s.A * 2.52);
+      ctx.restore();
+    }
+
+    function frame(now) {
+      const elapsed = Math.min(0.04, (now - last) / 1000);
+      last = now;
+      if (running) t += elapsed;
+      draw();
+      requestAnimationFrame(frame);
+    }
+
+    [modeInput, ampInput, freqInput, showComponentsInput, showParticlesInput, showEnvelopeInput].forEach(input => {
+      input.addEventListener('input', draw);
+    });
+
+    playBtn.addEventListener('click', () => {
+      running = !running;
+      playBtn.textContent = running ? '暫停' : '播放';
+      last = performance.now();
+      draw();
+    });
+
+    resetBtn.addEventListener('click', () => {
+      t = 0;
+      last = performance.now();
+      draw();
+    });
+
+    window.addEventListener('resize', draw);
+    requestAnimationFrame(frame);
+  </script>
+</body>
+</html>
