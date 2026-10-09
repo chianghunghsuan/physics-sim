@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>駐波疊加與反射模擬器</title>
+  <title>駐波疊加與同調模擬器</title>
   <style>
     :root {
       color-scheme: light;
@@ -29,7 +29,7 @@
       line-height: 1.65;
     }
     main {
-      width: min(1220px, calc(100% - 28px));
+      width: min(1240px, calc(100% - 28px));
       margin: 22px auto 42px;
       background: var(--paper);
       border: 1px solid var(--line);
@@ -51,7 +51,7 @@
     .subtitle {
       margin: 8px 0 0;
       color: var(--muted);
-      max-width: 990px;
+      max-width: 1020px;
     }
     .content { padding: 22px 30px 30px; }
     .topbar {
@@ -62,11 +62,13 @@
       flex-wrap: wrap;
       margin-bottom: 12px;
     }
-    .legend {
+    .legend, .actions, .checks, .presets {
       display: flex;
-      gap: 14px;
+      gap: 12px;
       flex-wrap: wrap;
       align-items: center;
+    }
+    .legend {
       color: var(--muted);
       font-size: 15px;
     }
@@ -87,12 +89,6 @@
     .left-color { color: var(--left); }
     .sum-color { color: var(--sum); }
     .node-color { color: var(--node); }
-    .actions, .checks, .presets {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-      align-items: center;
-    }
     button {
       border: 0;
       border-radius: 8px;
@@ -150,7 +146,7 @@
     .controls {
       margin-top: 16px;
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 14px;
       align-items: stretch;
     }
@@ -169,6 +165,9 @@
     input[type="range"] {
       width: 100%;
       accent-color: var(--accent);
+    }
+    input[type="range"]:disabled {
+      opacity: .45;
     }
     .checks, .presets { margin-top: 14px; }
     .check {
@@ -190,7 +189,7 @@
       color: #134e4a;
     }
     .teacher-note p { margin: 4px 0; }
-    @media (max-width: 900px) {
+    @media (max-width: 980px) {
       .values { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .controls { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
@@ -205,17 +204,17 @@
 <body>
   <main>
     <header>
-      <h1>駐波疊加與反射模擬器</h1>
-      <p class="subtitle">右行波從左向右前進；左行波不是獨立無界波，而是右行波在右端固定端反射後的鏡像反向波。只要入射波與反射波同頻同振幅，就會出現節點與腹點；但只有 L / (λ/2) 接近整數時，左右邊界才同時符合節點條件，成為兩端固定弦的正常模態。</p>
+      <h1>駐波疊加與同調模擬器</h1>
+      <p class="subtitle">先看單一向右行進波，再打開向左波，最後看疊加。若左右波同頻、等振幅，疊加圖形會穩定；若頻率不同，節點會漂移或拍動；若振幅不同，節點不會真正歸零。右行波與左行波可鎖定成固定端反射，也可解除鎖定做不同調示範。</p>
     </header>
 
     <div class="content">
       <div class="topbar">
         <div class="legend" aria-label="圖例">
           <span class="right-color"><i class="dot"></i>向右行進波</span>
-          <span class="left-color"><i class="dot"></i>右端反射波</span>
+          <span class="left-color"><i class="dot"></i>向左行進波</span>
           <span class="sum-color"><i class="dot"></i>疊加結果</span>
-          <span class="node-color"><i class="dot"></i>反射節點 / 邊界</span>
+          <span class="node-color"><i class="dot"></i>同調節點參考</span>
         </div>
         <div class="actions">
           <button type="button" id="play">暫停</button>
@@ -224,14 +223,14 @@
       </div>
 
       <div class="values" aria-live="polite">
-        <div class="badge" id="wave-value">波長 λ = 1.00 m<small>λ = v / f</small></div>
-        <div class="badge" id="fit-value">L / (λ/2) = 2.00<small>整數時兩端吻合</small></div>
-        <div class="badge" id="mode-value">第 2 模式<small>兩端都在節點</small></div>
-        <div class="badge" id="status-value">兩端吻合的正常模態<small>左右邊界都落在節點</small></div>
+        <div class="badge" id="lambda-value">λ右 = 1.00 m<small>λ = v / f</small></div>
+        <div class="badge" id="delta-value">Δf = 0.00 Hz<small>同頻時圖形穩定</small></div>
+        <div class="badge" id="amp-value">振幅比 = 1.00<small>等振幅才有真正節點</small></div>
+        <div class="badge" id="status-value">同調穩定疊加<small>可形成固定節點與腹點</small></div>
       </div>
 
       <div class="plot-wrap">
-        <canvas id="canvas" role="img" aria-label="右行波在右端反射成左行波，兩者疊加。當弦長剛好容納整數個半波長時，會形成穩定駐波。"></canvas>
+        <canvas id="canvas" role="img" aria-label="左右兩個行進波疊加。可分別調整左右頻率與振幅，觀察穩定駐波、不同調漂移，以及振幅不等時節點不歸零。"></canvas>
       </div>
 
       <div class="controls">
@@ -240,16 +239,24 @@
           <input id="velocity" type="range" min="1" max="25" step="0.1" value="10">
         </div>
         <div class="control">
-          <label for="frequency">頻率 f：<span id="freq-readout">10.00 Hz</span></label>
-          <input id="frequency" type="range" min="0.5" max="40" step="0.05" value="10">
-        </div>
-        <div class="control">
-          <label for="length">弦長 L：<span id="length-readout">1.00 m</span></label>
+          <label for="length">視窗長度 L：<span id="length-readout">1.00 m</span></label>
           <input id="length" type="range" min="0.5" max="3" step="0.05" value="1">
         </div>
         <div class="control">
-          <label for="amplitude">單一波振幅 A：<span id="amp-readout">1.0</span></label>
-          <input id="amplitude" type="range" min="0.2" max="1.2" step="0.1" value="1">
+          <label for="freq-right">右行頻率 fR：<span id="freq-right-readout">10.00 Hz</span></label>
+          <input id="freq-right" type="range" min="0.5" max="40" step="0.05" value="10">
+        </div>
+        <div class="control">
+          <label for="freq-left">左行頻率 fL：<span id="freq-left-readout">10.00 Hz</span></label>
+          <input id="freq-left" type="range" min="0.5" max="40" step="0.05" value="10">
+        </div>
+        <div class="control">
+          <label for="amp-right">右行振幅 AR：<span id="amp-right-readout">1.0</span></label>
+          <input id="amp-right" type="range" min="0" max="1.2" step="0.1" value="1">
+        </div>
+        <div class="control">
+          <label for="amp-left">左行振幅 AL：<span id="amp-left-readout">1.0</span></label>
+          <input id="amp-left" type="range" min="0" max="1.2" step="0.1" value="1">
         </div>
         <div class="control">
           <label for="speed">播放速度：<span id="speed-readout">0.60x</span></label>
@@ -262,20 +269,24 @@
       </div>
 
       <div class="presets" id="presets">
-        <strong>快速跳到穩定頻率：</strong>
+        <strong>快速示範：</strong>
+        <button type="button" class="preset" id="preset-coherent">同調反射</button>
+        <button type="button" class="preset" id="preset-detune">左右不同頻</button>
+        <button type="button" class="preset" id="preset-unequal">左右不同振幅</button>
       </div>
 
       <div class="checks">
+        <label class="check"><input type="checkbox" id="lock-reflection" checked>鎖定成右端固定反射</label>
         <label class="check"><input type="checkbox" id="show-right" checked>顯示向右行進波</label>
-        <label class="check"><input type="checkbox" id="show-left">顯示右端反射波</label>
+        <label class="check"><input type="checkbox" id="show-left">顯示向左行進波</label>
         <label class="check"><input type="checkbox" id="show-sum" checked>顯示疊加結果</label>
-        <label class="check"><input type="checkbox" id="show-nodes" checked>顯示節點</label>
-        <label class="check"><input type="checkbox" id="show-envelope" checked>顯示包絡</label>
+        <label class="check"><input type="checkbox" id="show-nodes" checked>顯示同調節點參考</label>
+        <label class="check"><input type="checkbox" id="show-envelope" checked>顯示同調包絡</label>
       </div>
 
       <section class="teacher-note">
-        <p><strong>上課順序：</strong>先只勾「向右行進波」，讓學生看到波往右跑；再勾「右端反射波」，看反射波往左跑；最後勾「疊加結果」，觀察節點與腹點。</p>
-        <p><strong>判斷重點：</strong>這裡的左行波是由右端反射而來，所以右端一定符合反射邊界，也會出現由反射造成的節點。若左端也剛好落在節點上，整段弦才是兩端固定弦的正常模態；若沒有，代表左端邊界不吻合，不代表完全沒有節點。</p>
+        <p><strong>上課順序：</strong>先只顯示向右行進波；接著勾向左行進波，讓學生看到兩列波反向移動；最後顯示疊加結果。解除「鎖定成右端固定反射」後，把左右頻率調開，就能看到節點漂移與不穩定疊加。</p>
+        <p><strong>關鍵觀念：</strong>同頻等振幅才會有固定且真正歸零的節點。不同頻會產生拍頻與移動的干涉圖樣；同頻但振幅不同時，最小振幅是 |AR - AL|，所以沒有真正靜止的節點。</p>
       </section>
     </div>
   </main>
@@ -286,62 +297,83 @@
     const playBtn = document.getElementById('play');
     const resetBtn = document.getElementById('reset');
     const velocityInput = document.getElementById('velocity');
-    const freqInput = document.getElementById('frequency');
     const lengthInput = document.getElementById('length');
-    const ampInput = document.getElementById('amplitude');
+    const freqRightInput = document.getElementById('freq-right');
+    const freqLeftInput = document.getElementById('freq-left');
+    const ampRightInput = document.getElementById('amp-right');
+    const ampLeftInput = document.getElementById('amp-left');
     const speedInput = document.getElementById('speed');
     const phaseInput = document.getElementById('phase');
+    const lockInput = document.getElementById('lock-reflection');
     const showRightInput = document.getElementById('show-right');
     const showLeftInput = document.getElementById('show-left');
     const showSumInput = document.getElementById('show-sum');
     const showNodesInput = document.getElementById('show-nodes');
     const showEnvelopeInput = document.getElementById('show-envelope');
-    const presets = document.getElementById('presets');
     const readouts = {
       velocity: document.getElementById('velocity-readout'),
-      freq: document.getElementById('freq-readout'),
       length: document.getElementById('length-readout'),
-      amp: document.getElementById('amp-readout'),
+      freqRight: document.getElementById('freq-right-readout'),
+      freqLeft: document.getElementById('freq-left-readout'),
+      ampRight: document.getElementById('amp-right-readout'),
+      ampLeft: document.getElementById('amp-left-readout'),
       speed: document.getElementById('speed-readout'),
       phase: document.getElementById('phase-readout'),
-      wave: document.getElementById('wave-value'),
-      fit: document.getElementById('fit-value'),
-      mode: document.getElementById('mode-value'),
+      lambda: document.getElementById('lambda-value'),
+      delta: document.getElementById('delta-value'),
+      amp: document.getElementById('amp-value'),
       status: document.getElementById('status-value')
     };
     let running = true;
     let time = 0;
     let last = performance.now();
-    let presetSignature = '';
 
     function css(name) {
       return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
     }
 
+    function syncLockedControls() {
+      if (!lockInput.checked) {
+        freqLeftInput.disabled = false;
+        ampLeftInput.disabled = false;
+        return;
+      }
+      freqLeftInput.value = freqRightInput.value;
+      ampLeftInput.value = ampRightInput.value;
+      freqLeftInput.disabled = true;
+      ampLeftInput.disabled = true;
+    }
+
     function state() {
+      syncLockedControls();
       const v = Number(velocityInput.value);
-      const f = Number(freqInput.value);
       const L = Number(lengthInput.value);
-      const A = Number(ampInput.value);
+      const fR = Number(freqRightInput.value);
+      const fL = Number(freqLeftInput.value);
+      const AR = Number(ampRightInput.value);
+      const AL = Number(ampLeftInput.value);
       const playback = Number(speedInput.value);
       const fixed = Number(phaseInput.value) === 1;
-      const lambda = v / f;
-      const k = 2 * Math.PI / lambda;
-      const omega = 2 * Math.PI * f;
-      const halfWaves = L / (lambda / 2);
-      const nearest = Math.max(1, Math.round(halfWaves));
-      const mismatch = Math.abs(halfWaves - nearest);
-      const stable = mismatch < 0.06;
-      return { v, f, L, A, playback, fixed, lambda, k, omega, halfWaves, nearest, mismatch, stable };
+      const lambdaR = v / fR;
+      const lambdaL = v / fL;
+      const kR = 2 * Math.PI / lambdaR;
+      const kL = 2 * Math.PI / lambdaL;
+      const omegaR = 2 * Math.PI * fR;
+      const omegaL = 2 * Math.PI * fL;
+      const deltaF = Math.abs(fR - fL);
+      const ampDiff = Math.abs(AR - AL);
+      const coherent = deltaF < 0.001;
+      const equalAmp = ampDiff < 0.001;
+      return { v, L, fR, fL, AR, AL, playback, fixed, lambdaR, lambdaL, kR, kL, omegaR, omegaL, deltaF, ampDiff, coherent, equalAmp };
     }
 
     function yRight(x, s) {
-      return s.A * Math.sin(s.k * x - s.omega * time);
+      return s.AR * Math.sin(s.kR * x - s.omegaR * time);
     }
 
     function yLeft(x, s) {
-      const mirrored = Math.sin(s.k * (2 * s.L - x) - s.omega * time);
-      return s.fixed ? -s.A * mirrored : s.A * mirrored;
+      const mirrored = Math.sin(s.kL * (2 * s.L - x) - s.omegaL * time);
+      return s.fixed ? -s.AL * mirrored : s.AL * mirrored;
     }
 
     function ySum(x, s) {
@@ -349,8 +381,11 @@
     }
 
     function envelope(x, s) {
-      if (s.fixed) return 2 * s.A * Math.abs(Math.sin(s.k * (s.L - x)));
-      return 2 * s.A * Math.abs(Math.cos(s.k * (s.L - x)));
+      if (!s.coherent) return null;
+      const phaseShape = s.fixed ? Math.sin(s.kR * (s.L - x)) : Math.cos(s.kR * (s.L - x));
+      const max = Math.abs(s.AR + s.AL) * Math.abs(phaseShape);
+      const min = Math.abs(s.AR - s.AL) * Math.abs(phaseShape);
+      return { max, min };
     }
 
     function resizeCanvas() {
@@ -363,47 +398,33 @@
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
 
-    function setFrequency(value) {
-      freqInput.value = Math.max(Number(freqInput.min), Math.min(Number(freqInput.max), value)).toFixed(2);
-      time = 0;
-      draw();
-    }
-
-    function updatePresets(s) {
-      const values = [];
-      for (let n = 1; n <= 8; n += 1) {
-        const f = n * s.v / (2 * s.L);
-        if (f >= Number(freqInput.min) && f <= Number(freqInput.max)) values.push({ n, f });
-      }
-      const sig = values.map(item => `${item.n}:${item.f.toFixed(2)}`).join('|');
-      if (sig === presetSignature) return;
-      presetSignature = sig;
-      presets.innerHTML = '<strong>快速跳到穩定頻率：</strong>';
-      values.forEach(({ n, f }) => {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'preset';
-        btn.textContent = `n=${n}，f=${f.toFixed(2)} Hz`;
-        btn.addEventListener('click', () => setFrequency(f));
-        presets.appendChild(btn);
-      });
-    }
-
     function update(s) {
       readouts.velocity.textContent = `${s.v.toFixed(1)} m/s`;
-      readouts.freq.textContent = `${s.f.toFixed(2)} Hz`;
       readouts.length.textContent = `${s.L.toFixed(2)} m`;
-      readouts.amp.textContent = s.A.toFixed(1);
+      readouts.freqRight.textContent = `${s.fR.toFixed(2)} Hz`;
+      readouts.freqLeft.textContent = `${s.fL.toFixed(2)} Hz`;
+      readouts.ampRight.textContent = s.AR.toFixed(1);
+      readouts.ampLeft.textContent = s.AL.toFixed(1);
       readouts.speed.textContent = `${s.playback.toFixed(2)}x`;
       readouts.phase.textContent = s.fixed ? '固定端反相' : '自由端不反相';
-      readouts.wave.innerHTML = `波長 λ = ${s.lambda.toFixed(3)} m<small>λ = v / f</small>`;
-      readouts.fit.innerHTML = `L / (λ/2) = ${s.halfWaves.toFixed(2)}<small>接近整數時兩端吻合</small>`;
-      readouts.mode.innerHTML = `最近第 ${s.nearest} 模式<small>兩端吻合頻率 ${(s.nearest * s.v / (2 * s.L)).toFixed(2)} Hz</small>`;
-      readouts.status.classList.toggle('warning', !s.stable);
-      readouts.status.innerHTML = s.stable
-        ? '兩端吻合的正常模態<small>左右邊界都落在節點</small>'
-        : '有節點但非正常模態<small>右端反射造成節點；左端不吻合</small>';
-      updatePresets(s);
+      readouts.lambda.innerHTML = `λ右 = ${s.lambdaR.toFixed(3)} m<small>λ左 = ${s.lambdaL.toFixed(3)} m</small>`;
+      readouts.delta.innerHTML = `Δf = ${s.deltaF.toFixed(2)} Hz<small>${s.coherent ? '同頻，圖形可固定' : `拍頻週期約 ${(1 / s.deltaF).toFixed(2)} s`}</small>`;
+      const ratio = s.AL === 0 ? '∞' : (s.AR / s.AL).toFixed(2);
+      readouts.amp.innerHTML = `振幅比 AR/AL = ${ratio}<small>最小振幅約 |AR - AL| = ${s.ampDiff.toFixed(1)}A</small>`;
+      let text = '同調穩定疊加';
+      let small = '可形成固定節點與腹點';
+      let warn = false;
+      if (!s.coherent) {
+        text = '不同調疊加';
+        small = '節點會漂移或拍動，不是固定駐波';
+        warn = true;
+      } else if (!s.equalAmp) {
+        text = '同頻但振幅不同';
+        small = '有固定包絡，但節點不會真正歸零';
+        warn = true;
+      }
+      readouts.status.classList.toggle('warning', warn);
+      readouts.status.innerHTML = `${text}<small>${small}</small>`;
     }
 
     function drawPath(fn, s, color, lineWidth, dash, alpha = 1) {
@@ -413,7 +434,7 @@
       const padX = 44;
       const base = h / 2;
       const plotW = w - padX * 2;
-      const scaleY = Math.min(95, h * 0.25) / Math.max(1, s.A);
+      const scaleY = Math.min(95, h * 0.25) / Math.max(1, s.AR, s.AL);
       ctx.save();
       ctx.strokeStyle = color;
       ctx.lineWidth = lineWidth;
@@ -434,13 +455,14 @@
     }
 
     function drawEnvelope(s) {
+      if (!s.coherent) return;
       const rect = canvas.getBoundingClientRect();
       const w = rect.width;
       const h = rect.height;
       const padX = 44;
       const base = h / 2;
       const plotW = w - padX * 2;
-      const scaleY = Math.min(95, h * 0.25) / Math.max(1, s.A);
+      const scaleY = Math.min(95, h * 0.25) / Math.max(1, s.AR, s.AL);
       ctx.save();
       ctx.strokeStyle = css('--line');
       ctx.lineWidth = 1.4;
@@ -449,8 +471,9 @@
         ctx.beginPath();
         for (let i = 0; i <= 620; i += 1) {
           const x = s.L * i / 620;
+          const env = envelope(x, s);
           const px = padX + (x / s.L) * plotW;
-          const py = base - sign * envelope(x, s) * scaleY;
+          const py = base - sign * env.max * scaleY;
           if (i === 0) ctx.moveTo(px, py);
           else ctx.lineTo(px, py);
         }
@@ -459,7 +482,8 @@
       ctx.restore();
     }
 
-    function drawBoundariesAndNodes(s) {
+    function drawNodes(s) {
+      if (!s.coherent) return;
       const rect = canvas.getBoundingClientRect();
       const w = rect.width;
       const h = rect.height;
@@ -467,8 +491,8 @@
       const base = h / 2;
       const plotW = w - padX * 2;
       const nodeColor = css('--node');
-      const spacing = s.lambda / 2;
-      const start = s.fixed ? s.L : s.L - s.lambda / 4;
+      const spacing = s.lambdaR / 2;
+      const start = s.fixed ? s.L : s.L - s.lambdaR / 4;
       const nodes = [];
       for (let x = start; x >= 0; x -= spacing) nodes.push(x);
       for (let x = start + spacing; x <= s.L; x += spacing) nodes.push(x);
@@ -477,24 +501,32 @@
         const px = padX + (x / s.L) * plotW;
         ctx.save();
         ctx.strokeStyle = nodeColor;
-        ctx.globalAlpha = s.stable ? 0.55 : 0.25;
+        ctx.globalAlpha = s.equalAmp ? 0.55 : 0.25;
         ctx.setLineDash([4, 6]);
         ctx.beginPath();
         ctx.moveTo(px, base - h * 0.31);
         ctx.lineTo(px, base + h * 0.31);
         ctx.stroke();
         ctx.fillStyle = nodeColor;
-        ctx.globalAlpha = s.stable ? 0.95 : 0.45;
+        ctx.globalAlpha = s.equalAmp ? 0.95 : 0.45;
         ctx.beginPath();
         ctx.arc(px, base, 4.5, 0, Math.PI * 2);
         ctx.fill();
         ctx.restore();
       });
-      [['左端', padX, 'left'], ['右端反射', w - padX, 'right']].forEach(([text, px, align]) => {
+    }
+
+    function drawBoundaries(s) {
+      const rect = canvas.getBoundingClientRect();
+      const w = rect.width;
+      const h = rect.height;
+      const padX = 44;
+      const base = h / 2;
+      [['左端', padX, 'left'], ['右端', w - padX, 'right']].forEach(([text, px, align]) => {
         ctx.save();
-        ctx.strokeStyle = nodeColor;
+        ctx.strokeStyle = css('--node');
         ctx.lineWidth = 2;
-        ctx.globalAlpha = text === '左端' && !s.stable ? 0.35 : 0.95;
+        ctx.globalAlpha = 0.55;
         ctx.beginPath();
         ctx.moveTo(px, base - h * 0.34);
         ctx.lineTo(px, base + h * 0.34);
@@ -526,10 +558,11 @@
       ctx.stroke();
       ctx.restore();
       if (showEnvelopeInput.checked) drawEnvelope(s);
-      if (showNodesInput.checked) drawBoundariesAndNodes(s);
+      drawBoundaries(s);
+      if (showNodesInput.checked) drawNodes(s);
       if (showRightInput.checked) drawPath(yRight, s, css('--right'), 2, [8, 7], 0.95);
       if (showLeftInput.checked) drawPath(yLeft, s, css('--left'), 2, [2, 7], 0.95);
-      if (showSumInput.checked) drawPath(ySum, s, s.stable ? css('--sum') : css('--warn'), 4, null, 1);
+      if (showSumInput.checked) drawPath(ySum, s, s.coherent && s.equalAmp ? css('--sum') : css('--warn'), 4, null, 1);
     }
 
     function frame(now) {
@@ -541,9 +574,43 @@
       requestAnimationFrame(frame);
     }
 
-    [velocityInput, freqInput, lengthInput, ampInput, speedInput, phaseInput, showRightInput, showLeftInput, showSumInput, showNodesInput, showEnvelopeInput].forEach(input => {
+    function setDemo(kind) {
+      if (kind === 'coherent') {
+        lockInput.checked = true;
+        freqRightInput.value = '10';
+        ampRightInput.value = '1';
+        showLeftInput.checked = true;
+        showSumInput.checked = true;
+      }
+      if (kind === 'detune') {
+        lockInput.checked = false;
+        freqRightInput.value = '10';
+        freqLeftInput.value = '10.75';
+        ampRightInput.value = '1';
+        ampLeftInput.value = '1';
+        showLeftInput.checked = true;
+        showSumInput.checked = true;
+      }
+      if (kind === 'unequal') {
+        lockInput.checked = false;
+        freqRightInput.value = '10';
+        freqLeftInput.value = '10';
+        ampRightInput.value = '1';
+        ampLeftInput.value = '0.45';
+        showLeftInput.checked = true;
+        showSumInput.checked = true;
+      }
+      time = 0;
+      draw();
+    }
+
+    [velocityInput, lengthInput, freqRightInput, freqLeftInput, ampRightInput, ampLeftInput, speedInput, phaseInput, lockInput, showRightInput, showLeftInput, showSumInput, showNodesInput, showEnvelopeInput].forEach(input => {
       input.addEventListener('input', draw);
+      input.addEventListener('change', draw);
     });
+    document.getElementById('preset-coherent').addEventListener('click', () => setDemo('coherent'));
+    document.getElementById('preset-detune').addEventListener('click', () => setDemo('detune'));
+    document.getElementById('preset-unequal').addEventListener('click', () => setDemo('unequal'));
     playBtn.addEventListener('click', () => {
       running = !running;
       playBtn.textContent = running ? '暫停' : '播放';
