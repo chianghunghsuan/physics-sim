@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>駐波疊加模擬器</title>
+  <title>駐波疊加與反射模擬器</title>
   <style>
     :root {
       color-scheme: light;
@@ -18,10 +18,9 @@
       --left: #ea580c;
       --sum: #15803d;
       --node: #be123c;
+      --warn: #9a3412;
     }
-
     * { box-sizing: border-box; }
-
     body {
       margin: 0;
       font-family: "Noto Sans TC", "Microsoft JhengHei", Arial, sans-serif;
@@ -29,9 +28,8 @@
       background: var(--bg);
       line-height: 1.65;
     }
-
     main {
-      width: min(1200px, calc(100% - 28px));
+      width: min(1220px, calc(100% - 28px));
       margin: 22px auto 42px;
       background: var(--paper);
       border: 1px solid var(--line);
@@ -39,28 +37,23 @@
       overflow: hidden;
       box-shadow: 0 14px 34px rgba(15, 23, 42, .09);
     }
-
     header {
       padding: 24px 30px 18px;
       border-bottom: 1px solid var(--line);
       background: linear-gradient(180deg, #ffffff, #f7fafc);
     }
-
     h1 {
       margin: 0;
       font-size: clamp(24px, 3vw, 34px);
       line-height: 1.35;
       letter-spacing: 0;
     }
-
     .subtitle {
       margin: 8px 0 0;
       color: var(--muted);
-      max-width: 980px;
+      max-width: 990px;
     }
-
     .content { padding: 22px 30px 30px; }
-
     .topbar {
       display: flex;
       align-items: center;
@@ -69,7 +62,6 @@
       flex-wrap: wrap;
       margin-bottom: 12px;
     }
-
     .legend {
       display: flex;
       gap: 14px;
@@ -78,14 +70,12 @@
       color: var(--muted);
       font-size: 15px;
     }
-
     .legend span {
       display: inline-flex;
       align-items: center;
       gap: 6px;
       white-space: nowrap;
     }
-
     .dot {
       width: 18px;
       height: 4px;
@@ -93,19 +83,16 @@
       display: inline-block;
       background: currentColor;
     }
-
     .right-color { color: var(--right); }
     .left-color { color: var(--left); }
     .sum-color { color: var(--sum); }
     .node-color { color: var(--node); }
-
-    .actions {
+    .actions, .checks, .presets {
       display: flex;
-      gap: 10px;
+      gap: 12px;
       flex-wrap: wrap;
       align-items: center;
     }
-
     button {
       border: 0;
       border-radius: 8px;
@@ -116,16 +103,18 @@
       font-weight: 700;
       cursor: pointer;
     }
-
     button.secondary { background: #334155; }
-
+    button.preset {
+      background: #e2e8f0;
+      color: #1f2933;
+      padding: 7px 10px;
+    }
     .values {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
       gap: 8px;
       margin: 10px 0 14px;
     }
-
     .badge {
       min-height: 44px;
       padding: 8px 10px;
@@ -134,14 +123,17 @@
       color: #134e4a;
       font-weight: 700;
     }
-
+    .badge.warning {
+      background: #fff7ed;
+      color: var(--warn);
+    }
     .badge small {
       display: block;
       color: #3f6f69;
       font-weight: 400;
       line-height: 1.35;
     }
-
+    .badge.warning small { color: #9a3412; }
     .plot-wrap {
       width: 100%;
       border: 1px solid var(--line);
@@ -149,14 +141,12 @@
       background: #ffffff;
       overflow: hidden;
     }
-
     canvas {
       width: 100%;
       height: min(54vh, 460px);
       min-height: 320px;
       display: block;
     }
-
     .controls {
       margin-top: 16px;
       display: grid;
@@ -164,7 +154,6 @@
       gap: 14px;
       align-items: stretch;
     }
-
     .control {
       min-width: 0;
       padding: 12px;
@@ -172,39 +161,27 @@
       border-radius: 8px;
       background: var(--soft);
     }
-
     label {
       display: block;
       font-weight: 700;
       margin-bottom: 6px;
     }
-
     input[type="range"] {
       width: 100%;
       accent-color: var(--accent);
     }
-
-    .checks {
-      display: flex;
-      gap: 18px;
-      flex-wrap: wrap;
-      margin-top: 14px;
-      align-items: center;
-    }
-
+    .checks, .presets { margin-top: 14px; }
     .check {
       display: inline-flex;
       align-items: center;
       gap: 8px;
       font-weight: 700;
     }
-
     .check input {
       width: 18px;
       height: 18px;
       accent-color: var(--accent);
     }
-
     .teacher-note {
       margin-top: 18px;
       padding: 14px 16px;
@@ -212,14 +189,11 @@
       background: #e7f5f2;
       color: #134e4a;
     }
-
     .teacher-note p { margin: 4px 0; }
-
     @media (max-width: 900px) {
       .values { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .controls { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     }
-
     @media (max-width: 640px) {
       main { width: calc(100% - 16px); margin-top: 8px; }
       header, .content { padding-left: 18px; padding-right: 18px; }
@@ -231,17 +205,17 @@
 <body>
   <main>
     <header>
-      <h1>駐波疊加模擬器</h1>
-      <p class="subtitle">這是乾淨的理想模型：兩個等振幅、等頻率、反方向行進的正弦波疊加。張力 T 與線密度 μ 只用來計算繩波速 v = √(T/μ)，再由頻率 f 得到波長 λ = v/f。</p>
+      <h1>駐波疊加與反射模擬器</h1>
+      <p class="subtitle">右行波從左向右前進；左行波不是獨立無界波，而是右行波在右端固定端反射後的鏡像反向波。視窗長度固定為弦長 L；調整波速 v 與頻率 f 會改變波長 λ。只有 L / (λ/2) 接近整數時，左右邊界才同時符合節點條件，形成穩定駐波模式。</p>
     </header>
 
     <div class="content">
       <div class="topbar">
         <div class="legend" aria-label="圖例">
-          <span class="right-color"><i class="dot"></i>右行波</span>
-          <span class="left-color"><i class="dot"></i>左行波</span>
-          <span class="sum-color"><i class="dot"></i>合成駐波</span>
-          <span class="node-color"><i class="dot"></i>節點</span>
+          <span class="right-color"><i class="dot"></i>向右行進波</span>
+          <span class="left-color"><i class="dot"></i>右端反射波</span>
+          <span class="sum-color"><i class="dot"></i>疊加結果</span>
+          <span class="node-color"><i class="dot"></i>節點 / 邊界</span>
         </div>
         <div class="actions">
           <button type="button" id="play">暫停</button>
@@ -250,53 +224,58 @@
       </div>
 
       <div class="values" aria-live="polite">
-        <div class="badge" id="speed-value">波速 v = 10.0 m/s<small>v = √(T / μ)</small></div>
         <div class="badge" id="wave-value">波長 λ = 1.00 m<small>λ = v / f</small></div>
-        <div class="badge" id="node-value">節點間距 = 0.50 m<small>相鄰節點距離 λ/2</small></div>
-        <div class="badge" id="amp-value">腹點最大振幅 = 2.0A<small>入射波 A + 反射波 A</small></div>
+        <div class="badge" id="fit-value">L / (λ/2) = 2.00<small>整數時穩定</small></div>
+        <div class="badge" id="mode-value">第 2 模式<small>兩端都在節點</small></div>
+        <div class="badge" id="status-value">穩定駐波<small>邊界條件吻合</small></div>
       </div>
 
       <div class="plot-wrap">
-        <canvas id="canvas" role="img" aria-label="兩個反方向行進波疊加成駐波，節點固定，腹點最大振幅為單一行進波振幅的兩倍。"></canvas>
+        <canvas id="canvas" role="img" aria-label="右行波在右端反射成左行波，兩者疊加。當弦長剛好容納整數個半波長時，會形成穩定駐波。"></canvas>
       </div>
 
       <div class="controls">
         <div class="control">
-          <label for="tension">張力 T：<span id="tension-readout">2.0 N</span></label>
-          <input id="tension" type="range" min="0.5" max="8" step="0.1" value="2">
-        </div>
-        <div class="control">
-          <label for="density">線密度 μ：<span id="density-readout">20 g/m</span></label>
-          <input id="density" type="range" min="10" max="80" step="1" value="20">
+          <label for="velocity">波速 v：<span id="velocity-readout">10.0 m/s</span></label>
+          <input id="velocity" type="range" min="1" max="25" step="0.1" value="10">
         </div>
         <div class="control">
           <label for="frequency">頻率 f：<span id="freq-readout">10.00 Hz</span></label>
           <input id="frequency" type="range" min="0.5" max="40" step="0.05" value="10">
         </div>
         <div class="control">
-          <label for="amplitude">單一行進波振幅 A：<span id="amp-readout">1.0</span></label>
+          <label for="length">弦長 L：<span id="length-readout">1.00 m</span></label>
+          <input id="length" type="range" min="0.5" max="3" step="0.05" value="1">
+        </div>
+        <div class="control">
+          <label for="amplitude">單一波振幅 A：<span id="amp-readout">1.0</span></label>
           <input id="amplitude" type="range" min="0.2" max="1.2" step="0.1" value="1">
         </div>
         <div class="control">
-          <label for="view-length">畫面寬度：<span id="length-readout">3.00 m</span></label>
-          <input id="view-length" type="range" min="0.5" max="6" step="0.05" value="3">
+          <label for="speed">播放速度：<span id="speed-readout">0.60x</span></label>
+          <input id="speed" type="range" min="0.1" max="2" step="0.05" value="0.6">
         </div>
         <div class="control">
-          <label for="speed">播放速度：<span id="speed-readout">1.00x</span></label>
-          <input id="speed" type="range" min="0.1" max="2" step="0.05" value="1">
+          <label for="phase">右端反射相位：<span id="phase-readout">固定端反相</span></label>
+          <input id="phase" type="range" min="0" max="1" step="1" value="1">
         </div>
+      </div>
+
+      <div class="presets" id="presets">
+        <strong>快速跳到穩定頻率：</strong>
       </div>
 
       <div class="checks">
-        <label class="check"><input type="checkbox" id="show-components" checked>顯示右行波與左行波</label>
-        <label class="check"><input type="checkbox" id="show-particles" checked>顯示質點</label>
-        <label class="check"><input type="checkbox" id="show-envelope" checked>顯示振幅包絡</label>
+        <label class="check"><input type="checkbox" id="show-right" checked>顯示向右行進波</label>
+        <label class="check"><input type="checkbox" id="show-left">顯示右端反射波</label>
+        <label class="check"><input type="checkbox" id="show-sum" checked>顯示疊加結果</label>
         <label class="check"><input type="checkbox" id="show-nodes" checked>顯示節點</label>
+        <label class="check"><input type="checkbox" id="show-envelope" checked>顯示包絡</label>
       </div>
 
       <section class="teacher-note">
-        <p><strong>上課講法：</strong>先打開右行波與左行波，讓學生看到兩列波反向前進；再關掉，只看合成駐波。節點固定不動，腹點上下振動最大，最大振幅就是 2A。</p>
-        <p><strong>操作重點：</strong>調張力或線密度會改變波速；固定頻率時，波速改變會讓波長改變。若要讓畫面兩端剛好像固定端，就調整「畫面寬度」，讓左右邊界落在節點上。</p>
+        <p><strong>上課順序：</strong>先只勾「向右行進波」，讓學生看到波往右跑；再勾「右端反射波」，看反射波往左跑；最後勾「疊加結果」，觀察節點與腹點。</p>
+        <p><strong>判斷重點：</strong>這裡的左行波是由右端反射而來，所以右端一定符合反射邊界。若左端也剛好落在節點上，整段弦才是穩定駐波模式；若沒有，畫面會標示邊界不吻合。</p>
       </section>
     </div>
   </main>
@@ -306,51 +285,72 @@
     const ctx = canvas.getContext('2d');
     const playBtn = document.getElementById('play');
     const resetBtn = document.getElementById('reset');
-    const tensionInput = document.getElementById('tension');
-    const densityInput = document.getElementById('density');
+    const velocityInput = document.getElementById('velocity');
     const freqInput = document.getElementById('frequency');
+    const lengthInput = document.getElementById('length');
     const ampInput = document.getElementById('amplitude');
-    const lengthInput = document.getElementById('view-length');
     const speedInput = document.getElementById('speed');
-    const showComponentsInput = document.getElementById('show-components');
-    const showParticlesInput = document.getElementById('show-particles');
-    const showEnvelopeInput = document.getElementById('show-envelope');
+    const phaseInput = document.getElementById('phase');
+    const showRightInput = document.getElementById('show-right');
+    const showLeftInput = document.getElementById('show-left');
+    const showSumInput = document.getElementById('show-sum');
     const showNodesInput = document.getElementById('show-nodes');
-
+    const showEnvelopeInput = document.getElementById('show-envelope');
+    const presets = document.getElementById('presets');
     const readouts = {
-      tension: document.getElementById('tension-readout'),
-      density: document.getElementById('density-readout'),
+      velocity: document.getElementById('velocity-readout'),
       freq: document.getElementById('freq-readout'),
-      amp: document.getElementById('amp-readout'),
       length: document.getElementById('length-readout'),
+      amp: document.getElementById('amp-readout'),
       speed: document.getElementById('speed-readout'),
-      speedValue: document.getElementById('speed-value'),
-      waveValue: document.getElementById('wave-value'),
-      nodeValue: document.getElementById('node-value'),
-      ampValue: document.getElementById('amp-value')
+      phase: document.getElementById('phase-readout'),
+      wave: document.getElementById('wave-value'),
+      fit: document.getElementById('fit-value'),
+      mode: document.getElementById('mode-value'),
+      status: document.getElementById('status-value')
     };
-
     let running = true;
     let time = 0;
     let last = performance.now();
+    let presetSignature = '';
 
     function css(name) {
       return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
     }
 
     function state() {
-      const tension = Number(tensionInput.value);
-      const densityG = Number(densityInput.value);
-      const density = densityG / 1000;
-      const frequency = Number(freqInput.value);
-      const amplitude = Number(ampInput.value);
-      const viewLength = Number(lengthInput.value);
+      const v = Number(velocityInput.value);
+      const f = Number(freqInput.value);
+      const L = Number(lengthInput.value);
+      const A = Number(ampInput.value);
       const playback = Number(speedInput.value);
-      const waveSpeed = Math.sqrt(tension / density);
-      const wavelength = waveSpeed / frequency;
-      const k = 2 * Math.PI / wavelength;
-      const omega = 2 * Math.PI * frequency;
-      return { tension, densityG, density, frequency, amplitude, viewLength, playback, waveSpeed, wavelength, k, omega };
+      const fixed = Number(phaseInput.value) === 1;
+      const lambda = v / f;
+      const k = 2 * Math.PI / lambda;
+      const omega = 2 * Math.PI * f;
+      const halfWaves = L / (lambda / 2);
+      const nearest = Math.max(1, Math.round(halfWaves));
+      const mismatch = Math.abs(halfWaves - nearest);
+      const stable = mismatch < 0.06;
+      return { v, f, L, A, playback, fixed, lambda, k, omega, halfWaves, nearest, mismatch, stable };
+    }
+
+    function yRight(x, s) {
+      return s.A * Math.sin(s.k * x - s.omega * time);
+    }
+
+    function yLeft(x, s) {
+      const mirrored = Math.sin(s.k * (2 * s.L - x) - s.omega * time);
+      return s.fixed ? -s.A * mirrored : s.A * mirrored;
+    }
+
+    function ySum(x, s) {
+      return yRight(x, s) + yLeft(x, s);
+    }
+
+    function envelope(x, s) {
+      if (s.fixed) return 2 * s.A * Math.abs(Math.sin(s.k * (s.L - x)));
+      return 2 * s.A * Math.abs(Math.cos(s.k * (s.L - x)));
     }
 
     function resizeCanvas() {
@@ -363,43 +363,57 @@
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     }
 
-    function yRight(x, s) {
-      return s.amplitude * Math.sin(s.k * x - s.omega * time);
+    function setFrequency(value) {
+      freqInput.value = Math.max(Number(freqInput.min), Math.min(Number(freqInput.max), value)).toFixed(2);
+      time = 0;
+      draw();
     }
 
-    function yLeft(x, s) {
-      return s.amplitude * Math.sin(s.k * x + s.omega * time);
+    function updatePresets(s) {
+      const values = [];
+      for (let n = 1; n <= 8; n += 1) {
+        const f = n * s.v / (2 * s.L);
+        if (f >= Number(freqInput.min) && f <= Number(freqInput.max)) values.push({ n, f });
+      }
+      const sig = values.map(item => `${item.n}:${item.f.toFixed(2)}`).join('|');
+      if (sig === presetSignature) return;
+      presetSignature = sig;
+      presets.innerHTML = '<strong>快速跳到穩定頻率：</strong>';
+      values.forEach(({ n, f }) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'preset';
+        btn.textContent = `n=${n}，f=${f.toFixed(2)} Hz`;
+        btn.addEventListener('click', () => setFrequency(f));
+        presets.appendChild(btn);
+      });
     }
 
-    function ySum(x, s) {
-      return yRight(x, s) + yLeft(x, s);
-    }
-
-    function envelope(x, s) {
-      return 2 * s.amplitude * Math.abs(Math.sin(s.k * x));
-    }
-
-    function updateReadouts(s) {
-      readouts.tension.textContent = `${s.tension.toFixed(1)} N`;
-      readouts.density.textContent = `${s.densityG.toFixed(0)} g/m`;
-      readouts.freq.textContent = `${s.frequency.toFixed(2)} Hz`;
-      readouts.amp.textContent = s.amplitude.toFixed(1);
-      readouts.length.textContent = `${s.viewLength.toFixed(2)} m`;
+    function update(s) {
+      readouts.velocity.textContent = `${s.v.toFixed(1)} m/s`;
+      readouts.freq.textContent = `${s.f.toFixed(2)} Hz`;
+      readouts.length.textContent = `${s.L.toFixed(2)} m`;
+      readouts.amp.textContent = s.A.toFixed(1);
       readouts.speed.textContent = `${s.playback.toFixed(2)}x`;
-      readouts.speedValue.innerHTML = `波速 v = ${s.waveSpeed.toFixed(2)} m/s<small>v = √(T / μ)</small>`;
-      readouts.waveValue.innerHTML = `波長 λ = ${s.wavelength.toFixed(3)} m<small>λ = v / f</small>`;
-      readouts.nodeValue.innerHTML = `節點間距 = ${(s.wavelength / 2).toFixed(3)} m<small>相鄰節點距離 λ/2</small>`;
-      readouts.ampValue.innerHTML = `腹點最大振幅 = ${(2 * s.amplitude).toFixed(1)}A<small>入射波 A + 反射波 A</small>`;
+      readouts.phase.textContent = s.fixed ? '固定端反相' : '自由端不反相';
+      readouts.wave.innerHTML = `波長 λ = ${s.lambda.toFixed(3)} m<small>λ = v / f</small>`;
+      readouts.fit.innerHTML = `L / (λ/2) = ${s.halfWaves.toFixed(2)}<small>接近整數時穩定</small>`;
+      readouts.mode.innerHTML = `最近第 ${s.nearest} 模式<small>穩定頻率 ${(s.nearest * s.v / (2 * s.L)).toFixed(2)} Hz</small>`;
+      readouts.status.classList.toggle('warning', !s.stable);
+      readouts.status.innerHTML = s.stable
+        ? '穩定駐波<small>左右邊界條件吻合</small>'
+        : '邊界不吻合<small>不是固定長度弦的穩定模式</small>';
+      updatePresets(s);
     }
 
-    function drawPath(fn, s, color, lineWidth, dash, alpha) {
+    function drawPath(fn, s, color, lineWidth, dash, alpha = 1) {
       const rect = canvas.getBoundingClientRect();
       const w = rect.width;
       const h = rect.height;
-      const padX = 42;
+      const padX = 44;
       const base = h / 2;
       const plotW = w - padX * 2;
-      const scaleY = Math.min(96, h * 0.25) / Math.max(1, s.amplitude);
+      const scaleY = Math.min(95, h * 0.25) / Math.max(1, s.A);
       ctx.save();
       ctx.strokeStyle = color;
       ctx.lineWidth = lineWidth;
@@ -409,8 +423,8 @@
       ctx.lineCap = 'round';
       ctx.beginPath();
       for (let i = 0; i <= 620; i += 1) {
-        const x = s.viewLength * i / 620;
-        const px = padX + (x / s.viewLength) * plotW;
+        const x = s.L * i / 620;
+        const px = padX + (x / s.L) * plotW;
         const py = base - fn(x, s) * scaleY;
         if (i === 0) ctx.moveTo(px, py);
         else ctx.lineTo(px, py);
@@ -423,19 +437,19 @@
       const rect = canvas.getBoundingClientRect();
       const w = rect.width;
       const h = rect.height;
-      const padX = 42;
+      const padX = 44;
       const base = h / 2;
       const plotW = w - padX * 2;
-      const scaleY = Math.min(96, h * 0.25) / Math.max(1, s.amplitude);
+      const scaleY = Math.min(95, h * 0.25) / Math.max(1, s.A);
       ctx.save();
       ctx.strokeStyle = css('--line');
-      ctx.lineWidth = 1.5;
+      ctx.lineWidth = 1.4;
       ctx.setLineDash([7, 7]);
       for (const sign of [1, -1]) {
         ctx.beginPath();
         for (let i = 0; i <= 620; i += 1) {
-          const x = s.viewLength * i / 620;
-          const px = padX + (x / s.viewLength) * plotW;
+          const x = s.L * i / 620;
+          const px = padX + (x / s.L) * plotW;
           const py = base - sign * envelope(x, s) * scaleY;
           if (i === 0) ctx.moveTo(px, py);
           else ctx.lineTo(px, py);
@@ -445,66 +459,63 @@
       ctx.restore();
     }
 
-    function drawNodes(s) {
+    function drawBoundariesAndNodes(s) {
       const rect = canvas.getBoundingClientRect();
       const w = rect.width;
       const h = rect.height;
-      const padX = 42;
+      const padX = 44;
       const base = h / 2;
       const plotW = w - padX * 2;
-      const nodeSpacing = s.wavelength / 2;
-      const first = Math.ceil(0 / nodeSpacing) * nodeSpacing;
-      for (let x = first; x <= s.viewLength + 1e-9; x += nodeSpacing) {
-        const px = padX + (x / s.viewLength) * plotW;
+      const nodeColor = css('--node');
+      const spacing = s.lambda / 2;
+      const start = s.fixed ? s.L : s.L - s.lambda / 4;
+      const nodes = [];
+      for (let x = start; x >= 0; x -= spacing) nodes.push(x);
+      for (let x = start + spacing; x <= s.L; x += spacing) nodes.push(x);
+      nodes.forEach(x => {
+        if (x < -1e-6 || x > s.L + 1e-6) return;
+        const px = padX + (x / s.L) * plotW;
         ctx.save();
-        ctx.strokeStyle = css('--node');
-        ctx.globalAlpha = 0.5;
+        ctx.strokeStyle = nodeColor;
+        ctx.globalAlpha = s.stable ? 0.55 : 0.25;
         ctx.setLineDash([4, 6]);
         ctx.beginPath();
         ctx.moveTo(px, base - h * 0.31);
         ctx.lineTo(px, base + h * 0.31);
         ctx.stroke();
-        ctx.fillStyle = css('--node');
-        ctx.globalAlpha = 0.95;
+        ctx.fillStyle = nodeColor;
+        ctx.globalAlpha = s.stable ? 0.95 : 0.45;
         ctx.beginPath();
         ctx.arc(px, base, 4.5, 0, Math.PI * 2);
         ctx.fill();
         ctx.restore();
-      }
-    }
-
-    function drawParticles(s) {
-      const rect = canvas.getBoundingClientRect();
-      const w = rect.width;
-      const h = rect.height;
-      const padX = 42;
-      const base = h / 2;
-      const plotW = w - padX * 2;
-      const scaleY = Math.min(96, h * 0.25) / Math.max(1, s.amplitude);
-      ctx.save();
-      ctx.fillStyle = css('--ink');
-      ctx.globalAlpha = 0.72;
-      for (let i = 0; i <= 44; i += 1) {
-        const x = s.viewLength * i / 44;
-        const px = padX + (x / s.viewLength) * plotW;
-        const py = base - ySum(x, s) * scaleY;
+      });
+      [['左端', padX, 'left'], ['右端反射', w - padX, 'right']].forEach(([text, px, align]) => {
+        ctx.save();
+        ctx.strokeStyle = nodeColor;
+        ctx.lineWidth = 2;
+        ctx.globalAlpha = text === '左端' && !s.stable ? 0.35 : 0.95;
         ctx.beginPath();
-        ctx.arc(px, py, 2.8, 0, Math.PI * 2);
-        ctx.fill();
-      }
-      ctx.restore();
+        ctx.moveTo(px, base - h * 0.34);
+        ctx.lineTo(px, base + h * 0.34);
+        ctx.stroke();
+        ctx.fillStyle = css('--muted');
+        ctx.font = '14px "Microsoft JhengHei", Arial, sans-serif';
+        ctx.textAlign = align;
+        ctx.fillText(text, px, base + h * 0.38);
+        ctx.restore();
+      });
     }
 
     function draw() {
       resizeCanvas();
       const s = state();
-      updateReadouts(s);
+      update(s);
       const rect = canvas.getBoundingClientRect();
       const w = rect.width;
       const h = rect.height;
-      const padX = 42;
+      const padX = 44;
       const base = h / 2;
-
       ctx.clearRect(0, 0, w, h);
       ctx.save();
       ctx.strokeStyle = css('--line');
@@ -514,15 +525,11 @@
       ctx.lineTo(w - padX, base);
       ctx.stroke();
       ctx.restore();
-
       if (showEnvelopeInput.checked) drawEnvelope(s);
-      if (showNodesInput.checked) drawNodes(s);
-      if (showComponentsInput.checked) {
-        drawPath(yRight, s, css('--right'), 2, [8, 7], 0.92);
-        drawPath(yLeft, s, css('--left'), 2, [2, 7], 0.92);
-      }
-      drawPath(ySum, s, css('--sum'), 4, null, 1);
-      if (showParticlesInput.checked) drawParticles(s);
+      if (showNodesInput.checked) drawBoundariesAndNodes(s);
+      if (showRightInput.checked) drawPath(yRight, s, css('--right'), 2, [8, 7], 0.95);
+      if (showLeftInput.checked) drawPath(yLeft, s, css('--left'), 2, [2, 7], 0.95);
+      if (showSumInput.checked) drawPath(ySum, s, s.stable ? css('--sum') : css('--warn'), 4, null, 1);
     }
 
     function frame(now) {
@@ -534,23 +541,20 @@
       requestAnimationFrame(frame);
     }
 
-    [tensionInput, densityInput, freqInput, ampInput, lengthInput, speedInput, showComponentsInput, showParticlesInput, showEnvelopeInput, showNodesInput].forEach(input => {
+    [velocityInput, freqInput, lengthInput, ampInput, speedInput, phaseInput, showRightInput, showLeftInput, showSumInput, showNodesInput, showEnvelopeInput].forEach(input => {
       input.addEventListener('input', draw);
     });
-
     playBtn.addEventListener('click', () => {
       running = !running;
       playBtn.textContent = running ? '暫停' : '播放';
       last = performance.now();
       draw();
     });
-
     resetBtn.addEventListener('click', () => {
       time = 0;
       last = performance.now();
       draw();
     });
-
     window.addEventListener('resize', draw);
     requestAnimationFrame(frame);
   </script>
