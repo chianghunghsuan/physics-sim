@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>駐波疊加與同調模擬器</title>
+  <title>高中物理波動現象模擬器</title>
   <style>
     :root {
       color-scheme: light;
@@ -14,10 +14,13 @@
       --line: #d7dde5;
       --soft: #f8fafc;
       --accent: #0f766e;
-      --right: #2563eb;
-      --left: #ea580c;
-      --sum: #15803d;
-      --node: #be123c;
+      --accent-soft: #e7f5f2;
+      --blue: #2563eb;
+      --orange: #ea580c;
+      --green: #15803d;
+      --red: #be123c;
+      --purple: #7c3aed;
+      --yellow: #ca8a04;
       --warn: #9a3412;
     }
     * { box-sizing: border-box; }
@@ -29,7 +32,7 @@
       line-height: 1.65;
     }
     main {
-      width: min(1240px, calc(100% - 28px));
+      width: min(1280px, calc(100% - 28px));
       margin: 22px auto 42px;
       background: var(--paper);
       border: 1px solid var(--line);
@@ -48,25 +51,66 @@
       line-height: 1.35;
       letter-spacing: 0;
     }
-    .subtitle {
+    h2 {
+      margin: 0;
+      font-size: 22px;
+      line-height: 1.4;
+      letter-spacing: 0;
+    }
+    .subtitle, .module-copy {
       margin: 8px 0 0;
       color: var(--muted);
-      max-width: 1020px;
+      max-width: 1080px;
     }
-    .content { padding: 22px 30px 30px; }
-    .topbar {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 14px;
-      flex-wrap: wrap;
-      margin-bottom: 12px;
-    }
-    .legend, .actions, .checks, .presets {
+    .content { padding: 18px 30px 30px; }
+    .topbar, .legend, .actions, .checks, .presets, .tabs {
       display: flex;
       gap: 12px;
       flex-wrap: wrap;
       align-items: center;
+    }
+    .topbar {
+      justify-content: space-between;
+      margin-bottom: 14px;
+    }
+    .tabs {
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 18px;
+    }
+    button {
+      border: 0;
+      border-radius: 8px;
+      padding: 9px 16px;
+      background: var(--accent);
+      color: #ffffff;
+      font: inherit;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button.secondary { background: #334155; }
+    button.tab {
+      background: #e2e8f0;
+      color: #1f2933;
+    }
+    button.tab.active {
+      background: var(--accent);
+      color: #ffffff;
+    }
+    button.preset {
+      background: #e2e8f0;
+      color: #1f2933;
+      padding: 7px 10px;
+    }
+    .panel { display: none; }
+    .panel.active { display: block; }
+    .module-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
     }
     .legend {
       color: var(--muted);
@@ -85,26 +129,12 @@
       display: inline-block;
       background: currentColor;
     }
-    .right-color { color: var(--right); }
-    .left-color { color: var(--left); }
-    .sum-color { color: var(--sum); }
-    .node-color { color: var(--node); }
-    button {
-      border: 0;
-      border-radius: 8px;
-      padding: 9px 16px;
-      background: var(--accent);
-      color: #ffffff;
-      font: inherit;
-      font-weight: 700;
-      cursor: pointer;
-    }
-    button.secondary { background: #334155; }
-    button.preset {
-      background: #e2e8f0;
-      color: #1f2933;
-      padding: 7px 10px;
-    }
+    .blue { color: var(--blue); }
+    .orange { color: var(--orange); }
+    .green { color: var(--green); }
+    .red { color: var(--red); }
+    .purple { color: var(--purple); }
+    .yellow { color: var(--yellow); }
     .values {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -115,7 +145,7 @@
       min-height: 44px;
       padding: 8px 10px;
       border-radius: 8px;
-      background: #e7f5f2;
+      background: var(--accent-soft);
       color: #134e4a;
       font-weight: 700;
     }
@@ -166,6 +196,7 @@
       width: 100%;
       accent-color: var(--accent);
     }
+    input[type="range"]:disabled { opacity: .45; }
     select {
       width: 100%;
       padding: 8px 10px;
@@ -175,9 +206,6 @@
       color: var(--ink);
       font: inherit;
       font-weight: 700;
-    }
-    input[type="range"]:disabled {
-      opacity: .45;
     }
     .checks, .presets { margin-top: 14px; }
     .check {
@@ -195,7 +223,7 @@
       margin-top: 18px;
       padding: 14px 16px;
       border-left: 4px solid var(--accent);
-      background: #e7f5f2;
+      background: var(--accent-soft);
       color: #134e4a;
     }
     .teacher-note p { margin: 4px 0; }
@@ -214,164 +242,421 @@
 <body>
   <main>
     <header>
-      <h1>駐波疊加與同調模擬器</h1>
-      <p class="subtitle">先看單一向右行進波，再打開向左波，最後看疊加。若左右波同頻、等振幅，疊加圖形會穩定；若頻率不同，節點會漂移或拍動；若振幅不同，節點不會真正歸零。右端可設定固定或自由，系統會計算左端此刻是節點、腹點或一般點，並列出所有合理正常模態。</p>
+      <h1>高中物理波動現象模擬器</h1>
+      <p class="subtitle">把課堂上最需要「看見過程」的波動現象放在同一頁：先看行進波如何疊加成駐波，再看都卜勒效應、水波槽干涉、雙狹縫干涉與惠更斯原理。每個頁籤都能調參數、暫停、慢速播放，方便在電子白板上逐步打開重點。</p>
     </header>
 
     <div class="content">
       <div class="topbar">
-        <div class="legend" aria-label="圖例">
-          <span class="right-color"><i class="dot"></i>向右行進波</span>
-          <span class="left-color"><i class="dot"></i>向左行進波</span>
-          <span class="sum-color"><i class="dot"></i>疊加結果</span>
-          <span class="node-color"><i class="dot"></i>同調節點參考</span>
+        <div class="tabs" role="tablist" aria-label="模擬器頁籤">
+          <button type="button" class="tab active" data-tab="standing" role="tab" aria-selected="true">駐波疊加</button>
+          <button type="button" class="tab" data-tab="doppler" role="tab" aria-selected="false">都卜勒效應</button>
+          <button type="button" class="tab" data-tab="ripple" role="tab" aria-selected="false">水波槽干涉</button>
+          <button type="button" class="tab" data-tab="double" role="tab" aria-selected="false">雙狹縫干涉</button>
+          <button type="button" class="tab" data-tab="huygens" role="tab" aria-selected="false">惠更斯原理</button>
         </div>
         <div class="actions">
-          <button type="button" id="play">暫停</button>
-          <button type="button" class="secondary" id="reset">重設時間</button>
+          <button type="button" id="global-play">暫停</button>
+          <button type="button" class="secondary" id="global-reset">重設時間</button>
         </div>
       </div>
 
-      <div class="values" aria-live="polite">
-        <div class="badge" id="lambda-value">λ右 = 1.00 m<small>λ = v / f</small></div>
-        <div class="badge" id="delta-value">Δf = 0.00 Hz<small>同頻時圖形穩定</small></div>
-        <div class="badge" id="amp-value">振幅比 = 1.00<small>等振幅才有真正節點</small></div>
-        <div class="badge" id="status-value">兩端固定正常模態<small>L = nλ/2</small></div>
-      </div>
+      <section id="panel-standing" class="panel active" role="tabpanel">
+        <div class="module-head">
+          <div>
+            <h2>駐波疊加</h2>
+            <p class="module-copy">先只看向右行進波，再打開向左反射波與疊加結果。右端可設定固定或自由，左端由波長自動判斷是節點、腹點或一般點。</p>
+          </div>
+          <div class="legend" aria-label="駐波圖例">
+            <span class="blue"><i class="dot"></i>向右行進波</span>
+            <span class="orange"><i class="dot"></i>向左行進波</span>
+            <span class="green"><i class="dot"></i>疊加結果</span>
+            <span class="red"><i class="dot"></i>節點參考</span>
+          </div>
+        </div>
+        <div class="values" aria-live="polite">
+          <div class="badge" id="stand-lambda">λ右 = 1.00 m<small>λ = v / f</small></div>
+          <div class="badge" id="stand-delta">Δf = 0.00 Hz<small>同頻時圖形穩定</small></div>
+          <div class="badge" id="stand-amp">振幅比 = 1.00<small>等振幅才有真正節點</small></div>
+          <div class="badge" id="stand-status">固定-固定正常模態<small>L = nλ/2</small></div>
+        </div>
+        <div class="plot-wrap">
+          <canvas id="standing-canvas" role="img" aria-label="左右行進波疊加成駐波的動態圖。"></canvas>
+        </div>
+        <div class="controls">
+          <div class="control">
+            <label for="stand-v">波速 v：<span id="stand-v-out">10.0 m/s</span></label>
+            <input id="stand-v" type="range" min="1" max="25" step="0.1" value="10">
+          </div>
+          <div class="control">
+            <label for="stand-L">視窗長度 L：<span id="stand-L-out">1.00 m</span></label>
+            <input id="stand-L" type="range" min="0.5" max="3" step="0.05" value="1">
+          </div>
+          <div class="control">
+            <label for="stand-fR">右行頻率 fR：<span id="stand-fR-out">10.00 Hz</span></label>
+            <input id="stand-fR" type="range" min="0.5" max="40" step="0.05" value="10">
+          </div>
+          <div class="control">
+            <label for="stand-fL">左行頻率 fL：<span id="stand-fL-out">10.00 Hz</span></label>
+            <input id="stand-fL" type="range" min="0.5" max="40" step="0.05" value="10">
+          </div>
+          <div class="control">
+            <label for="stand-AR">右行振幅 AR：<span id="stand-AR-out">1.0</span></label>
+            <input id="stand-AR" type="range" min="0" max="1.2" step="0.1" value="1">
+          </div>
+          <div class="control">
+            <label for="stand-AL">左行振幅 AL：<span id="stand-AL-out">1.0</span></label>
+            <input id="stand-AL" type="range" min="0" max="1.2" step="0.1" value="1">
+          </div>
+          <div class="control">
+            <label for="stand-speed">播放速度：<span id="stand-speed-out">0.25x</span></label>
+            <input id="stand-speed" type="range" min="0.1" max="2" step="0.05" value="0.25">
+          </div>
+          <div class="control">
+            <label for="stand-boundary">右端邊界</label>
+            <select id="stand-boundary">
+              <option value="fixed" selected>固定端：反相、節點</option>
+              <option value="free">自由端：不反相、腹點</option>
+            </select>
+          </div>
+        </div>
+        <div class="presets" id="stand-mode-presets">
+          <strong>快速跳到目前邊界的正常模態：</strong>
+        </div>
+        <div class="checks">
+          <label class="check"><input type="checkbox" id="stand-lock" checked>鎖定左右波同頻等振幅</label>
+          <label class="check"><input type="checkbox" id="stand-show-right" checked>顯示向右行進波</label>
+          <label class="check"><input type="checkbox" id="stand-show-left">顯示向左行進波</label>
+          <label class="check"><input type="checkbox" id="stand-show-sum">顯示疊加結果</label>
+          <label class="check"><input type="checkbox" id="stand-show-nodes">顯示節點參考</label>
+          <label class="check"><input type="checkbox" id="stand-show-envelope">顯示包絡</label>
+        </div>
+        <section class="teacher-note">
+          <p><strong>講法：</strong>先讓學生只看藍色向右波，確認「波形在移動、質點上下振動」。再打開橘色反射波，最後打開綠色疊加，讓節點從相消而來，不是憑空出現。</p>
+          <p><strong>強調：</strong>同頻、等振幅才會有真正不動的節點；右端固定或自由只決定反射相位，左端若剛好落在節點或腹點，都可形成合理正常模態。</p>
+        </section>
+      </section>
 
-      <div class="plot-wrap">
-        <canvas id="canvas" role="img" aria-label="左右兩個行進波疊加。可分別調整左右頻率與振幅，觀察穩定駐波、不同調漂移，以及振幅不等時節點不歸零。"></canvas>
-      </div>
+      <section id="panel-doppler" class="panel" role="tabpanel">
+        <div class="module-head">
+          <div>
+            <h2>都卜勒效應</h2>
+            <p class="module-copy">切換波源移動或觀察者移動，觀察波面在前方變密、後方變疏。頻率變化不是波速變了，而是觀察者每秒遇到的波峰數改變。</p>
+          </div>
+          <div class="legend" aria-label="都卜勒圖例">
+            <span class="blue"><i class="dot"></i>波面</span>
+            <span class="orange"><i class="dot"></i>波源</span>
+            <span class="green"><i class="dot"></i>觀察者</span>
+            <span class="red"><i class="dot"></i>震波錐</span>
+          </div>
+        </div>
+        <div class="values" aria-live="polite">
+          <div class="badge" id="dop-lambda">原波長 = 10.00 m<small>λ = v / f</small></div>
+          <div class="badge" id="dop-observed">觀察頻率 = 1.40 Hz<small>接近時變高</small></div>
+          <div class="badge" id="dop-ratio">f'/f = 1.00<small>比較音調高低</small></div>
+          <div class="badge" id="dop-status">波源靜止或等效靜止<small>波面間距左右相同</small></div>
+        </div>
+        <div class="plot-wrap">
+          <canvas id="doppler-canvas" role="img" aria-label="都卜勒效應中波源、觀察者與波面的動態圖。"></canvas>
+        </div>
+        <div class="controls">
+          <div class="control">
+            <label for="dop-mode">示範模式</label>
+            <select id="dop-mode">
+              <option value="source" selected>波源移動</option>
+              <option value="observer">觀察者移動</option>
+              <option value="both">波源與觀察者都動</option>
+            </select>
+          </div>
+          <div class="control">
+            <label for="dop-direction">相對方向</label>
+            <select id="dop-direction">
+              <option value="approach" selected>互相接近</option>
+              <option value="recede">互相遠離</option>
+            </select>
+          </div>
+          <div class="control">
+            <label for="dop-c">波速 v：<span id="dop-c-out">16.0 m/s</span></label>
+            <input id="dop-c" type="range" min="8" max="30" step="0.5" value="16">
+          </div>
+          <div class="control">
+            <label for="dop-f">波源頻率 f：<span id="dop-f-out">1.40 Hz</span></label>
+            <input id="dop-f" type="range" min="0.5" max="4" step="0.05" value="1.4">
+          </div>
+          <div class="control">
+            <label for="dop-vs">波源速率 vs：<span id="dop-vs-out">5.0 m/s</span></label>
+            <input id="dop-vs" type="range" min="0" max="18" step="0.5" value="5">
+          </div>
+          <div class="control">
+            <label for="dop-vo">觀察者速率 vo：<span id="dop-vo-out">4.0 m/s</span></label>
+            <input id="dop-vo" type="range" min="0" max="18" step="0.5" value="4">
+          </div>
+          <div class="control">
+            <label for="dop-speed">播放速度：<span id="dop-speed-out">0.35x</span></label>
+            <input id="dop-speed" type="range" min="0.1" max="1.5" step="0.05" value="0.35">
+          </div>
+        </div>
+        <section class="teacher-note">
+          <p><strong>講法：</strong>先選「波源移動」，讓學生看前方波面被壓縮；再改成「觀察者移動」，提醒波面本身沒被壓縮，但觀察者穿越波峰的頻率變了。</p>
+          <p><strong>強調：</strong>介質中的波速由介質決定。都卜勒效應改變的是觀察到的頻率與波長，不是聲波在空氣中的速率。</p>
+        </section>
+      </section>
 
-      <div class="controls">
-        <div class="control">
-          <label for="velocity">波速 v：<span id="velocity-readout">10.0 m/s</span></label>
-          <input id="velocity" type="range" min="1" max="25" step="0.1" value="10">
+      <section id="panel-ripple" class="panel" role="tabpanel">
+        <div class="module-head">
+          <div>
+            <h2>水波槽雙源干涉</h2>
+            <p class="module-copy">兩個同調點波源同時發出水波。畫面同時呈現瞬時波形與穩定的節線，方便區分「當下上下振動」和「長時間固定的干涉格局」。</p>
+          </div>
+          <div class="legend" aria-label="水波槽圖例">
+            <span class="blue"><i class="dot"></i>波峰區</span>
+            <span class="purple"><i class="dot"></i>波谷區</span>
+            <span class="red"><i class="dot"></i>節線</span>
+            <span class="yellow"><i class="dot"></i>波源</span>
+          </div>
         </div>
-        <div class="control">
-          <label for="length">視窗長度 L：<span id="length-readout">1.00 m</span></label>
-          <input id="length" type="range" min="0.5" max="3" step="0.05" value="1">
+        <div class="values" aria-live="polite">
+          <div class="badge" id="rip-lambda">波長 = 54 px<small>波面間距</small></div>
+          <div class="badge" id="rip-ratio">d/λ = 2.96<small>源距越大，節線越多</small></div>
+          <div class="badge" id="rip-phase">相位差 = 0°<small>同相時中央為腹線</small></div>
+          <div class="badge" id="rip-status">同相雙源<small>中央線建設性干涉</small></div>
         </div>
-        <div class="control">
-          <label for="freq-right">右行頻率 fR：<span id="freq-right-readout">10.00 Hz</span></label>
-          <input id="freq-right" type="range" min="0.5" max="40" step="0.05" value="10">
+        <div class="plot-wrap">
+          <canvas id="ripple-canvas" role="img" aria-label="水波槽雙源干涉的動態圖。"></canvas>
         </div>
-        <div class="control">
-          <label for="freq-left">左行頻率 fL：<span id="freq-left-readout">10.00 Hz</span></label>
-          <input id="freq-left" type="range" min="0.5" max="40" step="0.05" value="10">
+        <div class="controls">
+          <div class="control">
+            <label for="rip-lambda-in">波長 λ：<span id="rip-lambda-out">54 px</span></label>
+            <input id="rip-lambda-in" type="range" min="28" max="90" step="1" value="54">
+          </div>
+          <div class="control">
+            <label for="rip-d">波源距離 d：<span id="rip-d-out">160 px</span></label>
+            <input id="rip-d" type="range" min="50" max="260" step="2" value="160">
+          </div>
+          <div class="control">
+            <label for="rip-phase-in">相位差：<span id="rip-phase-out">0°</span></label>
+            <input id="rip-phase-in" type="range" min="0" max="360" step="5" value="0">
+          </div>
+          <div class="control">
+            <label for="rip-speed">播放速度：<span id="rip-speed-out">0.35x</span></label>
+            <input id="rip-speed" type="range" min="0.1" max="1.5" step="0.05" value="0.35">
+          </div>
         </div>
-        <div class="control">
-          <label for="amp-right">右行振幅 AR：<span id="amp-right-readout">1.0</span></label>
-          <input id="amp-right" type="range" min="0" max="1.2" step="0.1" value="1">
+        <div class="checks">
+          <label class="check"><input type="checkbox" id="rip-show-nodes" checked>顯示穩定節線</label>
+          <label class="check"><input type="checkbox" id="rip-show-fronts" checked>顯示圓形波面</label>
         </div>
-        <div class="control">
-          <label for="amp-left">左行振幅 AL：<span id="amp-left-readout">1.0</span></label>
-          <input id="amp-left" type="range" min="0" max="1.2" step="0.1" value="1">
-        </div>
-        <div class="control">
-          <label for="speed">播放速度：<span id="speed-readout">0.25x</span></label>
-          <input id="speed" type="range" min="0.1" max="2" step="0.05" value="0.25">
-        </div>
-        <div class="control">
-          <label for="right-boundary">右端邊界</label>
-          <select id="right-boundary">
-            <option value="fixed" selected>固定端：反相、節點</option>
-            <option value="free">自由端：不反相、腹點</option>
-          </select>
-        </div>
-      </div>
+        <section class="teacher-note">
+          <p><strong>講法：</strong>先關掉節線，只看兩組圓形水波重疊；再打開節線，說明節線不是水面永遠平的線，而是兩波到達時總是互相抵消的位置。</p>
+          <p><strong>強調：</strong>調大波源距離或調短波長，會讓路徑差能塞進更多半波長，因此節線變多、夾角變小。</p>
+        </section>
+      </section>
 
-      <div class="presets" id="presets">
-        <strong>快速示範：</strong>
-        <button type="button" class="preset" id="preset-coherent">同調反射</button>
-        <button type="button" class="preset" id="preset-detune">左右不同頻</button>
-        <button type="button" class="preset" id="preset-unequal">左右不同振幅</button>
-      </div>
+      <section id="panel-double" class="panel" role="tabpanel">
+        <div class="module-head">
+          <div>
+            <h2>雙狹縫干涉</h2>
+            <p class="module-copy">把兩個狹縫當成同調波源，左邊看波面從狹縫出發，右邊看屏幕亮暗紋。可調波長、狹縫距離、屏幕距離與單狹縫包絡。</p>
+          </div>
+          <div class="legend" aria-label="雙狹縫圖例">
+            <span class="blue"><i class="dot"></i>波面</span>
+            <span class="green"><i class="dot"></i>亮紋</span>
+            <span class="red"><i class="dot"></i>暗紋</span>
+            <span class="purple"><i class="dot"></i>包絡</span>
+          </div>
+        </div>
+        <div class="values" aria-live="polite">
+          <div class="badge" id="dbl-lambda">λ = 550 nm<small>紅光較長、藍光較短</small></div>
+          <div class="badge" id="dbl-spacing">條紋間距 = 3.14 mm<small>Δy = λD / d</small></div>
+          <div class="badge" id="dbl-ratio">d/λ = 636<small>縫距越大，條紋越密</small></div>
+          <div class="badge" id="dbl-status">中央亮紋<small>兩縫到中央等距</small></div>
+        </div>
+        <div class="plot-wrap">
+          <canvas id="double-canvas" role="img" aria-label="雙狹縫干涉的波面與屏幕亮暗紋。"></canvas>
+        </div>
+        <div class="controls">
+          <div class="control">
+            <label for="dbl-lambda-in">波長 λ：<span id="dbl-lambda-out">550 nm</span></label>
+            <input id="dbl-lambda-in" type="range" min="420" max="680" step="5" value="550">
+          </div>
+          <div class="control">
+            <label for="dbl-d">狹縫距離 d：<span id="dbl-d-out">0.35 mm</span></label>
+            <input id="dbl-d" type="range" min="0.15" max="0.8" step="0.01" value="0.35">
+          </div>
+          <div class="control">
+            <label for="dbl-D">屏幕距離 D：<span id="dbl-D-out">2.00 m</span></label>
+            <input id="dbl-D" type="range" min="1" max="4" step="0.05" value="2">
+          </div>
+          <div class="control">
+            <label for="dbl-a">單縫寬 a：<span id="dbl-a-out">0.08 mm</span></label>
+            <input id="dbl-a" type="range" min="0.02" max="0.25" step="0.01" value="0.08">
+          </div>
+          <div class="control">
+            <label for="dbl-speed">播放速度：<span id="dbl-speed-out">0.35x</span></label>
+            <input id="dbl-speed" type="range" min="0.1" max="1.5" step="0.05" value="0.35">
+          </div>
+        </div>
+        <div class="checks">
+          <label class="check"><input type="checkbox" id="dbl-show-waves" checked>顯示從狹縫出發的波面</label>
+          <label class="check"><input type="checkbox" id="dbl-show-envelope" checked>顯示單狹縫包絡</label>
+        </div>
+        <section class="teacher-note">
+          <p><strong>講法：</strong>先指屏幕中央，問為什麼一定亮；接著調大狹縫距離 d，讓學生看到亮暗紋變密，再調大波長讓條紋變開。</p>
+          <p><strong>強調：</strong>雙狹縫干涉的主線是路徑差；單狹縫包絡只是在外面限制哪些亮紋比較亮。</p>
+        </section>
+      </section>
 
-      <div class="presets" id="mode-presets">
-        <strong>快速跳到目前邊界的正常模態：</strong>
-      </div>
-
-      <div class="checks">
-        <label class="check"><input type="checkbox" id="lock-reflection" checked>鎖定左右波同頻等振幅</label>
-        <label class="check"><input type="checkbox" id="show-right" checked>顯示向右行進波</label>
-        <label class="check"><input type="checkbox" id="show-left">顯示向左行進波</label>
-        <label class="check"><input type="checkbox" id="show-sum">顯示疊加結果</label>
-        <label class="check"><input type="checkbox" id="show-nodes">顯示同調節點參考</label>
-        <label class="check"><input type="checkbox" id="show-envelope">顯示同調包絡</label>
-      </div>
-
-      <section class="teacher-note">
-        <p><strong>上課順序：</strong>先只顯示向右行進波；接著勾向左行進波，讓學生看到兩列波反向移動；最後顯示疊加結果。解除「鎖定左右波同頻等振幅」後，把左右頻率或振幅調開，就能看到節點漂移、拍動，或節點不真正歸零。</p>
-        <p><strong>關鍵觀念：</strong>同頻等振幅才會有固定且真正歸零的節點。不同頻會產生拍頻與移動的干涉圖樣；同頻但振幅不同時，最小振幅是 |AR - AL|，所以沒有真正靜止的節點。右端固定時右端必為節點，右端自由時右端必為腹點；若左端剛好是節點或腹點，就可以分別對應固定端或自由端的正常模態。</p>
+      <section id="panel-huygens" class="panel" role="tabpanel">
+        <div class="module-head">
+          <div>
+            <h2>惠更斯原理</h2>
+            <p class="module-copy">把每個波前上的點都視為次波源。切換平面波、狹縫與障礙邊緣，觀察許多小圓波如何共同形成下一個波前。</p>
+          </div>
+          <div class="legend" aria-label="惠更斯圖例">
+            <span class="blue"><i class="dot"></i>入射波前</span>
+            <span class="orange"><i class="dot"></i>次波源</span>
+            <span class="green"><i class="dot"></i>新波前包絡</span>
+            <span class="red"><i class="dot"></i>障礙物</span>
+          </div>
+        </div>
+        <div class="values" aria-live="polite">
+          <div class="badge" id="huy-lambda">λ = 46 px<small>次波半徑隨時間增加</small></div>
+          <div class="badge" id="huy-aperture">開口 = 150 px<small>開口越窄，繞射越明顯</small></div>
+          <div class="badge" id="huy-points">次波源 = 13 個<small>點越多，包絡越平滑</small></div>
+          <div class="badge" id="huy-status">狹縫繞射<small>通過開口的點成為次波源</small></div>
+        </div>
+        <div class="plot-wrap">
+          <canvas id="huygens-canvas" role="img" aria-label="惠更斯原理的次波源與包絡示意。"></canvas>
+        </div>
+        <div class="controls">
+          <div class="control">
+            <label for="huy-mode">示範模式</label>
+            <select id="huy-mode">
+              <option value="plane">平面波推進</option>
+              <option value="slit" selected>狹縫繞射</option>
+              <option value="edge">障礙邊緣繞射</option>
+            </select>
+          </div>
+          <div class="control">
+            <label for="huy-lambda-in">波長 λ：<span id="huy-lambda-out">46 px</span></label>
+            <input id="huy-lambda-in" type="range" min="24" max="80" step="1" value="46">
+          </div>
+          <div class="control">
+            <label for="huy-aperture-in">開口寬度：<span id="huy-aperture-out">150 px</span></label>
+            <input id="huy-aperture-in" type="range" min="60" max="260" step="5" value="150">
+          </div>
+          <div class="control">
+            <label for="huy-count">次波源數：<span id="huy-count-out">13 個</span></label>
+            <input id="huy-count" type="range" min="5" max="21" step="2" value="13">
+          </div>
+          <div class="control">
+            <label for="huy-speed">播放速度：<span id="huy-speed-out">0.35x</span></label>
+            <input id="huy-speed" type="range" min="0.1" max="1.5" step="0.05" value="0.35">
+          </div>
+        </div>
+        <div class="checks">
+          <label class="check"><input type="checkbox" id="huy-show-wavelets" checked>顯示次波</label>
+          <label class="check"><input type="checkbox" id="huy-show-envelope" checked>顯示包絡</label>
+        </div>
+        <section class="teacher-note">
+          <p><strong>講法：</strong>先用平面波模式，讓學生看到很多圓形次波的外切線仍然是平面；再切到狹縫，說明只剩開口上的點能繼續發出次波，所以波前自然向外彎。</p>
+          <p><strong>強調：</strong>惠更斯原理不是另一個公式，而是一個建構波前的方法；反射、折射、繞射都可以用「每點都是次波源」來理解。</p>
+        </section>
       </section>
     </div>
   </main>
 
   <script>
-    const canvas = document.getElementById('canvas');
-    const ctx = canvas.getContext('2d');
-    const playBtn = document.getElementById('play');
-    const resetBtn = document.getElementById('reset');
-    const velocityInput = document.getElementById('velocity');
-    const lengthInput = document.getElementById('length');
-    const freqRightInput = document.getElementById('freq-right');
-    const freqLeftInput = document.getElementById('freq-left');
-    const ampRightInput = document.getElementById('amp-right');
-    const ampLeftInput = document.getElementById('amp-left');
-    const speedInput = document.getElementById('speed');
-    const rightBoundaryInput = document.getElementById('right-boundary');
-    const lockInput = document.getElementById('lock-reflection');
-    const showRightInput = document.getElementById('show-right');
-    const showLeftInput = document.getElementById('show-left');
-    const showSumInput = document.getElementById('show-sum');
-    const showNodesInput = document.getElementById('show-nodes');
-    const showEnvelopeInput = document.getElementById('show-envelope');
-    const modePresets = document.getElementById('mode-presets');
-    const readouts = {
-      velocity: document.getElementById('velocity-readout'),
-      length: document.getElementById('length-readout'),
-      freqRight: document.getElementById('freq-right-readout'),
-      freqLeft: document.getElementById('freq-left-readout'),
-      ampRight: document.getElementById('amp-right-readout'),
-      ampLeft: document.getElementById('amp-left-readout'),
-      speed: document.getElementById('speed-readout'),
-      lambda: document.getElementById('lambda-value'),
-      delta: document.getElementById('delta-value'),
-      amp: document.getElementById('amp-value'),
-      status: document.getElementById('status-value')
-    };
+    const $ = id => document.getElementById(id);
+    const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    let activeModule = 'standing';
     let running = true;
     let time = 0;
     let last = performance.now();
-    let modePresetSignature = '';
+    let standingPresetSignature = '';
 
-    function css(name) {
-      return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    function number(id) {
+      return Number($(id).value);
     }
 
-    function syncLockedControls() {
-      if (!lockInput.checked) {
-        freqLeftInput.disabled = false;
-        ampLeftInput.disabled = false;
-        return;
+    function setText(id, text) {
+      $(id).textContent = text;
+    }
+
+    function resizeCanvas(canvas) {
+      const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+      const rect = canvas.getBoundingClientRect();
+      const width = Math.max(320, Math.round(rect.width));
+      const height = Math.max(280, Math.round(rect.height || 360));
+      canvas.width = width * dpr;
+      canvas.height = height * dpr;
+      const ctx = canvas.getContext('2d');
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      return { ctx, w: width, h: height };
+    }
+
+    function clearCanvas(ctx, w, h) {
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, w, h);
+    }
+
+    function drawArrow(ctx, x1, y1, x2, y2, color) {
+      const angle = Math.atan2(y2 - y1, x2 - x1);
+      ctx.save();
+      ctx.strokeStyle = color;
+      ctx.fillStyle = color;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(x2, y2);
+      ctx.lineTo(x2 - 9 * Math.cos(angle - 0.45), y2 - 9 * Math.sin(angle - 0.45));
+      ctx.lineTo(x2 - 9 * Math.cos(angle + 0.45), y2 - 9 * Math.sin(angle + 0.45));
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function drawCenteredText(ctx, text, x, y, color = css('--muted')) {
+      ctx.save();
+      ctx.fillStyle = color;
+      ctx.font = '14px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(text, x, y);
+      ctx.restore();
+    }
+
+    function playback() {
+      if (activeModule === 'standing') return number('stand-speed');
+      if (activeModule === 'doppler') return number('dop-speed');
+      if (activeModule === 'ripple') return number('rip-speed');
+      if (activeModule === 'double') return number('dbl-speed');
+      return number('huy-speed');
+    }
+
+    function standingSyncLockedControls() {
+      const locked = $('stand-lock').checked;
+      $('stand-fL').disabled = locked;
+      $('stand-AL').disabled = locked;
+      if (locked) {
+        $('stand-fL').value = $('stand-fR').value;
+        $('stand-AL').value = $('stand-AR').value;
       }
-      freqLeftInput.value = freqRightInput.value;
-      ampLeftInput.value = ampRightInput.value;
-      freqLeftInput.disabled = true;
-      ampLeftInput.disabled = true;
     }
 
-    function state() {
-      syncLockedControls();
-      const v = Number(velocityInput.value);
-      const L = Number(lengthInput.value);
-      const fR = Number(freqRightInput.value);
-      const fL = Number(freqLeftInput.value);
-      const AR = Number(ampRightInput.value);
-      const AL = Number(ampLeftInput.value);
-      const playback = Number(speedInput.value);
-      const rightFixed = rightBoundaryInput.value === 'fixed';
+    function standingState() {
+      standingSyncLockedControls();
+      const v = number('stand-v');
+      const L = number('stand-L');
+      const fR = number('stand-fR');
+      const fL = number('stand-fL');
+      const AR = number('stand-AR');
+      const AL = number('stand-AL');
+      const rightFixed = $('stand-boundary').value === 'fixed';
       const lambdaR = v / fR;
       const lambdaL = v / fL;
       const kR = 2 * Math.PI / lambdaR;
@@ -386,9 +671,7 @@
       const targetValue = Math.max(1, Math.round(boundaryValue));
       const boundaryMismatch = Math.abs(boundaryValue - targetValue);
       const boundaryStable = boundaryMismatch < 0.06;
-      const boundaryFrequency = targetValue * v / (4 * L);
       const leftIsNode = rightFixed ? targetValue % 2 === 0 : targetValue % 2 === 1;
-      const leftKind = leftIsNode ? 'node' : 'antinode';
       const leftKindLabel = leftIsNode ? '節點' : '腹點';
       const rightKindLabel = rightFixed ? '節點' : '腹點';
       const leftBoundaryName = leftIsNode ? '固定' : '自由';
@@ -399,59 +682,43 @@
         ? `L = ${modeNumber}λ/2`
         : `L = ${(2 * modeNumber - 1)}λ/4`;
       return {
-        v, L, fR, fL, AR, AL, playback,
-        rightFixed, boundaryLabel, leftKind, leftKindLabel, rightKindLabel,
-        leftBoundaryName, rightBoundaryName, modeFormula,
-        lambdaR, lambdaL, kR, kL, omegaR, omegaL,
-        deltaF, ampDiff, coherent, equalAmp,
-        boundaryValue, modeNumber, targetValue,
-        boundaryMismatch, boundaryStable, boundaryFrequency
+        v, L, fR, fL, AR, AL, rightFixed, lambdaR, lambdaL, kR, kL, omegaR, omegaL,
+        deltaF, ampDiff, coherent, equalAmp, boundaryStable, targetValue,
+        leftKindLabel, rightKindLabel, boundaryLabel, modeFormula
       };
     }
 
-    function yRight(x, s) {
+    function standingRight(x, s) {
       return s.AR * Math.sin(s.kR * x - s.omegaR * time);
     }
 
-    function yLeft(x, s) {
+    function standingLeft(x, s) {
       const mirrored = Math.sin(s.kL * (2 * s.L - x) - s.omegaL * time);
       return s.rightFixed ? -s.AL * mirrored : s.AL * mirrored;
     }
 
-    function ySum(x, s) {
-      return yRight(x, s) + yLeft(x, s);
+    function standingSum(x, s) {
+      return standingRight(x, s) + standingLeft(x, s);
     }
 
-    function envelope(x, s) {
+    function standingEnvelope(x, s) {
       if (!s.coherent) return null;
-      const phaseShape = s.rightFixed ? Math.sin(s.kR * (s.L - x)) : Math.cos(s.kR * (s.L - x));
-      const max = Math.abs(s.AR + s.AL) * Math.abs(phaseShape);
-      const min = Math.abs(s.AR - s.AL) * Math.abs(phaseShape);
-      return { max, min };
+      const shape = s.rightFixed ? Math.sin(s.kR * (s.L - x)) : Math.cos(s.kR * (s.L - x));
+      return Math.abs(s.AR + s.AL) * Math.abs(shape);
     }
 
-    function resizeCanvas() {
-      const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
-      const rect = canvas.getBoundingClientRect();
-      const width = Math.max(320, Math.round(rect.width));
-      const height = Math.round(rect.height || 360);
-      canvas.width = width * dpr;
-      canvas.height = height * dpr;
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    }
-
-    function update(s) {
-      readouts.velocity.textContent = `${s.v.toFixed(1)} m/s`;
-      readouts.length.textContent = `${s.L.toFixed(2)} m`;
-      readouts.freqRight.textContent = `${s.fR.toFixed(2)} Hz`;
-      readouts.freqLeft.textContent = `${s.fL.toFixed(2)} Hz`;
-      readouts.ampRight.textContent = s.AR.toFixed(1);
-      readouts.ampLeft.textContent = s.AL.toFixed(1);
-      readouts.speed.textContent = `${s.playback.toFixed(2)}x`;
-      readouts.lambda.innerHTML = `λ右 = ${s.lambdaR.toFixed(3)} m<small>λ左 = ${s.lambdaL.toFixed(3)} m</small>`;
-      readouts.delta.innerHTML = `Δf = ${s.deltaF.toFixed(2)} Hz<small>${s.coherent ? '同頻，圖形可固定' : `拍頻週期約 ${(1 / s.deltaF).toFixed(2)} s`}</small>`;
+    function updateStandingReadouts(s) {
+      setText('stand-v-out', `${s.v.toFixed(1)} m/s`);
+      setText('stand-L-out', `${s.L.toFixed(2)} m`);
+      setText('stand-fR-out', `${s.fR.toFixed(2)} Hz`);
+      setText('stand-fL-out', `${s.fL.toFixed(2)} Hz`);
+      setText('stand-AR-out', s.AR.toFixed(1));
+      setText('stand-AL-out', s.AL.toFixed(1));
+      setText('stand-speed-out', `${number('stand-speed').toFixed(2)}x`);
+      $('stand-lambda').innerHTML = `λ右 = ${s.lambdaR.toFixed(3)} m<small>λ左 = ${s.lambdaL.toFixed(3)} m</small>`;
+      $('stand-delta').innerHTML = `Δf = ${s.deltaF.toFixed(2)} Hz<small>${s.coherent ? '同頻，圖形可固定' : `拍頻週期約 ${(1 / s.deltaF).toFixed(2)} s`}</small>`;
       const ratio = s.AL === 0 ? '∞' : (s.AR / s.AL).toFixed(2);
-      readouts.amp.innerHTML = `振幅比 AR/AL = ${ratio}<small>最小振幅約 |AR - AL| = ${s.ampDiff.toFixed(1)}A</small>`;
+      $('stand-amp').innerHTML = `振幅比 AR/AL = ${ratio}<small>最小振幅約 |AR - AL| = ${s.ampDiff.toFixed(1)}A</small>`;
       let text = '穩定駐波';
       let small = `右端為${s.rightKindLabel}，左端目前接近${s.leftKindLabel}`;
       let warn = false;
@@ -470,17 +737,16 @@
         text = `${s.boundaryLabel}正常模態`;
         small = `左端為${s.leftKindLabel}、右端為${s.rightKindLabel}；${s.modeFormula}`;
       }
-      readouts.status.classList.toggle('warning', warn);
-      readouts.status.innerHTML = `${text}<small>${small}</small>`;
-      updateModePresets(s);
+      $('stand-status').classList.toggle('warning', warn);
+      $('stand-status').innerHTML = `${text}<small>${small}</small>`;
+      updateStandingPresets(s);
     }
 
-    function updateModePresets(s) {
+    function updateStandingPresets(s) {
       const values = [];
-      const minF = Number(freqRightInput.min);
-      const maxF = Number(freqRightInput.max);
-      const maxVisibleModes = 16;
-      for (let m = 1; values.length < maxVisibleModes; m += 1) {
+      const minF = Number($('stand-fR').min);
+      const maxF = Number($('stand-fR').max);
+      for (let m = 1; values.length < 16; m += 1) {
         const f = m * s.v / (4 * s.L);
         if (f > maxF) break;
         if (f >= minF) {
@@ -488,42 +754,39 @@
           const leftKindLabel = leftIsNode ? '節點' : '腹點';
           const leftBoundaryName = leftIsNode ? '固定' : '自由';
           const rightBoundaryName = s.rightFixed ? '固定' : '自由';
-          values.push({ m, f, leftKindLabel, label: `${leftBoundaryName}-${rightBoundaryName}` });
+          values.push({ f, label: `${leftBoundaryName}-${rightBoundaryName}`, leftKindLabel });
         }
       }
-      const signature = `${s.rightFixed ? 'fixed' : 'free'}|${values.map(item => `${item.m}:${item.f.toFixed(2)}`).join('|')}`;
-      if (signature === modePresetSignature) return;
-      modePresetSignature = signature;
-      modePresets.innerHTML = '<strong>快速跳到目前邊界的正常模態：</strong>';
-      values.forEach(({ m, f, leftKindLabel, label }) => {
+      const signature = `${s.rightFixed ? 'fixed' : 'free'}|${values.map(item => item.f.toFixed(2)).join('|')}`;
+      if (signature === standingPresetSignature) return;
+      standingPresetSignature = signature;
+      $('stand-mode-presets').innerHTML = '<strong>快速跳到目前邊界的正常模態：</strong>';
+      values.forEach(({ f, label, leftKindLabel }) => {
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'preset';
         btn.textContent = `${label}：左端${leftKindLabel}，f=${f.toFixed(2)} Hz`;
         btn.addEventListener('click', () => {
-          lockInput.checked = true;
-          freqRightInput.value = f.toFixed(2);
-          ampRightInput.value = '1';
-          showLeftInput.checked = true;
-          showSumInput.checked = true;
+          $('stand-lock').checked = true;
+          $('stand-fR').value = f.toFixed(2);
+          $('stand-AR').value = '1';
+          $('stand-show-left').checked = true;
+          $('stand-show-sum').checked = true;
           time = 0;
-          draw();
+          drawActive();
         });
-        modePresets.appendChild(btn);
+        $('stand-mode-presets').appendChild(btn);
       });
     }
 
-    function drawPath(fn, s, color, lineWidth, dash, alpha = 1) {
-      const rect = canvas.getBoundingClientRect();
-      const w = rect.width;
-      const h = rect.height;
+    function drawStandingPath(ctx, w, h, fn, s, color, width, dash, alpha = 1) {
       const padX = 44;
       const base = h / 2;
       const plotW = w - padX * 2;
       const scaleY = Math.min(95, h * 0.25) / Math.max(1, s.AR, s.AL);
       ctx.save();
       ctx.strokeStyle = color;
-      ctx.lineWidth = lineWidth;
+      ctx.lineWidth = width;
       ctx.globalAlpha = alpha;
       if (dash) ctx.setLineDash(dash);
       ctx.lineJoin = 'round';
@@ -540,80 +803,47 @@
       ctx.restore();
     }
 
-    function drawEnvelope(s) {
-      if (!s.coherent) return;
-      const rect = canvas.getBoundingClientRect();
-      const w = rect.width;
-      const h = rect.height;
+    function drawStanding() {
+      const canvas = $('standing-canvas');
+      const { ctx, w, h } = resizeCanvas(canvas);
+      const s = standingState();
+      updateStandingReadouts(s);
+      clearCanvas(ctx, w, h);
       const padX = 44;
       const base = h / 2;
-      const plotW = w - padX * 2;
-      const scaleY = Math.min(95, h * 0.25) / Math.max(1, s.AR, s.AL);
-      ctx.save();
       ctx.strokeStyle = css('--line');
-      ctx.lineWidth = 1.4;
-      ctx.setLineDash([7, 7]);
-      for (const sign of [1, -1]) {
-        ctx.beginPath();
-        for (let i = 0; i <= 620; i += 1) {
-          const x = s.L * i / 620;
-          const env = envelope(x, s);
-          const px = padX + (x / s.L) * plotW;
-          const py = base - sign * env.max * scaleY;
-          if (i === 0) ctx.moveTo(px, py);
-          else ctx.lineTo(px, py);
-        }
-        ctx.stroke();
-      }
-      ctx.restore();
-    }
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(padX, base);
+      ctx.lineTo(w - padX, base);
+      ctx.stroke();
 
-    function drawNodes(s) {
-      if (!s.coherent) return;
-      const rect = canvas.getBoundingClientRect();
-      const w = rect.width;
-      const h = rect.height;
-      const padX = 44;
-      const base = h / 2;
-      const plotW = w - padX * 2;
-      const nodeColor = css('--node');
-      const spacing = s.lambdaR / 2;
-      const start = s.rightFixed ? s.L : s.L - s.lambdaR / 4;
-      const nodes = [];
-      for (let x = start; x >= 0; x -= spacing) nodes.push(x);
-      for (let x = start + spacing; x <= s.L; x += spacing) nodes.push(x);
-      nodes.forEach(x => {
-        if (x < -1e-6 || x > s.L + 1e-6) return;
-        const px = padX + (x / s.L) * plotW;
+      if ($('stand-show-envelope').checked && s.coherent) {
+        const scaleY = Math.min(95, h * 0.25) / Math.max(1, s.AR, s.AL);
         ctx.save();
-        ctx.strokeStyle = nodeColor;
-        ctx.globalAlpha = s.equalAmp ? 0.55 : 0.25;
-        ctx.setLineDash([4, 6]);
-        ctx.beginPath();
-        ctx.moveTo(px, base - h * 0.31);
-        ctx.lineTo(px, base + h * 0.31);
-        ctx.stroke();
-        ctx.fillStyle = nodeColor;
-        ctx.globalAlpha = s.equalAmp ? 0.95 : 0.45;
-        ctx.beginPath();
-        ctx.arc(px, base, 4.5, 0, Math.PI * 2);
-        ctx.fill();
+        ctx.strokeStyle = css('--line');
+        ctx.lineWidth = 1.4;
+        ctx.setLineDash([7, 7]);
+        for (const sign of [1, -1]) {
+          ctx.beginPath();
+          for (let i = 0; i <= 620; i += 1) {
+            const x = s.L * i / 620;
+            const px = padX + (x / s.L) * (w - padX * 2);
+            const py = base - sign * standingEnvelope(x, s) * scaleY;
+            if (i === 0) ctx.moveTo(px, py);
+            else ctx.lineTo(px, py);
+          }
+          ctx.stroke();
+        }
         ctx.restore();
-      });
-    }
+      }
 
-    function drawBoundaries(s) {
-      const rect = canvas.getBoundingClientRect();
-      const w = rect.width;
-      const h = rect.height;
-      const padX = 44;
-      const base = h / 2;
       [
         [s.boundaryStable ? `左端${s.leftKindLabel}` : '左端一般點', padX, 'left'],
         [s.rightFixed ? '右端固定' : '右端自由', w - padX, 'right']
       ].forEach(([text, px, align]) => {
         ctx.save();
-        ctx.strokeStyle = css('--node');
+        ctx.strokeStyle = css('--red');
         ctx.lineWidth = 2;
         ctx.globalAlpha = 0.55;
         ctx.beginPath();
@@ -626,92 +856,531 @@
         ctx.fillText(text, px, base + h * 0.38);
         ctx.restore();
       });
+
+      if ($('stand-show-nodes').checked && s.coherent) {
+        const spacing = s.lambdaR / 2;
+        const start = s.rightFixed ? s.L : s.L - s.lambdaR / 4;
+        const nodes = [];
+        for (let x = start; x >= 0; x -= spacing) nodes.push(x);
+        for (let x = start + spacing; x <= s.L; x += spacing) nodes.push(x);
+        nodes.forEach(x => {
+          if (x < -1e-6 || x > s.L + 1e-6) return;
+          const px = padX + (x / s.L) * (w - padX * 2);
+          ctx.save();
+          ctx.strokeStyle = css('--red');
+          ctx.globalAlpha = s.equalAmp ? 0.55 : 0.25;
+          ctx.setLineDash([4, 6]);
+          ctx.beginPath();
+          ctx.moveTo(px, base - h * 0.31);
+          ctx.lineTo(px, base + h * 0.31);
+          ctx.stroke();
+          ctx.fillStyle = css('--red');
+          ctx.globalAlpha = s.equalAmp ? 0.95 : 0.45;
+          ctx.beginPath();
+          ctx.arc(px, base, 4.5, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        });
+      }
+
+      if ($('stand-show-right').checked) drawStandingPath(ctx, w, h, standingRight, s, css('--blue'), 2, [8, 7], 0.95);
+      if ($('stand-show-left').checked) drawStandingPath(ctx, w, h, standingLeft, s, css('--orange'), 2, [2, 7], 0.95);
+      if ($('stand-show-sum').checked) {
+        const color = s.coherent && s.equalAmp ? css('--green') : css('--warn');
+        drawStandingPath(ctx, w, h, standingSum, s, color, 4, null, 1);
+      }
     }
 
-    function draw() {
-      resizeCanvas();
-      const s = state();
-      update(s);
-      const rect = canvas.getBoundingClientRect();
-      const w = rect.width;
-      const h = rect.height;
-      const padX = 44;
-      const base = h / 2;
-      ctx.clearRect(0, 0, w, h);
-      ctx.save();
+    function drawDoppler() {
+      const canvas = $('doppler-canvas');
+      const { ctx, w, h } = resizeCanvas(canvas);
+      clearCanvas(ctx, w, h);
+      const mode = $('dop-mode').value;
+      const approaching = $('dop-direction').value === 'approach';
+      const c = number('dop-c');
+      const f = number('dop-f');
+      const vsRaw = number('dop-vs');
+      const voRaw = number('dop-vo');
+      const vs = mode === 'source' || mode === 'both' ? vsRaw : 0;
+      const vo = mode === 'observer' || mode === 'both' ? voRaw : 0;
+      const sourceDir = approaching ? 1 : -1;
+      const obsDir = approaching ? -1 : 1;
+      const denominator = approaching ? c - vs : c + vs;
+      const numerator = approaching ? c + vo : c - vo;
+      const sonic = approaching && vs >= c;
+      const fObserved = sonic ? Infinity : f * Math.max(0.02, numerator) / Math.max(0.02, denominator);
+      const lambda = c / f;
+      setText('dop-c-out', `${c.toFixed(1)} m/s`);
+      setText('dop-f-out', `${f.toFixed(2)} Hz`);
+      setText('dop-vs-out', `${vsRaw.toFixed(1)} m/s`);
+      setText('dop-vo-out', `${voRaw.toFixed(1)} m/s`);
+      setText('dop-speed-out', `${number('dop-speed').toFixed(2)}x`);
+      $('dop-lambda').innerHTML = `原波長 = ${lambda.toFixed(2)} m<small>λ = v / f</small>`;
+      $('dop-observed').innerHTML = sonic
+        ? '觀察頻率：震波前緣<small>波源追上自己的波面</small>'
+        : `觀察頻率 = ${fObserved.toFixed(2)} Hz<small>${approaching ? '接近時音調變高' : '遠離時音調變低'}</small>`;
+      $('dop-ratio').innerHTML = sonic
+        ? `vs/v = ${(vs / c).toFixed(2)}<small>進入超音速示意</small>`
+        : `f'/f = ${(fObserved / f).toFixed(2)}<small>與原頻率比較</small>`;
+      const status = $('dop-status');
+      status.classList.toggle('warning', sonic);
+      status.innerHTML = sonic
+        ? '超音速堆疊<small>前方波面重疊形成震波錐</small>'
+        : `${approaching ? '互相接近' : '互相遠離'}<small>${mode === 'source' ? '波源移動造成前後波長不同' : (mode === 'observer' ? '觀察者穿越波峰速率改變' : '兩種效果同時發生')}</small>`;
+
+      const cx = w * 0.34;
+      const cy = h * 0.52;
+      const ox = w * 0.76;
+      const oy = h * 0.52;
+      const cPx = 74;
+      const vsPx = 74 * vs / Math.max(1, c);
+      const voPx = 70 * vo / Math.max(1, c);
       ctx.strokeStyle = css('--line');
       ctx.lineWidth = 1;
       ctx.beginPath();
-      ctx.moveTo(padX, base);
-      ctx.lineTo(w - padX, base);
+      ctx.moveTo(34, cy);
+      ctx.lineTo(w - 34, cy);
       ctx.stroke();
+
+      ctx.save();
+      ctx.strokeStyle = css('--blue');
+      ctx.lineWidth = 1.6;
+      ctx.globalAlpha = 0.28;
+      const phase = (time * f) % 1;
+      const maxR = Math.hypot(w, h);
+      for (let n = 0; n < 28; n += 1) {
+        const age = (n + phase) / f;
+        const r = cPx * age;
+        if (r > maxR) continue;
+        const ex = cx - sourceDir * vsPx * age;
+        ctx.beginPath();
+        ctx.arc(ex, cy, r, 0, Math.PI * 2);
+        ctx.stroke();
+      }
       ctx.restore();
-      if (showEnvelopeInput.checked) drawEnvelope(s);
-      drawBoundaries(s);
-      if (showNodesInput.checked) drawNodes(s);
-      if (showRightInput.checked) drawPath(yRight, s, css('--right'), 2, [8, 7], 0.95);
-      if (showLeftInput.checked) drawPath(yLeft, s, css('--left'), 2, [2, 7], 0.95);
-      if (showSumInput.checked) drawPath(ySum, s, s.coherent && s.equalAmp ? css('--sum') : css('--warn'), 4, null, 1);
+
+      if (sonic) {
+        const angle = Math.asin(Math.min(0.98, c / vs));
+        ctx.save();
+        ctx.strokeStyle = css('--red');
+        ctx.lineWidth = 3;
+        ctx.globalAlpha = 0.7;
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(cx - sourceDir * Math.cos(angle) * 420, cy - Math.sin(angle) * 420);
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(cx - sourceDir * Math.cos(angle) * 420, cy + Math.sin(angle) * 420);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      ctx.save();
+      ctx.fillStyle = css('--orange');
+      ctx.beginPath();
+      ctx.arc(cx, cy, 13, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = css('--green');
+      ctx.beginPath();
+      ctx.arc(ox, oy, 11, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+      if (vs > 0) drawArrow(ctx, cx, cy - 32, cx + sourceDir * 55, cy - 32, css('--orange'));
+      if (vo > 0) drawArrow(ctx, ox, oy + 32, ox + obsDir * 55, oy + 32, css('--green'));
+      drawCenteredText(ctx, '波源', cx, cy + 32, css('--orange'));
+      drawCenteredText(ctx, '觀察者', ox, oy - 32, css('--green'));
+      const frontLambda = approaching ? (c - Math.min(vs, c * 0.98)) / f : (c + vs) / f;
+      const backLambda = approaching ? (c + vs) / f : (c - Math.min(vs, c * 0.98)) / f;
+      drawCenteredText(ctx, `前方波長約 ${frontLambda.toFixed(1)} m`, w * 0.62, 44, css('--muted'));
+      drawCenteredText(ctx, `後方波長約 ${backLambda.toFixed(1)} m`, w * 0.22, 44, css('--muted'));
     }
+
+    function drawRipple() {
+      const canvas = $('ripple-canvas');
+      const { ctx, w, h } = resizeCanvas(canvas);
+      clearCanvas(ctx, w, h);
+      const lambda = number('rip-lambda-in');
+      const d = number('rip-d');
+      const phaseDeg = number('rip-phase-in');
+      const phase = phaseDeg * Math.PI / 180;
+      const k = 2 * Math.PI / lambda;
+      const omega = 2.4;
+      const sx1 = w / 2 - d / 2;
+      const sx2 = w / 2 + d / 2;
+      const sy = h / 2;
+      setText('rip-lambda-out', `${lambda.toFixed(0)} px`);
+      setText('rip-d-out', `${d.toFixed(0)} px`);
+      setText('rip-phase-out', `${phaseDeg.toFixed(0)}°`);
+      setText('rip-speed-out', `${number('rip-speed').toFixed(2)}x`);
+      $('rip-lambda').innerHTML = `波長 = ${lambda.toFixed(0)} px<small>波面間距</small>`;
+      $('rip-ratio').innerHTML = `d/λ = ${(d / lambda).toFixed(2)}<small>源距越大，節線越多</small>`;
+      $('rip-phase').innerHTML = `相位差 = ${phaseDeg.toFixed(0)}°<small>${phaseDeg === 0 ? '同相時中央為腹線' : '中央線亮暗會被相位差改變'}</small>`;
+      $('rip-status').innerHTML = phaseDeg === 0
+        ? '同相雙源<small>中央線建設性干涉</small>'
+        : '不同相雙源<small>節線與腹線整體偏移</small>';
+
+      const step = 4;
+      for (let y = 0; y < h; y += step) {
+        for (let x = 0; x < w; x += step) {
+          const r1 = Math.hypot(x - sx1, y - sy);
+          const r2 = Math.hypot(x - sx2, y - sy);
+          const decay = 0.55 + 0.45 * Math.min(1, 180 / Math.max(80, (r1 + r2) / 2));
+          const a = (Math.sin(k * r1 - omega * time) + Math.sin(k * r2 - omega * time + phase)) * 0.5 * decay;
+          const alpha = 0.1 + Math.min(0.52, Math.abs(a) * 0.45);
+          ctx.fillStyle = a >= 0 ? `rgba(37, 99, 235, ${alpha})` : `rgba(124, 58, 237, ${alpha})`;
+          ctx.fillRect(x, y, step + 0.5, step + 0.5);
+        }
+      }
+
+      if ($('rip-show-nodes').checked) {
+        ctx.save();
+        ctx.fillStyle = 'rgba(190, 18, 60, 0.72)';
+        for (let y = 0; y < h; y += 6) {
+          for (let x = 0; x < w; x += 6) {
+            const r1 = Math.hypot(x - sx1, y - sy);
+            const r2 = Math.hypot(x - sx2, y - sy);
+            const env = Math.abs(Math.cos((k * (r1 - r2) - phase) / 2));
+            if (env < 0.035) ctx.fillRect(x, y, 2.2, 2.2);
+          }
+        }
+        ctx.restore();
+      }
+
+      if ($('rip-show-fronts').checked) {
+        ctx.save();
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.65)';
+        ctx.lineWidth = 1.4;
+        const offset = (time * 48) % lambda;
+        const maxR = Math.hypot(w, h);
+        [sx1, sx2].forEach((sx, idx) => {
+          for (let r = offset + idx * (phaseDeg / 360) * lambda; r < maxR; r += lambda) {
+            ctx.beginPath();
+            ctx.arc(sx, sy, r, 0, Math.PI * 2);
+            ctx.stroke();
+          }
+        });
+        ctx.restore();
+      }
+      ctx.fillStyle = css('--yellow');
+      [sx1, sx2].forEach(sx => {
+        ctx.beginPath();
+        ctx.arc(sx, sy, 7, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      drawCenteredText(ctx, 'S1', sx1, sy + 24, '#7a5b00');
+      drawCenteredText(ctx, 'S2', sx2, sy + 24, '#7a5b00');
+    }
+
+    function sinc(x) {
+      if (Math.abs(x) < 1e-6) return 1;
+      return Math.sin(x) / x;
+    }
+
+    function drawDoubleSlit() {
+      const canvas = $('double-canvas');
+      const { ctx, w, h } = resizeCanvas(canvas);
+      clearCanvas(ctx, w, h);
+      const lambdaNm = number('dbl-lambda-in');
+      const dMm = number('dbl-d');
+      const screenM = number('dbl-D');
+      const aMm = number('dbl-a');
+      const lambdaM = lambdaNm * 1e-9;
+      const dM = dMm * 1e-3;
+      const aM = aMm * 1e-3;
+      const fringeMm = lambdaM * screenM / dM * 1000;
+      setText('dbl-lambda-out', `${lambdaNm.toFixed(0)} nm`);
+      setText('dbl-d-out', `${dMm.toFixed(2)} mm`);
+      setText('dbl-D-out', `${screenM.toFixed(2)} m`);
+      setText('dbl-a-out', `${aMm.toFixed(2)} mm`);
+      setText('dbl-speed-out', `${number('dbl-speed').toFixed(2)}x`);
+      $('dbl-lambda').innerHTML = `λ = ${lambdaNm.toFixed(0)} nm<small>${lambdaNm > 610 ? '偏紅光' : (lambdaNm < 480 ? '偏藍光' : '可見光')}</small>`;
+      $('dbl-spacing').innerHTML = `條紋間距 = ${fringeMm.toFixed(2)} mm<small>Δy = λD / d</small>`;
+      $('dbl-ratio').innerHTML = `d/λ = ${(dM / lambdaM).toFixed(0)}<small>縫距越大，條紋越密</small>`;
+      $('dbl-status').innerHTML = '中央亮紋<small>兩縫到中央等距，路徑差為 0</small>';
+
+      const barrierX = w * 0.22;
+      const screenX = w * 0.86;
+      const centerY = h / 2;
+      const dPx = 48 + (dMm - 0.15) / 0.65 * 120;
+      const lambdaPx = 34 + (lambdaNm - 420) / 260 * 36;
+      const slit1 = centerY - dPx / 2;
+      const slit2 = centerY + dPx / 2;
+      const slitGap = 22;
+
+      ctx.strokeStyle = css('--line');
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(30, centerY);
+      ctx.lineTo(w - 30, centerY);
+      ctx.stroke();
+
+      ctx.strokeStyle = css('--red');
+      ctx.lineWidth = 6;
+      ctx.beginPath();
+      ctx.moveTo(barrierX, 34);
+      ctx.lineTo(barrierX, slit1 - slitGap / 2);
+      ctx.moveTo(barrierX, slit1 + slitGap / 2);
+      ctx.lineTo(barrierX, slit2 - slitGap / 2);
+      ctx.moveTo(barrierX, slit2 + slitGap / 2);
+      ctx.lineTo(barrierX, h - 34);
+      ctx.stroke();
+
+      if ($('dbl-show-waves').checked) {
+        ctx.save();
+        ctx.strokeStyle = 'rgba(37, 99, 235, 0.28)';
+        ctx.lineWidth = 1.8;
+        const offset = (time * 60) % lambdaPx;
+        const maxR = Math.hypot(w, h);
+        [slit1, slit2].forEach(sy => {
+          for (let r = offset; r < maxR; r += lambdaPx) {
+            ctx.beginPath();
+            ctx.arc(barrierX, sy, r, -Math.PI / 2, Math.PI / 2);
+            ctx.stroke();
+          }
+        });
+        ctx.restore();
+      }
+
+      ctx.fillStyle = css('--orange');
+      [slit1, slit2].forEach(sy => {
+        ctx.beginPath();
+        ctx.arc(barrierX, sy, 5.5, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      ctx.save();
+      ctx.strokeStyle = '#111827';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(screenX, 28);
+      ctx.lineTo(screenX, h - 28);
+      ctx.stroke();
+      const scaleY = 0.020 / (h * 0.42);
+      for (let py = 30; py <= h - 30; py += 2) {
+        const yM = (py - centerY) * scaleY;
+        const beta = Math.PI * dM * yM / (lambdaM * screenM);
+        const alpha = Math.PI * aM * yM / (lambdaM * screenM);
+        let intensity = Math.cos(beta) ** 2;
+        const envelope = sinc(alpha) ** 2;
+        if ($('dbl-show-envelope').checked) intensity *= envelope;
+        const bright = Math.max(0, Math.min(1, intensity));
+        ctx.strokeStyle = `rgba(21, 128, 61, ${0.12 + bright * 0.88})`;
+        ctx.lineWidth = 12 + bright * 24;
+        ctx.beginPath();
+        ctx.moveTo(screenX + 4, py);
+        ctx.lineTo(screenX + 4 + 18 * bright, py);
+        ctx.stroke();
+      }
+      ctx.restore();
+
+      if ($('dbl-show-envelope').checked) {
+        ctx.save();
+        ctx.strokeStyle = css('--purple');
+        ctx.lineWidth = 2;
+        ctx.setLineDash([7, 6]);
+        for (const sign of [1, -1]) {
+          ctx.beginPath();
+          for (let i = 0; i <= 220; i += 1) {
+            const py = 32 + (h - 64) * i / 220;
+            const yM = (py - centerY) * (0.020 / (h * 0.42));
+            const alpha = Math.PI * aM * yM / (lambdaM * screenM);
+            const env = sinc(alpha) ** 2;
+            const px = screenX - 20 - sign * env * 85;
+            if (i === 0) ctx.moveTo(px, py);
+            else ctx.lineTo(px, py);
+          }
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+      drawCenteredText(ctx, '雙狹縫', barrierX, h - 18, css('--muted'));
+      drawCenteredText(ctx, '屏幕亮暗紋', screenX, h - 18, css('--muted'));
+    }
+
+    function huygensPoints(mode, count, aperture, w, h, barrierX) {
+      const points = [];
+      const centerY = h / 2;
+      if (mode === 'plane') {
+        const top = 48;
+        const bottom = h - 48;
+        for (let i = 0; i < count; i += 1) {
+          const y = top + (bottom - top) * i / Math.max(1, count - 1);
+          points.push([barrierX, y]);
+        }
+      } else if (mode === 'slit') {
+        const top = centerY - aperture / 2;
+        const bottom = centerY + aperture / 2;
+        for (let i = 0; i < count; i += 1) {
+          const y = top + (bottom - top) * i / Math.max(1, count - 1);
+          points.push([barrierX, y]);
+        }
+      } else {
+        const top = centerY;
+        const bottom = h - 48;
+        for (let i = 0; i < count; i += 1) {
+          const y = top + (bottom - top) * i / Math.max(1, count - 1);
+          points.push([barrierX, y]);
+        }
+      }
+      return points;
+    }
+
+    function drawHuygens() {
+      const canvas = $('huygens-canvas');
+      const { ctx, w, h } = resizeCanvas(canvas);
+      clearCanvas(ctx, w, h);
+      const mode = $('huy-mode').value;
+      const lambda = number('huy-lambda-in');
+      const aperture = number('huy-aperture-in');
+      const count = number('huy-count');
+      const barrierX = w * 0.38;
+      const centerY = h / 2;
+      const radius = (time * 58) % lambda;
+      setText('huy-lambda-out', `${lambda.toFixed(0)} px`);
+      setText('huy-aperture-out', `${aperture.toFixed(0)} px`);
+      setText('huy-count-out', `${count.toFixed(0)} 個`);
+      setText('huy-speed-out', `${number('huy-speed').toFixed(2)}x`);
+      $('huy-lambda').innerHTML = `λ = ${lambda.toFixed(0)} px<small>次波半徑隨時間增加</small>`;
+      $('huy-aperture').innerHTML = `開口 = ${aperture.toFixed(0)} px<small>開口越窄，繞射越明顯</small>`;
+      $('huy-points').innerHTML = `次波源 = ${count.toFixed(0)} 個<small>點越多，包絡越平滑</small>`;
+      const modeText = mode === 'plane' ? '平面波推進' : (mode === 'slit' ? '狹縫繞射' : '障礙邊緣繞射');
+      $('huy-status').innerHTML = `${modeText}<small>${mode === 'plane' ? '外切線仍然形成平面波前' : '通過邊界的點成為次波源'}</small>`;
+
+      ctx.save();
+      ctx.strokeStyle = 'rgba(37, 99, 235, 0.35)';
+      ctx.lineWidth = 2;
+      const offset = (time * 58) % lambda;
+      for (let x = barrierX - 260 + offset; x < barrierX; x += lambda) {
+        ctx.beginPath();
+        ctx.moveTo(x, 34);
+        ctx.lineTo(x, h - 34);
+        ctx.stroke();
+      }
+      ctx.restore();
+
+      if (mode !== 'plane') {
+        ctx.save();
+        ctx.strokeStyle = css('--red');
+        ctx.lineWidth = 7;
+        if (mode === 'slit') {
+          ctx.beginPath();
+          ctx.moveTo(barrierX, 32);
+          ctx.lineTo(barrierX, centerY - aperture / 2);
+          ctx.moveTo(barrierX, centerY + aperture / 2);
+          ctx.lineTo(barrierX, h - 32);
+          ctx.stroke();
+        } else {
+          ctx.beginPath();
+          ctx.moveTo(barrierX, 32);
+          ctx.lineTo(barrierX, centerY);
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+
+      const points = huygensPoints(mode, count, aperture, w, h, barrierX);
+      if ($('huy-show-wavelets').checked) {
+        ctx.save();
+        ctx.strokeStyle = 'rgba(234, 88, 12, 0.35)';
+        ctx.lineWidth = 1.7;
+        points.forEach(([x, y]) => {
+          for (let r = radius; r < Math.min(w - x + 80, 260); r += lambda) {
+            ctx.beginPath();
+            ctx.arc(x, y, r, -Math.PI / 2, Math.PI / 2);
+            ctx.stroke();
+          }
+        });
+        ctx.restore();
+      }
+      ctx.fillStyle = css('--orange');
+      points.forEach(([x, y]) => {
+        ctx.beginPath();
+        ctx.arc(x, y, 4, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      if ($('huy-show-envelope').checked) {
+        ctx.save();
+        ctx.strokeStyle = css('--green');
+        ctx.lineWidth = 4;
+        ctx.globalAlpha = 0.85;
+        ctx.lineCap = 'round';
+        if (mode === 'plane') {
+          ctx.beginPath();
+          ctx.moveTo(barrierX + radius, 48);
+          ctx.lineTo(barrierX + radius, h - 48);
+          ctx.stroke();
+        } else if (mode === 'slit') {
+          ctx.beginPath();
+          ctx.arc(barrierX, centerY, Math.max(8, radius + lambda), -0.95, 0.95);
+          ctx.stroke();
+        } else {
+          ctx.beginPath();
+          ctx.moveTo(barrierX + radius, centerY);
+          ctx.lineTo(barrierX + radius, h - 48);
+          ctx.stroke();
+          ctx.beginPath();
+          ctx.arc(barrierX, centerY, Math.max(8, radius + lambda), 0, 0.95);
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+      drawCenteredText(ctx, '入射波前', barrierX - 150, h - 18, css('--blue'));
+      drawCenteredText(ctx, '次波源與新波前', barrierX + 170, h - 18, css('--green'));
+    }
+
+    function drawActive() {
+      if (activeModule === 'standing') drawStanding();
+      else if (activeModule === 'doppler') drawDoppler();
+      else if (activeModule === 'ripple') drawRipple();
+      else if (activeModule === 'double') drawDoubleSlit();
+      else drawHuygens();
+    }
+
+    function setTab(name) {
+      activeModule = name;
+      document.querySelectorAll('.tab').forEach(btn => {
+        const active = btn.dataset.tab === name;
+        btn.classList.toggle('active', active);
+        btn.setAttribute('aria-selected', active ? 'true' : 'false');
+      });
+      document.querySelectorAll('.panel').forEach(panel => {
+        panel.classList.toggle('active', panel.id === `panel-${name}`);
+      });
+      requestAnimationFrame(drawActive);
+    }
+
+    document.querySelectorAll('.tab').forEach(btn => {
+      btn.addEventListener('click', () => setTab(btn.dataset.tab));
+    });
+
+    document.querySelectorAll('input, select').forEach(input => {
+      input.addEventListener('input', drawActive);
+      input.addEventListener('change', drawActive);
+    });
+
+    $('global-play').addEventListener('click', () => {
+      running = !running;
+      $('global-play').textContent = running ? '暫停' : '播放';
+      last = performance.now();
+      drawActive();
+    });
+
+    $('global-reset').addEventListener('click', () => {
+      time = 0;
+      last = performance.now();
+      drawActive();
+    });
+
+    window.addEventListener('resize', drawActive);
 
     function frame(now) {
       const elapsed = Math.min(0.05, (now - last) / 1000);
       last = now;
-      const s = state();
-      if (running) time += elapsed * s.playback;
-      draw();
+      if (running) time += elapsed * playback();
+      drawActive();
       requestAnimationFrame(frame);
     }
 
-    function setDemo(kind) {
-      if (kind === 'coherent') {
-        lockInput.checked = true;
-        freqRightInput.value = '10';
-        ampRightInput.value = '1';
-        showLeftInput.checked = true;
-        showSumInput.checked = true;
-      }
-      if (kind === 'detune') {
-        lockInput.checked = false;
-        freqRightInput.value = '10';
-        freqLeftInput.value = '10.75';
-        ampRightInput.value = '1';
-        ampLeftInput.value = '1';
-        showLeftInput.checked = true;
-        showSumInput.checked = true;
-      }
-      if (kind === 'unequal') {
-        lockInput.checked = false;
-        freqRightInput.value = '10';
-        freqLeftInput.value = '10';
-        ampRightInput.value = '1';
-        ampLeftInput.value = '0.45';
-        showLeftInput.checked = true;
-        showSumInput.checked = true;
-      }
-      time = 0;
-      draw();
-    }
-
-    [velocityInput, lengthInput, freqRightInput, freqLeftInput, ampRightInput, ampLeftInput, speedInput, rightBoundaryInput, lockInput, showRightInput, showLeftInput, showSumInput, showNodesInput, showEnvelopeInput].forEach(input => {
-      input.addEventListener('input', draw);
-      input.addEventListener('change', draw);
-    });
-    document.getElementById('preset-coherent').addEventListener('click', () => setDemo('coherent'));
-    document.getElementById('preset-detune').addEventListener('click', () => setDemo('detune'));
-    document.getElementById('preset-unequal').addEventListener('click', () => setDemo('unequal'));
-    playBtn.addEventListener('click', () => {
-      running = !running;
-      playBtn.textContent = running ? '暫停' : '播放';
-      last = performance.now();
-      draw();
-    });
-    resetBtn.addEventListener('click', () => {
-      time = 0;
-      last = performance.now();
-      draw();
-    });
-    window.addEventListener('resize', draw);
+    drawActive();
     requestAnimationFrame(frame);
   </script>
 </body>
