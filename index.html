@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>高中物理波動現象模擬器</title>
+  <title>高中物理現象模擬器</title>
   <style>
     :root {
       color-scheme: light;
@@ -242,8 +242,8 @@
 <body>
   <main>
     <header>
-      <h1>高中物理波動現象模擬器</h1>
-      <p class="subtitle">把課堂上最需要「看見過程」的波動現象放在同一頁：先看行進波如何疊加成駐波，再看都卜勒效應、水波槽干涉、雙狹縫干涉與惠更斯原理。每個頁籤都能調參數、暫停、慢速播放，方便在電子白板上逐步打開重點。</p>
+      <h1>高中物理現象模擬器</h1>
+      <p class="subtitle">把課堂上最需要「看見過程」的物理現象放在同一頁：先看波動的疊加、干涉與繞射，再看面鏡與透鏡如何由光線作圖得到成像。每個頁籤都能調參數、暫停、慢速播放，方便在電子白板上逐步打開重點。</p>
     </header>
 
     <div class="content">
@@ -254,6 +254,8 @@
           <button type="button" class="tab" data-tab="ripple" role="tab" aria-selected="false">水波槽干涉</button>
           <button type="button" class="tab" data-tab="double" role="tab" aria-selected="false">雙狹縫干涉</button>
           <button type="button" class="tab" data-tab="huygens" role="tab" aria-selected="false">惠更斯原理</button>
+          <button type="button" class="tab" data-tab="mirror" role="tab" aria-selected="false">面鏡成像</button>
+          <button type="button" class="tab" data-tab="lens" role="tab" aria-selected="false">透鏡成像</button>
         </div>
         <div class="actions">
           <button type="button" id="global-play">暫停</button>
@@ -563,6 +565,113 @@
           <p><strong>強調：</strong>惠更斯原理不是另一個公式，而是一個建構波前的方法；反射、折射、繞射都可以用「每點都是次波源」來理解。</p>
         </section>
       </section>
+
+      <section id="panel-mirror" class="panel" role="tabpanel">
+        <div class="module-head">
+          <div>
+            <h2>面鏡成像</h2>
+            <p class="module-copy">切換平面鏡、凹面鏡、凸面鏡，拖曳物距與焦距，直接看反射光線、虛線延長線與成像位置如何改變。</p>
+          </div>
+          <div class="legend" aria-label="面鏡圖例">
+            <span class="blue"><i class="dot"></i>入射光</span>
+            <span class="green"><i class="dot"></i>反射光</span>
+            <span class="red"><i class="dot"></i>虛線延長</span>
+            <span class="orange"><i class="dot"></i>物與像</span>
+          </div>
+        </div>
+        <div class="values" aria-live="polite">
+          <div class="badge" id="mir-object">物距 = 45 cm<small>物在鏡前</small></div>
+          <div class="badge" id="mir-image">像距 = 56 cm<small>正值為鏡前實像</small></div>
+          <div class="badge" id="mir-mag">放大率 = -1.25<small>負號代表倒立</small></div>
+          <div class="badge" id="mir-status">凹面鏡實像<small>倒立、放大</small></div>
+        </div>
+        <div class="plot-wrap">
+          <canvas id="mirror-canvas" role="img" aria-label="面鏡反射光線與成像示意。"></canvas>
+        </div>
+        <div class="controls">
+          <div class="control">
+            <label for="mirror-type">面鏡種類</label>
+            <select id="mirror-type">
+              <option value="plane">平面鏡</option>
+              <option value="concave" selected>凹面鏡</option>
+              <option value="convex">凸面鏡</option>
+            </select>
+          </div>
+          <div class="control">
+            <label for="mirror-do">物距 do：<span id="mirror-do-out">45 cm</span></label>
+            <input id="mirror-do" type="range" min="8" max="120" step="1" value="45">
+          </div>
+          <div class="control">
+            <label for="mirror-f">焦距 f：<span id="mirror-f-out">25 cm</span></label>
+            <input id="mirror-f" type="range" min="8" max="80" step="1" value="25">
+          </div>
+          <div class="control">
+            <label for="mirror-ho">物高 ho：<span id="mirror-ho-out">18 cm</span></label>
+            <input id="mirror-ho" type="range" min="5" max="30" step="1" value="18">
+          </div>
+        </div>
+        <div class="checks">
+          <label class="check"><input type="checkbox" id="mirror-show-rays" checked>顯示主光線</label>
+          <label class="check"><input type="checkbox" id="mirror-show-extensions" checked>顯示虛線延長</label>
+        </div>
+        <section class="teacher-note">
+          <p><strong>講法：</strong>先從平面鏡開始，讓學生看「像距等於物距」不是背出來，而是反射光線往後延長後交會；再切到凹面鏡，把物體拉過焦點與焦點內，對比實像與虛像。</p>
+          <p><strong>強調：</strong>實像是反射光真的交會，虛像是眼睛把反射光線反向延長後以為它從那裡來；紅色虛線就是這個「以為」。</p>
+        </section>
+      </section>
+
+      <section id="panel-lens" class="panel" role="tabpanel">
+        <div class="module-head">
+          <div>
+            <h2>透鏡成像</h2>
+            <p class="module-copy">切換凸透鏡與凹透鏡，拖曳物距與焦距，看平行光、通過中心光線、虛線延長線如何決定實像或虛像。</p>
+          </div>
+          <div class="legend" aria-label="透鏡圖例">
+            <span class="blue"><i class="dot"></i>入射光</span>
+            <span class="green"><i class="dot"></i>折射光</span>
+            <span class="red"><i class="dot"></i>虛線延長</span>
+            <span class="orange"><i class="dot"></i>物與像</span>
+          </div>
+        </div>
+        <div class="values" aria-live="polite">
+          <div class="badge" id="lens-object">物距 = 45 cm<small>物在透鏡左側</small></div>
+          <div class="badge" id="lens-image">像距 = 56 cm<small>正值為右側實像</small></div>
+          <div class="badge" id="lens-mag">放大率 = -1.25<small>負號代表倒立</small></div>
+          <div class="badge" id="lens-status">凸透鏡實像<small>倒立、放大</small></div>
+        </div>
+        <div class="plot-wrap">
+          <canvas id="lens-canvas" role="img" aria-label="透鏡折射光線與成像示意。"></canvas>
+        </div>
+        <div class="controls">
+          <div class="control">
+            <label for="lens-type">透鏡種類</label>
+            <select id="lens-type">
+              <option value="convex" selected>凸透鏡</option>
+              <option value="concave">凹透鏡</option>
+            </select>
+          </div>
+          <div class="control">
+            <label for="lens-do">物距 do：<span id="lens-do-out">45 cm</span></label>
+            <input id="lens-do" type="range" min="8" max="120" step="1" value="45">
+          </div>
+          <div class="control">
+            <label for="lens-f">焦距 f：<span id="lens-f-out">25 cm</span></label>
+            <input id="lens-f" type="range" min="8" max="80" step="1" value="25">
+          </div>
+          <div class="control">
+            <label for="lens-ho">物高 ho：<span id="lens-ho-out">18 cm</span></label>
+            <input id="lens-ho" type="range" min="5" max="30" step="1" value="18">
+          </div>
+        </div>
+        <div class="checks">
+          <label class="check"><input type="checkbox" id="lens-show-rays" checked>顯示主光線</label>
+          <label class="check"><input type="checkbox" id="lens-show-extensions" checked>顯示虛線延長</label>
+        </div>
+        <section class="teacher-note">
+          <p><strong>講法：</strong>先固定凸透鏡，把物體從遠處拉向焦點，讓學生看到像會越來越遠、越來越大；進入焦點內後，右側不再交會，必須往左延長成虛像。</p>
+          <p><strong>強調：</strong>凸透鏡不是永遠成實像，凹透鏡也不是因為「比較弱」才小；關鍵是光線折射後是否真的交會，以及延長線在哪裡交會。</p>
+        </section>
+      </section>
     </div>
   </main>
 
@@ -635,7 +744,8 @@
       if (activeModule === 'doppler') return number('dop-speed');
       if (activeModule === 'ripple') return number('rip-speed');
       if (activeModule === 'double') return number('dbl-speed');
-      return number('huy-speed');
+      if (activeModule === 'huygens') return number('huy-speed');
+      return 0;
     }
 
     function standingSyncLockedControls() {
@@ -1396,12 +1506,348 @@
       drawCenteredText(ctx, '次波源與新波前', barrierX + 170, h - 18, css('--green'));
     }
 
+    function opticalImageDistance(f, objectDistance) {
+      const denominator = 1 / f - 1 / objectDistance;
+      if (Math.abs(denominator) < 0.0005) return Infinity;
+      return 1 / denominator;
+    }
+
+    function opticalSizeText(m) {
+      const size = Math.abs(m);
+      if (size > 1.05) return '放大';
+      if (size < 0.95) return '縮小';
+      return '等大';
+    }
+
+    function pointAtX(a, b, x) {
+      const dx = b.x - a.x;
+      if (Math.abs(dx) < 0.0001) return { x, y: a.y };
+      return { x, y: a.y + (x - a.x) * (b.y - a.y) / dx };
+    }
+
+    function strokeSegment(ctx, a, b, color, width = 2, dash = null, alpha = 1) {
+      ctx.save();
+      ctx.strokeStyle = color;
+      ctx.lineWidth = width;
+      ctx.globalAlpha = alpha;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+      if (dash) ctx.setLineDash(dash);
+      ctx.beginPath();
+      ctx.moveTo(a.x, a.y);
+      ctx.lineTo(b.x, b.y);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawOpticalAxis(ctx, w, axis) {
+      ctx.save();
+      ctx.strokeStyle = css('--line');
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.moveTo(42, axis);
+      ctx.lineTo(w - 42, axis);
+      ctx.stroke();
+      ctx.fillStyle = css('--muted');
+      ctx.font = '13px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.textAlign = 'right';
+      ctx.fillText('主軸', w - 46, axis - 10);
+      ctx.restore();
+    }
+
+    function drawOpticalArrow(ctx, x, axis, heightPx, color, label, dashed = false) {
+      const tipY = axis - heightPx;
+      const angle = Math.atan2(tipY - axis, 0);
+      ctx.save();
+      ctx.strokeStyle = color;
+      ctx.fillStyle = color;
+      ctx.lineWidth = 3;
+      ctx.lineCap = 'round';
+      if (dashed) ctx.setLineDash([7, 6]);
+      ctx.beginPath();
+      ctx.moveTo(x, axis);
+      ctx.lineTo(x, tipY);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(x, tipY);
+      ctx.lineTo(x - 8 * Math.cos(angle - 0.45), tipY - 8 * Math.sin(angle - 0.45));
+      ctx.lineTo(x - 8 * Math.cos(angle + 0.45), tipY - 8 * Math.sin(angle + 0.45));
+      ctx.closePath();
+      ctx.fill();
+      ctx.setLineDash([]);
+      ctx.font = '14px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = heightPx >= 0 ? 'bottom' : 'top';
+      ctx.fillText(label, x, tipY + (heightPx >= 0 ? -10 : 10));
+      ctx.restore();
+    }
+
+    function drawFocusMarker(ctx, x, axis, label, color = css('--purple')) {
+      ctx.save();
+      ctx.strokeStyle = color;
+      ctx.fillStyle = color;
+      ctx.lineWidth = 1.6;
+      ctx.setLineDash([4, 5]);
+      ctx.beginPath();
+      ctx.moveTo(x, axis - 70);
+      ctx.lineTo(x, axis + 70);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.beginPath();
+      ctx.arc(x, axis, 4, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.font = '14px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(label, x, axis + 88);
+      ctx.restore();
+    }
+
+    function drawMirrorShape(ctx, mirrorX, axis, h, type) {
+      const top = 42;
+      const bottom = h - 42;
+      ctx.save();
+      ctx.strokeStyle = css('--purple');
+      ctx.lineWidth = 4;
+      ctx.lineCap = 'round';
+      if (type === 'plane') {
+        ctx.beginPath();
+        ctx.moveTo(mirrorX, top);
+        ctx.lineTo(mirrorX, bottom);
+        ctx.stroke();
+      } else {
+        const curve = type === 'concave' ? -22 : 22;
+        ctx.beginPath();
+        ctx.moveTo(mirrorX + curve, top);
+        ctx.quadraticCurveTo(mirrorX, axis, mirrorX + curve, bottom);
+        ctx.stroke();
+      }
+      ctx.fillStyle = css('--muted');
+      ctx.font = '13px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(type === 'plane' ? '平面鏡' : (type === 'concave' ? '凹面鏡' : '凸面鏡'), mirrorX, bottom + 22);
+      ctx.restore();
+    }
+
+    function drawLensShape(ctx, lensX, axis, h, type) {
+      const top = 46;
+      const bottom = h - 46;
+      ctx.save();
+      ctx.strokeStyle = css('--purple');
+      ctx.lineWidth = 3.5;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      if (type === 'convex') {
+        ctx.moveTo(lensX, top);
+        ctx.quadraticCurveTo(lensX - 24, axis, lensX, bottom);
+        ctx.quadraticCurveTo(lensX + 24, axis, lensX, top);
+      } else {
+        ctx.moveTo(lensX - 22, top);
+        ctx.quadraticCurveTo(lensX + 3, axis, lensX - 22, bottom);
+        ctx.moveTo(lensX + 22, top);
+        ctx.quadraticCurveTo(lensX - 3, axis, lensX + 22, bottom);
+      }
+      ctx.stroke();
+      ctx.fillStyle = css('--muted');
+      ctx.font = '13px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(type === 'convex' ? '凸透鏡' : '凹透鏡', lensX, bottom + 22);
+      ctx.restore();
+    }
+
+    function drawMirror() {
+      const canvas = $('mirror-canvas');
+      const { ctx, w, h } = resizeCanvas(canvas);
+      clearCanvas(ctx, w, h);
+
+      const type = $('mirror-type').value;
+      const objectDistance = number('mirror-do');
+      const fInput = number('mirror-f');
+      const objectHeight = number('mirror-ho');
+      const signedF = type === 'plane' ? Infinity : (type === 'concave' ? fInput : -fInput);
+      const rawImageDistance = type === 'plane' ? -objectDistance : opticalImageDistance(signedF, objectDistance);
+      const finiteImage = Number.isFinite(rawImageDistance) && Math.abs(rawImageDistance) < 900;
+      const magnification = finiteImage ? (type === 'plane' ? 1 : -rawImageDistance / objectDistance) : NaN;
+      const imageHeight = finiteImage ? magnification * objectHeight : 0;
+      const realImage = finiteImage && rawImageDistance > 0;
+      const virtualImage = finiteImage && rawImageDistance < 0;
+      const axis = h * 0.52;
+      const pad = 58;
+      const leftDistance = Math.max(
+        objectDistance,
+        realImage ? Math.abs(rawImageDistance) : 0,
+        type === 'plane' ? 0 : fInput * 2
+      ) + 18;
+      const rightDistance = Math.max(
+        virtualImage ? Math.abs(rawImageDistance) : 0,
+        type === 'plane' ? objectDistance : fInput
+      ) + 18;
+      const scaleX = (w - pad * 2) / (leftDistance + rightDistance);
+      const mirrorX = pad + leftDistance * scaleX;
+      const objectX = mirrorX - objectDistance * scaleX;
+      const imageX = finiteImage ? mirrorX - rawImageDistance * scaleX : null;
+      const scaleY = Math.min(6.5, h * 0.28 / Math.max(objectHeight, Math.abs(imageHeight), 12));
+      const objectTip = { x: objectX, y: axis - objectHeight * scaleY };
+      const imageTip = finiteImage ? { x: imageX, y: axis - imageHeight * scaleY } : null;
+
+      $('mirror-f').disabled = type === 'plane';
+      setText('mirror-do-out', `${objectDistance.toFixed(0)} cm`);
+      setText('mirror-f-out', type === 'plane' ? '不使用' : `${fInput.toFixed(0)} cm`);
+      setText('mirror-ho-out', `${objectHeight.toFixed(0)} cm`);
+      $('mir-object').innerHTML = `物距 do = ${objectDistance.toFixed(0)} cm<small>物在鏡前</small>`;
+      $('mir-image').innerHTML = finiteImage
+        ? `像距 di = ${rawImageDistance.toFixed(1)} cm<small>${realImage ? '正值：鏡前實像' : '負值：鏡後虛像'}</small>`
+        : '像距 di = ∞<small>反射光近似平行</small>';
+      $('mir-mag').innerHTML = finiteImage
+        ? `放大率 m = ${magnification.toFixed(2)}<small>${magnification >= 0 ? '正立' : '倒立'}、${opticalSizeText(magnification)}</small>`
+        : '放大率 m = ∞<small>物體在焦點附近</small>';
+      const status = $('mir-status');
+      status.classList.toggle('warning', !finiteImage);
+      if (!finiteImage) {
+        status.innerHTML = '焦點上不成有限像<small>反射光近似平行，像在無限遠</small>';
+      } else if (type === 'plane') {
+        status.innerHTML = '平面鏡虛像<small>正立、等大，像在鏡後</small>';
+      } else {
+        const kind = `${type === 'concave' ? '凹面鏡' : '凸面鏡'}${realImage ? '實像' : '虛像'}`;
+        status.innerHTML = `${kind}<small>${magnification >= 0 ? '正立' : '倒立'}、${opticalSizeText(magnification)}</small>`;
+      }
+
+      drawOpticalAxis(ctx, w, axis);
+      drawMirrorShape(ctx, mirrorX, axis, h, type);
+      if (type !== 'plane') {
+        drawFocusMarker(ctx, mirrorX - signedF * scaleX, axis, 'F');
+        drawFocusMarker(ctx, mirrorX - 2 * signedF * scaleX, axis, 'C', css('--muted'));
+      }
+      drawOpticalArrow(ctx, objectX, axis, objectHeight * scaleY, css('--orange'), '物');
+      if (finiteImage) {
+        drawOpticalArrow(ctx, imageX, axis, imageHeight * scaleY, css('--orange'), realImage ? '實像' : '虛像', virtualImage);
+      }
+
+      if (!$('mirror-show-rays').checked) return;
+      const pParallel = { x: mirrorX, y: objectTip.y };
+      const pVertex = { x: mirrorX, y: axis };
+      strokeSegment(ctx, objectTip, pParallel, css('--blue'), 2.2);
+      strokeSegment(ctx, objectTip, pVertex, css('--blue'), 2.2);
+      if (!finiteImage) {
+        const end1 = { x: pad, y: pParallel.y };
+        const end2 = pointAtX(pVertex, objectTip, pad);
+        strokeSegment(ctx, pParallel, end1, css('--green'), 2.8);
+        strokeSegment(ctx, pVertex, end2, css('--green'), 2.8);
+        return;
+      }
+      if (realImage) {
+        strokeSegment(ctx, pParallel, imageTip, css('--green'), 2.8);
+        strokeSegment(ctx, pVertex, imageTip, css('--green'), 2.8);
+      } else {
+        const leftEnd1 = pointAtX(pParallel, imageTip, pad);
+        const leftEnd2 = pointAtX(pVertex, imageTip, pad);
+        strokeSegment(ctx, pParallel, leftEnd1, css('--green'), 2.8);
+        strokeSegment(ctx, pVertex, leftEnd2, css('--green'), 2.8);
+        if ($('mirror-show-extensions').checked) {
+          strokeSegment(ctx, pParallel, imageTip, css('--red'), 2, [7, 6], 0.85);
+          strokeSegment(ctx, pVertex, imageTip, css('--red'), 2, [7, 6], 0.85);
+        }
+      }
+    }
+
+    function drawLens() {
+      const canvas = $('lens-canvas');
+      const { ctx, w, h } = resizeCanvas(canvas);
+      clearCanvas(ctx, w, h);
+
+      const type = $('lens-type').value;
+      const objectDistance = number('lens-do');
+      const fInput = number('lens-f');
+      const objectHeight = number('lens-ho');
+      const signedF = type === 'convex' ? fInput : -fInput;
+      const rawImageDistance = opticalImageDistance(signedF, objectDistance);
+      const finiteImage = Number.isFinite(rawImageDistance) && Math.abs(rawImageDistance) < 900;
+      const magnification = finiteImage ? -rawImageDistance / objectDistance : NaN;
+      const imageHeight = finiteImage ? magnification * objectHeight : 0;
+      const realImage = finiteImage && rawImageDistance > 0;
+      const virtualImage = finiteImage && rawImageDistance < 0;
+      const axis = h * 0.52;
+      const pad = 58;
+      const leftDistance = Math.max(
+        objectDistance,
+        virtualImage ? Math.abs(rawImageDistance) : 0,
+        fInput * 2
+      ) + 18;
+      const rightDistance = Math.max(
+        realImage ? Math.abs(rawImageDistance) : 0,
+        fInput * 2
+      ) + 18;
+      const scaleX = (w - pad * 2) / (leftDistance + rightDistance);
+      const lensX = pad + leftDistance * scaleX;
+      const objectX = lensX - objectDistance * scaleX;
+      const imageX = finiteImage ? lensX + rawImageDistance * scaleX : null;
+      const scaleY = Math.min(6.5, h * 0.28 / Math.max(objectHeight, Math.abs(imageHeight), 12));
+      const objectTip = { x: objectX, y: axis - objectHeight * scaleY };
+      const imageTip = finiteImage ? { x: imageX, y: axis - imageHeight * scaleY } : null;
+
+      setText('lens-do-out', `${objectDistance.toFixed(0)} cm`);
+      setText('lens-f-out', `${fInput.toFixed(0)} cm`);
+      setText('lens-ho-out', `${objectHeight.toFixed(0)} cm`);
+      $('lens-object').innerHTML = `物距 do = ${objectDistance.toFixed(0)} cm<small>物在透鏡左側</small>`;
+      $('lens-image').innerHTML = finiteImage
+        ? `像距 di = ${rawImageDistance.toFixed(1)} cm<small>${realImage ? '正值：右側實像' : '負值：左側虛像'}</small>`
+        : '像距 di = ∞<small>折射光近似平行</small>';
+      $('lens-mag').innerHTML = finiteImage
+        ? `放大率 m = ${magnification.toFixed(2)}<small>${magnification >= 0 ? '正立' : '倒立'}、${opticalSizeText(magnification)}</small>`
+        : '放大率 m = ∞<small>物體在焦點附近</small>';
+      const status = $('lens-status');
+      status.classList.toggle('warning', !finiteImage);
+      if (!finiteImage) {
+        status.innerHTML = '焦點上不成有限像<small>折射光近似平行，像在無限遠</small>';
+      } else {
+        const kind = `${type === 'convex' ? '凸透鏡' : '凹透鏡'}${realImage ? '實像' : '虛像'}`;
+        status.innerHTML = `${kind}<small>${magnification >= 0 ? '正立' : '倒立'}、${opticalSizeText(magnification)}</small>`;
+      }
+
+      drawOpticalAxis(ctx, w, axis);
+      drawLensShape(ctx, lensX, axis, h, type);
+      drawFocusMarker(ctx, lensX - fInput * scaleX, axis, 'F');
+      drawFocusMarker(ctx, lensX + fInput * scaleX, axis, 'F');
+      drawFocusMarker(ctx, lensX - 2 * fInput * scaleX, axis, '2F', css('--muted'));
+      drawFocusMarker(ctx, lensX + 2 * fInput * scaleX, axis, '2F', css('--muted'));
+      drawOpticalArrow(ctx, objectX, axis, objectHeight * scaleY, css('--orange'), '物');
+      if (finiteImage) {
+        drawOpticalArrow(ctx, imageX, axis, imageHeight * scaleY, css('--orange'), realImage ? '實像' : '虛像', virtualImage);
+      }
+
+      if (!$('lens-show-rays').checked) return;
+      const pParallel = { x: lensX, y: objectTip.y };
+      const pCenter = { x: lensX, y: axis };
+      strokeSegment(ctx, objectTip, pParallel, css('--blue'), 2.2);
+      strokeSegment(ctx, objectTip, pCenter, css('--blue'), 2.2);
+      if (!finiteImage) {
+        const slopePoint = pointAtX(objectTip, pCenter, w - pad);
+        strokeSegment(ctx, pParallel, { x: w - pad, y: slopePoint.y }, css('--green'), 2.8);
+        strokeSegment(ctx, pCenter, slopePoint, css('--green'), 2.8);
+        return;
+      }
+      if (realImage) {
+        strokeSegment(ctx, pParallel, imageTip, css('--green'), 2.8);
+        strokeSegment(ctx, pCenter, imageTip, css('--green'), 2.8);
+      } else {
+        const rightEnd1 = pointAtX(pParallel, imageTip, w - pad);
+        const rightEnd2 = pointAtX(pCenter, imageTip, w - pad);
+        strokeSegment(ctx, pParallel, rightEnd1, css('--green'), 2.8);
+        strokeSegment(ctx, pCenter, rightEnd2, css('--green'), 2.8);
+        if ($('lens-show-extensions').checked) {
+          strokeSegment(ctx, pParallel, imageTip, css('--red'), 2, [7, 6], 0.85);
+          strokeSegment(ctx, pCenter, imageTip, css('--red'), 2, [7, 6], 0.85);
+        }
+      }
+    }
+
     function drawActive() {
       if (activeModule === 'standing') drawStanding();
       else if (activeModule === 'doppler') drawDoppler();
       else if (activeModule === 'ripple') drawRipple();
       else if (activeModule === 'double') drawDoubleSlit();
-      else drawHuygens();
+      else if (activeModule === 'huygens') drawHuygens();
+      else if (activeModule === 'mirror') drawMirror();
+      else drawLens();
     }
 
     function setTab(name) {
