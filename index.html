@@ -98,6 +98,27 @@
       background: var(--accent);
       color: #ffffff;
     }
+    .optics-switch {
+      display: inline-flex;
+      gap: 4px;
+      padding: 4px;
+      margin-bottom: 18px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #eef2f6;
+    }
+    button.optics-mode {
+      min-width: 128px;
+      background: transparent;
+      color: var(--ink);
+    }
+    button.optics-mode.active {
+      background: var(--accent);
+      color: #ffffff;
+      box-shadow: 0 2px 7px rgba(15, 118, 110, .2);
+    }
+    .optics-view { display: none; }
+    .optics-view.active { display: block; }
     button.preset {
       background: #e2e8f0;
       color: #1f2933;
@@ -255,8 +276,7 @@
           <button type="button" class="tab" data-tab="ripple" role="tab" aria-selected="false">水波槽干涉</button>
           <button type="button" class="tab" data-tab="double" role="tab" aria-selected="false">雙狹縫干涉</button>
           <button type="button" class="tab" data-tab="huygens" role="tab" aria-selected="false">惠更斯原理</button>
-          <button type="button" class="tab" data-tab="mirror" role="tab" aria-selected="false">面鏡成像</button>
-          <button type="button" class="tab" data-tab="lens" role="tab" aria-selected="false">透鏡成像</button>
+          <button type="button" class="tab" data-tab="optics" role="tab" aria-selected="false">幾何光學</button>
         </div>
         <div class="actions">
           <button type="button" id="global-play">暫停</button>
@@ -567,7 +587,13 @@
         </section>
       </section>
 
-      <section id="panel-mirror" class="panel" role="tabpanel">
+      <section id="panel-optics" class="panel" role="tabpanel">
+        <div class="optics-switch" role="group" aria-label="選擇成像元件">
+          <button type="button" class="optics-mode active" data-optics="mirror" aria-pressed="true">面鏡</button>
+          <button type="button" class="optics-mode" data-optics="lens" aria-pressed="false">透鏡</button>
+        </div>
+
+        <div id="optics-view-mirror" class="optics-view active">
         <div class="module-head">
           <div>
             <h2>面鏡成像</h2>
@@ -614,16 +640,16 @@
         </div>
         <div class="checks">
           <label class="check"><input type="checkbox" id="mirror-ray-parallel" checked>第 1 條：平行主軸光線</label>
-          <label class="check"><input type="checkbox" id="mirror-ray-vertex">第 2 條：頂點光線</label>
+          <label class="check"><input type="checkbox" id="mirror-ray-vertex" checked>第 2 條：頂點光線</label>
           <label class="check"><input type="checkbox" id="mirror-show-extensions" checked>顯示虛線延長</label>
         </div>
         <section class="teacher-note">
-          <p><strong>講法：</strong>先只開第 1 條光線，沿著箭頭說明「入射後怎麼反射」；再開第 2 條，兩條實線的交會處就是實像。平面鏡或焦內成像時，再把紅色虛線往鏡後延長，交會處就是眼睛判斷的虛像位置。</p>
+          <p><strong>講法：</strong>預設同時顯示兩條主光線，指出兩條反射實線的交會處就是實像；也可以先關閉第 2 條，逐條講完後再打開，讓學生親眼看到第二條光線如何把像的位置確定下來。平面鏡或焦內成像時，紅色反向延長線的交會處就是虛像。</p>
           <p><strong>強調：</strong>實像是反射光真的交會，虛像是眼睛把反射光線反向延長後以為它從那裡來；紅色虛線就是這個「以為」。</p>
         </section>
-      </section>
+        </div>
 
-      <section id="panel-lens" class="panel" role="tabpanel">
+        <div id="optics-view-lens" class="optics-view">
         <div class="module-head">
           <div>
             <h2>透鏡成像</h2>
@@ -668,13 +694,15 @@
           </div>
         </div>
         <div class="checks">
-          <label class="check"><input type="checkbox" id="lens-show-rays" checked>顯示主光線</label>
+          <label class="check"><input type="checkbox" id="lens-ray-parallel" checked>第 1 條：平行主軸光線</label>
+          <label class="check"><input type="checkbox" id="lens-ray-center" checked>第 2 條：通過光心光線</label>
           <label class="check"><input type="checkbox" id="lens-show-extensions" checked>顯示虛線延長</label>
         </div>
         <section class="teacher-note">
-          <p><strong>講法：</strong>先固定凸透鏡，把物體從遠處拉向焦點，讓學生看到像會越來越遠、越來越大；進入焦點內後，右側不再交會，必須往左延長成虛像。</p>
+          <p><strong>講法：</strong>先指出第 1 條平行主軸光線折射後通過焦點，第 2 條通過光心後方向不變；兩條折射實線在哪裡交會，實像就在哪裡。再把物體拉進焦點內，讓學生看到右側光線不再交會，必須反向延長到左側才得到虛像。</p>
           <p><strong>強調：</strong>凸透鏡不是永遠成實像，凹透鏡也不是因為「比較弱」才小；關鍵是光線折射後是否真的交會，以及延長線在哪裡交會。</p>
         </section>
+        </div>
       </section>
     </div>
   </main>
@@ -683,6 +711,7 @@
     const $ = id => document.getElementById(id);
     const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
     let activeModule = 'standing';
+    let activeOptics = 'mirror';
     let running = true;
     let time = 0;
     let last = performance.now();
@@ -1597,6 +1626,19 @@
       drawSceneLabel(ctx, w - 26, 20, '鏡後｜虛像延長區', 'right');
     }
 
+    function drawLensScene(ctx, w, h, axis, lensX) {
+      ctx.save();
+      ctx.fillStyle = 'rgba(234,88,12,.035)';
+      ctx.fillRect(0, 0, lensX, h);
+      ctx.fillStyle = 'rgba(21,128,61,.035)';
+      ctx.fillRect(lensX, 0, w - lensX, h);
+      ctx.fillStyle = 'rgba(15,23,42,.025)';
+      ctx.fillRect(0, axis, w, h - axis);
+      ctx.restore();
+      drawSceneLabel(ctx, 26, 20, '物側｜入射光');
+      drawSceneLabel(ctx, w - 26, 20, '像側｜折射光', 'right');
+    }
+
     function drawOpticalAxis(ctx, w, axis) {
       ctx.save();
       ctx.strokeStyle = css('--line');
@@ -1915,22 +1957,17 @@
       const virtualImage = finiteImage && rawImageDistance < 0;
       const axis = h * 0.52;
       const pad = 58;
-      const leftDistance = Math.max(
-        objectDistance,
-        virtualImage ? Math.abs(rawImageDistance) : 0,
-        fInput * 2
-      ) + 18;
-      const rightDistance = Math.max(
-        realImage ? Math.abs(rawImageDistance) : 0,
-        fInput * 2
-      ) + 18;
-      const scaleX = (w - pad * 2) / (leftDistance + rightDistance);
-      const lensX = pad + leftDistance * scaleX;
+      const lensX = w * 0.5;
+      const scaleX = Math.max(0.62, Math.min(
+        (lensX - pad) / 130,
+        (w - pad - lensX) / 130
+      ));
       const objectX = lensX - objectDistance * scaleX;
       const imageX = finiteImage ? lensX + rawImageDistance * scaleX : null;
-      const scaleY = Math.min(6.5, h * 0.28 / Math.max(objectHeight, Math.abs(imageHeight), 12));
+      const scaleY = Math.min(4, Math.max(2.4, (h - 100) / 90));
       const objectTip = { x: objectX, y: axis - objectHeight * scaleY };
       const imageTip = finiteImage ? { x: imageX, y: axis - imageHeight * scaleY } : null;
+      const imageInView = finiteImage && imageX >= pad && imageX <= w - pad;
 
       setText('lens-do-out', `${objectDistance.toFixed(0)} cm`);
       setText('lens-f-out', `${fInput.toFixed(0)} cm`);
@@ -1951,40 +1988,66 @@
         status.innerHTML = `${kind}<small>${magnification >= 0 ? '正立' : '倒立'}、${opticalSizeText(magnification)}</small>`;
       }
 
+      drawLensScene(ctx, w, h, axis, lensX);
       drawOpticalAxis(ctx, w, axis);
-      drawLensShape(ctx, lensX, axis, h, type);
-      drawFocusMarker(ctx, lensX - fInput * scaleX, axis, 'F');
-      drawFocusMarker(ctx, lensX + fInput * scaleX, axis, 'F');
-      drawFocusMarker(ctx, lensX - 2 * fInput * scaleX, axis, '2F', css('--muted'));
-      drawFocusMarker(ctx, lensX + 2 * fInput * scaleX, axis, '2F', css('--muted'));
-      drawOpticalArrow(ctx, objectX, axis, objectHeight * scaleY, css('--orange'), '物');
-      if (finiteImage) {
-        drawOpticalArrow(ctx, imageX, axis, imageHeight * scaleY, css('--image'), realImage ? '實像' : '虛像', virtualImage);
+      const focalPositions = [
+        { x: lensX - fInput * scaleX, label: 'F', color: css('--purple') },
+        { x: lensX + fInput * scaleX, label: 'F', color: css('--purple') },
+        { x: lensX - 2 * fInput * scaleX, label: '2F', color: css('--muted') },
+        { x: lensX + 2 * fInput * scaleX, label: '2F', color: css('--muted') }
+      ];
+      focalPositions.forEach(marker => {
+        if (marker.x > pad - 10 && marker.x < w - pad + 10) {
+          drawFocusMarker(ctx, marker.x, axis, marker.label, marker.color);
+        }
+      });
+
+      const showParallelRay = $('lens-ray-parallel').checked;
+      const showCenterRay = $('lens-ray-center').checked;
+      if (showParallelRay || showCenterRay) {
+        const pParallel = { x: lensX, y: objectTip.y };
+        const pCenter = { x: lensX, y: axis };
+        if (showParallelRay) drawRay(ctx, objectTip, pParallel, css('--blue'), 2.2);
+        if (showCenterRay) drawRay(ctx, objectTip, pCenter, css('--blue'), 2.2);
+
+        if (!finiteImage) {
+          const centerEnd = pointAtX(objectTip, pCenter, w - pad);
+          const centerVector = { x: centerEnd.x - pCenter.x, y: centerEnd.y - pCenter.y };
+          const parallelGuide = { x: pParallel.x + centerVector.x, y: pParallel.y + centerVector.y };
+          const parallelEnd = pointAtX(pParallel, parallelGuide, w - pad);
+          if (showParallelRay) drawRay(ctx, pParallel, parallelEnd, css('--green'), 2.6);
+          if (showCenterRay) drawRay(ctx, pCenter, centerEnd, css('--green'), 2.6);
+        } else if (realImage) {
+          const target1 = imageInView ? imageTip : pointAtX(pParallel, imageTip, w - pad);
+          const target2 = imageInView ? imageTip : pointAtX(pCenter, imageTip, w - pad);
+          if (showParallelRay) drawRay(ctx, pParallel, target1, css('--green'), 2.6);
+          if (showCenterRay) drawRay(ctx, pCenter, target2, css('--green'), 2.6);
+        } else {
+          const rightEnd1 = pointAtX(pParallel, imageTip, w - pad);
+          const rightEnd2 = pointAtX(pCenter, imageTip, w - pad);
+          if (showParallelRay) drawRay(ctx, pParallel, rightEnd1, css('--green'), 2.6);
+          if (showCenterRay) drawRay(ctx, pCenter, rightEnd2, css('--green'), 2.6);
+          if ($('lens-show-extensions').checked) {
+            const extensionX = imageInView ? imageX : pad;
+            if (showParallelRay) strokeSegment(ctx, pParallel, pointAtX(pParallel, imageTip, extensionX), css('--red'), 1.8, [7, 7], 0.7);
+            if (showCenterRay) strokeSegment(ctx, pCenter, pointAtX(pCenter, imageTip, extensionX), css('--red'), 1.8, [7, 7], 0.7);
+          }
+        }
       }
 
-      if (!$('lens-show-rays').checked) return;
-      const pParallel = { x: lensX, y: objectTip.y };
-      const pCenter = { x: lensX, y: axis };
-      strokeSegment(ctx, objectTip, pParallel, css('--blue'), 2.2);
-      strokeSegment(ctx, objectTip, pCenter, css('--blue'), 2.2);
-      if (!finiteImage) {
-        const slopePoint = pointAtX(objectTip, pCenter, w - pad);
-        strokeSegment(ctx, pParallel, { x: w - pad, y: slopePoint.y }, css('--green'), 2.8);
-        strokeSegment(ctx, pCenter, slopePoint, css('--green'), 2.8);
-        return;
-      }
-      if (realImage) {
-        strokeSegment(ctx, pParallel, imageTip, css('--green'), 2.8);
-        strokeSegment(ctx, pCenter, imageTip, css('--green'), 2.8);
-      } else {
-        const rightEnd1 = pointAtX(pParallel, imageTip, w - pad);
-        const rightEnd2 = pointAtX(pCenter, imageTip, w - pad);
-        strokeSegment(ctx, pParallel, rightEnd1, css('--green'), 2.8);
-        strokeSegment(ctx, pCenter, rightEnd2, css('--green'), 2.8);
-        if ($('lens-show-extensions').checked) {
-          strokeSegment(ctx, pParallel, imageTip, css('--red'), 2, [7, 6], 0.85);
-          strokeSegment(ctx, pCenter, imageTip, css('--red'), 2, [7, 6], 0.85);
-        }
+      drawLensShape(ctx, lensX, axis, h, type);
+      drawOpticalArrow(ctx, objectX, axis, objectHeight * scaleY, css('--orange'), '物體');
+      if (imageInView) {
+        drawOpticalArrow(ctx, imageX, axis, imageHeight * scaleY, css('--image'), realImage ? '實像' : '虛像', virtualImage);
+      } else if (finiteImage) {
+        drawOutOfView(
+          ctx,
+          w,
+          h,
+          imageX < pad ? 'left' : 'right',
+          axis - imageHeight * scaleY,
+          `${realImage ? '實像' : '虛像'}在畫面外（${Math.abs(rawImageDistance).toFixed(0)} cm）`
+        );
       }
     }
 
@@ -1994,8 +2057,10 @@
       else if (activeModule === 'ripple') drawRipple();
       else if (activeModule === 'double') drawDoubleSlit();
       else if (activeModule === 'huygens') drawHuygens();
-      else if (activeModule === 'mirror') drawMirror();
-      else drawLens();
+      else if (activeModule === 'optics') {
+        if (activeOptics === 'mirror') drawMirror();
+        else drawLens();
+      }
     }
 
     function setTab(name) {
@@ -2011,8 +2076,25 @@
       requestAnimationFrame(drawActive);
     }
 
+    function setOpticsMode(name) {
+      activeOptics = name;
+      document.querySelectorAll('.optics-mode').forEach(btn => {
+        const active = btn.dataset.optics === name;
+        btn.classList.toggle('active', active);
+        btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+      });
+      document.querySelectorAll('.optics-view').forEach(view => {
+        view.classList.toggle('active', view.id === `optics-view-${name}`);
+      });
+      requestAnimationFrame(drawActive);
+    }
+
     document.querySelectorAll('.tab').forEach(btn => {
       btn.addEventListener('click', () => setTab(btn.dataset.tab));
+    });
+
+    document.querySelectorAll('.optics-mode').forEach(btn => {
+      btn.addEventListener('click', () => setOpticsMode(btn.dataset.optics));
     });
 
     document.querySelectorAll('input, select').forEach(input => {
