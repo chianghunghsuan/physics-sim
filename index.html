@@ -594,7 +594,7 @@
         <div class="optics-switch" role="group" aria-label="選擇成像元件">
           <button type="button" class="optics-mode active" data-optics="mirror" aria-pressed="true">面鏡</button>
           <button type="button" class="optics-mode" data-optics="lens" aria-pressed="false">透鏡</button>
-          <button type="button" class="optics-mode" data-optics="trifold" aria-pressed="false">三面鏡</button>
+          <button type="button" class="optics-mode" data-optics="trifold" aria-pressed="false">多面鏡</button>
           <button type="button" class="optics-mode" data-optics="microscope" aria-pressed="false">顯微鏡</button>
         </div>
 
@@ -704,10 +704,10 @@
         <div id="optics-view-trifold" class="optics-view">
           <div class="module-head">
             <div>
-              <h2>三面鏡多重成像</h2>
-              <p class="module-copy">俯視三面平面鏡與人物的位置，改變側鏡角度，觀察一次反射像與鏡面彼此再成像後出現的高階像。</p>
+              <h2>多面鏡重複成像</h2>
+              <p class="module-copy">自由設定鏡面數量與相鄰夾角。每個像都先由連續鏡射求出候選位置，再檢查光線是否真的落在有限長的鏡面上。</p>
             </div>
-            <div class="legend" aria-label="三面鏡圖例">
+            <div class="legend" aria-label="多面鏡圖例">
               <span class="orange"><i class="dot"></i>人物</span>
               <span class="purple"><i class="dot"></i>一次像</span>
               <span class="green"><i class="dot"></i>二次以上像</span>
@@ -715,18 +715,22 @@
             </div>
           </div>
           <div class="values" aria-live="polite">
-            <div class="badge" id="tri-angle">側鏡內折角 = 35°<small>左右兩片同步調整</small></div>
-            <div class="badge" id="tri-order">計算至第 3 次反射<small>逐層產生鏡中鏡</small></div>
-            <div class="badge" id="tri-count">畫面內共有 9 個像<small>重合位置只計一次</small></div>
-            <div class="badge" id="tri-status">左右對稱<small>人物位於中央</small></div>
+            <div class="badge" id="tri-angle">3 面鏡｜內夾角 145°<small>人物所在一側的相鄰鏡面夾角</small></div>
+            <div class="badge" id="tri-order">計算至第 3 次反射<small>共檢查 21 條反射序列</small></div>
+            <div class="badge" id="tri-count">可見像計算中<small>重合位置只計一次</small></div>
+            <div class="badge" id="tri-status">有限鏡面驗證<small>排除光線打不到鏡面的候選像</small></div>
           </div>
           <div class="plot-wrap">
-            <canvas id="trifold-canvas" role="img" aria-label="三面平面鏡的俯視多重成像圖。"></canvas>
+            <canvas id="trifold-canvas" role="img" aria-label="多面平面鏡的俯視重複成像圖。"></canvas>
           </div>
           <div class="controls">
             <div class="control">
-              <label for="tri-angle-in">側鏡內折角：<span id="tri-angle-out">35°</span></label>
-              <input id="tri-angle-in" type="range" min="0" max="70" step="1" value="35">
+              <label for="tri-mirror-count">面鏡數量：<span id="tri-mirror-count-out">3 面</span></label>
+              <input id="tri-mirror-count" type="range" min="1" max="7" step="1" value="3">
+            </div>
+            <div class="control">
+              <label for="tri-angle-in">相鄰面鏡內夾角：<span id="tri-angle-out">145°</span></label>
+              <input id="tri-angle-in" type="range" min="30" max="180" step="1" value="145">
             </div>
             <div class="control">
               <label for="tri-distance">人物距中鏡：<span id="tri-distance-out">85 cm</span></label>
@@ -738,12 +742,13 @@
             </div>
             <div class="control">
               <label for="tri-order-in">反射計算層數：<span id="tri-order-out">3 次</span></label>
-              <input id="tri-order-in" type="range" min="1" max="5" step="1" value="3">
+              <input id="tri-order-in" type="range" min="1" max="12" step="1" value="3">
             </div>
           </div>
           <div class="checks">
             <label class="check"><input type="checkbox" id="tri-show-guides" checked>顯示一次像的對稱作圖線</label>
             <label class="check"><input type="checkbox" id="tri-show-labels" checked>標示反射次數</label>
+            <label class="check"><input type="checkbox" id="tri-visible-only" checked>只顯示由人物所在觀察點可見的像</label>
           </div>
         </div>
 
@@ -2209,119 +2214,224 @@
       ctx.restore();
     }
 
+    function segmentIntersection(p1, p2, a, b) {
+      const rx = p2.x - p1.x;
+      const ry = p2.y - p1.y;
+      const sx = b.x - a.x;
+      const sy = b.y - a.y;
+      const denominator = rx * sy - ry * sx;
+      if (Math.abs(denominator) < 1e-8) return null;
+      const qx = a.x - p1.x;
+      const qy = a.y - p1.y;
+      const t = (qx * sy - qy * sx) / denominator;
+      const u = (qx * ry - qy * rx) / denominator;
+      if (t <= 1e-6 || t >= 1 - 1e-6 || u < -1e-6 || u > 1 + 1e-6) return null;
+      return { x: p1.x + t * rx, y: p1.y + t * ry };
+    }
+
+    function buildMirrorChain(count, angleDegrees) {
+      const panelLength = 120;
+      const turn = (180 - angleDegrees) * Math.PI / 180;
+      const points = [{ x: 0, y: 0 }];
+      for (let index = 0; index < count; index++) {
+        const direction = (index - (count - 1) / 2) * turn;
+        const previous = points[points.length - 1];
+        points.push({
+          x: previous.x + panelLength * Math.cos(direction),
+          y: previous.y + panelLength * Math.sin(direction)
+        });
+      }
+      const anchor = count % 2 === 1
+        ? {
+            x: (points[Math.floor(count / 2)].x + points[Math.floor(count / 2) + 1].x) / 2,
+            y: (points[Math.floor(count / 2)].y + points[Math.floor(count / 2) + 1].y) / 2
+          }
+        : points[count / 2];
+      const centered = points.map(point => ({ x: point.x - anchor.x, y: point.y - anchor.y }));
+      return Array.from({ length: count }, (_, index) => ({
+        a: centered[index],
+        b: centered[index + 1],
+        index
+      }));
+    }
+
+    function validateMirrorPath(object, observer, path, mirrors) {
+      const imageStages = [object];
+      path.forEach(mirrorIndex => {
+        imageStages.push(reflectPointAcrossLine(
+          imageStages[imageStages.length - 1],
+          mirrors[mirrorIndex].a,
+          mirrors[mirrorIndex].b
+        ));
+      });
+      let current = observer;
+      const reverseHits = [];
+      for (let step = path.length - 1; step >= 0; step--) {
+        const mirror = mirrors[path[step]];
+        const hit = segmentIntersection(current, imageStages[step + 1], mirror.a, mirror.b);
+        if (!hit) return null;
+        reverseHits.push(hit);
+        current = hit;
+      }
+      return reverseHits.reverse();
+    }
+
     function drawTrifoldMirrors() {
       const canvas = $('trifold-canvas');
       const { ctx, w, h } = resizeCanvas(canvas);
       clearCanvas(ctx, w, h);
 
-      const angle = number('tri-angle-in');
+      const mirrorCount = number('tri-mirror-count');
+      const angleInput = $('tri-angle-in');
+      angleInput.disabled = mirrorCount === 1;
+      const angle = mirrorCount === 1 ? 0 : Number(angleInput.value);
       const distance = number('tri-distance');
       const personOffset = number('tri-person-x');
+      const orderInput = $('tri-order-in');
+      const orderCaps = { 1: 1, 2: 12, 3: 8, 4: 6, 5: 5, 6: 5, 7: 4 };
+      const orderCap = orderCaps[mirrorCount];
+      orderInput.max = String(orderCap);
+      orderInput.disabled = mirrorCount === 1;
+      if (Number(orderInput.value) > orderCap) orderInput.value = String(orderCap);
       const maxOrder = number('tri-order-in');
-      const angleRad = angle * Math.PI / 180;
-      const unit = Math.min(1.1, Math.max(0.65, w / 1100));
-      const mirrorY = h * 0.42;
-      const centerWidth = 260 * unit;
-      const sideLength = centerWidth * 0.72;
-      const center = { x: w / 2, y: mirrorY };
-      const leftHinge = { x: center.x - centerWidth / 2, y: mirrorY };
-      const rightHinge = { x: center.x + centerWidth / 2, y: mirrorY };
-      const leftEnd = {
-        x: leftHinge.x - sideLength * Math.cos(angleRad),
-        y: leftHinge.y + sideLength * Math.sin(angleRad)
-      };
-      const rightEnd = {
-        x: rightHinge.x + sideLength * Math.cos(angleRad),
-        y: rightHinge.y + sideLength * Math.sin(angleRad)
-      };
-      const mirrors = [
-        { a: leftHinge, b: rightHinge },
-        { a: leftEnd, b: leftHinge },
-        { a: rightHinge, b: rightEnd }
-      ];
-      const person = {
-        x: center.x + personOffset * unit,
-        y: mirrorY + distance * unit
-      };
+      const showVisibleOnly = $('tri-visible-only').checked;
+      const mirrors = buildMirrorChain(mirrorCount, angle);
+      const person = { x: personOffset, y: distance };
 
-      const images = [];
-      const imageMergeDistance = Math.max(26, 26 * unit);
-      let states = [{ point: person, lastMirror: -1 }];
-      const stateKeys = new Set();
+      const candidateMap = new Map();
+      let states = [{ point: person, path: [], lastMirror: -1 }];
+      let sequenceCount = 0;
       for (let order = 1; order <= maxOrder; order++) {
         const nextStates = [];
         states.forEach(state => {
           mirrors.forEach((mirror, mirrorIndex) => {
             if (mirrorIndex === state.lastMirror) return;
-            const reflected = reflectPointAcrossLine(state.point, mirror.a, mirror.b);
-            if (Math.hypot(reflected.x - person.x, reflected.y - person.y) < 1) return;
-            const modelX = (reflected.x - center.x) / unit;
-            const modelY = (reflected.y - mirrorY) / unit;
-            const stateKey = `${modelX.toFixed(1)}:${modelY.toFixed(1)}:${mirrorIndex}`;
-            if (!stateKeys.has(stateKey)) {
-              stateKeys.add(stateKey);
-              nextStates.push({ point: reflected, lastMirror: mirrorIndex });
+            const point = reflectPointAcrossLine(state.point, mirror.a, mirror.b);
+            const path = [...state.path, mirrorIndex];
+            nextStates.push({ point, path, lastMirror: mirrorIndex });
+            sequenceCount++;
+            if (Math.hypot(point.x - person.x, point.y - person.y) < 1e-5) return;
+            const key = `${Math.round(point.x * 1000)}:${Math.round(point.y * 1000)}`;
+            let candidate = candidateMap.get(key);
+            if (!candidate) {
+              candidate = { point, order, pathCount: 0, visibleOrder: null, visiblePath: null, hits: null };
+              candidateMap.set(key, candidate);
             }
-            const tooCloseToPerson = Math.hypot(person.x - reflected.x, person.y - reflected.y) < imageMergeDistance;
-            const existing = images.find(image => Math.hypot(image.point.x - reflected.x, image.point.y - reflected.y) < imageMergeDistance);
-            if (!existing && !tooCloseToPerson) images.push({ point: reflected, order, mirrorIndex });
-            else if (existing) existing.order = Math.min(existing.order, order);
+            candidate.order = Math.min(candidate.order, order);
+            candidate.pathCount++;
+            const hits = validateMirrorPath(person, person, path, mirrors);
+            if (hits && (candidate.visibleOrder === null || order < candidate.visibleOrder)) {
+              candidate.visibleOrder = order;
+              candidate.visiblePath = path;
+              candidate.hits = hits;
+            }
           });
         });
         states = nextStates;
       }
 
-      const visibleImages = images.filter(image =>
-        image.point.x > 26 && image.point.x < w - 26 && image.point.y > 42 && image.point.y < h - 30
-      );
-      const firstOrderImages = images.filter(image => image.order === 1);
-      setText('tri-angle-out', `${angle.toFixed(0)}°`);
+      const candidates = [...candidateMap.values()];
+      const physicallyVisible = candidates.filter(candidate => candidate.visiblePath);
+      const selectedImages = showVisibleOnly ? physicallyVisible : candidates;
+      const mirrorPoints = mirrors.flatMap(mirror => [mirror.a, mirror.b]);
+      const scenePoints = [...mirrorPoints, person, ...selectedImages.map(image => image.point)];
+      const sceneMinX = Math.min(...scenePoints.map(point => point.x));
+      const sceneMaxX = Math.max(...scenePoints.map(point => point.x));
+      const sceneMinY = Math.min(...scenePoints.map(point => point.y));
+      const sceneMaxY = Math.max(...scenePoints.map(point => point.y));
+      const viewWidth = Math.max(240, sceneMaxX - sceneMinX + 80);
+      const viewHeight = Math.max(250, sceneMaxY - sceneMinY + 90);
+      const viewCenter = {
+        x: (sceneMinX + sceneMaxX) / 2,
+        y: (sceneMinY + sceneMaxY) / 2
+      };
+      const scale = Math.min((w - 52) / viewWidth, (h - 62) / viewHeight);
+      const origin = { x: w / 2 - viewCenter.x * scale, y: h / 2 - viewCenter.y * scale };
+      const toScreen = point => ({ x: origin.x + point.x * scale, y: origin.y + point.y * scale });
+      const screenPerson = toScreen(person);
+      const screenMirrors = mirrors.map(mirror => ({
+        ...mirror,
+        a: toScreen(mirror.a),
+        b: toScreen(mirror.b)
+      }));
+      const inCanvas = point => point.x > 24 && point.x < w - 24 && point.y > 44 && point.y < h - 28;
+      const drawableImages = [];
+      selectedImages
+        .map(image => ({ ...image, screen: toScreen(image.point) }))
+        .filter(image => inCanvas(image.screen))
+        .sort((a, b) => (a.visibleOrder ?? a.order) - (b.visibleOrder ?? b.order))
+        .forEach(image => {
+          if (!drawableImages.some(existing => Math.hypot(existing.screen.x - image.screen.x, existing.screen.y - image.screen.y) < 24)) {
+            drawableImages.push(image);
+          }
+        });
+
+      setText('tri-mirror-count-out', `${mirrorCount.toFixed(0)} 面`);
+      setText('tri-angle-out', mirrorCount === 1 ? '不適用' : `${angle.toFixed(0)}°`);
       setText('tri-distance-out', `${distance.toFixed(0)} cm`);
       setText('tri-person-x-out', personOffset === 0 ? '中央' : `${personOffset > 0 ? '右' : '左'} ${Math.abs(personOffset).toFixed(0)} cm`);
       setText('tri-order-out', `${maxOrder.toFixed(0)} 次`);
-      $('tri-angle').innerHTML = `側鏡內折角 = ${angle.toFixed(0)}°<small>左右兩片同步調整</small>`;
-      $('tri-order').innerHTML = `計算至第 ${maxOrder.toFixed(0)} 次反射<small>逐層產生鏡中鏡</small>`;
-      $('tri-count').innerHTML = `畫面內顯示 ${visibleImages.length} 個像<small>合併太接近而無法辨識的像</small>`;
-      $('tri-status').innerHTML = personOffset === 0
-        ? '左右對稱<small>人物位於中央</small>'
-        : `左右不對稱<small>人物偏向${personOffset > 0 ? '右' : '左'}側</small>`;
+      if (mirrorCount === 1) {
+        $('tri-angle').innerHTML = '1 面鏡<small>沒有相鄰鏡面，夾角不適用</small>';
+      } else if (mirrorCount === 2) {
+        const ratio = 360 / angle;
+        const closed = Math.abs(ratio - Math.round(ratio)) < 1e-8;
+        $('tri-angle').innerHTML = `2 面鏡｜內夾角 ${angle.toFixed(0)}°<small>${closed
+          ? `360° ÷ θ = ${Math.round(ratio)}；對稱配置有 ${Math.round(ratio) - 1} 個無限鏡面候選像`
+          : `360° ÷ θ = ${ratio.toFixed(2)}；依反射層數逐步列舉`}</small>`;
+      } else {
+        $('tri-angle').innerHTML = `${mirrorCount.toFixed(0)} 面鏡｜內夾角 ${angle.toFixed(0)}°<small>三面以上沒有單一像數公式，逐條反射列舉</small>`;
+      }
+      $('tri-order').innerHTML = `計算至第 ${maxOrder.toFixed(0)} 次反射<small>共檢查 ${sequenceCount.toLocaleString()} 條反射序列</small>`;
+      $('tri-count').innerHTML = `此觀察點可見 ${physicallyVisible.length} 個像<small>無限鏡面候選 ${candidates.length} 個｜畫面顯示 ${drawableImages.length} 個</small>`;
+      $('tri-status').classList.toggle('warning', !showVisibleOnly);
+      $('tri-status').innerHTML = showVisibleOnly
+        ? '有限鏡面驗證<small>由人物所在觀察點反推，每次反射都須落在鏡片內</small>'
+        : '數學候選模式<small>灰色像可能無法由有限鏡面看到</small>';
 
       ctx.save();
       ctx.fillStyle = 'rgba(148,163,184,.07)';
-      ctx.fillRect(0, 0, w, mirrorY);
+      ctx.fillRect(0, 0, w, origin.y);
       ctx.fillStyle = 'rgba(15,118,110,.035)';
-      ctx.fillRect(0, mirrorY, w, h - mirrorY);
+      ctx.fillRect(0, origin.y, w, h - origin.y);
       ctx.restore();
       drawSceneLabel(ctx, 26, 20, '鏡後｜虛像分布區');
       drawSceneLabel(ctx, w - 26, h - 48, '人物所在空間', 'right');
 
       if ($('tri-show-guides').checked) {
-        firstOrderImages.forEach(image => {
-          strokeSegment(ctx, person, image.point, css('--red'), 1.4, [5, 7], 0.45);
-        });
+        physicallyVisible
+          .filter(image => image.visibleOrder === 1)
+          .forEach(image => {
+            strokeSegment(ctx, screenPerson, toScreen(image.point), css('--red'), 1.4, [5, 7], 0.45);
+          });
       }
 
-      visibleImages
+      drawableImages
         .slice()
-        .sort((a, b) => b.order - a.order)
-        .forEach((image, index) => {
-          const color = image.order === 1 ? css('--image') : css('--green');
-          const label = $('tri-show-labels').checked ? `${image.order}` : '';
-          drawPersonSymbol(ctx, image.point, color, label, true, image.order);
+        .sort((a, b) => (b.visibleOrder ?? b.order) - (a.visibleOrder ?? a.order))
+        .forEach(image => {
+          const order = image.visibleOrder ?? image.order;
+          const color = image.visiblePath
+            ? (order === 1 ? css('--image') : css('--green'))
+            : css('--muted');
+          const label = $('tri-show-labels').checked ? `${order}` : '';
+          drawPersonSymbol(ctx, image.screen, color, label, true, order);
         });
 
-      mirrors.forEach(mirror => drawMirrorSegment(ctx, mirror.a, mirror.b, person));
-      drawPersonSymbol(ctx, person, css('--orange'), '人物');
+      screenMirrors.forEach(mirror => drawMirrorSegment(ctx, mirror.a, mirror.b, screenPerson));
+      drawPersonSymbol(ctx, screenPerson, css('--orange'), '人物');
       ctx.save();
       ctx.fillStyle = css('--muted');
-      ctx.font = '700 13px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.font = `700 ${w < 500 ? 11 : 13}px "Microsoft JhengHei", Arial, sans-serif`;
       ctx.textAlign = 'center';
-      ctx.fillText('中央鏡', center.x, mirrorY - 14);
-      ctx.fillText('左側鏡', (leftEnd.x + leftHinge.x) / 2, (leftEnd.y + leftHinge.y) / 2 - 12);
-      ctx.fillText('右側鏡', (rightEnd.x + rightHinge.x) / 2, (rightEnd.y + rightHinge.y) / 2 - 12);
-      if (images.length > visibleImages.length) {
+      screenMirrors.forEach(mirror => {
+        const midpoint = { x: (mirror.a.x + mirror.b.x) / 2, y: (mirror.a.y + mirror.b.y) / 2 };
+        ctx.fillText(`${w < 500 ? 'M' : '鏡'}${mirror.index + 1}`, midpoint.x, midpoint.y - 12);
+      });
+      const offCanvasCount = selectedImages.length - selectedImages.filter(image => inCanvas(toScreen(image.point))).length;
+      if (offCanvasCount > 0) {
         ctx.textAlign = 'right';
-        ctx.fillText(`另有 ${images.length - visibleImages.length} 個高階像在畫面外`, w - 26, 32);
+        ctx.fillText(`另有 ${offCanvasCount} 個像在畫面外`, w - 26, 32);
       }
       ctx.restore();
     }
