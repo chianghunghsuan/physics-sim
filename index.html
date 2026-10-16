@@ -627,7 +627,7 @@
           </div>
           <div class="control">
             <label for="mirror-do">物距 do：<span id="mirror-do-out">45 cm</span></label>
-            <input id="mirror-do" type="range" min="8" max="120" step="1" value="45">
+            <input id="mirror-do" type="range" min="0.5" max="120" step="0.5" value="45">
           </div>
           <div class="control">
             <label for="mirror-f">焦距 f：<span id="mirror-f-out">25 cm</span></label>
@@ -643,10 +643,6 @@
           <label class="check"><input type="checkbox" id="mirror-ray-vertex" checked>第 2 條：頂點光線</label>
           <label class="check"><input type="checkbox" id="mirror-show-extensions" checked>顯示虛線延長</label>
         </div>
-        <section class="teacher-note">
-          <p><strong>講法：</strong>預設同時顯示兩條主光線，指出兩條反射實線的交會處就是實像；也可以先關閉第 2 條，逐條講完後再打開，讓學生親眼看到第二條光線如何把像的位置確定下來。平面鏡或焦內成像時，紅色反向延長線的交會處就是虛像。</p>
-          <p><strong>強調：</strong>實像是反射光真的交會，虛像是眼睛把反射光線反向延長後以為它從那裡來；紅色虛線就是這個「以為」。</p>
-        </section>
         </div>
 
         <div id="optics-view-lens" class="optics-view">
@@ -682,7 +678,7 @@
           </div>
           <div class="control">
             <label for="lens-do">物距 do：<span id="lens-do-out">45 cm</span></label>
-            <input id="lens-do" type="range" min="8" max="120" step="1" value="45">
+            <input id="lens-do" type="range" min="0.5" max="120" step="0.5" value="45">
           </div>
           <div class="control">
             <label for="lens-f">焦距 f：<span id="lens-f-out">25 cm</span></label>
@@ -698,10 +694,6 @@
           <label class="check"><input type="checkbox" id="lens-ray-center" checked>第 2 條：通過光心光線</label>
           <label class="check"><input type="checkbox" id="lens-show-extensions" checked>顯示虛線延長</label>
         </div>
-        <section class="teacher-note">
-          <p><strong>講法：</strong>先指出第 1 條平行主軸光線折射後通過焦點，第 2 條通過光心後方向不變；兩條折射實線在哪裡交會，實像就在哪裡。再把物體拉進焦點內，讓學生看到右側光線不再交會，必須反向延長到左側才得到虛像。</p>
-          <p><strong>強調：</strong>凸透鏡不是永遠成實像，凹透鏡也不是因為「比較弱」才小；關鍵是光線折射後是否真的交會，以及延長線在哪裡交會。</p>
-        </section>
         </div>
       </section>
     </div>
@@ -1552,6 +1544,10 @@
       return '等大';
     }
 
+    function formatCm(value) {
+      return value < 10 ? value.toFixed(1).replace(/\.0$/, '') : value.toFixed(0);
+    }
+
     function pointAtX(a, b, x) {
       const dx = b.x - a.x;
       if (Math.abs(dx) < 0.0001) return { x, y: a.y };
@@ -1859,10 +1855,10 @@
       const imageInView = finiteImage && imageX >= pad && imageX <= w - pad;
 
       $('mirror-f').disabled = type === 'plane';
-      setText('mirror-do-out', `${objectDistance.toFixed(0)} cm`);
+      setText('mirror-do-out', `${formatCm(objectDistance)} cm`);
       setText('mirror-f-out', type === 'plane' ? '不使用' : `${fInput.toFixed(0)} cm`);
       setText('mirror-ho-out', `${objectHeight.toFixed(0)} cm`);
-      $('mir-object').innerHTML = `物距 do = ${objectDistance.toFixed(0)} cm<small>物在鏡前</small>`;
+      $('mir-object').innerHTML = `物距 do = ${formatCm(objectDistance)} cm<small>物在鏡前</small>`;
       $('mir-image').innerHTML = finiteImage
         ? `像距 di = ${rawImageDistance.toFixed(1)} cm<small>${realImage ? '正值：鏡前實像' : '負值：鏡後虛像'}</small>`
         : '像距 di = ∞<small>反射光近似平行</small>';
@@ -1969,10 +1965,10 @@
       const imageTip = finiteImage ? { x: imageX, y: axis - imageHeight * scaleY } : null;
       const imageInView = finiteImage && imageX >= pad && imageX <= w - pad;
 
-      setText('lens-do-out', `${objectDistance.toFixed(0)} cm`);
+      setText('lens-do-out', `${formatCm(objectDistance)} cm`);
       setText('lens-f-out', `${fInput.toFixed(0)} cm`);
       setText('lens-ho-out', `${objectHeight.toFixed(0)} cm`);
-      $('lens-object').innerHTML = `物距 do = ${objectDistance.toFixed(0)} cm<small>物在透鏡左側</small>`;
+      $('lens-object').innerHTML = `物距 do = ${formatCm(objectDistance)} cm<small>物在透鏡左側</small>`;
       $('lens-image').innerHTML = finiteImage
         ? `像距 di = ${rawImageDistance.toFixed(1)} cm<small>${realImage ? '正值：右側實像' : '負值：左側虛像'}</small>`
         : '像距 di = ∞<small>折射光近似平行</small>';
