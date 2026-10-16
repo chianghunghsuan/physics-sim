@@ -17,6 +17,7 @@
       --accent-soft: #e7f5f2;
       --blue: #2563eb;
       --orange: #ea580c;
+      --image: #7c3aed;
       --green: #15803d;
       --red: #be123c;
       --purple: #7c3aed;
@@ -576,7 +577,8 @@
             <span class="blue"><i class="dot"></i>入射光</span>
             <span class="green"><i class="dot"></i>反射光</span>
             <span class="red"><i class="dot"></i>虛線延長</span>
-            <span class="orange"><i class="dot"></i>物與像</span>
+            <span class="orange"><i class="dot"></i>物體</span>
+            <span class="purple"><i class="dot"></i>像</span>
           </div>
         </div>
         <div class="values" aria-live="polite">
@@ -611,11 +613,12 @@
           </div>
         </div>
         <div class="checks">
-          <label class="check"><input type="checkbox" id="mirror-show-rays" checked>顯示主光線</label>
+          <label class="check"><input type="checkbox" id="mirror-ray-parallel" checked>第 1 條：平行主軸光線</label>
+          <label class="check"><input type="checkbox" id="mirror-ray-vertex">第 2 條：頂點光線</label>
           <label class="check"><input type="checkbox" id="mirror-show-extensions" checked>顯示虛線延長</label>
         </div>
         <section class="teacher-note">
-          <p><strong>講法：</strong>先從平面鏡開始，讓學生看「像距等於物距」不是背出來，而是反射光線往後延長後交會；再切到凹面鏡，把物體拉過焦點與焦點內，對比實像與虛像。</p>
+          <p><strong>講法：</strong>先只開第 1 條光線，沿著箭頭說明「入射後怎麼反射」；再開第 2 條，兩條實線的交會處就是實像。平面鏡或焦內成像時，再把紅色虛線往鏡後延長，交會處就是眼睛判斷的虛像位置。</p>
           <p><strong>強調：</strong>實像是反射光真的交會，虛像是眼睛把反射光線反向延長後以為它從那裡來；紅色虛線就是這個「以為」。</p>
         </section>
       </section>
@@ -630,7 +633,8 @@
             <span class="blue"><i class="dot"></i>入射光</span>
             <span class="green"><i class="dot"></i>折射光</span>
             <span class="red"><i class="dot"></i>虛線延長</span>
-            <span class="orange"><i class="dot"></i>物與像</span>
+            <span class="orange"><i class="dot"></i>物體</span>
+            <span class="purple"><i class="dot"></i>像</span>
           </div>
         </div>
         <div class="values" aria-live="polite">
@@ -1540,6 +1544,59 @@
       ctx.restore();
     }
 
+    function drawRay(ctx, a, b, color, width = 2.4, showArrow = true) {
+      strokeSegment(ctx, a, b, color, width + 5, null, 0.07);
+      strokeSegment(ctx, a, b, color, width, null, 0.9);
+      if (!showArrow) return;
+      const t = 0.58;
+      const x = a.x + (b.x - a.x) * t;
+      const y = a.y + (b.y - a.y) * t;
+      const angle = Math.atan2(b.y - a.y, b.x - a.x);
+      const size = 8;
+      ctx.save();
+      ctx.fillStyle = color;
+      ctx.globalAlpha = 0.92;
+      ctx.beginPath();
+      ctx.moveTo(x + Math.cos(angle) * size, y + Math.sin(angle) * size);
+      ctx.lineTo(x + Math.cos(angle + 2.55) * size, y + Math.sin(angle + 2.55) * size);
+      ctx.lineTo(x + Math.cos(angle - 2.55) * size, y + Math.sin(angle - 2.55) * size);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function drawSceneLabel(ctx, x, y, text, align = 'left') {
+      ctx.save();
+      ctx.font = '700 13px "Microsoft JhengHei", Arial, sans-serif';
+      const width = ctx.measureText(text).width + 20;
+      const left = align === 'right' ? x - width : x;
+      ctx.fillStyle = 'rgba(255,255,255,.86)';
+      ctx.strokeStyle = 'rgba(148,163,184,.42)';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.roundRect(left, y, width, 28, 8);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = css('--muted');
+      ctx.textAlign = align;
+      ctx.textBaseline = 'middle';
+      ctx.fillText(text, align === 'right' ? x - 10 : x + 10, y + 14);
+      ctx.restore();
+    }
+
+    function drawMirrorScene(ctx, w, h, axis, mirrorX) {
+      ctx.save();
+      ctx.fillStyle = 'rgba(37,99,235,.035)';
+      ctx.fillRect(0, 0, mirrorX, h);
+      ctx.fillStyle = 'rgba(124,58,237,.045)';
+      ctx.fillRect(mirrorX, 0, w - mirrorX, h);
+      ctx.fillStyle = 'rgba(15,23,42,.025)';
+      ctx.fillRect(0, axis, w, h - axis);
+      ctx.restore();
+      drawSceneLabel(ctx, 26, 20, '鏡前｜光線實際行進');
+      drawSceneLabel(ctx, w - 26, 20, '鏡後｜虛像延長區', 'right');
+    }
+
     function drawOpticalAxis(ctx, w, axis) {
       ctx.save();
       ctx.strokeStyle = css('--line');
@@ -1557,25 +1614,56 @@
 
     function drawOpticalArrow(ctx, x, axis, heightPx, color, label, dashed = false) {
       const tipY = axis - heightPx;
-      const angle = Math.atan2(tipY - axis, 0);
+      const direction = heightPx >= 0 ? -1 : 1;
+      const visibleHeight = Math.max(14, Math.abs(heightPx));
+      const flameSize = Math.min(13, Math.max(7, visibleHeight * 0.2));
+      const flameBaseY = tipY - direction * flameSize;
+      const bodyTop = Math.min(axis, flameBaseY);
+      const bodyHeight = Math.max(5, Math.abs(axis - flameBaseY));
+      const bodyWidth = Math.min(16, Math.max(10, visibleHeight * 0.13));
       ctx.save();
       ctx.strokeStyle = color;
       ctx.fillStyle = color;
-      ctx.lineWidth = 3;
+      ctx.lineWidth = 2.4;
       ctx.lineCap = 'round';
-      if (dashed) ctx.setLineDash([7, 6]);
+      ctx.globalAlpha = dashed ? 0.58 : 1;
+      if (dashed) ctx.setLineDash([6, 5]);
+
       ctx.beginPath();
-      ctx.moveTo(x, axis);
-      ctx.lineTo(x, tipY);
+      ctx.roundRect(x - bodyWidth / 2, bodyTop, bodyWidth, bodyHeight, 3);
+      if (!dashed) ctx.fill();
+      else ctx.stroke();
+
+      ctx.setLineDash([]);
+      ctx.strokeStyle = '#5b3a1f';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(x, flameBaseY);
+      ctx.lineTo(x, flameBaseY + direction * 5);
       ctx.stroke();
+
+      ctx.fillStyle = dashed ? color : '#f59e0b';
+      ctx.strokeStyle = color;
+      if (dashed) ctx.setLineDash([4, 4]);
       ctx.beginPath();
       ctx.moveTo(x, tipY);
-      ctx.lineTo(x - 8 * Math.cos(angle - 0.45), tipY - 8 * Math.sin(angle - 0.45));
-      ctx.lineTo(x - 8 * Math.cos(angle + 0.45), tipY - 8 * Math.sin(angle + 0.45));
+      ctx.bezierCurveTo(
+        x - 8, tipY - direction * flameSize * 0.35,
+        x - 7, flameBaseY,
+        x, flameBaseY
+      );
+      ctx.bezierCurveTo(
+        x + 7, flameBaseY,
+        x + 8, tipY - direction * flameSize * 0.35,
+        x, tipY
+      );
       ctx.closePath();
-      ctx.fill();
+      if (!dashed) ctx.fill();
+      ctx.stroke();
+
       ctx.setLineDash([]);
-      ctx.font = '14px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.fillStyle = color;
+      ctx.font = '700 14px "Microsoft JhengHei", Arial, sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = heightPx >= 0 ? 'bottom' : 'top';
       ctx.fillText(label, x, tipY + (heightPx >= 0 ? -10 : 10));
@@ -1586,19 +1674,17 @@
       ctx.save();
       ctx.strokeStyle = color;
       ctx.fillStyle = color;
-      ctx.lineWidth = 1.6;
-      ctx.setLineDash([4, 5]);
+      ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.moveTo(x, axis - 70);
-      ctx.lineTo(x, axis + 70);
+      ctx.moveTo(x, axis - 9);
+      ctx.lineTo(x, axis + 9);
       ctx.stroke();
-      ctx.setLineDash([]);
       ctx.beginPath();
-      ctx.arc(x, axis, 4, 0, Math.PI * 2);
+      ctx.arc(x, axis, 3.5, 0, Math.PI * 2);
       ctx.fill();
-      ctx.font = '14px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.font = '700 13px "Microsoft JhengHei", Arial, sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText(label, x, axis + 88);
+      ctx.fillText(label, x, axis + 28);
       ctx.restore();
     }
 
@@ -1606,25 +1692,71 @@
       const top = 42;
       const bottom = h - 42;
       ctx.save();
-      ctx.strokeStyle = css('--purple');
-      ctx.lineWidth = 4;
       ctx.lineCap = 'round';
+      const curve = type === 'concave' ? -24 : 24;
+      const trace = offset => {
+        ctx.beginPath();
+        if (type === 'plane') {
+          ctx.moveTo(mirrorX + offset, top);
+          ctx.lineTo(mirrorX + offset, bottom);
+        } else {
+          ctx.moveTo(mirrorX + curve + offset, top);
+          ctx.quadraticCurveTo(mirrorX - curve + offset, axis, mirrorX + curve + offset, bottom);
+        }
+      };
+
+      ctx.strokeStyle = 'rgba(71,85,105,.22)';
+      ctx.lineWidth = 12;
+      trace(5);
+      ctx.stroke();
+      ctx.strokeStyle = '#475569';
+      ctx.lineWidth = 4;
+      trace(0);
+      ctx.stroke();
+
+      ctx.strokeStyle = 'rgba(71,85,105,.48)';
+      ctx.lineWidth = 1.5;
+      for (let y = top + 10; y < bottom; y += 22) {
+        ctx.beginPath();
+        ctx.moveTo(mirrorX + 8, y);
+        ctx.lineTo(mirrorX + 18, y + 8);
+        ctx.stroke();
+      }
+
+      ctx.strokeStyle = 'rgba(255,255,255,.88)';
+      ctx.lineWidth = 1.4;
       if (type === 'plane') {
         ctx.beginPath();
-        ctx.moveTo(mirrorX, top);
-        ctx.lineTo(mirrorX, bottom);
+        ctx.moveTo(mirrorX - 1, top + 4);
+        ctx.lineTo(mirrorX - 1, bottom - 4);
         ctx.stroke();
       } else {
-        const curve = type === 'concave' ? -22 : 22;
-        ctx.beginPath();
-        ctx.moveTo(mirrorX + curve, top);
-        ctx.quadraticCurveTo(mirrorX, axis, mirrorX + curve, bottom);
+        trace(-1.5);
         ctx.stroke();
       }
       ctx.fillStyle = css('--muted');
-      ctx.font = '13px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.font = '700 13px "Microsoft JhengHei", Arial, sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText(type === 'plane' ? '平面鏡' : (type === 'concave' ? '凹面鏡' : '凸面鏡'), mirrorX, bottom + 22);
+      ctx.restore();
+    }
+
+    function drawOutOfView(ctx, w, h, side, y, text) {
+      const x = side === 'left' ? 18 : w - 18;
+      const clampedY = Math.max(76, Math.min(h - 56, y));
+      const direction = side === 'left' ? -1 : 1;
+      ctx.save();
+      ctx.fillStyle = css('--image');
+      ctx.beginPath();
+      ctx.moveTo(x + direction * 9, clampedY);
+      ctx.lineTo(x - direction * 5, clampedY - 9);
+      ctx.lineTo(x - direction * 5, clampedY + 9);
+      ctx.closePath();
+      ctx.fill();
+      ctx.font = '700 13px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.textAlign = side === 'left' ? 'left' : 'right';
+      ctx.textBaseline = 'bottom';
+      ctx.fillText(text, side === 'left' ? 28 : w - 28, clampedY - 12);
       ctx.restore();
     }
 
@@ -1672,22 +1804,17 @@
       const virtualImage = finiteImage && rawImageDistance < 0;
       const axis = h * 0.52;
       const pad = 58;
-      const leftDistance = Math.max(
-        objectDistance,
-        realImage ? Math.abs(rawImageDistance) : 0,
-        type === 'plane' ? 0 : fInput * 2
-      ) + 18;
-      const rightDistance = Math.max(
-        virtualImage ? Math.abs(rawImageDistance) : 0,
-        type === 'plane' ? objectDistance : fInput
-      ) + 18;
-      const scaleX = (w - pad * 2) / (leftDistance + rightDistance);
-      const mirrorX = pad + leftDistance * scaleX;
+      const mirrorX = w * 0.54;
+      const scaleX = Math.max(0.62, Math.min(
+        (mirrorX - pad) / 130,
+        (w - pad - mirrorX) / 130
+      ));
       const objectX = mirrorX - objectDistance * scaleX;
       const imageX = finiteImage ? mirrorX - rawImageDistance * scaleX : null;
-      const scaleY = Math.min(6.5, h * 0.28 / Math.max(objectHeight, Math.abs(imageHeight), 12));
+      const scaleY = Math.min(4, Math.max(2.4, (h - 100) / 90));
       const objectTip = { x: objectX, y: axis - objectHeight * scaleY };
       const imageTip = finiteImage ? { x: imageX, y: axis - imageHeight * scaleY } : null;
+      const imageInView = finiteImage && imageX >= pad && imageX <= w - pad;
 
       $('mirror-f').disabled = type === 'plane';
       setText('mirror-do-out', `${objectDistance.toFixed(0)} cm`);
@@ -1711,41 +1838,62 @@
         status.innerHTML = `${kind}<small>${magnification >= 0 ? '正立' : '倒立'}、${opticalSizeText(magnification)}</small>`;
       }
 
+      drawMirrorScene(ctx, w, h, axis, mirrorX);
       drawOpticalAxis(ctx, w, axis);
-      drawMirrorShape(ctx, mirrorX, axis, h, type);
       if (type !== 'plane') {
-        drawFocusMarker(ctx, mirrorX - signedF * scaleX, axis, 'F');
-        drawFocusMarker(ctx, mirrorX - 2 * signedF * scaleX, axis, 'C', css('--muted'));
-      }
-      drawOpticalArrow(ctx, objectX, axis, objectHeight * scaleY, css('--orange'), '物');
-      if (finiteImage) {
-        drawOpticalArrow(ctx, imageX, axis, imageHeight * scaleY, css('--orange'), realImage ? '實像' : '虛像', virtualImage);
+        const focusX = mirrorX - signedF * scaleX;
+        const centerX = mirrorX - 2 * signedF * scaleX;
+        if (focusX > pad - 10 && focusX < w - pad + 10) drawFocusMarker(ctx, focusX, axis, 'F');
+        if (centerX > pad - 10 && centerX < w - pad + 10) drawFocusMarker(ctx, centerX, axis, 'C', css('--muted'));
       }
 
-      if (!$('mirror-show-rays').checked) return;
-      const pParallel = { x: mirrorX, y: objectTip.y };
-      const pVertex = { x: mirrorX, y: axis };
-      strokeSegment(ctx, objectTip, pParallel, css('--blue'), 2.2);
-      strokeSegment(ctx, objectTip, pVertex, css('--blue'), 2.2);
-      if (!finiteImage) {
-        const end1 = { x: pad, y: pParallel.y };
-        const end2 = pointAtX(pVertex, objectTip, pad);
-        strokeSegment(ctx, pParallel, end1, css('--green'), 2.8);
-        strokeSegment(ctx, pVertex, end2, css('--green'), 2.8);
-        return;
-      }
-      if (realImage) {
-        strokeSegment(ctx, pParallel, imageTip, css('--green'), 2.8);
-        strokeSegment(ctx, pVertex, imageTip, css('--green'), 2.8);
-      } else {
-        const leftEnd1 = pointAtX(pParallel, imageTip, pad);
-        const leftEnd2 = pointAtX(pVertex, imageTip, pad);
-        strokeSegment(ctx, pParallel, leftEnd1, css('--green'), 2.8);
-        strokeSegment(ctx, pVertex, leftEnd2, css('--green'), 2.8);
-        if ($('mirror-show-extensions').checked) {
-          strokeSegment(ctx, pParallel, imageTip, css('--red'), 2, [7, 6], 0.85);
-          strokeSegment(ctx, pVertex, imageTip, css('--red'), 2, [7, 6], 0.85);
+      const showParallelRay = $('mirror-ray-parallel').checked;
+      const showVertexRay = $('mirror-ray-vertex').checked;
+      if (showParallelRay || showVertexRay) {
+        const pParallel = { x: mirrorX, y: objectTip.y };
+        const pVertex = { x: mirrorX, y: axis };
+        if (showParallelRay) drawRay(ctx, objectTip, pParallel, css('--blue'), 2.2);
+        if (showVertexRay) drawRay(ctx, objectTip, pVertex, css('--blue'), 2.2);
+        if (!finiteImage) {
+          const focusX = mirrorX - signedF * scaleX;
+          const focusPoint = { x: focusX, y: axis };
+          const end1 = pointAtX(pParallel, focusPoint, pad);
+          const rayVector = { x: focusPoint.x - pParallel.x, y: focusPoint.y - pParallel.y };
+          const parallelGuide = { x: pVertex.x + rayVector.x, y: pVertex.y + rayVector.y };
+          const end2 = pointAtX(pVertex, parallelGuide, pad);
+          if (showParallelRay) drawRay(ctx, pParallel, end1, css('--green'), 2.6);
+          if (showVertexRay) drawRay(ctx, pVertex, end2, css('--green'), 2.6);
+        } else if (realImage) {
+          const target1 = imageInView ? imageTip : pointAtX(pParallel, imageTip, pad);
+          const target2 = imageInView ? imageTip : pointAtX(pVertex, imageTip, pad);
+          if (showParallelRay) drawRay(ctx, pParallel, target1, css('--green'), 2.6);
+          if (showVertexRay) drawRay(ctx, pVertex, target2, css('--green'), 2.6);
+        } else {
+          const leftEnd1 = pointAtX(pParallel, imageTip, pad);
+          const leftEnd2 = pointAtX(pVertex, imageTip, pad);
+          if (showParallelRay) drawRay(ctx, pParallel, leftEnd1, css('--green'), 2.6);
+          if (showVertexRay) drawRay(ctx, pVertex, leftEnd2, css('--green'), 2.6);
+          if ($('mirror-show-extensions').checked) {
+            const extensionX = imageInView ? imageX : w - pad;
+            if (showParallelRay) strokeSegment(ctx, pParallel, pointAtX(pParallel, imageTip, extensionX), css('--red'), 1.8, [7, 7], 0.7);
+            if (showVertexRay) strokeSegment(ctx, pVertex, pointAtX(pVertex, imageTip, extensionX), css('--red'), 1.8, [7, 7], 0.7);
+          }
         }
+      }
+
+      drawMirrorShape(ctx, mirrorX, axis, h, type);
+      drawOpticalArrow(ctx, objectX, axis, objectHeight * scaleY, css('--orange'), '物體');
+      if (imageInView) {
+        drawOpticalArrow(ctx, imageX, axis, imageHeight * scaleY, css('--image'), realImage ? '實像' : '虛像', virtualImage);
+      } else if (finiteImage) {
+        drawOutOfView(
+          ctx,
+          w,
+          h,
+          imageX < pad ? 'left' : 'right',
+          axis - imageHeight * scaleY,
+          `${realImage ? '實像' : '虛像'}在畫面外（${Math.abs(rawImageDistance).toFixed(0)} cm）`
+        );
       }
     }
 
@@ -1811,7 +1959,7 @@
       drawFocusMarker(ctx, lensX + 2 * fInput * scaleX, axis, '2F', css('--muted'));
       drawOpticalArrow(ctx, objectX, axis, objectHeight * scaleY, css('--orange'), '物');
       if (finiteImage) {
-        drawOpticalArrow(ctx, imageX, axis, imageHeight * scaleY, css('--orange'), realImage ? '實像' : '虛像', virtualImage);
+        drawOpticalArrow(ctx, imageX, axis, imageHeight * scaleY, css('--image'), realImage ? '實像' : '虛像', virtualImage);
       }
 
       if (!$('lens-show-rays').checked) return;
