@@ -134,6 +134,26 @@
       background: #334155;
       color: #ffffff;
     }
+    .mirror-parallel-switch {
+      display: flex;
+      width: fit-content;
+      gap: 4px;
+      padding: 4px;
+      margin: -6px 0 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #f8fafc;
+    }
+    .mirror-parallel-switch[hidden] { display: none !important; }
+    button.mirror-parallel-mode {
+      background: transparent;
+      color: var(--ink);
+      padding: 7px 12px;
+    }
+    button.mirror-parallel-mode.active {
+      background: var(--accent);
+      color: #ffffff;
+    }
     .optics-view { display: none; }
     .optics-view.active { display: block; }
     button.preset {
@@ -212,6 +232,14 @@
       min-height: 320px;
       display: block;
     }
+    #mirror-canvas.parallel-expanded {
+      height: min(66vh, 560px);
+      min-height: 440px;
+    }
+    #mirror-canvas.ray-draggable {
+      cursor: ns-resize;
+      touch-action: none;
+    }
     .controls {
       margin-top: 16px;
       display: grid;
@@ -277,6 +305,7 @@
       header, .content { padding-left: 18px; padding-right: 18px; }
       .values, .controls { grid-template-columns: 1fr; }
       canvas { height: 330px; min-height: 280px; }
+      #mirror-canvas.parallel-expanded { height: 410px; min-height: 380px; }
       button.optics-mode { min-width: 112px; flex: 1 1 112px; }
     }
   </style>
@@ -626,6 +655,7 @@
             <span class="blue"><i class="dot"></i>入射光</span>
             <span class="green"><i class="dot"></i>反射光</span>
             <span style="color:#475569"><i class="dot"></i>法線</span>
+            <span style="color:#ca8a04"><i class="dot"></i>切線</span>
             <span class="red"><i class="dot"></i>虛線延長</span>
             <span class="orange"><i class="dot"></i>物體</span>
             <span class="purple"><i class="dot"></i>像</span>
@@ -635,6 +665,10 @@
           <button type="button" class="mirror-lesson active" data-mirror-lesson="image" aria-pressed="true">一般成像作圖</button>
           <button type="button" class="mirror-lesson" data-mirror-lesson="parallel" aria-pressed="false">平行光＋法線</button>
           <button type="button" class="mirror-lesson" data-mirror-lesson="twof" aria-pressed="false">C＝2F 等大成像</button>
+        </div>
+        <div class="mirror-parallel-switch" id="mirror-parallel-switch" role="group" aria-label="平行光呈現方式" hidden>
+          <button type="button" class="mirror-parallel-mode active" data-mirror-parallel="single" aria-pressed="true">單光線精看</button>
+          <button type="button" class="mirror-parallel-mode" data-mirror-parallel="particles" aria-pressed="false">粒子光束</button>
         </div>
         <div class="values" aria-live="polite">
           <div class="badge" id="mir-object">物距 = 45 cm<small>物在鏡前</small></div>
@@ -670,13 +704,23 @@
             <label for="mirror-aperture">光束孔徑：<span id="mirror-aperture-out">近軸</span></label>
             <input id="mirror-aperture" type="range" min="0.16" max="0.72" step="0.01" value="0.32" disabled>
           </div>
+          <div class="control" id="mirror-ray-height-control" hidden>
+            <label for="mirror-ray-height">平行光高度：<span id="mirror-ray-height-out">上方 0.20R</span></label>
+            <input id="mirror-ray-height" type="range" min="-0.62" max="0.62" step="0.01" value="-0.20">
+          </div>
+          <div class="control" id="mirror-particle-speed-control" hidden>
+            <label for="mirror-particle-speed">粒子速度：<span id="mirror-particle-speed-out">0.55x</span></label>
+            <input id="mirror-particle-speed" type="range" min="0.15" max="1.4" step="0.05" value="0.55">
+          </div>
         </div>
         <div class="checks">
           <label class="check" id="mirror-ray-parallel-label"><input type="checkbox" id="mirror-ray-parallel" checked>第 1 條：平行主軸光線</label>
           <label class="check" id="mirror-ray-vertex-label"><input type="checkbox" id="mirror-ray-vertex" checked>第 2 條：頂點光線</label>
           <label class="check" id="mirror-show-extensions-label"><input type="checkbox" id="mirror-show-extensions" checked>顯示虛線延長</label>
-          <label class="check" id="mirror-show-normals-label" hidden><input type="checkbox" id="mirror-show-normals" checked>顯示各入射點法線</label>
+          <label class="check" id="mirror-show-normals-label" hidden><input type="checkbox" id="mirror-show-normals" checked>顯示入射點法線</label>
+          <label class="check" id="mirror-show-tangent-label" hidden><input type="checkbox" id="mirror-show-tangent" checked>顯示入射點切線</label>
           <label class="check" id="mirror-show-angles-label" hidden><input type="checkbox" id="mirror-show-angles" checked>標示入射角＝反射角</label>
+          <label class="check" id="mirror-show-particle-trails-label" hidden><input type="checkbox" id="mirror-show-particle-trails" checked>顯示粒子軌跡</label>
           <label class="check"><input type="checkbox" id="mirror-show-curvature">顯示曲率圓（R = 2f）</label>
         </div>
         </div>
@@ -894,6 +938,7 @@
     let activeModule = 'standing';
     let activeOptics = 'mirror';
     let mirrorLesson = 'image';
+    let mirrorParallelMode = 'single';
     let running = true;
     let time = 0;
     let last = performance.now();
@@ -960,6 +1005,12 @@
       if (activeModule === 'ripple') return number('rip-speed');
       if (activeModule === 'double') return number('dbl-speed');
       if (activeModule === 'huygens') return number('huy-speed');
+      if (
+        activeModule === 'optics' &&
+        activeOptics === 'mirror' &&
+        mirrorLesson === 'parallel' &&
+        mirrorParallelMode === 'particles'
+      ) return number('mirror-particle-speed');
       return 0;
     }
 
@@ -2087,22 +2138,33 @@
     function updateMirrorLessonControls(type) {
       const parallel = mirrorLesson === 'parallel';
       const twoF = mirrorLesson === 'twof';
+      const single = parallel && mirrorParallelMode === 'single';
+      const particles = parallel && mirrorParallelMode === 'particles';
       $('mirror-type').disabled = twoF;
       $('mirror-do').disabled = parallel || twoF;
       $('mirror-ho').disabled = parallel;
       $('mirror-f').disabled = type === 'plane';
-      $('mirror-aperture').disabled = !parallel || type === 'plane';
+      $('mirror-aperture').disabled = !particles || type === 'plane';
       $('mirror-show-curvature').disabled = type === 'plane';
+      $('mirror-parallel-switch').hidden = !parallel;
       $('mirror-do-control').hidden = parallel;
       $('mirror-ho-control').hidden = parallel;
-      $('mirror-aperture-control').hidden = !parallel;
+      $('mirror-aperture-control').hidden = !particles;
+      $('mirror-ray-height-control').hidden = !single;
+      $('mirror-particle-speed-control').hidden = !particles;
       $('mirror-ray-parallel-label').hidden = parallel || twoF;
       $('mirror-ray-vertex-label').hidden = parallel || twoF;
       $('mirror-show-extensions-label').hidden = twoF || (parallel && type !== 'convex');
-      $('mirror-show-normals-label').hidden = !parallel;
-      $('mirror-show-angles-label').hidden = !parallel;
+      $('mirror-show-normals-label').hidden = !single;
+      $('mirror-show-tangent-label').hidden = !single;
+      $('mirror-show-angles-label').hidden = !single;
+      $('mirror-show-particle-trails-label').hidden = !particles;
+      $('mirror-canvas').classList.toggle('parallel-expanded', parallel);
+      $('mirror-canvas').classList.toggle('ray-draggable', single);
       $('mirror-copy').textContent = parallel
-        ? '逐束追蹤平行光：每一個入射點的法線都指向曲率中心 C，再用入射角等於反射角決定反射方向。'
+        ? (single
+          ? '上下移動單一平行光，放大檢查入射點 P 的切線、法線 PC 與反射角；近軸時 F′ 約等於 F。'
+          : '同步光粒子先平行前進，碰到鏡面後依反射定律轉向；近軸粒子會在焦點附近交會。')
         : (twoF
           ? '物體鎖定在 C＝2F；比較兩條主光線的交點，並用 m＝-di/do 看出倒立、等大的原因。'
           : '切換平面鏡、凹面鏡、凸面鏡，拖曳物距與焦距，直接看反射光線、虛線延長線與成像位置如何改變。');
@@ -2206,53 +2268,125 @@
       ctx.restore();
     }
 
+    function mirrorRayGeometry(type, mirrorX, centerX, axis, radius, offset, w, h, pad) {
+      const hit = type === 'plane'
+        ? { x: mirrorX, y: axis + offset }
+        : {
+          x: centerX + (type === 'concave' ? 1 : -1) * Math.sqrt(Math.max(0, radius * radius - offset * offset)),
+          y: axis + offset
+        };
+      const normal = type === 'plane'
+        ? { x: 1, y: 0 }
+        : { x: (hit.x - centerX) / radius, y: (hit.y - axis) / radius };
+      const reflected = reflectedVector({ x: 1, y: 0 }, normal);
+      const start = { x: pad, y: hit.y };
+      const end = rayEndpointInCanvas(hit, reflected, w, h, pad);
+      return { hit, normal, reflected, start, end };
+    }
+
+    function drawConstructionLabel(ctx, text, x, y, color) {
+      ctx.save();
+      ctx.font = '700 13px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.lineWidth = 5;
+      ctx.strokeStyle = 'rgba(255,255,255,.96)';
+      ctx.strokeText(text, x, y);
+      ctx.fillStyle = color;
+      ctx.fillText(text, x, y);
+      ctx.restore();
+    }
+
+    function drawTangentAtHit(ctx, hit, normal) {
+      const tangent = { x: -normal.y, y: normal.x };
+      const half = 76;
+      const a = { x: hit.x - tangent.x * half, y: hit.y - tangent.y * half };
+      const b = { x: hit.x + tangent.x * half, y: hit.y + tangent.y * half };
+      strokeSegment(ctx, a, b, '#ca8a04', 2, [8, 5], 0.9);
+      drawConstructionLabel(ctx, '切線', b.x + tangent.x * 9, b.y + tangent.y * 9, '#a16207');
+    }
+
+    function drawLightParticle(ctx, point, color, radius = 4.5) {
+      ctx.save();
+      ctx.fillStyle = color;
+      ctx.shadowColor = color;
+      ctx.shadowBlur = 12;
+      ctx.beginPath();
+      ctx.arc(point.x, point.y, radius, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = 'rgba(255,255,255,.9)';
+      ctx.beginPath();
+      ctx.arc(point.x - 1.1, point.y - 1.1, radius * 0.34, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function pointAlongMirrorRay(geometry, distance) {
+      const incomingLength = Math.hypot(
+        geometry.hit.x - geometry.start.x,
+        geometry.hit.y - geometry.start.y
+      );
+      const reflectedLength = Math.hypot(
+        geometry.end.x - geometry.hit.x,
+        geometry.end.y - geometry.hit.y
+      );
+      if (distance <= incomingLength) {
+        const ratio = Math.max(0, distance / incomingLength);
+        return {
+          point: {
+            x: geometry.start.x + (geometry.hit.x - geometry.start.x) * ratio,
+            y: geometry.start.y + (geometry.hit.y - geometry.start.y) * ratio
+          },
+          reflected: false,
+          total: incomingLength + reflectedLength
+        };
+      }
+      const reflectedDistance = distance - incomingLength;
+      if (reflectedDistance > reflectedLength) return null;
+      const ratio = reflectedLength ? reflectedDistance / reflectedLength : 0;
+      return {
+        point: {
+          x: geometry.hit.x + (geometry.end.x - geometry.hit.x) * ratio,
+          y: geometry.hit.y + (geometry.end.y - geometry.hit.y) * ratio
+        },
+        reflected: true,
+        total: incomingLength + reflectedLength
+      };
+    }
+
     function drawParallelMirrorLesson() {
       const canvas = $('mirror-canvas');
+      const type = $('mirror-type').value;
+      const single = mirrorParallelMode === 'single';
+      updateMirrorLessonControls(type);
       const { ctx, w, h } = resizeCanvas(canvas);
       clearCanvas(ctx, w, h);
 
-      const type = $('mirror-type').value;
       const fInput = number('mirror-f');
       const apertureRatio = number('mirror-aperture');
-      const axis = h * 0.54;
+      const heightRatio = number('mirror-ray-height');
+      const axis = h * 0.53;
       const pad = 42;
-      const mirrorX = type === 'convex' ? w * 0.43 : w * 0.7;
+      const mirrorX = type === 'convex' ? w * 0.43 : w * 0.72;
       const availableRadius = type === 'convex'
         ? (w - pad - mirrorX) / 2.08
         : (mirrorX - pad) / 2.08;
-      const radius = Math.max(46, Math.min(h * 0.31, availableRadius));
+      const radius = Math.max(52, Math.min(h * 0.31, availableRadius));
       const scaleX = type === 'plane' ? 1 : radius / (2 * fInput);
       const centerX = type === 'plane' ? null : (type === 'concave' ? mirrorX - radius : mirrorX + radius);
       const focusX = type === 'plane' ? null : (mirrorX + centerX) / 2;
-      const aperture = type === 'plane' ? h * 0.27 : Math.max(20, radius * apertureRatio);
+      const beamAperture = type === 'plane' ? h * 0.28 : Math.max(20, radius * apertureRatio);
+      const mirrorAperture = type === 'plane' ? h * 0.32 : radius * 0.74;
       const apertureText = apertureRatio <= 0.36 ? '近軸' : (apertureRatio >= 0.58 ? '大孔徑' : '中等孔徑');
 
-      updateMirrorLessonControls(type);
       setText('mirror-do-out', '不使用');
       setText('mirror-f-out', type === 'plane' ? '不使用' : `${fInput.toFixed(0)} cm`);
       setText('mirror-ho-out', '不使用');
       setText('mirror-aperture-out', type === 'plane' ? '平行光束' : `${apertureText}（${apertureRatio.toFixed(2)}R）`);
-
-      $('mir-object').innerHTML = '平行入射光<small>物體可視為在無限遠</small>';
-      $('mir-image').innerHTML = type === 'plane'
-        ? '沒有有限焦點<small>反射後仍為平行光</small>'
-        : `焦距 f ≈ R/2 = ${fInput.toFixed(0)} cm<small>球面鏡的近軸近似</small>`;
-      $('mir-mag').innerHTML = type === 'plane'
-        ? '法線垂直鏡面<small>每條光線皆原路平行反射</small>'
-        : '每一條法線都通過 C<small>逐點使用 θi = θr</small>';
-      const status = $('mir-status');
-      status.classList.toggle('warning', type !== 'plane' && apertureRatio > 0.46);
-      if (type === 'plane') {
-        status.innerHTML = '平面鏡：反射光仍平行<small>沒有匯聚焦點</small>';
-      } else if (type === 'convex') {
-        status.innerHTML = apertureRatio > 0.46
-          ? '大孔徑：延長線不完全交於一點<small>可看見球面像差</small>'
-          : '凸面鏡：延長線近似交於 F<small>F 與 C 都在鏡後</small>';
-      } else {
-        status.innerHTML = apertureRatio > 0.46
-          ? '大孔徑：反射光不完全交於一點<small>可看見球面像差</small>'
-          : '凹面鏡：近軸光近似交於 F<small>F 位於頂點 V 與 C 的中點</small>';
-      }
+      setText('mirror-particle-speed-out', `${number('mirror-particle-speed').toFixed(2)}x`);
+      const heightDirection = Math.abs(heightRatio) < 0.005 ? '主軸' : (heightRatio < 0 ? '上方' : '下方');
+      setText('mirror-ray-height-out', `${heightDirection} ${Math.abs(heightRatio).toFixed(2)}R`);
 
       drawMirrorScene(ctx, w, h, axis, mirrorX);
       drawOpticalAxis(ctx, w, axis);
@@ -2262,61 +2396,150 @@
         }
         drawFocusMarker(ctx, focusX, axis, 'F', css('--purple'));
         if (!$('mirror-show-curvature').checked) drawFocusMarker(ctx, centerX, axis, 'C＝2F', css('--muted'));
-        const bracketY = axis + Math.min(aperture + 64, h - axis - 28);
+        const bracketY = Math.min(h - 24, axis + mirrorAperture + 58);
         drawDistanceBracket(ctx, centerX, mirrorX, bracketY, 'R＝2f；F 在正中央');
       }
 
-      const offsets = [-1, -0.52, 0, 0.52, 1].map(value => value * aperture);
-      let selected = null;
-      offsets.forEach((offset, index) => {
-        let hit;
-        let normal;
-        if (type === 'plane') {
-          hit = { x: mirrorX, y: axis + offset };
-          normal = { x: 1, y: 0 };
-        } else {
-          const side = type === 'concave' ? 1 : -1;
-          hit = {
-            x: centerX + side * Math.sqrt(Math.max(0, radius * radius - offset * offset)),
-            y: axis + offset
-          };
-          normal = { x: (hit.x - centerX) / radius, y: (hit.y - axis) / radius };
-        }
-        const incident = { x: 1, y: 0 };
-        const reflected = reflectedVector(incident, normal);
-        const start = { x: pad, y: hit.y };
-        const end = rayEndpointInCanvas(hit, reflected, w, h, pad);
-        const emphasis = index === 0;
-        drawRay(ctx, start, hit, css('--blue'), emphasis ? 2.8 : 1.8);
-        drawRay(ctx, hit, end, css('--green'), emphasis ? 3 : 2);
+      const status = $('mir-status');
+      if (single) {
+        const offset = type === 'plane' ? heightRatio * h * 0.34 : heightRatio * radius;
+        const ray = mirrorRayGeometry(type, mirrorX, centerX, axis, radius, offset, w, h, pad);
+        drawRay(ctx, ray.start, ray.hit, css('--blue'), 3.2);
+        drawRay(ctx, ray.hit, ray.end, css('--green'), 3.4);
 
         if ($('mirror-show-normals').checked) {
           if (type === 'plane') {
-            strokeSegment(ctx, { x: hit.x - 54, y: hit.y }, { x: hit.x + 35, y: hit.y }, 'rgba(71,85,105,.72)', 1.4, [5, 5]);
+            strokeSegment(ctx, { x: ray.hit.x - 128, y: ray.hit.y }, { x: ray.hit.x + 42, y: ray.hit.y }, '#475569', 2, [7, 5], 0.84);
+            drawConstructionLabel(ctx, '法線', ray.hit.x - 86, ray.hit.y - 15, '#475569');
           } else {
-            strokeSegment(ctx, hit, { x: centerX, y: axis }, 'rgba(71,85,105,.76)', 1.5, [6, 5]);
+            strokeSegment(ctx, ray.hit, { x: centerX, y: axis }, '#475569', 2, [7, 5], 0.84);
+            drawConstructionLabel(
+              ctx,
+              '法線 PC',
+              centerX + (ray.hit.x - centerX) * 0.18,
+              axis + (ray.hit.y - axis) * 0.18 + (offset <= 0 ? -36 : 36),
+              '#475569'
+            );
           }
         }
+        if ($('mirror-show-tangent').checked) drawTangentAtHit(ctx, ray.hit, ray.normal);
         if (type === 'convex' && $('mirror-show-extensions').checked) {
-          const extension = rayEndpointInCanvas(hit, { x: -reflected.x, y: -reflected.y }, w, h, pad);
-          strokeSegment(ctx, hit, extension, css('--red'), 1.5, [7, 7], 0.62);
+          const extension = rayEndpointInCanvas(ray.hit, { x: -ray.reflected.x, y: -ray.reflected.y }, w, h, pad);
+          strokeSegment(ctx, ray.hit, extension, css('--red'), 1.8, [8, 7], 0.68);
         }
-        if (emphasis) selected = { hit, reflected, normal };
-      });
 
-      drawSphericalMirror(ctx, mirrorX, axis, h, type, radius, aperture);
-      if (type !== 'plane') {
-        drawAxisPointLabel(ctx, centerX, axis, 'C＝2F', '#0f766e', -21);
-        drawAxisPointLabel(ctx, focusX, axis, 'F', css('--purple'), 24);
-      }
-      if (selected && $('mirror-show-angles').checked) {
-        const normalOnIncidentSide = type === 'convex'
-          ? selected.normal
-          : { x: -selected.normal.x, y: -selected.normal.y };
-        const incomingAway = { x: -1, y: 0 };
-        drawAngleArc(ctx, selected.hit, incomingAway, normalOnIncidentSide, 20, css('--blue'), 'θi');
-        drawAngleArc(ctx, selected.hit, normalOnIncidentSide, selected.reflected, 29, css('--green'), 'θr');
-        drawSceneLabel(ctx, Math.max(26, selected.hit.x - 150), 58, '同一入射點：θi＝θr');
+        drawSphericalMirror(ctx, mirrorX, axis, h, type, radius, mirrorAperture);
+        ctx.save();
+        ctx.fillStyle = '#be123c';
+        ctx.beginPath();
+        ctx.arc(ray.hit.x, ray.hit.y, 5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+        drawConstructionLabel(ctx, 'P', ray.hit.x + (type === 'convex' ? -16 : 17), ray.hit.y - 17, '#be123c');
+
+        if (type !== 'plane') {
+          drawAxisPointLabel(ctx, centerX, axis, 'C＝2F', '#0f766e', -22);
+          drawAxisPointLabel(ctx, focusX, axis, 'F', css('--purple'), 25);
+        }
+        if ($('mirror-show-angles').checked) {
+          const normalOnIncidentSide = type === 'convex'
+            ? ray.normal
+            : { x: -ray.normal.x, y: -ray.normal.y };
+          drawAngleArc(ctx, ray.hit, { x: -1, y: 0 }, normalOnIncidentSide, 27, css('--blue'), 'θi');
+          drawAngleArc(ctx, ray.hit, normalOnIncidentSide, ray.reflected, 39, css('--green'), 'θr');
+          drawSceneLabel(ctx, Math.max(26, ray.hit.x - 190), 58, 'P 點：θi＝θr');
+        }
+
+        $('mir-object').innerHTML = '單一平行光<small>上下拖曳光線高度</small>';
+        $('mir-image').innerHTML = type === 'plane'
+          ? '沒有有限焦點<small>反射後沿原方向返回</small>'
+          : `課本焦點 F＝R/2＝${fInput.toFixed(0)} cm<small>適用於近軸光線</small>`;
+        $('mir-mag').innerHTML = type === 'plane'
+          ? '法線垂直鏡面<small>切線與法線互相垂直</small>'
+          : `光線高度＝${Math.abs(heightRatio).toFixed(2)}R<small>法線 PC 通過曲率中心</small>`;
+
+        let crossingX = null;
+        if (type !== 'plane' && Math.abs(ray.reflected.y) > 1e-5) {
+          const crossingTime = (axis - ray.hit.y) / ray.reflected.y;
+          crossingX = ray.hit.x + crossingTime * ray.reflected.x;
+        }
+        const focusErrorPx = crossingX === null ? 0 : Math.abs(crossingX - focusX);
+        const focusErrorCm = type === 'plane' ? 0 : focusErrorPx / scaleX;
+        status.classList.toggle('warning', type !== 'plane' && focusErrorPx > 7);
+        if (type === 'plane') {
+          status.innerHTML = '平面鏡反射<small>無論高度，入射角都等於反射角</small>';
+        } else if (crossingX === null) {
+          status.innerHTML = '主軸光線原路返回<small>稍微移動高度，就能看到與主軸的交點</small>';
+        } else {
+          if (crossingX > pad && crossingX < w - pad && focusErrorPx > 5) {
+            drawFocusMarker(ctx, crossingX, axis, 'F′', '#be123c');
+          }
+          status.innerHTML = focusErrorPx <= 7
+            ? `近軸光：F′ 幾乎就是 F<small>偏差約 ${focusErrorCm.toFixed(2)} cm</small>`
+            : `高軸光：F′ 不再等於 F<small>偏差約 ${focusErrorCm.toFixed(2)} cm，這是球面像差</small>`;
+        }
+      } else {
+        const offsets = Array.from({ length: 9 }, (_, index) => (-1 + index / 4) * beamAperture);
+        const rays = offsets.map(offset => mirrorRayGeometry(type, mirrorX, centerX, axis, radius, offset, w, h, pad));
+
+        if ($('mirror-show-particle-trails').checked) {
+          rays.forEach(ray => {
+            strokeSegment(ctx, ray.start, ray.hit, css('--blue'), 1.45, null, 0.24);
+            strokeSegment(ctx, ray.hit, ray.end, css('--green'), 1.55, null, 0.28);
+            if (type === 'convex' && $('mirror-show-extensions').checked) {
+              const extension = rayEndpointInCanvas(ray.hit, { x: -ray.reflected.x, y: -ray.reflected.y }, w, h, pad);
+              strokeSegment(ctx, ray.hit, extension, css('--red'), 1.15, [7, 7], 0.34);
+            }
+          });
+        }
+
+        drawSphericalMirror(ctx, mirrorX, axis, h, type, radius, mirrorAperture);
+        const totals = rays.map(ray => (
+          Math.hypot(ray.hit.x - ray.start.x, ray.hit.y - ray.start.y) +
+          Math.hypot(ray.end.x - ray.hit.x, ray.end.y - ray.hit.y)
+        ));
+        const cycleLength = Math.max(...totals) + 120;
+        const travel = (time * 185) % cycleLength;
+        for (let group = 0; group < 6; group += 1) {
+          const distance = (travel + group * cycleLength / 6) % cycleLength;
+          rays.forEach(ray => {
+            const sample = pointAlongMirrorRay(ray, distance);
+            if (!sample) return;
+            drawLightParticle(ctx, sample.point, sample.reflected ? css('--green') : css('--blue'));
+          });
+        }
+
+        if (type !== 'plane') {
+          drawAxisPointLabel(ctx, centerX, axis, 'C＝2F', '#0f766e', -22);
+          drawAxisPointLabel(ctx, focusX, axis, 'F', css('--purple'), 25);
+          ctx.save();
+          ctx.strokeStyle = 'rgba(124,58,237,.5)';
+          ctx.lineWidth = 2;
+          ctx.beginPath();
+          ctx.arc(focusX, axis, 9 + 2.5 * Math.sin(time * 7), 0, Math.PI * 2);
+          ctx.stroke();
+          ctx.restore();
+        }
+
+        $('mir-object').innerHTML = '平行光粒子束<small>同一波前同步向右前進</small>';
+        $('mir-image').innerHTML = type === 'plane'
+          ? '沒有有限焦點<small>反射粒子仍維持平行</small>'
+          : `焦點 F ≈ R/2＝${fInput.toFixed(0)} cm<small>觀察粒子在焦點附近交會</small>`;
+        $('mir-mag').innerHTML = type === 'plane'
+          ? '粒子原路反射<small>每一列維持水平</small>'
+          : `${apertureText}光束 ${apertureRatio.toFixed(2)}R<small>孔徑越小，交會越集中</small>`;
+        status.classList.toggle('warning', type !== 'plane' && apertureRatio > 0.46);
+        if (type === 'plane') {
+          status.innerHTML = '平面鏡不會聚光<small>粒子反射後仍保持平行</small>';
+        } else if (type === 'convex') {
+          status.innerHTML = apertureRatio > 0.46
+            ? '大孔徑：反向延長不交於單一點<small>球面像差變得明顯</small>'
+            : '凸面鏡使粒子束發散<small>反向延長線近似交於鏡後 F</small>';
+        } else {
+          status.innerHTML = apertureRatio > 0.46
+            ? '大孔徑：粒子不會同時穿過單一點<small>這是球面像差，不是動畫誤差</small>'
+            : '近軸粒子集中通過 F 附近<small>縮小孔徑會更接近課本理想焦點</small>';
+        }
       }
     }
 
@@ -3361,6 +3584,22 @@
       if (name === 'twof') {
         $('mirror-do').value = String(2 * number('mirror-f'));
       }
+      time = 0;
+      requestAnimationFrame(drawActive);
+    }
+
+    function setMirrorParallelMode(name) {
+      mirrorParallelMode = name;
+      document.querySelectorAll('.mirror-parallel-mode').forEach(btn => {
+        const active = btn.dataset.mirrorParallel === name;
+        btn.classList.toggle('active', active);
+        btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+      });
+      if (name === 'particles' && number('mirror-aperture') > 0.46) {
+        $('mirror-aperture').value = '0.32';
+      }
+      time = 0;
+      last = performance.now();
       requestAnimationFrame(drawActive);
     }
 
@@ -3376,9 +3615,63 @@
       btn.addEventListener('click', () => setMirrorLesson(btn.dataset.mirrorLesson));
     });
 
+    document.querySelectorAll('.mirror-parallel-mode').forEach(btn => {
+      btn.addEventListener('click', () => setMirrorParallelMode(btn.dataset.mirrorParallel));
+    });
+
     document.querySelectorAll('input, select').forEach(input => {
       input.addEventListener('input', drawActive);
       input.addEventListener('change', drawActive);
+    });
+
+    let draggingMirrorRay = false;
+
+    function setMirrorRayHeightFromPointer(event) {
+      if (
+        activeModule !== 'optics' ||
+        activeOptics !== 'mirror' ||
+        mirrorLesson !== 'parallel' ||
+        mirrorParallelMode !== 'single'
+      ) return;
+      const canvas = $('mirror-canvas');
+      const rect = canvas.getBoundingClientRect();
+      const type = $('mirror-type').value;
+      const axis = rect.height * 0.53;
+      let heightScale = rect.height * 0.34;
+      if (type !== 'plane') {
+        const pad = 42;
+        const mirrorX = type === 'convex' ? rect.width * 0.43 : rect.width * 0.72;
+        const availableRadius = type === 'convex'
+          ? (rect.width - pad - mirrorX) / 2.08
+          : (mirrorX - pad) / 2.08;
+        heightScale = Math.max(52, Math.min(rect.height * 0.31, availableRadius));
+      }
+      const ratio = Math.max(-0.62, Math.min(0.62, (event.clientY - rect.top - axis) / heightScale));
+      $('mirror-ray-height').value = ratio.toFixed(2);
+      drawActive();
+    }
+
+    $('mirror-canvas').addEventListener('pointerdown', event => {
+      if (!event.currentTarget.classList.contains('ray-draggable')) return;
+      draggingMirrorRay = true;
+      event.currentTarget.setPointerCapture(event.pointerId);
+      setMirrorRayHeightFromPointer(event);
+    });
+
+    $('mirror-canvas').addEventListener('pointermove', event => {
+      if (!draggingMirrorRay) return;
+      setMirrorRayHeightFromPointer(event);
+    });
+
+    $('mirror-canvas').addEventListener('pointerup', event => {
+      draggingMirrorRay = false;
+      if (event.currentTarget.hasPointerCapture(event.pointerId)) {
+        event.currentTarget.releasePointerCapture(event.pointerId);
+      }
+    });
+
+    $('mirror-canvas').addEventListener('pointercancel', () => {
+      draggingMirrorRay = false;
     });
 
     $('global-play').addEventListener('click', () => {
