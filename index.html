@@ -221,7 +221,7 @@
       accent-color: var(--accent);
     }
     input[type="range"]:disabled { opacity: .45; }
-    select {
+    select, input[type="text"] {
       width: 100%;
       padding: 8px 10px;
       border: 1px solid var(--line);
@@ -230,6 +230,7 @@
       color: var(--ink);
       font: inherit;
       font-weight: 700;
+      box-sizing: border-box;
     }
     .checks, .presets { margin-top: 14px; }
     .check {
@@ -594,6 +595,7 @@
         <div class="optics-switch" role="group" aria-label="選擇成像元件">
           <button type="button" class="optics-mode active" data-optics="mirror" aria-pressed="true">面鏡</button>
           <button type="button" class="optics-mode" data-optics="lens" aria-pressed="false">透鏡</button>
+          <button type="button" class="optics-mode" data-optics="reflection" aria-pressed="false">鏡像文字</button>
           <button type="button" class="optics-mode" data-optics="trifold" aria-pressed="false">多面鏡</button>
           <button type="button" class="optics-mode" data-optics="microscope" aria-pressed="false">顯微鏡</button>
         </div>
@@ -647,6 +649,7 @@
           <label class="check"><input type="checkbox" id="mirror-ray-parallel" checked>第 1 條：平行主軸光線</label>
           <label class="check"><input type="checkbox" id="mirror-ray-vertex" checked>第 2 條：頂點光線</label>
           <label class="check"><input type="checkbox" id="mirror-show-extensions" checked>顯示虛線延長</label>
+          <label class="check"><input type="checkbox" id="mirror-show-curvature">顯示曲率圓（R = 2f）</label>
         </div>
         </div>
 
@@ -698,7 +701,62 @@
           <label class="check"><input type="checkbox" id="lens-ray-parallel" checked>第 1 條：平行主軸光線</label>
           <label class="check"><input type="checkbox" id="lens-ray-center" checked>第 2 條：通過光心光線</label>
           <label class="check"><input type="checkbox" id="lens-show-extensions" checked>顯示虛線延長</label>
+          <label class="check"><input type="checkbox" id="lens-show-curvature">顯示曲率圓（對稱 n≈1.5 薄透鏡）</label>
         </div>
+        </div>
+
+        <div id="optics-view-reflection" class="optics-view">
+          <div class="module-head">
+            <div>
+              <h2>鏡中成像與水中倒影</h2>
+              <p class="module-copy">輸入文字或電子鐘數字，比較直立面鏡的水平鏡射與平靜水面的垂直鏡射。</p>
+            </div>
+            <div class="legend" aria-label="鏡像文字圖例">
+              <span class="orange"><i class="dot"></i>物體</span>
+              <span class="purple"><i class="dot"></i>虛像</span>
+              <span class="green"><i class="dot"></i>等距輔助線</span>
+            </div>
+          </div>
+          <div class="values" aria-live="polite">
+            <div class="badge" id="reflection-distance">do = 35 cm｜di = -35 cm<small>|di| = do</small></div>
+            <div class="badge" id="reflection-size">物像大小 1：1<small>平面反射不放大也不縮小</small></div>
+            <div class="badge" id="reflection-direction">水平鏡射<small>上下不變，畫面左右翻轉</small></div>
+            <div class="badge" id="reflection-status">直立平面鏡虛像<small>像位於鏡後等距處</small></div>
+          </div>
+          <div class="plot-wrap">
+            <canvas id="reflection-canvas" role="img" aria-label="自訂文字在直立面鏡或水平水面中的鏡像示意。"></canvas>
+          </div>
+          <div class="controls">
+            <div class="control">
+              <label for="reflection-mode">反射面方向</label>
+              <select id="reflection-mode">
+                <option value="vertical" selected>直立面鏡：左右翻轉</option>
+                <option value="water">水平水面：上下翻轉</option>
+              </select>
+            </div>
+            <div class="control">
+              <label for="reflection-content">要成像的內容</label>
+              <input id="reflection-content" type="text" value="12:34 ABC" maxlength="18" spellcheck="false" autocomplete="off">
+            </div>
+            <div class="control">
+              <label for="reflection-style">顯示樣式</label>
+              <select id="reflection-style">
+                <option value="text" selected>粗體文字</option>
+                <option value="digital">電子鐘（數字與冒號）</option>
+              </select>
+            </div>
+            <div class="control">
+              <label for="reflection-do">物距 do：<span id="reflection-do-out">35 cm</span></label>
+              <input id="reflection-do" type="range" min="5" max="100" step="1" value="35">
+            </div>
+            <div class="control">
+              <label for="reflection-font-size">字體大小：<span id="reflection-font-size-out">58</span></label>
+              <input id="reflection-font-size" type="range" min="28" max="90" step="1" value="58">
+            </div>
+          </div>
+          <div class="checks">
+            <label class="check"><input type="checkbox" id="reflection-show-guide" checked>顯示物像等距輔助線</label>
+          </div>
         </div>
 
         <div id="optics-view-trifold" class="optics-view">
@@ -1829,6 +1887,41 @@
       ctx.restore();
     }
 
+    function drawCurvatureCircle(ctx, centerX, axis, radius, label, labelOffsetY = -17) {
+      if (!Number.isFinite(radius) || radius <= 0) return;
+      const color = 'rgba(15,118,110,.62)';
+      ctx.save();
+      ctx.strokeStyle = color;
+      ctx.fillStyle = color;
+      ctx.lineWidth = 1.6;
+      ctx.setLineDash([8, 7]);
+      ctx.beginPath();
+      ctx.arc(centerX, axis, radius, 0, Math.PI * 2);
+      ctx.stroke();
+
+      ctx.setLineDash([4, 5]);
+      ctx.globalAlpha = 0.78;
+      ctx.beginPath();
+      ctx.moveTo(centerX, axis);
+      ctx.lineTo(centerX + radius, axis);
+      ctx.stroke();
+
+      ctx.setLineDash([]);
+      ctx.globalAlpha = 1;
+      ctx.beginPath();
+      ctx.arc(centerX, axis, 4.2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.font = '700 13px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'alphabetic';
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = 'rgba(255,255,255,.92)';
+      ctx.strokeText(label, centerX, axis + labelOffsetY);
+      ctx.fillStyle = color;
+      ctx.fillText(label, centerX, axis + labelOffsetY);
+      ctx.restore();
+    }
+
     function drawMirrorShape(ctx, mirrorX, axis, h, type) {
       const top = 42;
       const bottom = h - 42;
@@ -1958,6 +2051,7 @@
       const imageInView = finiteImage && imageX >= pad && imageX <= w - pad;
 
       $('mirror-f').disabled = type === 'plane';
+      $('mirror-show-curvature').disabled = type === 'plane';
       setText('mirror-do-out', `${formatCm(objectDistance)} cm`);
       setText('mirror-f-out', type === 'plane' ? '不使用' : `${fInput.toFixed(0)} cm`);
       setText('mirror-ho-out', `${objectHeight.toFixed(0)} cm`);
@@ -1984,8 +2078,13 @@
       if (type !== 'plane') {
         const focusX = mirrorX - signedF * scaleX;
         const centerX = mirrorX - 2 * signedF * scaleX;
+        if ($('mirror-show-curvature').checked) {
+          drawCurvatureCircle(ctx, centerX, axis, 2 * fInput * scaleX, 'C');
+        }
         if (focusX > pad - 10 && focusX < w - pad + 10) drawFocusMarker(ctx, focusX, axis, 'F');
-        if (centerX > pad - 10 && centerX < w - pad + 10) drawFocusMarker(ctx, centerX, axis, 'C', css('--muted'));
+        if (!$('mirror-show-curvature').checked && centerX > pad - 10 && centerX < w - pad + 10) {
+          drawFocusMarker(ctx, centerX, axis, 'C', css('--muted'));
+        }
       }
 
       const showParallelRay = $('mirror-ray-parallel').checked;
@@ -2089,6 +2188,14 @@
 
       drawLensScene(ctx, w, h, axis, lensX);
       drawOpticalAxis(ctx, w, axis);
+      if ($('lens-show-curvature').checked) {
+        // 對稱薄透鏡、空氣中 n 約 1.5 時，透鏡製造公式給出 |R| 約等於 |f|。
+        const radius = fInput * scaleX;
+        const leftCenterX = type === 'convex' ? lensX + radius : lensX - radius;
+        const rightCenterX = type === 'convex' ? lensX - radius : lensX + radius;
+        drawCurvatureCircle(ctx, leftCenterX, axis, radius, 'C₁', -18);
+        drawCurvatureCircle(ctx, rightCenterX, axis, radius, 'C₂', -38);
+      }
       const focalPositions = [
         { x: lensX - fInput * scaleX, label: 'F', color: css('--purple') },
         { x: lensX + fInput * scaleX, label: 'F', color: css('--purple') },
@@ -2147,6 +2254,251 @@
           axis - imageHeight * scaleY,
           `${realImage ? '實像' : '虛像'}在畫面外（${Math.abs(rawImageDistance).toFixed(0)} cm）`
         );
+      }
+    }
+
+    const digitalSegments = {
+      '0': 'abcdef',
+      '1': 'bc',
+      '2': 'abdeg',
+      '3': 'abcdg',
+      '4': 'bcfg',
+      '5': 'acdfg',
+      '6': 'acdefg',
+      '7': 'abc',
+      '8': 'abcdefg',
+      '9': 'abcdfg',
+      '-': 'g'
+    };
+
+    function digitalCharacterWidth(character, size) {
+      if (character === ':') return size * 0.3;
+      if (character === ' ') return size * 0.38;
+      return size * 0.68;
+    }
+
+    function digitalTextWidth(text, size) {
+      const spacing = size * 0.1;
+      return [...text].reduce((sum, character) => sum + digitalCharacterWidth(character, size) + spacing, -spacing);
+    }
+
+    function drawDigitalCharacter(ctx, character, x, y, size) {
+      const width = digitalCharacterWidth(character, size);
+      if (character === ':') {
+        ctx.beginPath();
+        ctx.arc(x + width / 2, y - size * 0.2, size * 0.055, 0, Math.PI * 2);
+        ctx.arc(x + width / 2, y + size * 0.2, size * 0.055, 0, Math.PI * 2);
+        ctx.fill();
+        return;
+      }
+      if (character === ' ') return;
+      const segments = digitalSegments[character];
+      if (!segments) {
+        ctx.save();
+        ctx.font = `800 ${size * 0.82}px Consolas, "Microsoft JhengHei", sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(character, x + width / 2, y);
+        ctx.restore();
+        return;
+      }
+      const left = x + width * 0.14;
+      const right = x + width * 0.86;
+      const top = y - size * 0.42;
+      const middle = y;
+      const bottom = y + size * 0.42;
+      const segmentLines = {
+        a: [left, top, right, top],
+        b: [right, top, right, middle],
+        c: [right, middle, right, bottom],
+        d: [left, bottom, right, bottom],
+        e: [left, middle, left, bottom],
+        f: [left, top, left, middle],
+        g: [left, middle, right, middle]
+      };
+      ctx.save();
+      ctx.lineWidth = Math.max(3, size * 0.095);
+      ctx.lineCap = 'round';
+      for (const segment of segments) {
+        const line = segmentLines[segment];
+        ctx.beginPath();
+        ctx.moveTo(line[0], line[1]);
+        ctx.lineTo(line[2], line[3]);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    function fittedReflectionTextSize(ctx, text, style, preferredSize, maxWidth) {
+      if (!text) return preferredSize;
+      let width;
+      if (style === 'digital') {
+        width = digitalTextWidth(text, preferredSize);
+      } else {
+        ctx.save();
+        ctx.font = `800 ${preferredSize}px "Microsoft JhengHei", Arial, sans-serif`;
+        width = ctx.measureText(text).width;
+        ctx.restore();
+      }
+      return width > maxWidth ? preferredSize * maxWidth / width : preferredSize;
+    }
+
+    function drawReflectionText(ctx, text, x, y, size, style, color, flipX, flipY, alpha = 1) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.scale(flipX ? -1 : 1, flipY ? -1 : 1);
+      ctx.fillStyle = color;
+      ctx.strokeStyle = color;
+      ctx.globalAlpha = alpha;
+      if (style === 'digital') {
+        const totalWidth = digitalTextWidth(text, size);
+        const spacing = size * 0.1;
+        let cursor = -totalWidth / 2;
+        for (const character of text) {
+          drawDigitalCharacter(ctx, character, cursor, 0, size);
+          cursor += digitalCharacterWidth(character, size) + spacing;
+        }
+      } else {
+        ctx.font = `800 ${size}px "Microsoft JhengHei", Arial, sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(text, 0, 0);
+      }
+      ctx.restore();
+    }
+
+    function drawVerticalMirror(ctx, x, h) {
+      const top = 34;
+      const bottom = h - 34;
+      strokeSegment(ctx, { x: x + 5, y: top }, { x: x + 5, y: bottom }, 'rgba(71,85,105,.2)', 12);
+      strokeSegment(ctx, { x, y: top }, { x, y: bottom }, '#475569', 4);
+      ctx.save();
+      ctx.strokeStyle = 'rgba(71,85,105,.48)';
+      ctx.lineWidth = 1.3;
+      for (let y = top + 12; y < bottom; y += 22) {
+        ctx.beginPath();
+        ctx.moveTo(x + 8, y);
+        ctx.lineTo(x + 18, y + 8);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    function drawWaterSurface(ctx, w, surfaceY, h) {
+      const water = ctx.createLinearGradient(0, surfaceY, 0, h);
+      water.addColorStop(0, 'rgba(14,165,233,.12)');
+      water.addColorStop(1, 'rgba(14,165,233,.035)');
+      ctx.fillStyle = water;
+      ctx.fillRect(0, surfaceY, w, h - surfaceY);
+      ctx.save();
+      ctx.strokeStyle = '#0284c7';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      for (let x = 0; x <= w; x += 4) {
+        const y = surfaceY + Math.sin(x / 18) * 2;
+        if (x === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawReflection() {
+      const canvas = $('reflection-canvas');
+      const { ctx, w, h } = resizeCanvas(canvas);
+      clearCanvas(ctx, w, h);
+
+      const mode = $('reflection-mode').value;
+      const style = $('reflection-style').value;
+      const text = $('reflection-content').value || 'A';
+      const objectDistance = number('reflection-do');
+      const preferredSize = number('reflection-font-size');
+      const showGuide = $('reflection-show-guide').checked;
+      const vertical = mode === 'vertical';
+
+      setText('reflection-do-out', `${objectDistance.toFixed(0)} cm`);
+      setText('reflection-font-size-out', preferredSize.toFixed(0));
+      $('reflection-distance').innerHTML = `do = ${objectDistance.toFixed(0)} cm｜di = -${objectDistance.toFixed(0)} cm<small>|di| = do，物與像到反射面等距</small>`;
+      $('reflection-size').innerHTML = '物像大小 1：1<small>平面反射不放大也不縮小</small>';
+      $('reflection-direction').innerHTML = vertical
+        ? '水平鏡射<small>上下不變，畫面左右翻轉</small>'
+        : '垂直鏡射<small>左右不變，畫面上下翻轉</small>';
+      $('reflection-status').innerHTML = vertical
+        ? '直立平面鏡虛像<small>像位於鏡後等距處</small>'
+        : '平靜水面倒影<small>像位於水面下等距處</small>';
+
+      ctx.save();
+      ctx.fillStyle = vertical ? 'rgba(37,99,235,.025)' : 'rgba(249,115,22,.025)';
+      ctx.fillRect(0, 0, w, h);
+      ctx.restore();
+
+      if (vertical) {
+        const mirrorX = w / 2;
+        const y = h / 2;
+        const maxOffset = Math.max(46, w / 2 - 72);
+        const offset = 30 + (objectDistance / 100) * (maxOffset - 30);
+        const objectX = mirrorX - offset;
+        const imageX = mirrorX + offset;
+        const sideClearance = Math.max(46, 2 * Math.min(offset - 24, objectX - 34));
+        const size = fittedReflectionTextSize(ctx, text, style, preferredSize, sideClearance);
+        ctx.fillStyle = 'rgba(124,58,237,.035)';
+        ctx.fillRect(mirrorX, 0, w - mirrorX, h);
+        if (showGuide) {
+          const guideY = Math.min(h - 52, y + size * 0.68 + 48);
+          strokeSegment(ctx, { x: objectX, y: guideY }, { x: imageX, y: guideY }, 'rgba(15,118,110,.7)', 1.8, [7, 6]);
+          ctx.save();
+          ctx.strokeStyle = 'rgba(15,118,110,.82)';
+          ctx.fillStyle = 'rgba(15,118,110,.9)';
+          ctx.lineWidth = 2;
+          ctx.font = '700 12px "Microsoft JhengHei", Arial, sans-serif';
+          ctx.textAlign = 'center';
+          [objectX, mirrorX, imageX].forEach(markX => {
+            ctx.beginPath();
+            ctx.moveTo(markX, guideY - 7);
+            ctx.lineTo(markX, guideY + 7);
+            ctx.stroke();
+          });
+          ctx.fillText('do', (objectX + mirrorX) / 2, guideY - 9);
+          ctx.fillText('|di|', (mirrorX + imageX) / 2, guideY - 9);
+          ctx.restore();
+        }
+        drawReflectionText(ctx, text, objectX, y, size, style, css('--orange'), false, false, 1);
+        drawReflectionText(ctx, text, imageX, y, size, style, css('--image'), true, false, 0.82);
+        drawVerticalMirror(ctx, mirrorX, h);
+        drawSceneLabel(ctx, mirrorX - 16, 18, '鏡前｜物體側', 'right');
+        drawSceneLabel(ctx, mirrorX + 16, 18, '鏡後｜虛像側');
+      } else {
+        const surfaceY = h / 2;
+        const x = w / 2;
+        const maxOffset = Math.max(48, h / 2 - 68);
+        const offset = 34 + (objectDistance / 100) * (maxOffset - 34);
+        const objectY = surfaceY - offset;
+        const imageY = surfaceY + offset;
+        const size = fittedReflectionTextSize(ctx, text, style, preferredSize, Math.max(100, w - 120));
+        drawWaterSurface(ctx, w, surfaceY, h);
+        if (showGuide) {
+          const guideX = w - 42;
+          strokeSegment(ctx, { x: guideX, y: objectY }, { x: guideX, y: imageY }, 'rgba(15,118,110,.7)', 1.8, [7, 6]);
+          ctx.save();
+          ctx.strokeStyle = 'rgba(15,118,110,.82)';
+          ctx.fillStyle = 'rgba(15,118,110,.9)';
+          ctx.lineWidth = 2;
+          ctx.font = '700 12px "Microsoft JhengHei", Arial, sans-serif';
+          ctx.textAlign = 'right';
+          [objectY, surfaceY, imageY].forEach(markY => {
+            ctx.beginPath();
+            ctx.moveTo(guideX - 7, markY);
+            ctx.lineTo(guideX + 7, markY);
+            ctx.stroke();
+          });
+          ctx.fillText('do', guideX - 11, (objectY + surfaceY) / 2 + 4);
+          ctx.fillText('|di|', guideX - 11, (surfaceY + imageY) / 2 + 4);
+          ctx.restore();
+        }
+        drawReflectionText(ctx, text, x, objectY, size, style, css('--orange'), false, false, 1);
+        drawReflectionText(ctx, text, x, imageY, size, style, '#2563eb', false, true, 0.62);
+        drawSceneLabel(ctx, 22, surfaceY - 20, '水面上｜物體');
+        drawSceneLabel(ctx, 22, surfaceY + 22, '水面下｜虛像');
       }
     }
 
@@ -2632,6 +2984,7 @@
       else if (activeModule === 'optics') {
         if (activeOptics === 'mirror') drawMirror();
         else if (activeOptics === 'lens') drawLens();
+        else if (activeOptics === 'reflection') drawReflection();
         else if (activeOptics === 'trifold') drawTrifoldMirrors();
         else drawMicroscope();
       }
