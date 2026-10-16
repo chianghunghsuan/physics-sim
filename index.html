@@ -99,7 +99,9 @@
       color: #ffffff;
     }
     .optics-switch {
-      display: inline-flex;
+      display: flex;
+      flex-wrap: wrap;
+      width: fit-content;
       gap: 4px;
       padding: 4px;
       margin-bottom: 18px;
@@ -258,6 +260,7 @@
       header, .content { padding-left: 18px; padding-right: 18px; }
       .values, .controls { grid-template-columns: 1fr; }
       canvas { height: 330px; min-height: 280px; }
+      button.optics-mode { min-width: 112px; flex: 1 1 112px; }
     }
   </style>
 </head>
@@ -591,6 +594,8 @@
         <div class="optics-switch" role="group" aria-label="選擇成像元件">
           <button type="button" class="optics-mode active" data-optics="mirror" aria-pressed="true">面鏡</button>
           <button type="button" class="optics-mode" data-optics="lens" aria-pressed="false">透鏡</button>
+          <button type="button" class="optics-mode" data-optics="trifold" aria-pressed="false">三面鏡</button>
+          <button type="button" class="optics-mode" data-optics="microscope" aria-pressed="false">顯微鏡</button>
         </div>
 
         <div id="optics-view-mirror" class="optics-view active">
@@ -694,6 +699,99 @@
           <label class="check"><input type="checkbox" id="lens-ray-center" checked>第 2 條：通過光心光線</label>
           <label class="check"><input type="checkbox" id="lens-show-extensions" checked>顯示虛線延長</label>
         </div>
+        </div>
+
+        <div id="optics-view-trifold" class="optics-view">
+          <div class="module-head">
+            <div>
+              <h2>三面鏡多重成像</h2>
+              <p class="module-copy">俯視三面平面鏡與人物的位置，改變側鏡角度，觀察一次反射像與鏡面彼此再成像後出現的高階像。</p>
+            </div>
+            <div class="legend" aria-label="三面鏡圖例">
+              <span class="orange"><i class="dot"></i>人物</span>
+              <span class="purple"><i class="dot"></i>一次像</span>
+              <span class="green"><i class="dot"></i>二次以上像</span>
+              <span class="red"><i class="dot"></i>對稱作圖線</span>
+            </div>
+          </div>
+          <div class="values" aria-live="polite">
+            <div class="badge" id="tri-angle">側鏡內折角 = 35°<small>左右兩片同步調整</small></div>
+            <div class="badge" id="tri-order">計算至第 3 次反射<small>逐層產生鏡中鏡</small></div>
+            <div class="badge" id="tri-count">畫面內共有 9 個像<small>重合位置只計一次</small></div>
+            <div class="badge" id="tri-status">左右對稱<small>人物位於中央</small></div>
+          </div>
+          <div class="plot-wrap">
+            <canvas id="trifold-canvas" role="img" aria-label="三面平面鏡的俯視多重成像圖。"></canvas>
+          </div>
+          <div class="controls">
+            <div class="control">
+              <label for="tri-angle-in">側鏡內折角：<span id="tri-angle-out">35°</span></label>
+              <input id="tri-angle-in" type="range" min="0" max="70" step="1" value="35">
+            </div>
+            <div class="control">
+              <label for="tri-distance">人物距中鏡：<span id="tri-distance-out">85 cm</span></label>
+              <input id="tri-distance" type="range" min="40" max="140" step="5" value="85">
+            </div>
+            <div class="control">
+              <label for="tri-person-x">人物左右位置：<span id="tri-person-x-out">中央</span></label>
+              <input id="tri-person-x" type="range" min="-40" max="40" step="5" value="0">
+            </div>
+            <div class="control">
+              <label for="tri-order-in">反射計算層數：<span id="tri-order-out">3 次</span></label>
+              <input id="tri-order-in" type="range" min="1" max="5" step="1" value="3">
+            </div>
+          </div>
+          <div class="checks">
+            <label class="check"><input type="checkbox" id="tri-show-guides" checked>顯示一次像的對稱作圖線</label>
+            <label class="check"><input type="checkbox" id="tri-show-labels" checked>標示反射次數</label>
+          </div>
+        </div>
+
+        <div id="optics-view-microscope" class="optics-view">
+          <div class="module-head">
+            <div>
+              <h2>複式顯微鏡成像</h2>
+              <p class="module-copy">物鏡先把小物體放大成倒立的中間實像，再由目鏡把中間像當成物體，形成供眼睛觀察的放大虛像。</p>
+            </div>
+            <div class="legend" aria-label="顯微鏡圖例">
+              <span class="blue"><i class="dot"></i>物鏡前光線</span>
+              <span class="green"><i class="dot"></i>中間實像光線</span>
+              <span class="purple"><i class="dot"></i>目鏡後光線</span>
+              <span class="red"><i class="dot"></i>虛線延長</span>
+            </div>
+          </div>
+          <div class="values" aria-live="polite">
+            <div class="badge" id="micro-intermediate">中間像距 = 10.0 cm<small>物鏡形成倒立實像</small></div>
+            <div class="badge" id="micro-eye-object">目鏡物距 = 8.0 cm<small>中間像位於目鏡焦內</small></div>
+            <div class="badge" id="micro-final">最終虛像距 = -40.0 cm<small>位於目鏡左側</small></div>
+            <div class="badge" id="micro-mag">總放大率 = 20.0×<small>最終像相對原物倒立</small></div>
+          </div>
+          <div class="plot-wrap">
+            <canvas id="microscope-canvas" role="img" aria-label="複式顯微鏡經物鏡與目鏡兩階段成像的光線圖。"></canvas>
+          </div>
+          <div class="controls">
+            <div class="control">
+              <label for="micro-do">物體到物鏡：<span id="micro-do-out">2.5 cm</span></label>
+              <input id="micro-do" type="range" min="1.2" max="6" step="0.1" value="2.5">
+            </div>
+            <div class="control">
+              <label for="micro-fo">物鏡焦距：<span id="micro-fo-out">2.0 cm</span></label>
+              <input id="micro-fo" type="range" min="1" max="4" step="0.1" value="2">
+            </div>
+            <div class="control">
+              <label for="micro-length">鏡筒長度：<span id="micro-length-out">18.0 cm</span></label>
+              <input id="micro-length" type="range" min="12" max="30" step="0.5" value="18">
+            </div>
+            <div class="control">
+              <label for="micro-fe">目鏡焦距：<span id="micro-fe-out">10.0 cm</span></label>
+              <input id="micro-fe" type="range" min="4" max="12" step="0.5" value="10">
+            </div>
+          </div>
+          <div class="checks">
+            <label class="check"><input type="checkbox" id="micro-show-objective" checked>顯示物鏡成像光線</label>
+            <label class="check"><input type="checkbox" id="micro-show-eyepiece" checked>顯示目鏡成像光線</label>
+            <label class="check"><input type="checkbox" id="micro-show-extensions" checked>顯示最終虛像延長線</label>
+          </div>
         </div>
       </section>
     </div>
@@ -2047,6 +2145,374 @@
       }
     }
 
+    function reflectPointAcrossLine(point, a, b) {
+      const dx = b.x - a.x;
+      const dy = b.y - a.y;
+      const lengthSq = dx * dx + dy * dy;
+      const t = ((point.x - a.x) * dx + (point.y - a.y) * dy) / lengthSq;
+      const foot = { x: a.x + t * dx, y: a.y + t * dy };
+      return { x: 2 * foot.x - point.x, y: 2 * foot.y - point.y };
+    }
+
+    function drawMirrorSegment(ctx, a, b, person) {
+      const dx = b.x - a.x;
+      const dy = b.y - a.y;
+      const length = Math.hypot(dx, dy);
+      let nx = -dy / length;
+      let ny = dx / length;
+      const mid = { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 };
+      if (nx * (person.x - mid.x) + ny * (person.y - mid.y) > 0) {
+        nx *= -1;
+        ny *= -1;
+      }
+      ctx.save();
+      ctx.lineCap = 'round';
+      strokeSegment(ctx, a, b, 'rgba(71,85,105,.20)', 12);
+      strokeSegment(ctx, a, b, '#475569', 4);
+      ctx.strokeStyle = 'rgba(71,85,105,.48)';
+      ctx.lineWidth = 1.3;
+      const steps = Math.max(3, Math.floor(length / 24));
+      for (let i = 1; i < steps; i++) {
+        const t = i / steps;
+        const x = a.x + dx * t;
+        const y = a.y + dy * t;
+        ctx.beginPath();
+        ctx.moveTo(x + nx * 5, y + ny * 5);
+        ctx.lineTo(x + nx * 14 + dx / length * 5, y + ny * 14 + dy / length * 5);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    function drawPersonSymbol(ctx, point, color, label, virtual = false, order = 0) {
+      ctx.save();
+      ctx.strokeStyle = color;
+      ctx.fillStyle = color;
+      ctx.lineWidth = virtual ? 2 : 2.6;
+      ctx.globalAlpha = virtual ? Math.max(0.42, 0.9 - order * 0.1) : 1;
+      if (virtual) ctx.setLineDash(order > 1 ? [4, 4] : [7, 4]);
+      ctx.beginPath();
+      ctx.arc(point.x, point.y - 8, 6, 0, Math.PI * 2);
+      if (virtual) ctx.stroke();
+      else ctx.fill();
+      ctx.beginPath();
+      ctx.moveTo(point.x - 10, point.y + 9);
+      ctx.quadraticCurveTo(point.x, point.y - 1, point.x + 10, point.y + 9);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      if (label) {
+        ctx.font = '700 12px "Microsoft JhengHei", Arial, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'top';
+        ctx.fillText(label, point.x, point.y + 14);
+      }
+      ctx.restore();
+    }
+
+    function drawTrifoldMirrors() {
+      const canvas = $('trifold-canvas');
+      const { ctx, w, h } = resizeCanvas(canvas);
+      clearCanvas(ctx, w, h);
+
+      const angle = number('tri-angle-in');
+      const distance = number('tri-distance');
+      const personOffset = number('tri-person-x');
+      const maxOrder = number('tri-order-in');
+      const angleRad = angle * Math.PI / 180;
+      const unit = Math.min(1.1, Math.max(0.65, w / 1100));
+      const mirrorY = h * 0.42;
+      const centerWidth = 260 * unit;
+      const sideLength = centerWidth * 0.72;
+      const center = { x: w / 2, y: mirrorY };
+      const leftHinge = { x: center.x - centerWidth / 2, y: mirrorY };
+      const rightHinge = { x: center.x + centerWidth / 2, y: mirrorY };
+      const leftEnd = {
+        x: leftHinge.x - sideLength * Math.cos(angleRad),
+        y: leftHinge.y + sideLength * Math.sin(angleRad)
+      };
+      const rightEnd = {
+        x: rightHinge.x + sideLength * Math.cos(angleRad),
+        y: rightHinge.y + sideLength * Math.sin(angleRad)
+      };
+      const mirrors = [
+        { a: leftHinge, b: rightHinge },
+        { a: leftEnd, b: leftHinge },
+        { a: rightHinge, b: rightEnd }
+      ];
+      const person = {
+        x: center.x + personOffset * unit,
+        y: mirrorY + distance * unit
+      };
+
+      const images = [];
+      const imageMergeDistance = Math.max(26, 26 * unit);
+      let states = [{ point: person, lastMirror: -1 }];
+      const stateKeys = new Set();
+      for (let order = 1; order <= maxOrder; order++) {
+        const nextStates = [];
+        states.forEach(state => {
+          mirrors.forEach((mirror, mirrorIndex) => {
+            if (mirrorIndex === state.lastMirror) return;
+            const reflected = reflectPointAcrossLine(state.point, mirror.a, mirror.b);
+            if (Math.hypot(reflected.x - person.x, reflected.y - person.y) < 1) return;
+            const modelX = (reflected.x - center.x) / unit;
+            const modelY = (reflected.y - mirrorY) / unit;
+            const stateKey = `${modelX.toFixed(1)}:${modelY.toFixed(1)}:${mirrorIndex}`;
+            if (!stateKeys.has(stateKey)) {
+              stateKeys.add(stateKey);
+              nextStates.push({ point: reflected, lastMirror: mirrorIndex });
+            }
+            const tooCloseToPerson = Math.hypot(person.x - reflected.x, person.y - reflected.y) < imageMergeDistance;
+            const existing = images.find(image => Math.hypot(image.point.x - reflected.x, image.point.y - reflected.y) < imageMergeDistance);
+            if (!existing && !tooCloseToPerson) images.push({ point: reflected, order, mirrorIndex });
+            else if (existing) existing.order = Math.min(existing.order, order);
+          });
+        });
+        states = nextStates;
+      }
+
+      const visibleImages = images.filter(image =>
+        image.point.x > 26 && image.point.x < w - 26 && image.point.y > 42 && image.point.y < h - 30
+      );
+      const firstOrderImages = images.filter(image => image.order === 1);
+      setText('tri-angle-out', `${angle.toFixed(0)}°`);
+      setText('tri-distance-out', `${distance.toFixed(0)} cm`);
+      setText('tri-person-x-out', personOffset === 0 ? '中央' : `${personOffset > 0 ? '右' : '左'} ${Math.abs(personOffset).toFixed(0)} cm`);
+      setText('tri-order-out', `${maxOrder.toFixed(0)} 次`);
+      $('tri-angle').innerHTML = `側鏡內折角 = ${angle.toFixed(0)}°<small>左右兩片同步調整</small>`;
+      $('tri-order').innerHTML = `計算至第 ${maxOrder.toFixed(0)} 次反射<small>逐層產生鏡中鏡</small>`;
+      $('tri-count').innerHTML = `畫面內顯示 ${visibleImages.length} 個像<small>合併太接近而無法辨識的像</small>`;
+      $('tri-status').innerHTML = personOffset === 0
+        ? '左右對稱<small>人物位於中央</small>'
+        : `左右不對稱<small>人物偏向${personOffset > 0 ? '右' : '左'}側</small>`;
+
+      ctx.save();
+      ctx.fillStyle = 'rgba(148,163,184,.07)';
+      ctx.fillRect(0, 0, w, mirrorY);
+      ctx.fillStyle = 'rgba(15,118,110,.035)';
+      ctx.fillRect(0, mirrorY, w, h - mirrorY);
+      ctx.restore();
+      drawSceneLabel(ctx, 26, 20, '鏡後｜虛像分布區');
+      drawSceneLabel(ctx, w - 26, h - 48, '人物所在空間', 'right');
+
+      if ($('tri-show-guides').checked) {
+        firstOrderImages.forEach(image => {
+          strokeSegment(ctx, person, image.point, css('--red'), 1.4, [5, 7], 0.45);
+        });
+      }
+
+      visibleImages
+        .slice()
+        .sort((a, b) => b.order - a.order)
+        .forEach((image, index) => {
+          const color = image.order === 1 ? css('--image') : css('--green');
+          const label = $('tri-show-labels').checked ? `${image.order}` : '';
+          drawPersonSymbol(ctx, image.point, color, label, true, image.order);
+        });
+
+      mirrors.forEach(mirror => drawMirrorSegment(ctx, mirror.a, mirror.b, person));
+      drawPersonSymbol(ctx, person, css('--orange'), '人物');
+      ctx.save();
+      ctx.fillStyle = css('--muted');
+      ctx.font = '700 13px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('中央鏡', center.x, mirrorY - 14);
+      ctx.fillText('左側鏡', (leftEnd.x + leftHinge.x) / 2, (leftEnd.y + leftHinge.y) / 2 - 12);
+      ctx.fillText('右側鏡', (rightEnd.x + rightHinge.x) / 2, (rightEnd.y + rightHinge.y) / 2 - 12);
+      if (images.length > visibleImages.length) {
+        ctx.textAlign = 'right';
+        ctx.fillText(`另有 ${images.length - visibleImages.length} 個高階像在畫面外`, w - 26, 32);
+      }
+      ctx.restore();
+    }
+
+    function drawDiagramArrow(ctx, x, axis, height, color, label, dashed = false) {
+      const tipY = axis - height;
+      const direction = height >= 0 ? -1 : 1;
+      ctx.save();
+      ctx.strokeStyle = color;
+      ctx.fillStyle = color;
+      ctx.lineWidth = 3;
+      if (dashed) {
+        ctx.setLineDash([6, 5]);
+        ctx.globalAlpha = 0.65;
+      }
+      ctx.beginPath();
+      ctx.moveTo(x, axis);
+      ctx.lineTo(x, tipY);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.beginPath();
+      ctx.moveTo(x, tipY);
+      ctx.lineTo(x - 7, tipY - direction * 11);
+      ctx.lineTo(x + 7, tipY - direction * 11);
+      ctx.closePath();
+      if (dashed) ctx.stroke();
+      else ctx.fill();
+      ctx.font = '700 13px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = height >= 0 ? 'bottom' : 'top';
+      ctx.fillText(label, x, tipY + (height >= 0 ? -9 : 9));
+      ctx.restore();
+    }
+
+    function drawMicroscopeLens(ctx, x, axis, height, label, halfWidth = 15) {
+      const top = axis - height / 2;
+      const bottom = axis + height / 2;
+      ctx.save();
+      ctx.fillStyle = 'rgba(37,99,235,.09)';
+      ctx.strokeStyle = css('--purple');
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(x, top);
+      ctx.quadraticCurveTo(x - halfWidth, axis, x, bottom);
+      ctx.quadraticCurveTo(x + halfWidth, axis, x, top);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = css('--muted');
+      ctx.font = '700 13px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(label, x, bottom + 22);
+      ctx.restore();
+    }
+
+    function drawMicroscope() {
+      const canvas = $('microscope-canvas');
+      const { ctx, w, h } = resizeCanvas(canvas);
+      clearCanvas(ctx, w, h);
+
+      const objectDistance = number('micro-do');
+      const objectiveF = number('micro-fo');
+      const tubeLength = number('micro-length');
+      const eyepieceF = number('micro-fe');
+      const imageDistance1 = opticalImageDistance(objectiveF, objectDistance);
+      const finiteFirstImage = Number.isFinite(imageDistance1) && Math.abs(imageDistance1) < 200;
+      const magnification1 = finiteFirstImage ? -imageDistance1 / objectDistance : NaN;
+      const eyepieceObjectDistance = finiteFirstImage ? tubeLength - imageDistance1 : NaN;
+      const standardFirstStage = finiteFirstImage && imageDistance1 > 0 && eyepieceObjectDistance > 0;
+      const imageDistance2 = standardFirstStage
+        ? opticalImageDistance(eyepieceF, eyepieceObjectDistance)
+        : NaN;
+      const finiteFinalImage = Number.isFinite(imageDistance2) && Math.abs(imageDistance2) < 300;
+      const magnification2 = finiteFinalImage ? -imageDistance2 / eyepieceObjectDistance : NaN;
+      const totalMagnification = finiteFinalImage ? magnification1 * magnification2 : NaN;
+      const finalVirtual = finiteFinalImage && imageDistance2 < 0;
+
+      setText('micro-do-out', `${objectDistance.toFixed(1)} cm`);
+      setText('micro-fo-out', `${objectiveF.toFixed(1)} cm`);
+      setText('micro-length-out', `${tubeLength.toFixed(1)} cm`);
+      setText('micro-fe-out', `${eyepieceF.toFixed(1)} cm`);
+
+      const intermediateBadge = $('micro-intermediate');
+      const eyeObjectBadge = $('micro-eye-object');
+      const finalBadge = $('micro-final');
+      const magBadge = $('micro-mag');
+      intermediateBadge.classList.toggle('warning', !finiteFirstImage || imageDistance1 <= 0);
+      eyeObjectBadge.classList.toggle('warning', !standardFirstStage);
+      finalBadge.classList.toggle('warning', !finiteFinalImage || !finalVirtual);
+      magBadge.classList.toggle('warning', !finiteFinalImage);
+      intermediateBadge.innerHTML = finiteFirstImage
+        ? `中間像距 = ${imageDistance1.toFixed(1)} cm<small>${imageDistance1 > 0 ? '物鏡形成倒立實像' : '物體位於物鏡焦內，形成虛像'}</small>`
+        : '中間像在無限遠<small>物體位於物鏡焦點附近</small>';
+      eyeObjectBadge.innerHTML = standardFirstStage
+        ? `目鏡物距 = ${eyepieceObjectDistance.toFixed(1)} cm<small>${eyepieceObjectDistance < eyepieceF ? '中間像位於目鏡焦內' : '中間像位於目鏡焦外'}</small>`
+        : '目鏡無有效實物<small>請讓中間實像落在物鏡與目鏡之間</small>';
+      finalBadge.innerHTML = finiteFinalImage
+        ? `最終${finalVirtual ? '虛像' : '實像'}距 = ${imageDistance2.toFixed(1)} cm<small>位於目鏡${imageDistance2 < 0 ? '左' : '右'}側</small>`
+        : '最終像未形成<small>目前不是標準顯微鏡配置</small>';
+      magBadge.innerHTML = finiteFinalImage
+        ? `總放大率 = ${Math.abs(totalMagnification).toFixed(1)}×<small>最終像相對原物${totalMagnification < 0 ? '倒立' : '正立'}</small>`
+        : '總放大率無法計算<small>先調整物鏡與鏡筒參數</small>';
+
+      const axis = h * 0.48;
+      const pad = w < 500 ? 34 : 58;
+      const compact = w < 500;
+      const objectiveX = w * 0.38;
+      const scaleX = Math.max(2.8, w * 0.34 / 30);
+      const eyepieceX = objectiveX + tubeLength * scaleX;
+      const objectX = objectiveX - objectDistance * scaleX;
+      const intermediateX = finiteFirstImage ? objectiveX + imageDistance1 * scaleX : null;
+      const finalX = finiteFinalImage ? eyepieceX + imageDistance2 * scaleX : null;
+      const maxMagnification = finiteFinalImage
+        ? Math.max(1, Math.abs(magnification1), Math.abs(totalMagnification))
+        : Math.max(1, Math.abs(magnification1 || 1));
+      const objectHeight = Math.min(30, h * 0.31 / maxMagnification);
+      const objectTip = { x: objectX, y: axis - objectHeight };
+      const intermediateHeight = finiteFirstImage ? magnification1 * objectHeight : 0;
+      const intermediateTip = finiteFirstImage
+        ? { x: intermediateX, y: axis - intermediateHeight }
+        : null;
+      const finalHeight = finiteFinalImage ? totalMagnification * objectHeight : 0;
+      const finalTip = finiteFinalImage ? { x: finalX, y: axis - finalHeight } : null;
+
+      ctx.save();
+      ctx.fillStyle = 'rgba(37,99,235,.025)';
+      ctx.fillRect(0, 0, objectiveX, h);
+      ctx.fillStyle = 'rgba(21,128,61,.03)';
+      ctx.fillRect(objectiveX, 0, eyepieceX - objectiveX, h);
+      ctx.fillStyle = 'rgba(124,58,237,.035)';
+      ctx.fillRect(eyepieceX, 0, w - eyepieceX, h);
+      ctx.restore();
+      drawSceneLabel(ctx, compact ? 10 : 26, 20, compact ? '第 1 階段｜物鏡' : '第 1 階段｜物鏡成中間實像');
+      drawSceneLabel(ctx, w - (compact ? 10 : 26), 20, compact ? '第 2 階段｜目鏡' : '第 2 階段｜目鏡再次成像', 'right');
+      drawOpticalAxis(ctx, w, axis);
+
+      const focalMarkers = [
+        { x: objectiveX - objectiveF * scaleX, label: 'Fo' },
+        { x: objectiveX + objectiveF * scaleX, label: 'Fo' },
+        { x: eyepieceX - eyepieceF * scaleX, label: 'Fe' },
+        { x: eyepieceX + eyepieceF * scaleX, label: 'Fe' }
+      ];
+      (compact ? [focalMarkers[0], focalMarkers[3]] : focalMarkers).forEach(marker => {
+        if (marker.x > pad - 10 && marker.x < w - pad + 10) drawFocusMarker(ctx, marker.x, axis, marker.label);
+      });
+
+      if (standardFirstStage && $('micro-show-objective').checked) {
+        const objectiveParallel = { x: objectiveX, y: objectTip.y };
+        const objectiveCenter = { x: objectiveX, y: axis };
+        drawRay(ctx, objectTip, objectiveParallel, css('--blue'), 2.1);
+        drawRay(ctx, objectTip, objectiveCenter, css('--blue'), 2.1);
+        drawRay(ctx, objectiveParallel, intermediateTip, css('--green'), 2.5);
+        drawRay(ctx, objectiveCenter, intermediateTip, css('--green'), 2.5);
+      }
+
+      if (standardFirstStage && finiteFinalImage && $('micro-show-eyepiece').checked) {
+        const eyepieceParallel = { x: eyepieceX, y: intermediateTip.y };
+        const eyepieceCenter = { x: eyepieceX, y: axis };
+        drawRay(ctx, intermediateTip, eyepieceParallel, css('--green'), 2.1);
+        drawRay(ctx, intermediateTip, eyepieceCenter, css('--green'), 2.1);
+        if (finalVirtual) {
+          const rightEnd1 = pointAtX(eyepieceParallel, finalTip, w - pad);
+          const rightEnd2 = pointAtX(eyepieceCenter, finalTip, w - pad);
+          drawRay(ctx, eyepieceParallel, rightEnd1, css('--image'), 2.5);
+          drawRay(ctx, eyepieceCenter, rightEnd2, css('--image'), 2.5);
+          if ($('micro-show-extensions').checked) {
+            const extensionX = Math.max(pad, finalX);
+            strokeSegment(ctx, eyepieceParallel, pointAtX(eyepieceParallel, finalTip, extensionX), css('--red'), 1.8, [7, 7], 0.7);
+            strokeSegment(ctx, eyepieceCenter, pointAtX(eyepieceCenter, finalTip, extensionX), css('--red'), 1.8, [7, 7], 0.7);
+          }
+        } else {
+          const target1 = finalX <= w - pad ? finalTip : pointAtX(eyepieceParallel, finalTip, w - pad);
+          const target2 = finalX <= w - pad ? finalTip : pointAtX(eyepieceCenter, finalTip, w - pad);
+          drawRay(ctx, eyepieceParallel, target1, css('--image'), 2.5);
+          drawRay(ctx, eyepieceCenter, target2, css('--image'), 2.5);
+        }
+      }
+
+      drawMicroscopeLens(ctx, objectiveX, axis, h * 0.55, '物鏡', compact ? 9 : 15);
+      drawMicroscopeLens(ctx, eyepieceX, axis, h * 0.7, '目鏡', compact ? 9 : 15);
+      drawDiagramArrow(ctx, objectX, axis, objectHeight, css('--orange'), '微小物體');
+      if (standardFirstStage && intermediateX > pad && intermediateX < w - pad) {
+        drawDiagramArrow(ctx, intermediateX, axis, intermediateHeight, css('--green'), '中間實像');
+      }
+      if (finiteFinalImage && finalX > pad && finalX < w - pad) {
+        drawDiagramArrow(ctx, finalX, axis, finalHeight, css('--image'), finalVirtual ? '最終虛像' : '最終實像', finalVirtual);
+      } else if (finiteFinalImage) {
+        drawOutOfView(ctx, w, h, finalX < pad ? 'left' : 'right', axis - finalHeight, `最終${finalVirtual ? '虛像' : '實像'}在畫面外`);
+      }
+    }
+
     function drawActive() {
       if (activeModule === 'standing') drawStanding();
       else if (activeModule === 'doppler') drawDoppler();
@@ -2055,7 +2521,9 @@
       else if (activeModule === 'huygens') drawHuygens();
       else if (activeModule === 'optics') {
         if (activeOptics === 'mirror') drawMirror();
-        else drawLens();
+        else if (activeOptics === 'lens') drawLens();
+        else if (activeOptics === 'trifold') drawTrifoldMirrors();
+        else drawMicroscope();
       }
     }
 
