@@ -558,13 +558,13 @@
         <div class="module-head">
           <div>
             <h2>水波槽雙源干涉</h2>
-            <p class="module-copy">兩個同調點波源連續發波。水波槽的亮暗直接表示水面狀態：波峰亮、波谷暗，兩波長期相消的節線保持中性灰。</p>
+            <p class="module-copy">兩個同調點波源連續發波。水波槽的亮暗直接表示水面狀態：波峰亮、波谷暗，固定腹線標成金色、固定節線標成灰色。</p>
           </div>
           <div class="legend" aria-label="水波槽圖例">
             <span class="crest-key"><i class="dot"></i>波峰（亮）</span>
             <span class="trough-key"><i class="dot"></i>波谷（暗）</span>
-            <span class="neutral-key"><i class="dot"></i>相消區（灰）</span>
-            <span class="yellow"><i class="dot"></i>同相交點／腹線</span>
+            <span class="neutral-key"><i class="dot"></i>節線（灰）</span>
+            <span class="yellow"><i class="dot"></i>腹線（金）／同相交點</span>
           </div>
         </div>
         <div class="values" aria-live="polite">
@@ -597,12 +597,13 @@
         <div class="checks">
           <label class="check"><input type="checkbox" id="rip-show-field" checked>顯示瞬時水面</label>
           <label class="check"><input type="checkbox" id="rip-show-nodes" checked>標示穩定節線（灰）</label>
+          <label class="check"><input type="checkbox" id="rip-show-antinodes" checked>標示穩定腹線（金）</label>
           <label class="check"><input type="checkbox" id="rip-show-fronts" checked>顯示圓形波面</label>
           <label class="check"><input type="checkbox" id="rip-show-meetings" checked>顯示同相交點</label>
         </div>
         <section class="teacher-note">
-          <p><strong>講法：</strong>先只看瞬時水面，確認亮帶與暗帶都會向外移動；再標示灰色節線，指出這些位置並不是固定在波峰或波谷，而是振幅長期接近零。</p>
-          <p><strong>強調：</strong>調大波源距離或調短波長，會讓路徑差能塞進更多半波長，因此節線變多、夾角變小。</p>
+          <p><strong>講法：</strong>先只看瞬時水面，確認亮帶與暗帶都會向外移動；再依序打開金色腹線與灰色節線，區分「水面正在亮或暗」和「振幅長期最大或為零」。</p>
+          <p><strong>強調：</strong>調大波源距離或調短波長，會讓路徑差容納更多半波長，因此腹線、節線都會增加。若 d/λ 只接近整數，沿波源連線方向是近腹區，不一定有精確腹線。</p>
         </section>
       </section>
 
@@ -1675,6 +1676,100 @@
       return points;
     }
 
+    function rippleContourTargets(sourceDistance, lambda, phase, offset) {
+      const phaseLength = phase * lambda / (2 * Math.PI);
+      const orderLimit = Math.ceil(sourceDistance / lambda) + 2;
+      const targets = [];
+      for (let order = -orderLimit; order <= orderLimit; order += 1) {
+        const target = phaseLength + (order + offset) * lambda;
+        if (Math.abs(target) <= sourceDistance + 0.05) targets.push(target);
+      }
+      return targets;
+    }
+
+    function drawRippleContour(ctx, centerX, centerY, sourceDistance, target, w, h, style) {
+      const tolerance = 0.05;
+      const magnitude = Math.abs(target);
+      const sourceOffset = sourceDistance / 2;
+      ctx.save();
+      ctx.strokeStyle = style.color;
+      ctx.lineWidth = style.width;
+      ctx.setLineDash(style.dash);
+      ctx.shadowColor = 'rgba(2, 6, 23, .75)';
+      ctx.shadowBlur = 2;
+      ctx.beginPath();
+
+      if (magnitude < tolerance) {
+        ctx.moveTo(centerX, 0);
+        ctx.lineTo(centerX, h);
+      } else if (Math.abs(magnitude - sourceDistance) < tolerance) {
+        if (target > 0) {
+          ctx.moveTo(centerX + sourceOffset, centerY);
+          ctx.lineTo(w, centerY);
+        } else {
+          ctx.moveTo(centerX - sourceOffset, centerY);
+          ctx.lineTo(0, centerY);
+        }
+      } else if (magnitude < sourceDistance) {
+        const a = magnitude / 2;
+        const b = Math.sqrt(sourceOffset * sourceOffset - a * a);
+        const direction = Math.sign(target);
+        let started = false;
+        for (let y = 0; y <= h; y += 2) {
+          const relativeY = y - centerY;
+          const x = centerX + direction * a * Math.sqrt(1 + relativeY * relativeY / (b * b));
+          if (x < 0 || x > w) {
+            if (started) break;
+            continue;
+          }
+          if (!started) {
+            ctx.moveTo(x, y);
+            started = true;
+          } else {
+            ctx.lineTo(x, y);
+          }
+        }
+      }
+
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawRippleContourFamily(ctx, centerX, centerY, sourceDistance, lambda, phase, w, h, type) {
+      const isNode = type === 'node';
+      const targets = rippleContourTargets(sourceDistance, lambda, phase, isNode ? 0.5 : 0);
+      const style = isNode
+        ? { color: 'rgba(203, 213, 225, .78)', width: 1.45, dash: [2, 6] }
+        : { color: 'rgba(245, 158, 11, .78)', width: 1.8, dash: [8, 7] };
+      for (const target of targets) {
+        drawRippleContour(ctx, centerX, centerY, sourceDistance, target, w, h, style);
+      }
+    }
+
+    function drawNearAntinodeAxes(ctx, sx1, sx2, sy, sourceDistance, lambda, phase, w) {
+      const phaseCycles = phase / (2 * Math.PI);
+      const rightOrder = sourceDistance / lambda - phaseCycles;
+      const leftOrder = -sourceDistance / lambda - phaseCycles;
+      const guides = [
+        { order: leftOrder, start: sx1, end: 0 },
+        { order: rightOrder, start: sx2, end: w }
+      ];
+      ctx.save();
+      ctx.strokeStyle = 'rgba(245, 158, 11, .42)';
+      ctx.lineWidth = 2.4;
+      ctx.setLineDash([12, 9]);
+      for (const guide of guides) {
+        const distanceToInteger = Math.abs(guide.order - Math.round(guide.order));
+        if (distanceToInteger <= 0.08 && distanceToInteger > 0.001) {
+          ctx.beginPath();
+          ctx.moveTo(guide.start, sy);
+          ctx.lineTo(guide.end, sy);
+          ctx.stroke();
+        }
+      }
+      ctx.restore();
+    }
+
     function drawRipple() {
       const canvas = $('ripple-canvas');
       const { ctx, w, h } = resizeCanvas(canvas);
@@ -1698,9 +1793,18 @@
       $('rip-lambda').innerHTML = `波長 = ${lambda.toFixed(0)} px<small>每一圈波峰的間距</small>`;
       $('rip-ratio').innerHTML = `d/λ = ${(sourceDistance / lambda).toFixed(2)}<small>比值越大，節線與腹線越多</small>`;
       $('rip-phase').innerHTML = `相位差 = ${phaseDeg.toFixed(0)}°<small>${phaseDeg === 0 ? '兩個波源同時到達波峰' : '兩組波峰錯開前進'}</small>`;
-      $('rip-status').innerHTML = phaseDeg === 0
-        ? '亮峰、暗谷、灰節線<small>中央腹線振幅最大，會交替亮暗</small>'
-        : '相位差使格局偏移<small>相消位置仍保持中性灰</small>';
+      const nearestAxialOrder = Math.round(sourceDistance / lambda);
+      const axialOrderError = Math.abs(sourceDistance / lambda - nearestAxialOrder);
+      if (phaseDeg === 0 && axialOrderError < 0.001) {
+        $('rip-status').innerHTML = `中央與左右軸皆為腹線<small>Δr = d = ${nearestAxialOrder}λ</small>`;
+      } else if (phaseDeg === 0 && axialOrderError <= 0.08) {
+        const exactDistance = nearestAxialOrder * lambda;
+        $('rip-status').innerHTML = `左右軸向為近腹區<small>d ≈ ${nearestAxialOrder}λ；調成 ${exactDistance.toFixed(0)} px 才是精確腹線</small>`;
+      } else {
+        $('rip-status').innerHTML = phaseDeg === 0
+          ? '亮峰、暗谷、腹節線<small>金色腹線振幅最大，灰色節線振幅為零</small>'
+          : '相位差使格局偏移<small>腹線與節線仍由固定程差決定</small>';
+      }
 
       ctx.fillStyle = '#06131f';
       ctx.fillRect(0, 0, w, h);
@@ -1741,20 +1845,6 @@
         ctx.restore();
       }
 
-      if ($('rip-show-nodes').checked) {
-        ctx.save();
-        ctx.fillStyle = 'rgba(203, 213, 225, .72)';
-        for (let y = 2; y < h; y += 3) {
-          for (let x = 2; x < w; x += 3) {
-            const r1 = Math.hypot(x - sx1, y - sy);
-            const r2 = Math.hypot(x - sx2, y - sy);
-            const envelope = Math.abs(Math.cos((k * (r1 - r2) - phase) / 2));
-            if (envelope < 0.021) ctx.fillRect(x, y, 1.45, 1.45);
-          }
-        }
-        ctx.restore();
-      }
-
       if ($('rip-show-fronts').checked) {
         drawCrestRings(ctx, sx1, sy, crest1, lambda, maxR, 'rgba(255, 255, 255, .74)');
         drawCrestRings(ctx, sx2, sy, crest2, lambda, maxR, 'rgba(255, 255, 255, .58)');
@@ -1769,6 +1859,14 @@
         ctx.save();
         for (const point of points.slice(0, 260)) drawGlowPoint(ctx, point.x, point.y, pulse);
         ctx.restore();
+      }
+
+      if ($('rip-show-antinodes').checked) {
+        drawRippleContourFamily(ctx, w / 2, sy, sourceDistance, lambda, phase, w, h, 'antinode');
+        drawNearAntinodeAxes(ctx, sx1, sx2, sy, sourceDistance, lambda, phase, w);
+      }
+      if ($('rip-show-nodes').checked) {
+        drawRippleContourFamily(ctx, w / 2, sy, sourceDistance, lambda, phase, w, h, 'node');
       }
 
       for (const [sx, label, color] of [[sx1, 'S1', '#67e8f9'], [sx2, 'S2', '#fb923c']]) {
