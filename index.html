@@ -203,6 +203,7 @@
     .crest-key .dot { background: #ffffff; border: 1px solid #64748b; }
     .trough-key { color: #111827; }
     .neutral-key { color: #7c8792; }
+    .antinode-key { color: #0284c7; }
     .values {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -558,13 +559,13 @@
         <div class="module-head">
           <div>
             <h2>水波槽雙源干涉</h2>
-            <p class="module-copy">兩個同調點波源連續發波。水波槽的亮暗直接表示水面狀態：波峰亮、波谷暗，固定腹線標成金色、固定節線標成灰色。</p>
+            <p class="module-copy">兩個同調點波源連續發波。水波槽的亮暗直接表示水面狀態：波峰亮、波谷暗，固定腹線標成淺藍色、固定節線標成灰色。</p>
           </div>
           <div class="legend" aria-label="水波槽圖例">
             <span class="crest-key"><i class="dot"></i>波峰（亮）</span>
             <span class="trough-key"><i class="dot"></i>波谷（暗）</span>
             <span class="neutral-key"><i class="dot"></i>節線（灰）</span>
-            <span class="yellow"><i class="dot"></i>腹線（金）／同相交點</span>
+            <span class="antinode-key"><i class="dot"></i>腹線（淺藍）／同相交點</span>
           </div>
         </div>
         <div class="values" aria-live="polite">
@@ -597,12 +598,12 @@
         <div class="checks">
           <label class="check"><input type="checkbox" id="rip-show-field" checked>顯示瞬時水面</label>
           <label class="check"><input type="checkbox" id="rip-show-nodes" checked>標示穩定節線（灰）</label>
-          <label class="check"><input type="checkbox" id="rip-show-antinodes" checked>標示穩定腹線（金）</label>
+          <label class="check"><input type="checkbox" id="rip-show-antinodes" checked>標示穩定腹線（淺藍）</label>
           <label class="check"><input type="checkbox" id="rip-show-fronts" checked>顯示圓形波面</label>
           <label class="check"><input type="checkbox" id="rip-show-meetings" checked>顯示同相交點</label>
         </div>
         <section class="teacher-note">
-          <p><strong>講法：</strong>先只看瞬時水面，確認亮帶與暗帶都會向外移動；再依序打開金色腹線與灰色節線，區分「水面正在亮或暗」和「振幅長期最大或為零」。</p>
+          <p><strong>講法：</strong>先只看瞬時水面，確認亮帶與暗帶都會向外移動；再依序打開淺藍腹線與灰色節線，區分「水面正在亮或暗」和「振幅長期最大或為零」。</p>
           <p><strong>強調：</strong>調大波源距離或調短波長，會讓路徑差容納更多半波長，因此腹線、節線都會增加。若 d/λ 只接近整數，沿波源連線方向是近腹區，不一定有精確腹線。</p>
         </section>
       </section>
@@ -1740,7 +1741,7 @@
       const targets = rippleContourTargets(sourceDistance, lambda, phase, isNode ? 0.5 : 0);
       const style = isNode
         ? { color: 'rgba(203, 213, 225, .78)', width: 1.45, dash: [2, 6] }
-        : { color: 'rgba(245, 158, 11, .78)', width: 1.8, dash: [8, 7] };
+        : { color: 'rgba(56, 189, 248, .84)', width: 1.8, dash: [8, 7] };
       for (const target of targets) {
         drawRippleContour(ctx, centerX, centerY, sourceDistance, target, w, h, style);
       }
@@ -1755,7 +1756,7 @@
         { order: rightOrder, start: sx2, end: w }
       ];
       ctx.save();
-      ctx.strokeStyle = 'rgba(245, 158, 11, .42)';
+      ctx.strokeStyle = 'rgba(56, 189, 248, .46)';
       ctx.lineWidth = 2.4;
       ctx.setLineDash([12, 9]);
       for (const guide of guides) {
@@ -1802,7 +1803,7 @@
         $('rip-status').innerHTML = `左右軸向為近腹區<small>d ≈ ${nearestAxialOrder}λ；調成 ${exactDistance.toFixed(0)} px 才是精確腹線</small>`;
       } else {
         $('rip-status').innerHTML = phaseDeg === 0
-          ? '亮峰、暗谷、腹節線<small>金色腹線振幅最大，灰色節線振幅為零</small>'
+          ? '亮峰、暗谷、腹節線<small>淺藍腹線振幅最大，灰色節線振幅為零</small>'
           : '相位差使格局偏移<small>腹線與節線仍由固定程差決定</small>';
       }
 
