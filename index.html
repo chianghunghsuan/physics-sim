@@ -161,6 +161,11 @@
       color: #1f2933;
       padding: 7px 10px;
     }
+    button.preset.active {
+      background: var(--accent);
+      color: #ffffff;
+      box-shadow: 0 2px 7px rgba(15, 118, 110, .2);
+    }
     .panel { display: none; }
     .panel.active { display: block; }
     .module-head {
@@ -247,6 +252,46 @@
       gap: 14px;
       align-items: stretch;
     }
+    .boundary-setup {
+      display: grid;
+      grid-template-columns: minmax(210px, 1.2fr) repeat(2, minmax(180px, 1fr));
+      gap: 14px;
+      align-items: end;
+      padding: 14px 0;
+      margin-top: 16px;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+    }
+    .boundary-summary strong,
+    .boundary-summary small {
+      display: block;
+    }
+    .boundary-summary small {
+      color: var(--muted);
+      margin-top: 3px;
+    }
+    .boundary-choice label { margin-bottom: 5px; }
+    .mode-presets {
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px solid var(--line);
+    }
+    .mode-presets-head {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: baseline;
+      margin-bottom: 10px;
+    }
+    .mode-presets-head span {
+      color: var(--muted);
+      font-size: 14px;
+    }
+    .mode-buttons {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(126px, 1fr));
+      gap: 8px;
+    }
     .control {
       min-width: 0;
       padding: 12px;
@@ -299,11 +344,18 @@
     @media (max-width: 980px) {
       .values { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .controls { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .boundary-setup { grid-template-columns: 1fr 1fr; }
+      .boundary-summary { grid-column: 1 / -1; }
     }
     @media (max-width: 640px) {
       main { width: calc(100% - 16px); margin-top: 8px; }
       header, .content { padding-left: 18px; padding-right: 18px; }
       .values, .controls { grid-template-columns: 1fr; }
+      .boundary-setup { grid-template-columns: 1fr; }
+      .boundary-summary { grid-column: auto; }
+      .mode-presets-head { display: block; }
+      .mode-presets-head span { display: block; margin-top: 2px; }
+      .mode-buttons { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       canvas { height: 330px; min-height: 280px; }
       #mirror-canvas.parallel-expanded { height: 410px; min-height: 380px; }
       button.optics-mode { min-width: 112px; flex: 1 1 112px; }
@@ -337,13 +389,14 @@
         <div class="module-head">
           <div>
             <h2>駐波疊加</h2>
-            <p class="module-copy">先只看向右行進波，再打開向左反射波與疊加結果。右端可設定固定或自由，左端由波長自動判斷是節點、腹點或一般點。</p>
+            <p class="module-copy">先選左右兩端是固定或自由，再逐步打開入射波、反射波與疊加結果。追蹤點會跟著同一個相位前進，直接看波速與固定端反相。</p>
           </div>
           <div class="legend" aria-label="駐波圖例">
             <span class="blue"><i class="dot"></i>向右行進波</span>
             <span class="orange"><i class="dot"></i>向左行進波</span>
             <span class="green"><i class="dot"></i>疊加結果</span>
             <span class="red"><i class="dot"></i>節點參考</span>
+            <span class="yellow"><i class="dot"></i>相位追蹤點</span>
           </div>
         </div>
         <div class="values" aria-live="polite">
@@ -354,6 +407,26 @@
         </div>
         <div class="plot-wrap">
           <canvas id="standing-canvas" role="img" aria-label="左右行進波疊加成駐波的動態圖。"></canvas>
+        </div>
+        <div class="boundary-setup">
+          <div class="boundary-summary">
+            <strong id="stand-boundary-summary">固定－固定</strong>
+            <small id="stand-boundary-formula">兩端都是節點；fₙ = nv/(2L)</small>
+          </div>
+          <div class="boundary-choice">
+            <label for="stand-left-boundary">左端邊界</label>
+            <select id="stand-left-boundary">
+              <option value="fixed" selected>固定端：節點</option>
+              <option value="free">自由端：腹點</option>
+            </select>
+          </div>
+          <div class="boundary-choice">
+            <label for="stand-boundary">右端邊界</label>
+            <select id="stand-boundary">
+              <option value="fixed" selected>固定端：反相、節點</option>
+              <option value="free">自由端：不反相、腹點</option>
+            </select>
+          </div>
         </div>
         <div class="controls">
           <div class="control">
@@ -384,28 +457,26 @@
             <label for="stand-speed">播放速度：<span id="stand-speed-out">0.25x</span></label>
             <input id="stand-speed" type="range" min="0.1" max="2" step="0.05" value="0.25">
           </div>
-          <div class="control">
-            <label for="stand-boundary">右端邊界</label>
-            <select id="stand-boundary">
-              <option value="fixed" selected>固定端：反相、節點</option>
-              <option value="free">自由端：不反相、腹點</option>
-            </select>
-          </div>
         </div>
-        <div class="presets" id="stand-mode-presets">
-          <strong>快速跳到目前邊界的正常模態：</strong>
+        <div class="mode-presets" id="stand-mode-presets">
+          <div class="mode-presets-head">
+            <strong id="stand-mode-title">固定－固定的完美駐波</strong>
+            <span id="stand-mode-formula">fₙ = nv/(2L)</span>
+          </div>
+          <div class="mode-buttons" id="stand-mode-buttons"></div>
         </div>
         <div class="checks">
           <label class="check"><input type="checkbox" id="stand-lock" checked>鎖定左右波同頻等振幅</label>
           <label class="check"><input type="checkbox" id="stand-show-right" checked>顯示向右行進波</label>
           <label class="check"><input type="checkbox" id="stand-show-left">顯示向左行進波</label>
           <label class="check"><input type="checkbox" id="stand-show-sum">顯示疊加結果</label>
+          <label class="check"><input type="checkbox" id="stand-show-tracker" checked>顯示相位追蹤點</label>
           <label class="check"><input type="checkbox" id="stand-show-nodes">顯示節點參考</label>
           <label class="check"><input type="checkbox" id="stand-show-envelope">顯示包絡</label>
         </div>
         <section class="teacher-note">
           <p><strong>講法：</strong>先讓學生只看藍色向右波，確認「波形在移動、質點上下振動」。再打開橘色反射波，最後打開綠色疊加，讓節點從相消而來，不是憑空出現。</p>
-          <p><strong>強調：</strong>同頻、等振幅才會有真正不動的節點；右端固定或自由只決定反射相位，左端若剛好落在節點或腹點，都可形成合理正常模態。</p>
+          <p><strong>強調：</strong>同頻、等振幅只保證干涉圖形穩定；還要同時符合左右兩端的節點或腹點條件，才是這段弦的正常模態。</p>
         </section>
       </section>
 
@@ -1032,6 +1103,7 @@
       const fL = number('stand-fL');
       const AR = number('stand-AR');
       const AL = number('stand-AL');
+      const leftFixed = $('stand-left-boundary').value === 'fixed';
       const rightFixed = $('stand-boundary').value === 'fixed';
       const lambdaR = v / fR;
       const lambdaL = v / fL;
@@ -1043,24 +1115,29 @@
       const ampDiff = Math.abs(AR - AL);
       const coherent = deltaF < 0.001;
       const equalAmp = ampDiff < 0.001;
-      const boundaryValue = 4 * L / lambdaR;
-      const targetValue = Math.max(1, Math.round(boundaryValue));
-      const boundaryMismatch = Math.abs(boundaryValue - targetValue);
-      const boundaryStable = boundaryMismatch < 0.06;
-      const leftIsNode = rightFixed ? targetValue % 2 === 0 : targetValue % 2 === 1;
-      const leftKindLabel = leftIsNode ? '節點' : '腹點';
+      const sameEnds = leftFixed === rightFixed;
+      const modeUnit = sameEnds ? v / (2 * L) : v / (4 * L);
+      const modeNumber = sameEnds
+        ? Math.max(1, Math.round(fR / modeUnit))
+        : Math.max(1, Math.round((fR / modeUnit + 1) / 2));
+      const modeMultiplier = sameEnds ? modeNumber : 2 * modeNumber - 1;
+      const targetFrequency = modeMultiplier * modeUnit;
+      const boundaryStable = Math.abs(fR - targetFrequency) < 0.025;
+      const leftKindLabel = leftFixed ? '節點' : '腹點';
       const rightKindLabel = rightFixed ? '節點' : '腹點';
-      const leftBoundaryName = leftIsNode ? '固定' : '自由';
+      const leftBoundaryName = leftFixed ? '固定' : '自由';
       const rightBoundaryName = rightFixed ? '固定' : '自由';
       const boundaryLabel = `${leftBoundaryName}-${rightBoundaryName}`;
-      const modeNumber = targetValue % 2 === 0 ? targetValue / 2 : (targetValue + 1) / 2;
-      const modeFormula = targetValue % 2 === 0
-        ? `L = ${modeNumber}λ/2`
-        : `L = ${(2 * modeNumber - 1)}λ/4`;
+      const familyFormula = sameEnds ? 'fₙ = nv/(2L)' : 'fₙ = (2n−1)v/(4L)';
+      const modeFormula = sameEnds
+        ? `n=${modeNumber}，L = ${modeNumber}λ/2`
+        : `n=${modeNumber}，L = ${2 * modeNumber - 1}λ/4`;
       return {
-        v, L, fR, fL, AR, AL, rightFixed, lambdaR, lambdaL, kR, kL, omegaR, omegaL,
-        deltaF, ampDiff, coherent, equalAmp, boundaryStable, targetValue,
-        leftKindLabel, rightKindLabel, boundaryLabel, modeFormula
+        v, L, fR, fL, AR, AL, leftFixed, rightFixed, sameEnds,
+        lambdaR, lambdaL, kR, kL, omegaR, omegaL,
+        deltaF, ampDiff, coherent, equalAmp, boundaryStable,
+        leftKindLabel, rightKindLabel, boundaryLabel, familyFormula,
+        modeNumber, modeFormula, targetFrequency
       };
     }
 
@@ -1095,8 +1172,13 @@
       $('stand-delta').innerHTML = `Δf = ${s.deltaF.toFixed(2)} Hz<small>${s.coherent ? '同頻，圖形可固定' : `拍頻週期約 ${(1 / s.deltaF).toFixed(2)} s`}</small>`;
       const ratio = s.AL === 0 ? '∞' : (s.AR / s.AL).toFixed(2);
       $('stand-amp').innerHTML = `振幅比 AR/AL = ${ratio}<small>最小振幅約 |AR - AL| = ${s.ampDiff.toFixed(1)}A</small>`;
+      setText('stand-boundary-summary', `${s.boundaryLabel.replace('-', '－')}邊界`);
+      setText(
+        'stand-boundary-formula',
+        `左端${s.leftKindLabel}、右端${s.rightKindLabel}；${s.familyFormula}`
+      );
       let text = '穩定駐波';
-      let small = `右端為${s.rightKindLabel}，左端目前接近${s.leftKindLabel}`;
+      let small = `左端${s.leftKindLabel}、右端${s.rightKindLabel}`;
       let warn = false;
       if (!s.coherent) {
         text = '不同調疊加';
@@ -1107,8 +1189,9 @@
         small = '有固定包絡，但節點不會真正歸零';
         warn = true;
       } else if (!s.boundaryStable) {
-        text = '穩定駐波，但左端不是邊界點';
-        small = `右端為${s.rightKindLabel}；若要讓左端成為節點或腹點，請跳到下方頻率`;
+        text = '穩定干涉，但不是所選邊界的正常模態';
+        small = `最近是 n=${s.modeNumber}：${s.targetFrequency.toFixed(2)} Hz`;
+        warn = true;
       } else {
         text = `${s.boundaryLabel}正常模態`;
         small = `左端為${s.leftKindLabel}、右端為${s.rightKindLabel}；${s.modeFormula}`;
@@ -1122,37 +1205,104 @@
       const values = [];
       const minF = Number($('stand-fR').min);
       const maxF = Number($('stand-fR').max);
-      for (let m = 1; values.length < 16; m += 1) {
-        const f = m * s.v / (4 * s.L);
+      for (let n = 1; values.length < 16; n += 1) {
+        const multiplier = s.sameEnds ? n : 2 * n - 1;
+        const denominator = s.sameEnds ? 2 * s.L : 4 * s.L;
+        const f = multiplier * s.v / denominator;
         if (f > maxF) break;
         if (f >= minF) {
-          const leftIsNode = s.rightFixed ? m % 2 === 0 : m % 2 === 1;
-          const leftKindLabel = leftIsNode ? '節點' : '腹點';
-          const leftBoundaryName = leftIsNode ? '固定' : '自由';
-          const rightBoundaryName = s.rightFixed ? '固定' : '自由';
-          values.push({ f, label: `${leftBoundaryName}-${rightBoundaryName}`, leftKindLabel });
+          values.push({ f, n });
         }
       }
-      const signature = `${s.rightFixed ? 'fixed' : 'free'}|${values.map(item => item.f.toFixed(2)).join('|')}`;
+      const signature = [
+        s.leftFixed ? 'fixed' : 'free',
+        s.rightFixed ? 'fixed' : 'free',
+        s.fR.toFixed(3),
+        ...values.map(item => item.f.toFixed(3))
+      ].join('|');
       if (signature === standingPresetSignature) return;
       standingPresetSignature = signature;
-      $('stand-mode-presets').innerHTML = '<strong>快速跳到目前邊界的正常模態：</strong>';
-      values.forEach(({ f, label, leftKindLabel }) => {
+      setText('stand-mode-title', `${s.boundaryLabel.replace('-', '－')}的完美駐波`);
+      setText('stand-mode-formula', s.familyFormula);
+      $('stand-mode-buttons').replaceChildren();
+      values.forEach(({ f, n }) => {
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'preset';
-        btn.textContent = `${label}：左端${leftKindLabel}，f=${f.toFixed(2)} Hz`;
+        if (Math.abs(s.fR - f) < 0.025 && s.coherent && s.equalAmp) btn.classList.add('active');
+        btn.textContent = `n=${n} · ${f.toFixed(2)} Hz`;
         btn.addEventListener('click', () => {
           $('stand-lock').checked = true;
-          $('stand-fR').value = f.toFixed(2);
+          $('stand-fR').value = f.toFixed(3);
+          $('stand-fL').value = f.toFixed(3);
           $('stand-AR').value = '1';
+          $('stand-AL').value = '1';
           $('stand-show-left').checked = true;
           $('stand-show-sum').checked = true;
           time = 0;
+          last = performance.now();
           drawActive();
         });
-        $('stand-mode-presets').appendChild(btn);
+        $('stand-mode-buttons').appendChild(btn);
       });
+    }
+
+    function standingTrackedPhase(s) {
+      const unfoldedDistance = s.lambdaR / 4 + s.v * time;
+      const segment = Math.max(0, Math.floor(unfoldedDistance / s.L));
+      const segmentDistance = unfoldedDistance - segment * s.L;
+      const movingRight = segment % 2 === 0;
+      const x = movingRight ? segmentDistance : s.L - segmentDistance;
+      const value = movingRight ? standingRight(x, s) : standingLeft(x, s);
+      const amplitude = movingRight ? s.AR : s.AL;
+      const atExtremum = amplitude > 0.001 && Math.abs(Math.abs(value) - amplitude) < Math.max(0.035, amplitude * 0.06);
+      const phaseName = atExtremum ? (value >= 0 ? '波峰' : '波谷') : '相位點';
+      const reflectionNote = movingRight
+        ? ''
+        : (s.rightFixed ? '｜固定端反相' : '｜自由端不反相');
+      return {
+        x,
+        value,
+        movingRight,
+        label: `${movingRight ? '→ 入射' : '← 反射'}${phaseName}${reflectionNote}｜v=${s.v.toFixed(1)} m/s`
+      };
+    }
+
+    function drawStandingTracker(ctx, w, h, s) {
+      const padX = 44;
+      const base = h / 2;
+      const plotW = w - padX * 2;
+      const scaleY = Math.min(95, h * 0.25) / Math.max(1, s.AR, s.AL);
+      const tracker = standingTrackedPhase(s);
+      const px = padX + (tracker.x / s.L) * plotW;
+      const py = base - tracker.value * scaleY;
+      const color = tracker.movingRight ? css('--blue') : css('--orange');
+
+      ctx.save();
+      ctx.strokeStyle = css('--yellow');
+      ctx.globalAlpha = 0.42;
+      ctx.lineWidth = 1.4;
+      ctx.setLineDash([5, 6]);
+      ctx.beginPath();
+      ctx.moveTo(px, base);
+      ctx.lineTo(px, py);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath();
+      ctx.arc(px, py, 10, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 3;
+      ctx.stroke();
+      ctx.fillStyle = css('--yellow');
+      ctx.beginPath();
+      ctx.arc(px, py, 4.6, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+
+      drawSceneLabel(ctx, padX + 8, 15, tracker.label);
     }
 
     function drawStandingPath(ctx, w, h, fn, s, color, width, dash, alpha = 1) {
@@ -1184,6 +1334,11 @@
       const { ctx, w, h } = resizeCanvas(canvas);
       const s = standingState();
       updateStandingReadouts(s);
+      const trackedPhase = standingTrackedPhase(s);
+      canvas.setAttribute(
+        'aria-label',
+        `左右行進波疊加成駐波的動態圖。目前${trackedPhase.label}。`
+      );
       clearCanvas(ctx, w, h);
       const padX = 44;
       const base = h / 2;
@@ -1215,8 +1370,12 @@
       }
 
       [
-        [s.boundaryStable ? `左端${s.leftKindLabel}` : '左端一般點', padX, 'left'],
-        [s.rightFixed ? '右端固定' : '右端自由', w - padX, 'right']
+        [
+          `左端${s.leftFixed ? '固定' : '自由'}（${s.leftKindLabel}${s.boundaryStable ? '' : '，目前不符'}）`,
+          padX,
+          'left'
+        ],
+        [`右端${s.rightFixed ? '固定' : '自由'}（${s.rightKindLabel}）`, w - padX, 'right']
       ].forEach(([text, px, align]) => {
         ctx.save();
         ctx.strokeStyle = css('--red');
@@ -1265,6 +1424,7 @@
         const color = s.coherent && s.equalAmp ? css('--green') : css('--warn');
         drawStandingPath(ctx, w, h, standingSum, s, color, 4, null, 1);
       }
+      if ($('stand-show-tracker').checked) drawStandingTracker(ctx, w, h, s);
     }
 
     function drawDoppler() {
