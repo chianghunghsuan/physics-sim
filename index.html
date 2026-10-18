@@ -199,6 +199,10 @@
     .red { color: var(--red); }
     .purple { color: var(--purple); }
     .yellow { color: var(--yellow); }
+    .crest-key { color: #475569; }
+    .crest-key .dot { background: #ffffff; border: 1px solid #64748b; }
+    .trough-key { color: #111827; }
+    .neutral-key { color: #7c8792; }
     .values {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -554,12 +558,12 @@
         <div class="module-head">
           <div>
             <h2>水波槽雙源干涉</h2>
-            <p class="module-copy">兩個同調點波源連續發波。先追蹤兩組向外推進的波峰，再看同相交點排成腹線、相消位置排成節線，最後把它們和瞬時水面對照。</p>
+            <p class="module-copy">兩個同調點波源連續發波。水波槽的亮暗直接表示水面狀態：波峰亮、波谷暗，兩波長期相消的節線保持中性灰。</p>
           </div>
           <div class="legend" aria-label="水波槽圖例">
-            <span class="blue"><i class="dot"></i>S1 波峰</span>
-            <span class="orange"><i class="dot"></i>S2 波峰</span>
-            <span class="red"><i class="dot"></i>節線</span>
+            <span class="crest-key"><i class="dot"></i>波峰（亮）</span>
+            <span class="trough-key"><i class="dot"></i>波谷（暗）</span>
+            <span class="neutral-key"><i class="dot"></i>相消區（灰）</span>
             <span class="yellow"><i class="dot"></i>同相交點</span>
           </div>
         </div>
@@ -592,12 +596,12 @@
         </div>
         <div class="checks">
           <label class="check"><input type="checkbox" id="rip-show-field" checked>顯示瞬時水面</label>
-          <label class="check"><input type="checkbox" id="rip-show-nodes" checked>顯示穩定節線</label>
+          <label class="check"><input type="checkbox" id="rip-show-nodes" checked>標示穩定節線（灰）</label>
           <label class="check"><input type="checkbox" id="rip-show-fronts" checked>顯示圓形波面</label>
           <label class="check"><input type="checkbox" id="rip-show-meetings" checked>顯示同相交點</label>
         </div>
         <section class="teacher-note">
-          <p><strong>講法：</strong>先只留圓形波面，追蹤兩組波峰向外傳；再開同相交點，讓學生看到亮點沿固定方向排列；最後開水面與節線，對照「移動的波峰」和「不移動的干涉格局」。</p>
+          <p><strong>講法：</strong>先只看瞬時水面，確認亮帶與暗帶都會向外移動；再標示灰色節線，指出這些位置並不是固定在波峰或波谷，而是振幅長期接近零。</p>
           <p><strong>強調：</strong>調大波源距離或調短波長，會讓路徑差能塞進更多半波長，因此節線變多、夾角變小。</p>
         </section>
       </section>
@@ -606,20 +610,20 @@
         <div class="module-head">
           <div>
             <h2>雙狹縫干涉</h2>
-            <p class="module-copy">從點光源開始，依序經過相干狹縫與雙狹縫。畫面會把每一批次波、同相交點和右側亮紋連在一起，直接看到條紋如何形成。</p>
+            <p class="module-copy">預設採高中課程的理想雙狹縫模型：兩縫等寬、振幅相同且忽略單縫繞射，因此亮紋等距、等寬、等亮。需要比較真實情況時，再開啟進階包絡。</p>
           </div>
           <div class="legend" aria-label="雙狹縫圖例">
             <span class="blue"><i class="dot"></i>連續波面</span>
             <span class="yellow"><i class="dot"></i>同相交點</span>
             <span class="green"><i class="dot"></i>屏幕亮紋</span>
-            <span class="purple"><i class="dot"></i>包絡</span>
+            <span class="purple"><i class="dot"></i>進階繞射包絡</span>
           </div>
         </div>
         <div class="values" aria-live="polite">
           <div class="badge" id="dbl-lambda">λ = 550 nm<small>紅光較長、藍光較短</small></div>
           <div class="badge" id="dbl-spacing">條紋間距 = 3.14 mm<small>Δy = λD / d</small></div>
           <div class="badge" id="dbl-ratio">d/λ = 636<small>縫距越大，條紋越密</small></div>
-          <div class="badge" id="dbl-status">中央亮紋<small>兩縫到中央等距</small></div>
+          <div class="badge" id="dbl-status">理想雙狹縫<small>亮紋等距、等寬、等亮</small></div>
         </div>
         <div class="plot-wrap wave-lab">
           <canvas id="double-canvas" role="img" aria-label="雙狹縫干涉的波面與屏幕亮暗紋。"></canvas>
@@ -650,11 +654,11 @@
           <label class="check"><input type="checkbox" id="dbl-show-source" checked>顯示完整發波流程</label>
           <label class="check"><input type="checkbox" id="dbl-show-waves" checked>顯示雙狹縫次波</label>
           <label class="check"><input type="checkbox" id="dbl-show-meetings" checked>顯示同相交點</label>
-          <label class="check"><input type="checkbox" id="dbl-show-envelope" checked>顯示單狹縫包絡</label>
+          <label class="check"><input type="checkbox" id="dbl-show-envelope">進階：加入單縫繞射包絡</label>
         </div>
         <section class="teacher-note">
-          <p><strong>講法：</strong>先只看完整發波流程，指出每道狹縫如何成為新波源；再開雙狹縫次波與同相交點，讓學生看到交點排成固定方向，最後才把視線移到屏幕亮紋。</p>
-          <p><strong>強調：</strong>雙狹縫干涉的主線是路徑差；單狹縫包絡只是在外面限制哪些亮紋比較亮。</p>
+          <p><strong>講法：</strong>先維持理想模型，確認所有亮紋的中心等距、寬度相同、最大亮度相同；再調整波長、縫距或屏幕距離，看條紋只改變間距，不會由中央向外逐漸變暗。</p>
+          <p><strong>強調：</strong>只有另外開啟單縫繞射包絡時，外側亮紋才會逐漸變暗；這是進階的有限縫寬模型，不是高中題目預設的理想雙狹縫。</p>
         </section>
       </section>
 
@@ -1695,8 +1699,8 @@
       $('rip-ratio').innerHTML = `d/λ = ${(sourceDistance / lambda).toFixed(2)}<small>比值越大，節線與腹線越多</small>`;
       $('rip-phase').innerHTML = `相位差 = ${phaseDeg.toFixed(0)}°<small>${phaseDeg === 0 ? '兩個波源同時到達波峰' : '兩組波峰錯開前進'}</small>`;
       $('rip-status').innerHTML = phaseDeg === 0
-        ? '同相雙源<small>中央線上的波峰總是一起到達</small>'
-        : '相位差使格局偏移<small>交點與節線仍保持固定方向</small>';
+        ? '亮峰、暗谷、灰節線<small>中央腹線振幅最大，會交替亮暗</small>'
+        : '相位差使格局偏移<small>相消位置仍保持中性灰</small>';
 
       ctx.fillStyle = '#06131f';
       ctx.fillRect(0, 0, w, h);
@@ -1719,17 +1723,13 @@
             const u1 = Math.sin(k * (r1 - travel));
             const u2 = Math.sin(k * (r2 - travel) + phase);
             const value = (u1 + u2) / 2;
-            const strength = Math.pow(Math.abs(value), 0.72);
+            const strength = Math.pow(Math.abs(value), 0.68);
             const index = (py * fw + px) * 4;
-            if (value >= 0) {
-              image.data[index] = 6 + 26 * strength;
-              image.data[index + 1] = 20 + 145 * strength;
-              image.data[index + 2] = 32 + 178 * strength;
-            } else {
-              image.data[index] = 10 + 94 * strength;
-              image.data[index + 1] = 20 + 40 * strength;
-              image.data[index + 2] = 34 + 142 * strength;
-            }
+            const neutral = [120, 128, 132];
+            const target = value >= 0 ? [246, 250, 249] : [5, 10, 16];
+            image.data[index] = neutral[0] + (target[0] - neutral[0]) * strength;
+            image.data[index + 1] = neutral[1] + (target[1] - neutral[1]) * strength;
+            image.data[index + 2] = neutral[2] + (target[2] - neutral[2]) * strength;
             image.data[index + 3] = 255;
           }
         }
@@ -1743,7 +1743,7 @@
 
       if ($('rip-show-nodes').checked) {
         ctx.save();
-        ctx.fillStyle = 'rgba(251, 113, 133, .82)';
+        ctx.fillStyle = 'rgba(203, 213, 225, .72)';
         for (let y = 2; y < h; y += 3) {
           for (let x = 2; x < w; x += 3) {
             const r1 = Math.hypot(x - sx1, y - sy);
@@ -1756,8 +1756,8 @@
       }
 
       if ($('rip-show-fronts').checked) {
-        drawCrestRings(ctx, sx1, sy, crest1, lambda, maxR, 'rgba(103, 232, 249, .86)');
-        drawCrestRings(ctx, sx2, sy, crest2, lambda, maxR, 'rgba(251, 146, 60, .82)');
+        drawCrestRings(ctx, sx1, sy, crest1, lambda, maxR, 'rgba(255, 255, 255, .74)');
+        drawCrestRings(ctx, sx2, sy, crest2, lambda, maxR, 'rgba(255, 255, 255, .58)');
       }
 
       if ($('rip-show-meetings').checked) {
@@ -1776,7 +1776,7 @@
         drawGlowPoint(ctx, sx, sy, Math.max(2.2, sourcePulse / 3), label === 'S1' ? '103, 232, 249' : '251, 146, 60');
         drawCenteredText(ctx, label, sx, sy + 24, color);
       }
-      drawCenteredText(ctx, '圓形波峰持續外移；節線與腹線的位置不隨時間移動', w / 2, h - 18, '#b9d7e6');
+      drawCenteredText(ctx, '波峰為亮帶、波谷為暗帶；相消節線長期維持灰色', w / 2, h - 18, '#e2e8f0');
     }
 
     function sinc(x) {
@@ -1843,6 +1843,8 @@
       const fringeMm = lambdaM * screenM / dM * 1000;
       const lightRgb = visibleWavelengthRgb(lambdaNm);
       const lightColor = lightRgb.join(', ');
+      const envelopeEnabled = $('dbl-show-envelope').checked;
+      $('dbl-a').disabled = !envelopeEnabled;
 
       setText('dbl-lambda-out', `${lambdaNm.toFixed(0)} nm`);
       setText('dbl-d-out', `${dMm.toFixed(2)} mm`);
@@ -1852,7 +1854,9 @@
       $('dbl-lambda').innerHTML = `λ = ${lambdaNm.toFixed(0)} nm<small>${lambdaNm > 610 ? '偏紅光' : (lambdaNm < 480 ? '偏藍光' : '可見光')}</small>`;
       $('dbl-spacing').innerHTML = `條紋間距 = ${fringeMm.toFixed(2)} mm<small>相鄰亮紋中心距離</small>`;
       $('dbl-ratio').innerHTML = `d/λ = ${(dM / lambdaM).toFixed(0)}<small>縫距越大，亮紋方向越密</small>`;
-      $('dbl-status').innerHTML = '逐段形成干涉<small>波面交點方向對應屏幕亮紋</small>';
+      $('dbl-status').innerHTML = envelopeEnabled
+        ? '有限縫寬模型<small>亮紋受單縫包絡調制，外側逐漸變暗</small>'
+        : '理想雙狹縫<small>亮紋等距、等寬、等亮</small>';
 
       const centerY = h / 2;
       const sourceX = Math.max(24, w * 0.045);
@@ -1999,10 +2003,10 @@
         const alpha = Math.PI * aM * yM / (lambdaM * screenM);
         let intensity = Math.cos(beta) ** 2;
         const envelope = sinc(alpha) ** 2;
-        if ($('dbl-show-envelope').checked) intensity *= envelope;
+        if (envelopeEnabled) intensity *= envelope;
         const bright = Math.max(0, Math.min(1, intensity));
         ctx.fillStyle = `rgba(${lightColor}, ${0.025 + bright * 0.94})`;
-        ctx.fillRect(screenX + 3, py, (screenRight - screenX - 6) * (0.42 + 0.58 * bright), 2.2);
+        ctx.fillRect(screenX + 3, py, screenRight - screenX - 6, 2.2);
       }
       for (const maximum of maxima) {
         const path = Math.hypot(screenX - barrierX, maximum.y - slit1);
@@ -2011,13 +2015,13 @@
         if (flash < 0.05) continue;
         const yM = (maximum.y - centerY) * scaleY;
         const alpha = Math.PI * aM * yM / (lambdaM * screenM);
-        const envelope = $('dbl-show-envelope').checked ? sinc(alpha) ** 2 : 1;
+        const envelope = envelopeEnabled ? sinc(alpha) ** 2 : 1;
         ctx.fillStyle = `rgba(255, 255, 255, ${flash * envelope * .86})`;
         ctx.fillRect(screenX + 4, maximum.y - 1.8, screenRight - screenX - 8, 3.6);
       }
       ctx.restore();
 
-      if ($('dbl-show-envelope').checked) {
+      if (envelopeEnabled) {
         ctx.save();
         ctx.strokeStyle = '#c084fc';
         ctx.lineWidth = 2;
