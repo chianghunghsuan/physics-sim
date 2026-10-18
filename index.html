@@ -1830,33 +1830,41 @@
       ctx.restore();
     }
 
+    function doubleSlitPathDifference(sourceX, sourceY1, sourceY2, x, y) {
+      return Math.hypot(x - sourceX, y - sourceY1) - Math.hypot(x - sourceX, y - sourceY2);
+    }
+
+    function solvePathDifferenceY(sourceX, sourceY1, sourceY2, x, target, top, bottom) {
+      let low = top;
+      let high = bottom;
+      const lowDifference = doubleSlitPathDifference(sourceX, sourceY1, sourceY2, x, low);
+      const highDifference = doubleSlitPathDifference(sourceX, sourceY1, sourceY2, x, high);
+      if (target < lowDifference || target > highDifference) return null;
+      for (let iteration = 0; iteration < 24; iteration += 1) {
+        const middle = (low + high) / 2;
+        if (doubleSlitPathDifference(sourceX, sourceY1, sourceY2, x, middle) < target) low = middle;
+        else high = middle;
+      }
+      return (low + high) / 2;
+    }
+
     function drawConstructiveGuides(ctx, sourceX, sourceY1, sourceY2, lambda, left, right, top, bottom, color) {
-      // Solve the same path-difference equation used by the animated wave field.
-      const pathDifference = (x, y) => (
-        Math.hypot(x - sourceX, y - sourceY1) - Math.hypot(x - sourceX, y - sourceY2)
-      );
+      // Solve the same path-difference equation used by the animated wave field and screen.
       const sourceDistance = Math.abs(sourceY2 - sourceY1);
       const maxOrder = Math.min(8, Math.floor((sourceDistance - 0.5) / lambda));
       ctx.save();
       ctx.strokeStyle = color;
-      ctx.lineWidth = 1.3;
-      ctx.setLineDash([3, 7]);
+      ctx.lineWidth = 2;
+      ctx.setLineDash([6, 7]);
+      ctx.shadowColor = 'rgba(2, 6, 23, .92)';
+      ctx.shadowBlur = 3;
       for (let order = -maxOrder; order <= maxOrder; order += 1) {
         const target = order * lambda;
         ctx.beginPath();
         let started = false;
         for (let x = left; x <= right; x += 3) {
-          let low = top;
-          let high = bottom;
-          const lowDifference = pathDifference(x, low);
-          const highDifference = pathDifference(x, high);
-          if (target < lowDifference || target > highDifference) continue;
-          for (let iteration = 0; iteration < 22; iteration += 1) {
-            const middle = (low + high) / 2;
-            if (pathDifference(x, middle) < target) low = middle;
-            else high = middle;
-          }
-          const y = (low + high) / 2;
+          const y = solvePathDifferenceY(sourceX, sourceY1, sourceY2, x, target, top, bottom);
+          if (y === null) continue;
           if (!started) {
             ctx.moveTo(x, y);
             started = true;
@@ -1892,7 +1900,7 @@
       setText('dbl-speed-out', `${number('dbl-speed').toFixed(2)}x`);
       $('dbl-lambda').innerHTML = `λ = ${lambdaNm.toFixed(0)} nm<small>${lambdaNm > 610 ? '偏紅光' : (lambdaNm < 480 ? '偏藍光' : '可見光')}</small>`;
       $('dbl-spacing').innerHTML = `條紋間距 = ${fringeMm.toFixed(2)} mm<small>相鄰亮紋中心距離</small>`;
-      $('dbl-ratio').innerHTML = `d/λ = ${(dM / lambdaM).toFixed(0)}<small>縫距越大，亮紋方向越密</small>`;
+      $('dbl-ratio').innerHTML = `實際 d/λ = ${(dM / lambdaM).toFixed(0)}<small>畫面以同一路徑差模型放大示意</small>`;
       $('dbl-status').innerHTML = envelopeEnabled
         ? '有限縫寬模型<small>亮紋受單縫包絡調制，外側逐漸變暗</small>'
         : '理想雙狹縫<small>亮紋等距、等寬、等亮</small>';
@@ -1900,11 +1908,14 @@
       const centerY = h / 2;
       const sourceX = Math.max(24, w * 0.045);
       const coherenceX = w * 0.17;
-      const barrierX = w * 0.37;
       const screenX = w * 0.84;
       const screenRight = w - 18;
-      const dPx = Math.min(h * 0.44, 42 + (dMm - 0.15) / 0.65 * 100);
-      const lambdaPx = 28 + (lambdaNm - 420) / 260 * 25;
+      // Compress the real D range into the available stage while preserving the geometry:
+      // a farther screen lengthens every ray before the same path-difference calculation.
+      const visualScreenSpan = w * (0.42 + (screenM - 1) / 3 * 0.13);
+      const barrierX = Math.max(coherenceX + w * 0.1, screenX - visualScreenSpan);
+      const dPx = Math.min(h * 0.62, 150 + (dMm - 0.15) / 0.65 * 100);
+      const lambdaPx = 17 + (lambdaNm - 420) / 260 * 7;
       const slit1 = centerY - dPx / 2;
       const slit2 = centerY + dPx / 2;
       const slitGap = Math.max(14, Math.min(24, 13 + aMm / 0.25 * 12));
@@ -1916,7 +1927,6 @@
       ctx.fillStyle = '#050d1a';
       ctx.fillRect(0, 0, w, h);
 
-      const scaleY = 0.020 / (h * 0.42);
       ctx.save();
       ctx.strokeStyle = 'rgba(148, 163, 184, .2)';
       ctx.lineWidth = 1;
@@ -1961,26 +1971,19 @@
       }
 
       const maxima = [];
-      for (let order = -12; order <= 12; order += 1) {
-        const yM = order * lambdaM * screenM / dM;
-        const py = centerY + yM / scaleY;
-        if (py > 28 && py < h - 28) maxima.push({ order, y: py });
-      }
-      if ($('dbl-show-meetings').checked) {
-        drawConstructiveGuides(
-          ctx,
+      const visibleOrderCount = Math.min(12, Math.floor((dPx - 0.5) / lambdaPx));
+      for (let order = -visibleOrderCount; order <= visibleOrderCount; order += 1) {
+        const py = solvePathDifferenceY(
           barrierX,
           slit1,
           slit2,
-          lambdaPx,
-          barrierX + 3,
-          screenX - 5,
-          24,
-          h - 24,
-          'rgba(253, 224, 71, .62)'
+          screenX,
+          order * lambdaPx,
+          26,
+          h - 26
         );
+        if (py !== null) maxima.push({ order, y: py });
       }
-
       if ($('dbl-show-source').checked) {
         ctx.save();
         ctx.beginPath();
@@ -2016,6 +2019,19 @@
         );
         const pulse = 1.5 + 0.35 * Math.sin(time * 8);
         for (const point of points.slice(0, 220)) drawGlowPoint(ctx, point.x, point.y, pulse, lightColor);
+
+        drawConstructiveGuides(
+          ctx,
+          barrierX,
+          slit1,
+          slit2,
+          lambdaPx,
+          barrierX + 3,
+          screenX,
+          24,
+          h - 24,
+          'rgba(253, 224, 71, .86)'
+        );
       }
 
       drawSlottedBarrier(ctx, coherenceX, 28, h - 28, [
@@ -2040,9 +2056,10 @@
       ctx.shadowColor = `rgb(${lightColor})`;
       ctx.shadowBlur = 11;
       for (let py = 26; py < h - 26; py += 2) {
-        const yM = (py - centerY) * scaleY;
-        const beta = Math.PI * dM * yM / (lambdaM * screenM);
-        const alpha = Math.PI * aM * yM / (lambdaM * screenM);
+        const pathDifference = doubleSlitPathDifference(barrierX, slit1, slit2, screenX, py);
+        const orderPosition = pathDifference / lambdaPx;
+        const beta = Math.PI * orderPosition;
+        const alpha = Math.PI * (aM / dM) * orderPosition;
         let intensity = Math.cos(beta) ** 2;
         const envelope = sinc(alpha) ** 2;
         if (envelopeEnabled) intensity *= envelope;
@@ -2055,11 +2072,17 @@
         const arrival = Math.max(0, Math.sin(2 * Math.PI * (path - travel + barrierX - sourceX) / lambdaPx));
         const flash = arrival ** 10;
         if (flash < 0.05) continue;
-        const yM = (maximum.y - centerY) * scaleY;
-        const alpha = Math.PI * aM * yM / (lambdaM * screenM);
+        const alpha = Math.PI * (aM / dM) * maximum.order;
         const envelope = envelopeEnabled ? sinc(alpha) ** 2 : 1;
         ctx.fillStyle = `rgba(255, 255, 255, ${flash * envelope * .86})`;
         ctx.fillRect(screenX + 4, maximum.y - 1.8, screenRight - screenX - 8, 3.6);
+      }
+      if ($('dbl-show-meetings').checked) {
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = 'rgba(253, 224, 71, .95)';
+        for (const maximum of maxima) {
+          ctx.fillRect(screenX - 7, maximum.y - 1.25, 12, 2.5);
+        }
       }
       ctx.restore();
 
@@ -2070,8 +2093,8 @@
         ctx.setLineDash([6, 5]);
         ctx.beginPath();
         for (let py = 28; py <= h - 28; py += 2) {
-          const yM = (py - centerY) * scaleY;
-          const alpha = Math.PI * aM * yM / (lambdaM * screenM);
+          const pathDifference = doubleSlitPathDifference(barrierX, slit1, slit2, screenX, py);
+          const alpha = Math.PI * (aM / dM) * (pathDifference / lambdaPx);
           const envelope = sinc(alpha) ** 2;
           const px = screenX - 8 - envelope * Math.min(66, w * 0.065);
           if (py === 28) ctx.moveTo(px, py);
