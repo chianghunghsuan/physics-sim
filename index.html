@@ -119,18 +119,18 @@
       color: #ffffff;
       box-shadow: 0 2px 7px rgba(15, 118, 110, .2);
     }
-    .mirror-lesson-switch {
+    .mirror-lesson-switch, .angular-switch {
       display: flex;
       flex-wrap: wrap;
       gap: 6px;
       margin: 2px 0 14px;
     }
-    button.mirror-lesson {
+    button.mirror-lesson, button.angular-mode {
       background: #e2e8f0;
       color: #1f2933;
       padding: 8px 12px;
     }
-    button.mirror-lesson.active {
+    button.mirror-lesson.active, button.angular-mode.active {
       background: #334155;
       color: #ffffff;
     }
@@ -247,7 +247,7 @@
       min-height: 320px;
       display: block;
     }
-    #retrograde-canvas { height: min(64vh, 540px); min-height: 420px; }
+    #retrograde-canvas { height: min(72vh, 620px); min-height: 500px; }
     #mirror-canvas.parallel-expanded {
       height: min(66vh, 560px);
       min-height: 440px;
@@ -261,7 +261,10 @@
       touch-action: none;
     }
     #reflection-canvas.dragging { cursor: grabbing; }
-    #microscope-canvas, #eye-canvas { height: min(64vh, 540px); min-height: 420px; }
+    #microscope-canvas, #eye-canvas, #circular-canvas, #precession-canvas {
+      height: min(68vh, 580px);
+      min-height: 460px;
+    }
     .controls {
       margin-top: 16px;
       display: grid;
@@ -375,9 +378,9 @@
       .mode-buttons { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       canvas { height: 330px; min-height: 280px; }
       #mirror-canvas.parallel-expanded { height: 410px; min-height: 380px; }
-      #microscope-canvas, #eye-canvas { height: 430px; min-height: 390px; }
+      #microscope-canvas, #eye-canvas, #circular-canvas, #precession-canvas { height: 470px; min-height: 430px; }
       button.optics-mode, button.topic-mode { min-width: 112px; flex: 1 1 112px; }
-      #retrograde-canvas { height: 430px; min-height: 390px; }
+      #retrograde-canvas { height: 520px; min-height: 480px; }
     }
   </style>
 </head>
@@ -1133,6 +1136,7 @@
           <div class="checks">
             <label class="check"><input type="checkbox" id="eye-show-labels" checked>顯示眼球構造標示</label>
             <label class="check"><input type="checkbox" id="eye-show-ideal" checked>顯示理想焦點</label>
+            <label class="check"><input type="checkbox" id="eye-show-rays" checked>顯示三條成像光線</label>
           </div>
         </div>
       </section>
@@ -1153,15 +1157,16 @@
             <div class="legend" aria-label="圓周投影圖例">
               <span class="blue"><i class="dot"></i>等速圓周</span>
               <span class="orange"><i class="dot"></i>轉動半徑</span>
-              <span class="green"><i class="dot"></i>簡諧投影</span>
+              <span class="green"><i class="dot"></i>水平投影 x</span>
+              <span class="purple"><i class="dot"></i>鉛直投影 y</span>
               <span class="red"><i class="dot"></i>速度 v</span>
-              <span class="purple"><i class="dot"></i>向心加速度 aᶜ</span>
             </div>
           </div>
           <div class="values" aria-live="polite">
             <div class="badge" id="circ-omega">角速度 ω = 1.05 rad/s<small>每秒轉過的角度</small></div>
             <div class="badge" id="circ-period-badge">週期 T = 6.0 s<small>圓周與投影週期相同</small></div>
-            <div class="badge" id="circ-position">投影 x = 1.00 A<small>x = A cos θ</small></div>
+            <div class="badge" id="circ-position-x">水平 x = 1.00 A<small>x = A cos θ</small></div>
+            <div class="badge" id="circ-position-y">鉛直 y = 0.00 A<small>y = A sin θ</small></div>
             <div class="badge" id="circ-state">端點：速度為零<small>加速度量值最大</small></div>
           </div>
           <div class="plot-wrap">
@@ -1181,32 +1186,29 @@
               <input id="circ-phase" type="range" min="0" max="360" step="5" value="0">
             </div>
             <div class="control">
-              <label for="circ-projection">投影方向</label>
-              <select id="circ-projection">
-                <option value="vertical">鉛直投影</option>
-                <option value="horizontal">水平投影</option>
-              </select>
-            </div>
-            <div class="control">
               <label for="circ-speed">播放速度：<span id="circ-speed-out">0.60x</span></label>
               <input id="circ-speed" type="range" min="0.1" max="2" step="0.05" value="0.6">
             </div>
           </div>
           <div class="checks">
-            <label class="check"><input type="checkbox" id="circ-show-trail" checked>顯示投影歷程</label>
+            <label class="check"><input type="checkbox" id="circ-show-graph">第二階段：顯示位移－時間曲線</label>
             <label class="check"><input type="checkbox" id="circ-show-vectors" checked>顯示速度與向心加速度</label>
           </div>
           <section class="teacher-note">
-            <p><strong>講法：</strong>先盯著圓周質點，再沿虛線找到投影點；兩點總是同相。投影靠近端點時變慢，通過中心時最快。</p>
-            <p><strong>強調：</strong>等速圓周運動的「速率」固定，但速度方向持續改變；簡諧投影的速度與加速度量值都會改變。</p>
+            <p><strong>講法：</strong>先不要開歷程圖。盯住藍點，沿鉛直虛線往下就是水平投影 x；沿水平虛線往右就是鉛直投影 y。三點的座標逐像素對齊，不是另外畫出的近似動畫。</p>
+            <p><strong>第二階段：</strong>學生確認兩個影子的位置後，再打開位移－時間曲線；此時只把相位攤開成時間，不再拿曲線端點冒充投影質點。</p>
           </section>
         </div>
 
         <div id="mechanics-view-precession" class="topic-view">
+          <div class="angular-switch" role="group" aria-label="角動量案例選擇">
+            <button type="button" class="angular-mode active" data-angular="gyro" aria-pressed="true">陀螺進動</button>
+            <button type="button" class="angular-mode" data-angular="helicopter" aria-pressed="false">直升機反扭矩</button>
+          </div>
           <div class="module-head">
             <div>
-              <h2>陀螺進動與角動量方向改變</h2>
-              <p class="module-copy">重力矩不直接把高速旋轉的陀螺壓倒，而是持續改變角動量的方向，使轉軸繞鉛直方向進動。</p>
+              <h2 id="angular-title">陀螺進動與角動量方向改變</h2>
+              <p class="module-copy" id="angular-copy">重力矩不直接把高速旋轉的陀螺壓倒，而是持續改變角動量的方向，使轉軸繞鉛直方向進動。</p>
             </div>
             <div class="legend" aria-label="陀螺進動圖例">
               <span class="blue"><i class="dot"></i>角動量 L</span>
@@ -1221,22 +1223,22 @@
             <div class="badge" id="prec-period">進動週期 = 3.22 s<small>轉得越快，進動越慢</small></div>
           </div>
           <div class="plot-wrap">
-            <canvas id="precession-canvas" role="img" aria-label="陀螺轉軸、角動量、重力矩與進動圓錐動畫。"></canvas>
+            <canvas id="precession-canvas" role="img" aria-label="陀螺進動或直升機反扭矩的角動量動畫。"></canvas>
           </div>
           <div class="controls">
-            <div class="control">
+            <div class="control gyro-only">
               <label for="prec-spin">自轉速率：<span id="prec-spin-out">1200 rpm</span></label>
               <input id="prec-spin" type="range" min="300" max="2400" step="50" value="1200">
             </div>
-            <div class="control">
+            <div class="control gyro-only">
               <label for="prec-mass">轉輪質量：<span id="prec-mass-out">2.0 kg</span></label>
               <input id="prec-mass" type="range" min="0.5" max="4" step="0.1" value="2">
             </div>
-            <div class="control">
+            <div class="control gyro-only">
               <label for="prec-arm">支點到重心：<span id="prec-arm-out">0.25 m</span></label>
               <input id="prec-arm" type="range" min="0.1" max="0.5" step="0.01" value="0.25">
             </div>
-            <div class="control">
+            <div class="control gyro-only">
               <label for="prec-tilt">轉軸與鉛直夾角：<span id="prec-tilt-out">60°</span></label>
               <input id="prec-tilt" type="range" min="20" max="75" step="1" value="60">
             </div>
@@ -1244,12 +1246,18 @@
               <label for="prec-speed">播放速度：<span id="prec-speed-out">0.35x</span></label>
               <input id="prec-speed" type="range" min="0.1" max="1.2" step="0.05" value="0.35">
             </div>
+            <div class="control heli-only" hidden>
+              <label for="heli-main-rpm">主旋翼轉速：<span id="heli-main-rpm-out">420 rpm</span></label>
+              <input id="heli-main-rpm" type="range" min="180" max="620" step="10" value="420">
+            </div>
           </div>
           <div class="checks">
-            <label class="check"><input type="checkbox" id="prec-show-vectors" checked>顯示 L、τ 與 ΔL</label>
-            <label class="check"><input type="checkbox" id="prec-show-cone" checked>顯示進動圓錐</label>
+            <label class="check gyro-only"><input type="checkbox" id="prec-show-vectors" checked>顯示 L、τ、ΔL 與 L′</label>
+            <label class="check gyro-only"><input type="checkbox" id="prec-show-cone" checked>顯示轉軸掃過範圍</label>
+            <label class="check heli-only" hidden><input type="checkbox" id="heli-tail-enabled" checked>尾旋翼運作（取消後觀察機身反轉）</label>
+            <label class="check heli-only" hidden><input type="checkbox" id="heli-show-torque" checked>顯示主旋翼與機身的反向扭矩</label>
           </div>
-          <section class="teacher-note">
+          <section class="teacher-note" id="angular-teacher">
             <p><strong>講法：</strong>先暫停並比較藍色 L 與紅色 τ：τ 幾乎垂直於 L，所以主要改變方向而不是立即消除自轉。再播放觀察 L 的尖端沿圓周移動。</p>
             <p><strong>強調：</strong>增加自轉速率會增大 L，因此相同重力矩每秒能改變的方向較少，進動反而變慢。陀螺受到外力矩，所以陀螺本身的 L 方向會改變；把陀螺與地球視為整體時，總角動量才守恆。</p>
           </section>
@@ -1318,8 +1326,8 @@
       <section id="panel-retrograde" class="panel" role="tabpanel">
         <div class="module-head">
           <div>
-            <h2>地心說與日心說如何描述行星逆行</h2>
-            <p class="module-copy">外行星由地球追越、內行星由行星追越地球，都會使地球天空中的視方向短暫反轉。右側把同一相對位置拆成均輪與本輪，比較兩種模型。</p>
+            <h2>日心模型如何產生行星逆行</h2>
+            <p class="module-copy">上方用俯視軌道看誰追越誰；下方把地球固定在星空中央，直接畫出行星視位置何時折返。可切換等速圓軌道與克卜勒橢圓。</p>
           </div>
           <div class="legend" aria-label="行星逆行圖例">
             <span class="orange"><i class="dot"></i>太陽</span>
@@ -1331,11 +1339,11 @@
         <div class="values" aria-live="polite">
           <div class="badge" id="retro-planet-badge">觀測火星<small>外行星公轉週期 1.88 年</small></div>
           <div class="badge" id="retro-motion">目前：逆行<small>視黃經正在減少</small></div>
-          <div class="badge" id="retro-angle">地球視方向 = 0.0°<small>兩種模型完全相同</small></div>
-          <div class="badge" id="retro-model">2 個日心圓 ↔ 均輪＋本輪<small>簡化等速圓模型</small></div>
+          <div class="badge" id="retro-angle">視黃經 = 0.0°<small>相對固定星空的方向</small></div>
+          <div class="badge" id="retro-model">等速圓軌道<small>先看追越造成的折返</small></div>
         </div>
         <div class="plot-wrap">
-          <canvas id="retrograde-canvas" role="img" aria-label="日心與地心模型對外行星逆行的並排動畫與視角曲線。"></canvas>
+          <canvas id="retrograde-canvas" role="img" aria-label="日心軌道、三個等時間視線與固定星空上的行星逆行折返軌跡。"></canvas>
         </div>
         <div class="controls">
           <div class="control">
@@ -1346,6 +1354,13 @@
               <option value="mars" selected>火星</option>
               <option value="jupiter">木星</option>
               <option value="saturn">土星</option>
+            </select>
+          </div>
+          <div class="control">
+            <label for="retro-orbit-model">軌道模型</label>
+            <select id="retro-orbit-model">
+              <option value="circle" selected>等速圓軌道（先看機制）</option>
+              <option value="kepler">克卜勒橢圓（速度會改變）</option>
             </select>
           </div>
           <div class="control">
@@ -1362,13 +1377,14 @@
           </div>
         </div>
         <div class="checks">
-          <label class="check"><input type="checkbox" id="retro-show-orbits" checked>顯示所有圓軌道</label>
+          <button type="button" class="preset" id="retro-jump">跳到逆行中心</button>
+          <label class="check"><input type="checkbox" id="retro-show-orbits" checked>顯示完整軌道</label>
           <label class="check"><input type="checkbox" id="retro-show-sight" checked>顯示地球視線</label>
-          <label class="check"><input type="checkbox" id="retro-show-trail" checked>保留行星與視位置軌跡</label>
+          <label class="check"><input type="checkbox" id="retro-show-trail" checked>顯示等時間位置與星空軌跡</label>
         </div>
         <section class="teacher-note">
-            <p><strong>講法：</strong>先看左側的兩個公轉位置，再沿地球視線看下方星空尺。外行星在衝附近被地球追越；水星、金星則在內合附近快速越過地球與太陽之間，兩者都會在星空背景上留下折返軌跡。</p>
-          <p><strong>強調：</strong>「能解釋」不等於模型同樣簡潔。簡化圓軌道下，日心模型用地球與行星各自繞太陽；地心模型要為每顆行星配置均輪、本輪及相位關係。</p>
+            <p><strong>講法：</strong>先按「跳到逆行中心」。上方看地球與行星的相對視線，再看下方固定星空：綠線往右是順行，紅線折回就是逆行；不是行星真的在軌道上倒車。</p>
+          <p><strong>克卜勒：</strong>切到橢圓後，太陽位於焦點，等時間位置點不再等距。橢圓與變速會修正逆行發生的時間、長短與快慢，但逆行的根本仍是地球與行星的相對運動。</p>
         </section>
       </section>
     </div>
@@ -1380,6 +1396,7 @@
     let activeModule = 'standing';
     let activeOptics = 'mirror';
     let activeMechanics = 'circular';
+    let activeAngular = 'gyro';
     let mirrorLesson = 'image';
     let mirrorParallelMode = 'single';
     let running = true;
@@ -4882,6 +4899,24 @@
       drawSceneLabel(ctx, 20, 20, '光由標本向上傳播，依序通過物鏡與目鏡');
     }
 
+    function drawEyeLeader(ctx, anchor, labelPoint, label, align = 'left') {
+      const elbowX = align === 'right' ? labelPoint.x + 10 : labelPoint.x - 10;
+      ctx.save();
+      ctx.strokeStyle = '#64748b';
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.moveTo(anchor.x, anchor.y);
+      ctx.lineTo(elbowX, labelPoint.y);
+      ctx.lineTo(labelPoint.x, labelPoint.y);
+      ctx.stroke();
+      ctx.fillStyle = '#334155';
+      ctx.font = '700 12px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.textAlign = align;
+      ctx.textBaseline = 'bottom';
+      ctx.fillText(label, labelPoint.x, labelPoint.y - 3);
+      ctx.restore();
+    }
+
     function drawEye() {
       const canvas = $('eye-canvas');
       const { ctx, w, h } = resizeCanvas(canvas);
@@ -4890,9 +4925,8 @@
       const accommodation = number('eye-accommodation');
       const condition = $('eye-condition').value;
       const correction = $('eye-correction').value;
-      const axis = h * .53;
-      const corneaX = w * .47;
-      const lensX = w * .60;
+      const compact = w < 680;
+      const axis = h * .54;
       const normalRetinaDistance = 1.72;
       const retinaDistance = condition === 'myopia' ? 1.88 : (condition === 'hyperopia' ? 1.56 : normalRetinaDistance);
       let focal = 2.02 - accommodation * .006;
@@ -4913,63 +4947,150 @@
         : `焦點落在視網膜${focusError < 0 ? '前' : '後'}<small>相差 ${Math.abs(focusError).toFixed(2)} cm，影像模糊</small>`;
       $('eye-state-badge').innerHTML = `${stateName}<small>${conditionText}</small>`;
 
-      const eyeCenter = { x: w * .70, y: axis };
-      const eyeRx = Math.min(w * .25, 230);
-      const eyeRy = Math.min(h * .37, 150);
-      const retinaX = lensX + (retinaDistance / normalRetinaDistance) * (eyeCenter.x + eyeRx * .82 - lensX);
-      const focusX = lensX + (imageDistance / normalRetinaDistance) * (eyeCenter.x + eyeRx * .82 - lensX);
-      const objectX = Math.max(42, corneaX - w * .34);
-      const objectHeight = Math.min(84, h * .23);
+      const eyeCenter = { x: w * (compact ? .64 : .69), y: axis };
+      const eyeRx = Math.min(w * (compact ? .31 : .27), 265);
+      const eyeRy = Math.min(h * .31, 166);
+      const frontX = eyeCenter.x - eyeRx * 1.04;
+      const baseBackX = eyeCenter.x + eyeRx;
+      const backX = baseBackX + (condition === 'myopia' ? 14 : (condition === 'hyperopia' ? -14 : 0));
+      const corneaX = frontX + 12;
+      const irisX = frontX + eyeRx * .28;
+      const lensX = frontX + eyeRx * .43;
+      const retinaX = backX - 19;
+      const focusX = lensX + (imageDistance / retinaDistance) * (retinaX - lensX);
+      const objectX = Math.max(30, frontX - (compact ? 72 : 175));
+      const objectHeight = Math.min(82, h * .2);
       const objectTip = { x: objectX, y: axis - objectHeight };
       const focus = { x: focusX, y: axis + objectHeight * .23 };
 
       ctx.save();
-      const vitreous = ctx.createRadialGradient(eyeCenter.x - 30, axis - 30, 20, eyeCenter.x, axis, eyeRx);
-      vitreous.addColorStop(0, 'rgba(240,249,255,.88)');
-      vitreous.addColorStop(1, 'rgba(186,230,253,.30)');
+      ctx.fillStyle = '#f8fafc';
+      ctx.fillRect(0, 0, w, h);
+      ctx.strokeStyle = '#dbe3ec';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(18, axis);
+      ctx.lineTo(w - 18, axis);
+      ctx.stroke();
+      ctx.restore();
+
+      const eyeOutline = new Path2D();
+      eyeOutline.moveTo(frontX, axis);
+      eyeOutline.bezierCurveTo(frontX + 8, axis - eyeRy * .62, eyeCenter.x - eyeRx * .55, axis - eyeRy, eyeCenter.x, axis - eyeRy);
+      eyeOutline.bezierCurveTo(eyeCenter.x + eyeRx * .76, axis - eyeRy, backX, axis - eyeRy * .58, backX, axis);
+      eyeOutline.bezierCurveTo(backX, axis + eyeRy * .58, eyeCenter.x + eyeRx * .76, axis + eyeRy, eyeCenter.x, axis + eyeRy);
+      eyeOutline.bezierCurveTo(eyeCenter.x - eyeRx * .55, axis + eyeRy, frontX + 8, axis + eyeRy * .62, frontX, axis);
+      eyeOutline.closePath();
+      ctx.save();
+      const vitreous = ctx.createRadialGradient(eyeCenter.x - eyeRx * .25, axis - eyeRy * .22, 15, eyeCenter.x, axis, eyeRx * 1.05);
+      vitreous.addColorStop(0, '#f7fcff');
+      vitreous.addColorStop(.62, '#e5f5f7');
+      vitreous.addColorStop(1, '#c7e4e8');
       ctx.fillStyle = vitreous;
-      ctx.strokeStyle = '#475569';
+      ctx.fill(eyeOutline);
+      ctx.strokeStyle = '#5b6673';
+      ctx.lineWidth = 5;
+      ctx.stroke(eyeOutline);
+      ctx.restore();
+
+      // Choroid and retina follow the inner rear wall instead of floating outside the eye.
+      ctx.save();
+      ctx.strokeStyle = '#7f1d1d';
+      ctx.lineWidth = 9;
+      ctx.beginPath();
+      ctx.ellipse(eyeCenter.x, axis, Math.max(20, backX - eyeCenter.x - 9), eyeRy - 10, 0, -1.12, 1.12);
+      ctx.stroke();
+      ctx.strokeStyle = '#f59e0b';
       ctx.lineWidth = 4;
       ctx.beginPath();
-      ctx.ellipse(eyeCenter.x, eyeCenter.y, eyeRx, eyeRy, 0, 0, Math.PI * 2);
+      ctx.ellipse(eyeCenter.x, axis, Math.max(20, backX - eyeCenter.x - 15), eyeRy - 17, 0, -1.10, 1.10);
+      ctx.stroke();
+      ctx.restore();
+
+      // Cornea and aqueous chamber.
+      ctx.save();
+      ctx.fillStyle = 'rgba(125,211,252,.24)';
+      ctx.strokeStyle = '#0284c7';
+      ctx.lineWidth = 3.5;
+      ctx.beginPath();
+      ctx.moveTo(frontX, axis);
+      ctx.bezierCurveTo(frontX + 7, axis - eyeRy * .54, irisX - 8, axis - eyeRy * .55, irisX, axis - eyeRy * .42);
+      ctx.lineTo(irisX, axis + eyeRy * .42);
+      ctx.bezierCurveTo(irisX - 8, axis + eyeRy * .55, frontX + 7, axis + eyeRy * .54, frontX, axis);
+      ctx.closePath();
       ctx.fill();
       ctx.stroke();
       ctx.restore();
 
+      // Iris leaves a real pupil opening; the lens sits behind it and is tied to the ciliary body.
+      const pupilHalf = 16;
       ctx.save();
-      ctx.strokeStyle = '#0284c7';
-      ctx.lineWidth = 5;
+      const irisGradient = ctx.createLinearGradient(irisX, axis - eyeRy * .5, irisX, axis + eyeRy * .5);
+      irisGradient.addColorStop(0, '#115e59');
+      irisGradient.addColorStop(.5, '#0f766e');
+      irisGradient.addColorStop(1, '#115e59');
+      ctx.strokeStyle = irisGradient;
+      ctx.lineWidth = 10;
       ctx.beginPath();
-      ctx.arc(corneaX + 18, axis, eyeRy * .72, Math.PI * .56, Math.PI * 1.44);
-      ctx.stroke();
-      ctx.strokeStyle = '#0f766e';
-      ctx.lineWidth = 8;
-      ctx.beginPath();
-      ctx.moveTo(lensX - 38, axis - eyeRy * .45);
-      ctx.lineTo(lensX - 22, axis - 18);
-      ctx.moveTo(lensX - 38, axis + eyeRy * .45);
-      ctx.lineTo(lensX - 22, axis + 18);
+      ctx.moveTo(irisX, axis - eyeRy * .48);
+      ctx.lineTo(irisX, axis - pupilHalf);
+      ctx.moveTo(irisX, axis + pupilHalf);
+      ctx.lineTo(irisX, axis + eyeRy * .48);
       ctx.stroke();
       ctx.restore();
-      drawCompactLens(ctx, lensX, axis, eyeRy * 1.12, 'convex');
 
+      const lensHalfH = eyeRy * (.34 + accommodation * .0009);
+      const lensHalfW = eyeRx * (.095 + accommodation * .00028);
       ctx.save();
-      ctx.strokeStyle = css('--red');
+      const lensGradient = ctx.createLinearGradient(lensX - lensHalfW, axis, lensX + lensHalfW, axis);
+      lensGradient.addColorStop(0, 'rgba(186,230,253,.62)');
+      lensGradient.addColorStop(.5, 'rgba(255,255,255,.88)');
+      lensGradient.addColorStop(1, 'rgba(147,197,253,.58)');
+      ctx.fillStyle = lensGradient;
+      ctx.strokeStyle = '#2563eb';
+      ctx.lineWidth = 2.4;
+      ctx.beginPath();
+      ctx.moveTo(lensX, axis - lensHalfH);
+      ctx.bezierCurveTo(lensX + lensHalfW, axis - lensHalfH * .65, lensX + lensHalfW, axis + lensHalfH * .65, lensX, axis + lensHalfH);
+      ctx.bezierCurveTo(lensX - lensHalfW, axis + lensHalfH * .65, lensX - lensHalfW, axis - lensHalfH * .65, lensX, axis - lensHalfH);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      ctx.strokeStyle = '#475569';
       ctx.lineWidth = 5;
       ctx.beginPath();
-      ctx.arc(eyeCenter.x, axis, eyeRx * .88, -Math.PI * .37, Math.PI * .37);
+      ctx.arc(lensX - 9, axis - lensHalfH - 7, 17, .15, Math.PI - .15);
+      ctx.arc(lensX - 9, axis + lensHalfH + 7, 17, Math.PI + .15, Math.PI * 2 - .15);
       ctx.stroke();
-      ctx.strokeStyle = '#64748b';
-      ctx.lineWidth = 12;
+      ctx.strokeStyle = '#94a3b8';
+      ctx.lineWidth = 1.3;
+      for (const sign of [-1, 1]) {
+        ctx.beginPath();
+        ctx.moveTo(lensX - 20, axis + sign * (lensHalfH + 13));
+        ctx.lineTo(lensX - lensHalfW * .25, axis + sign * lensHalfH * .82);
+        ctx.stroke();
+      }
+      ctx.restore();
+
+      // Optic nerve exits through the rear wall.
+      ctx.save();
+      ctx.strokeStyle = '#94a3b8';
+      ctx.lineWidth = 17;
+      ctx.lineCap = 'round';
       ctx.beginPath();
-      ctx.moveTo(eyeCenter.x + eyeRx * .86, axis + 34);
-      ctx.lineTo(eyeCenter.x + eyeRx + 38, axis + 54);
+      ctx.moveTo(backX - 7, axis + eyeRy * .27);
+      ctx.lineTo(Math.min(w - 20, backX + 54), axis + eyeRy * .39);
+      ctx.stroke();
+      ctx.strokeStyle = '#fbbf24';
+      ctx.lineWidth = 4;
       ctx.stroke();
       ctx.restore();
 
       if (correction !== 'none') {
-        drawCompactLens(ctx, corneaX - 42, axis, eyeRy * 1.05, correction === 'concave' ? 'concave' : 'convex', '矯正鏡片');
+        drawCompactLens(ctx, frontX - 30, axis, eyeRy * 1.05, correction === 'concave' ? 'concave' : 'convex', '矯正鏡片');
       }
+
+      // A concrete object and its inverted retinal image.
       ctx.save();
       ctx.strokeStyle = css('--orange');
       ctx.fillStyle = css('--orange');
@@ -4987,30 +5108,46 @@
       ctx.restore();
       drawSceneLabel(ctx, objectX + 10, objectTip.y - 18, '物體');
 
-      const pupilPoints = [axis - 14, axis, axis + 14];
-      pupilPoints.forEach((pupilY, index) => {
-        const atLens = { x: lensX, y: pupilY + (index - 1) * 7 };
-        drawRay(ctx, objectTip, { x: corneaX, y: pupilY }, css('--blue'), 1.8);
-        drawRay(ctx, { x: corneaX, y: pupilY }, atLens, css('--blue'), 1.8);
-        drawRay(ctx, atLens, focus, css('--green'), 2.2);
-      });
+      if ($('eye-show-rays').checked) {
+        const pupilPoints = [axis - 11, axis, axis + 11];
+        pupilPoints.forEach((pupilY, index) => {
+          const atCornea = { x: corneaX + 2, y: pupilY + (index - 1) * 4 };
+          const atLens = { x: lensX, y: pupilY + (index - 1) * 7 };
+          drawRay(ctx, objectTip, atCornea, css('--blue'), 1.7);
+          drawRay(ctx, atCornea, atLens, '#0ea5e9', 1.9);
+          drawRay(ctx, atLens, focus, css('--green'), 2.1);
+        });
+      }
       ctx.save();
       ctx.fillStyle = css('--red');
       ctx.beginPath();
       ctx.arc(focus.x, focus.y, 6, 0, Math.PI * 2);
       ctx.fill();
+      ctx.strokeStyle = css('--red');
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.moveTo(retinaX, axis);
+      ctx.lineTo(retinaX, axis + 34);
+      ctx.moveTo(retinaX, axis + 34);
+      ctx.lineTo(retinaX - 6, axis + 23);
+      ctx.moveTo(retinaX, axis + 34);
+      ctx.lineTo(retinaX + 6, axis + 23);
+      ctx.stroke();
       ctx.restore();
+      drawSceneLabel(ctx, retinaX - 8, axis + 48, '倒立實像', 'right');
       if ($('eye-show-ideal').checked) {
-        strokeSegment(ctx, { x: retinaX, y: axis - 44 }, { x: retinaX, y: axis + 44 }, 'rgba(190,18,60,.7)', 1.4, [5, 5]);
-        drawSceneLabel(ctx, retinaX - 4, axis + 52, '視網膜位置', 'right');
+        strokeSegment(ctx, { x: retinaX, y: axis - 48 }, { x: retinaX, y: axis + 48 }, 'rgba(190,18,60,.55)', 1.3, [5, 5]);
       }
       if ($('eye-show-labels').checked) {
-        drawSceneLabel(ctx, corneaX - 2, axis - eyeRy - 18, '角膜');
-        drawSceneLabel(ctx, lensX - 20, axis - eyeRy * .58, '虹膜／瞳孔', 'right');
-        drawSceneLabel(ctx, lensX + 8, axis - eyeRy * .62, '晶狀體');
-        drawSceneLabel(ctx, eyeCenter.x + 22, axis - eyeRy * .58, '玻璃體');
-        drawSceneLabel(ctx, retinaX + 4, axis - eyeRy * .47, '視網膜');
-        drawSceneLabel(ctx, eyeCenter.x + eyeRx, axis + 70, '視神經');
+        const topY = 30;
+        const bottomY = h - 30;
+        drawEyeLeader(ctx, { x: frontX + 14, y: axis - eyeRy * .55 }, { x: Math.max(16, frontX - 38), y: topY }, '角膜');
+        drawEyeLeader(ctx, { x: irisX, y: axis - pupilHalf - 10 }, { x: irisX - 6, y: topY + 30 }, '虹膜／瞳孔', 'right');
+        drawEyeLeader(ctx, { x: lensX, y: axis - lensHalfH }, { x: lensX + 25, y: topY }, '晶狀體');
+        drawEyeLeader(ctx, { x: retinaX, y: axis - eyeRy * .48 }, { x: Math.min(w - 90, retinaX + 16), y: topY }, '視網膜');
+        drawEyeLeader(ctx, { x: lensX - 8, y: axis + lensHalfH + 8 }, { x: lensX - 58, y: bottomY }, '睫狀肌', 'right');
+        drawEyeLeader(ctx, { x: eyeCenter.x + 10, y: axis + 16 }, { x: eyeCenter.x - 18, y: bottomY }, '玻璃體', 'right');
+        drawEyeLeader(ctx, { x: backX - 8, y: axis + eyeRy * .27 }, { x: Math.min(w - 18, backX + 34), y: bottomY }, '視神經', 'right');
       }
     }
 
@@ -5032,12 +5169,10 @@
       const amplitude = number('circ-radius');
       const period = number('circ-period');
       const phaseDeg = number('circ-phase');
-      const vertical = $('circ-projection').value === 'vertical';
       const omega = 2 * Math.PI / period;
       const theta = omega * time + phaseDeg * Math.PI / 180;
-      const component = vertical ? Math.sin(theta) : Math.cos(theta);
-      const velocityRatio = vertical ? Math.cos(theta) : -Math.sin(theta);
-      const accelerationRatio = -component;
+      const xRatio = Math.cos(theta);
+      const yRatio = Math.sin(theta);
 
       setText('circ-radius-out', amplitude.toFixed(1));
       setText('circ-period-out', `${period.toFixed(1)} s`);
@@ -5045,44 +5180,49 @@
       setText('circ-speed-out', `${number('circ-speed').toFixed(2)}x`);
       $('circ-omega').innerHTML = `角速度 ω = ${omega.toFixed(2)} rad/s<small>每秒轉過的角度</small>`;
       $('circ-period-badge').innerHTML = `週期 T = ${period.toFixed(1)} s<small>圓周與投影週期相同</small>`;
-      $('circ-position').innerHTML = `投影 ${vertical ? 'y' : 'x'} = ${(component * amplitude).toFixed(2)}<small>${vertical ? 'y = A sin θ' : 'x = A cos θ'}</small>`;
-      const endpoint = Math.abs(component) > 0.92;
-      const center = Math.abs(component) < 0.12;
-      $('circ-state').innerHTML = endpoint
-        ? '接近端點<small>速度趨近零；加速度量值最大</small>'
-        : center
-          ? '通過平衡位置<small>速度量值最大；加速度趨近零</small>'
-          : '往返途中<small>速度與加速度方向持續改變</small>';
+      $('circ-position-x').innerHTML = `水平 x = ${(xRatio * amplitude).toFixed(2)}<small>x = A cos θ</small>`;
+      $('circ-position-y').innerHTML = `鉛直 y = ${(yRatio * amplitude).toFixed(2)}<small>y = A sin θ</small>`;
+      const nearXEnd = Math.abs(xRatio) > .94;
+      const nearYEnd = Math.abs(yRatio) > .94;
+      $('circ-state').innerHTML = nearXEnd || nearYEnd
+        ? `${nearXEnd ? '水平' : '鉛直'}影子接近端點<small>該方向速度趨近零、加速度量值最大</small>`
+        : '兩個影子同步往返<small>相差四分之一週期</small>';
 
       const compact = w < 680;
-      const circleCenter = vertical
-        ? { x: w * (compact ? .23 : .2), y: h * .49 }
-        : { x: w * .5, y: h * .28 };
-      const radius = vertical
-        ? Math.min(h * .3, w * (compact ? .18 : .14))
-        : Math.min(h * .19, w * .2);
-      const projectionX = w * (compact ? .5 : .43);
-      const projectionY = circleCenter.y + radius + Math.max(38, h * .08);
-      const graphLeft = vertical ? w * (compact ? .62 : .56) : w * .08;
-      const graphRight = vertical ? w - 24 : w * .92;
+      const showGraph = $('circ-show-graph').checked;
+      const sceneWidth = showGraph && !compact ? w * .56 : w;
+      const radius = Math.min(h * (compact ? (showGraph ? .18 : .235) : .25), sceneWidth * (compact ? .27 : .22), 132);
+      const circleCenter = {
+        x: showGraph && !compact ? sceneWidth * .42 : w * (compact ? .38 : .42),
+        y: h * (compact ? (showGraph ? .29 : .38) : .36)
+      };
+      const horizontalAxisY = circleCenter.y + radius + (compact ? 54 : 62);
+      const verticalAxisX = circleCenter.x + radius + (compact ? 31 : 64);
       const point = {
         x: circleCenter.x + radius * Math.cos(theta),
         y: circleCenter.y - radius * Math.sin(theta)
       };
+      const horizontalPoint = { x: point.x, y: horizontalAxisY };
+      const verticalPoint = { x: verticalAxisX, y: point.y };
 
       ctx.save();
-      ctx.strokeStyle = '#cbd5e1';
-      ctx.lineWidth = 1.5;
+      const plate = ctx.createRadialGradient(circleCenter.x, circleCenter.y, 8, circleCenter.x, circleCenter.y, radius * 1.3);
+      plate.addColorStop(0, '#ffffff');
+      plate.addColorStop(1, '#f1f5f9');
+      ctx.fillStyle = plate;
+      ctx.strokeStyle = '#94a3b8';
+      ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.arc(circleCenter.x, circleCenter.y, radius, 0, Math.PI * 2);
+      ctx.fill();
       ctx.stroke();
       ctx.setLineDash([5, 6]);
-      ctx.strokeStyle = '#94a3b8';
+      ctx.strokeStyle = '#cbd5e1';
       ctx.beginPath();
-      ctx.moveTo(circleCenter.x - radius - 12, circleCenter.y);
-      ctx.lineTo(circleCenter.x + radius + 12, circleCenter.y);
-      ctx.moveTo(circleCenter.x, circleCenter.y - radius - 12);
-      ctx.lineTo(circleCenter.x, circleCenter.y + radius + 12);
+      ctx.moveTo(circleCenter.x - radius, circleCenter.y);
+      ctx.lineTo(circleCenter.x + radius, circleCenter.y);
+      ctx.moveTo(circleCenter.x, circleCenter.y - radius);
+      ctx.lineTo(circleCenter.x, circleCenter.y + radius);
       ctx.stroke();
       ctx.restore();
 
@@ -5099,34 +5239,46 @@
       ctx.fill();
       ctx.restore();
 
-      let projectionPoint;
+      // The projection coordinates are not recalculated: they literally reuse point.x and point.y.
       ctx.save();
-      ctx.strokeStyle = '#64748b';
-      ctx.lineWidth = 2;
+      ctx.strokeStyle = '#94a3b8';
+      ctx.lineWidth = 1.8;
       ctx.setLineDash([5, 5]);
-      if (vertical) {
-        projectionPoint = { x: projectionX, y: circleCenter.y - radius * component };
-        ctx.beginPath();
-        ctx.moveTo(projectionX, circleCenter.y - radius - 18);
-        ctx.lineTo(projectionX, circleCenter.y + radius + 18);
-        ctx.moveTo(point.x, point.y);
-        ctx.lineTo(projectionPoint.x, projectionPoint.y);
-        ctx.stroke();
-      } else {
-        projectionPoint = { x: circleCenter.x + radius * component, y: projectionY };
-        ctx.beginPath();
-        ctx.moveTo(circleCenter.x - radius - 18, projectionY);
-        ctx.lineTo(circleCenter.x + radius + 18, projectionY);
-        ctx.moveTo(point.x, point.y);
-        ctx.lineTo(projectionPoint.x, projectionPoint.y);
-        ctx.stroke();
-      }
+      ctx.beginPath();
+      ctx.moveTo(point.x, point.y);
+      ctx.lineTo(horizontalPoint.x, horizontalPoint.y);
+      ctx.moveTo(point.x, point.y);
+      ctx.lineTo(verticalPoint.x, verticalPoint.y);
+      ctx.stroke();
       ctx.setLineDash([]);
+      ctx.strokeStyle = '#475569';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(circleCenter.x - radius - 12, horizontalAxisY);
+      ctx.lineTo(circleCenter.x + radius + 12, horizontalAxisY);
+      ctx.moveTo(verticalAxisX, circleCenter.y - radius - 12);
+      ctx.lineTo(verticalAxisX, circleCenter.y + radius + 12);
+      ctx.stroke();
       ctx.fillStyle = css('--green');
       ctx.beginPath();
-      ctx.arc(projectionPoint.x, projectionPoint.y, 8, 0, Math.PI * 2);
+      ctx.arc(horizontalPoint.x, horizontalPoint.y, 8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = css('--purple');
+      ctx.beginPath();
+      ctx.arc(verticalPoint.x, verticalPoint.y, 8, 0, Math.PI * 2);
       ctx.fill();
       ctx.restore();
+
+      [['−A', -1], ['0', 0], ['+A', 1]].forEach(([label, ratio]) => {
+        const x = circleCenter.x + radius * ratio;
+        const y = circleCenter.y - radius * ratio;
+        drawCenteredText(ctx, label, x, horizontalAxisY + 22, '#64748b', compact ? 10 : 12);
+        drawSceneLabel(ctx, compact ? verticalAxisX - 9 : verticalAxisX + 11, y - 8, label, compact ? 'right' : 'left');
+      });
+      drawCenteredText(ctx, '水平投影 x（與藍點同一個 x 座標）', circleCenter.x, horizontalAxisY + 43, css('--green'), compact ? 10 : 13);
+      drawSceneLabel(ctx, compact ? verticalAxisX - 4 : verticalAxisX + 16, circleCenter.y - radius - 28, compact ? '鉛直 y' : '鉛直投影 y（同一個 y 座標）', compact ? 'right' : 'left');
+      drawSceneLabel(ctx, horizontalPoint.x + 10, horizontalPoint.y - 26, `x=${(xRatio * amplitude).toFixed(2)}`);
+      drawSceneLabel(ctx, compact ? verticalPoint.x - 11 : verticalPoint.x + 12, verticalPoint.y + 12, `y=${(yRatio * amplitude).toFixed(2)}`, compact ? 'right' : 'left');
 
       if ($('circ-show-vectors').checked) {
         const tangent = { x: -Math.sin(theta), y: -Math.cos(theta) };
@@ -5137,53 +5289,63 @@
         drawLabeledArrow(ctx, point, {
           x: point.x + (circleCenter.x - point.x) * 0.42,
           y: point.y + (circleCenter.y - point.y) * 0.42
-        }, css('--purple'), 'aᶜ');
+        }, '#7c3aed', 'aᶜ');
       }
 
-      const graphTop = vertical ? 44 : projectionY + 46;
-      const graphBottom = h - 42;
-      const graphMid = (graphTop + graphBottom) / 2;
-      const graphAmp = Math.max(18, (graphBottom - graphTop) * 0.36);
-      ctx.save();
-      ctx.strokeStyle = '#cbd5e1';
-      ctx.lineWidth = 1.2;
-      ctx.beginPath();
-      ctx.moveTo(graphLeft, graphTop);
-      ctx.lineTo(graphLeft, graphBottom);
-      ctx.moveTo(graphLeft, graphMid);
-      ctx.lineTo(graphRight, graphMid);
-      ctx.stroke();
-      drawCenteredText(ctx, '投影位移－時間', (graphLeft + graphRight) / 2, vertical ? 22 : graphTop - 16, '#334155');
-      drawCenteredText(ctx, '現在', graphRight - 8, graphBottom + 18, '#64748b');
-      if ($('circ-show-trail').checked) {
-        ctx.strokeStyle = css('--green');
-        ctx.lineWidth = 3;
+      if (showGraph) {
+        const graphLeft = compact ? 34 : w * .61;
+        const graphRight = w - 26;
+        const graphTop = compact ? h * .68 : 62;
+        const graphBottom = h - 46;
+        const graphMidX = graphTop + (graphBottom - graphTop) * .26;
+        const graphMidY = graphTop + (graphBottom - graphTop) * .72;
+        const graphAmp = Math.min(58, (graphBottom - graphTop) * .19);
+        ctx.save();
+        ctx.fillStyle = 'rgba(248,250,252,.96)';
+        ctx.strokeStyle = '#d7dde5';
+        ctx.lineWidth = 1;
         ctx.beginPath();
-        const historyCycles = compact ? 1.2 : 1.8;
-        for (let i = 0; i <= 180; i += 1) {
-          const fraction = i / 180;
-          const pastTheta = theta - (1 - fraction) * Math.PI * 2 * historyCycles;
-          const value = vertical ? Math.sin(pastTheta) : Math.cos(pastTheta);
-          const x = graphLeft + fraction * (graphRight - graphLeft);
-          const y = graphMid - value * graphAmp;
-          if (i === 0) ctx.moveTo(x, y);
-          else ctx.lineTo(x, y);
-        }
+        ctx.roundRect(graphLeft - 16, graphTop - 34, graphRight - graphLeft + 28, graphBottom - graphTop + 54, 8);
+        ctx.fill();
         ctx.stroke();
+        [graphMidX, graphMidY].forEach(mid => {
+          ctx.beginPath();
+          ctx.moveTo(graphLeft, mid);
+          ctx.lineTo(graphRight, mid);
+          ctx.stroke();
+        });
+        const histories = [
+          { mid: graphMidX, fn: value => Math.cos(value), color: css('--green'), label: 'x(t)=A cos(ωt+φ)' },
+          { mid: graphMidY, fn: value => Math.sin(value), color: css('--purple'), label: 'y(t)=A sin(ωt+φ)' }
+        ];
+        histories.forEach(series => {
+          ctx.strokeStyle = series.color;
+          ctx.lineWidth = 2.6;
+          ctx.beginPath();
+          for (let i = 0; i <= 180; i += 1) {
+            const fraction = i / 180;
+            const phase = theta - (1 - fraction) * Math.PI * 2;
+            const x = graphLeft + fraction * (graphRight - graphLeft);
+            const y = series.mid - series.fn(phase) * graphAmp;
+            if (i === 0) ctx.moveTo(x, y);
+            else ctx.lineTo(x, y);
+          }
+          ctx.stroke();
+          ctx.fillStyle = series.color;
+          ctx.font = '700 12px "Microsoft JhengHei", Arial, sans-serif';
+          ctx.fillText(series.label, graphLeft + 5, series.mid - graphAmp - 8);
+          ctx.beginPath();
+          ctx.arc(graphRight, series.mid - series.fn(theta) * graphAmp, 5.5, 0, Math.PI * 2);
+          ctx.fill();
+        });
+        ctx.restore();
+        if (compact) drawSceneLabel(ctx, graphRight, graphTop - 22, '位移－時間', 'right');
+        else drawCenteredText(ctx, '第二階段：把相位沿時間攤開', (graphLeft + graphRight) / 2, graphTop - 14, '#334155', 14);
+        drawCenteredText(ctx, '現在', graphRight - 4, graphBottom + 15, '#64748b', 11);
+        if (!compact) {
+          strokeSegment(ctx, { x: w * .575, y: 26 }, { x: w * .575, y: h - 24 }, '#e2e8f0', 1);
+        }
       }
-      const graphY = graphMid - component * graphAmp;
-      ctx.fillStyle = css('--green');
-      ctx.beginPath();
-      ctx.arc(graphRight, graphY, 6, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.restore();
-      drawCenteredText(
-        ctx,
-        '同一相位 θ',
-        vertical ? (circleCenter.x + projectionX) / 2 : circleCenter.x,
-        vertical ? h - 18 : projectionY + 30,
-        '#64748b'
-      );
     }
 
     function projectPrecessionPoint(point, origin, scale) {
@@ -5193,10 +5355,44 @@
       };
     }
 
-    function drawPrecession() {
-      const canvas = $('precession-canvas');
-      const { ctx, w, h } = resizeCanvas(canvas);
-      clearCanvas(ctx, w, h);
+    function drawArcArrow(ctx, cx, cy, radius, start, end, color, label = '') {
+      ctx.save();
+      ctx.strokeStyle = color;
+      ctx.fillStyle = color;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius, start, end, end < start);
+      ctx.stroke();
+      const direction = end < start ? -1 : 1;
+      const ex = cx + radius * Math.cos(end);
+      const ey = cy + radius * Math.sin(end);
+      const tangent = end + direction * Math.PI / 2;
+      ctx.beginPath();
+      ctx.moveTo(ex, ey);
+      ctx.lineTo(ex - 10 * Math.cos(tangent - .45), ey - 10 * Math.sin(tangent - .45));
+      ctx.lineTo(ex - 10 * Math.cos(tangent + .45), ey - 10 * Math.sin(tangent + .45));
+      ctx.closePath();
+      ctx.fill();
+      if (label) {
+        ctx.font = '700 13px "Microsoft JhengHei", Arial, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(label, cx, cy - radius - 10);
+      }
+      ctx.restore();
+    }
+
+    function updateAngularCopy(mode) {
+      const helicopter = mode === 'helicopter';
+      $('angular-title').textContent = helicopter ? '直升機主旋翼與反扭矩' : '陀螺進動與角動量方向改變';
+      $('angular-copy').textContent = helicopter
+        ? '主旋翼加速轉動時，機身會受到方向相反的反作用扭矩；尾旋翼在長力臂處提供側向推力，抵銷機身偏航。'
+        : '重力矩不直接把高速旋轉的陀螺壓倒，而是持續在角動量旁邊加上 ΔL，使轉軸方向繞鉛直方向改變。';
+      $('angular-teacher').innerHTML = helicopter
+        ? '<p><strong>講法：</strong>先保持尾旋翼運作，主旋翼與機身的反向扭矩互相平衡，機鼻大致固定。再取消尾旋翼，灰色初始航向不動、機身會向主旋翼反方向偏航。</p><p><strong>強調：</strong>尾旋翼不是把直升機往前推；它在機尾施加側向力，利用長力臂產生反扭矩。失去尾旋翼反扭矩時，機身會持續旋轉，飛行员難以維持航向。</p>'
+        : '<p><strong>講法：</strong>先看實物圖：藍色 L 永遠沿著轉軸。再看右側向量框，紅色 ΔL 加在 L 的側面，得到新的 L′；連續重複後，轉軸才沿綠色範圍進動。</p><p><strong>強調：</strong>重力提供的是外力矩，所以陀螺本身的 L 方向會改變；轉得越快，L 越大，同樣的 ΔL 每秒只能讓方向改變較小角度，進動反而較慢。</p>';
+    }
+
+    function drawGyroscopeCase(ctx, w, h) {
       const rpm = number('prec-spin');
       const mass = number('prec-mass');
       const arm = number('prec-arm');
@@ -5209,164 +5405,295 @@
       const precessionOmega = mass * 9.8 * arm / angularMomentum;
       const precessionPeriod = 2 * Math.PI / precessionOmega;
       const phi = precessionOmega * time;
-      const spinAngle = spinOmega * time * 0.07;
       const compact = w < 680;
 
       setText('prec-spin-out', `${rpm.toFixed(0)} rpm`);
       setText('prec-mass-out', `${mass.toFixed(1)} kg`);
       setText('prec-arm-out', `${arm.toFixed(2)} m`);
       setText('prec-tilt-out', `${tiltDeg.toFixed(0)}°`);
-      setText('prec-speed-out', `${number('prec-speed').toFixed(2)}x`);
-      $('prec-L').innerHTML = `角動量 L = ${angularMomentum.toFixed(2)} kg·m²/s<small>L = Iω；此處 I = 0.020 kg·m²</small>`;
-      $('prec-torque').innerHTML = `重力矩 τ = ${torque.toFixed(2)} N·m<small>τ = mgr sin α</small>`;
+      $('prec-L').innerHTML = `角動量 L = ${angularMomentum.toFixed(2)} kg·m²/s<small>L = Iω，方向沿轉軸</small>`;
+      $('prec-torque').innerHTML = `重力矩 τ = ${torque.toFixed(2)} N·m<small>每一小段時間產生 ΔL = τΔt</small>`;
       $('prec-omega').innerHTML = `進動角速度 Ω = ${precessionOmega.toFixed(2)} rad/s<small>Ω = mgr/L</small>`;
-      $('prec-period').innerHTML = `進動週期 = ${precessionPeriod.toFixed(2)} s<small>轉得越快，進動越慢</small>`;
+      $('prec-period').innerHTML = `進動週期 = ${precessionPeriod.toFixed(2)} s<small>自轉越快，進動越慢</small>`;
 
-      const origin = { x: w * (compact ? 0.5 : 0.48), y: h * (compact ? 0.68 : 0.66) };
-      const scale = Math.min(w * (compact ? 0.34 : 0.26), h * (compact ? 0.52 : 0.48));
-      const n = {
-        x: Math.sin(tilt) * Math.cos(phi),
-        y: Math.sin(tilt) * Math.sin(phi),
-        z: Math.cos(tilt)
-      };
-      const e1 = { x: -Math.sin(phi), y: Math.cos(phi), z: 0 };
-      const e2 = {
-        x: -Math.cos(tilt) * Math.cos(phi),
-        y: -Math.cos(tilt) * Math.sin(phi),
-        z: Math.sin(tilt)
-      };
-      const pointOnAxis = factor => ({ x: n.x * factor, y: n.y * factor, z: n.z * factor });
+      const sceneRight = compact ? w : w * .62;
+      const pivot = { x: sceneRight * .45, y: h * .78 };
+      const coneRx = Math.min(sceneRight * .31, 170);
+      const coneRy = Math.min(h * .12, 58);
+      const orbitY = h * .23;
+      const tip = { x: pivot.x + coneRx * Math.cos(phi), y: orbitY + coneRy * Math.sin(phi) };
+      const dx = tip.x - pivot.x;
+      const dy = tip.y - pivot.y;
+      const axisLength = Math.hypot(dx, dy);
+      const ux = dx / axisLength;
+      const uy = dy / axisLength;
+      const wheel = { x: pivot.x + dx * .68, y: pivot.y + dy * .68 };
+      const axisAngle = Math.atan2(dy, dx);
 
       if ($('prec-show-cone').checked) {
         ctx.save();
-        ctx.strokeStyle = 'rgba(21, 128, 61, .48)';
-        ctx.lineWidth = 1.8;
-        ctx.setLineDash([6, 6]);
+        const coneFill = ctx.createLinearGradient(0, orbitY, 0, pivot.y);
+        coneFill.addColorStop(0, 'rgba(16,185,129,.03)');
+        coneFill.addColorStop(1, 'rgba(16,185,129,.13)');
+        ctx.fillStyle = coneFill;
         ctx.beginPath();
-        for (let i = 0; i <= 120; i += 1) {
-          const angle = i / 120 * Math.PI * 2;
-          const p = {
-            x: 1.12 * Math.sin(tilt) * Math.cos(angle),
-            y: 1.12 * Math.sin(tilt) * Math.sin(angle),
-            z: 1.12 * Math.cos(tilt)
-          };
-          const screen = projectPrecessionPoint(p, origin, scale);
-          if (i === 0) ctx.moveTo(screen.x, screen.y);
-          else ctx.lineTo(screen.x, screen.y);
-        }
-        ctx.stroke();
-        const top = projectPrecessionPoint({ x: 0, y: 0, z: 1.25 }, origin, scale);
+        ctx.moveTo(pivot.x, pivot.y);
+        ctx.lineTo(pivot.x - coneRx, orbitY);
+        ctx.ellipse(pivot.x, orbitY, coneRx, coneRy, 0, Math.PI, Math.PI * 2);
+        ctx.closePath();
+        ctx.fill();
+        ctx.strokeStyle = 'rgba(15,118,110,.55)';
+        ctx.lineWidth = 2;
         ctx.beginPath();
-        ctx.moveTo(origin.x, origin.y);
-        ctx.lineTo(top.x, top.y);
+        ctx.ellipse(pivot.x, orbitY, coneRx, coneRy, 0, 0, Math.PI * 2);
         ctx.stroke();
         ctx.restore();
+        drawSceneLabel(ctx, pivot.x - coneRx, orbitY - 30, '轉軸尖端掃過的範圍');
       }
 
-      const rear = projectPrecessionPoint(pointOnAxis(-0.18), origin, scale);
-      const front = projectPrecessionPoint(pointOnAxis(1.12), origin, scale);
-      const wheelCenter3 = pointOnAxis(0.72);
-      const wheelCenter = projectPrecessionPoint(wheelCenter3, origin, scale);
       ctx.save();
       ctx.strokeStyle = '#475569';
-      ctx.lineWidth = 7;
+      ctx.lineWidth = 9;
       ctx.lineCap = 'round';
       ctx.beginPath();
-      ctx.moveTo(rear.x, rear.y);
-      ctx.lineTo(front.x, front.y);
+      ctx.moveTo(pivot.x - ux * 22, pivot.y - uy * 22);
+      ctx.lineTo(tip.x, tip.y);
       ctx.stroke();
-
-      const rimPoints = [];
-      for (let i = 0; i <= 80; i += 1) {
-        const angle = i / 80 * Math.PI * 2;
-        const p = {
-          x: wheelCenter3.x + 0.27 * (Math.cos(angle) * e1.x + Math.sin(angle) * e2.x),
-          y: wheelCenter3.y + 0.27 * (Math.cos(angle) * e1.y + Math.sin(angle) * e2.y),
-          z: wheelCenter3.z + 0.27 * (Math.cos(angle) * e1.z + Math.sin(angle) * e2.z)
-        };
-        rimPoints.push(projectPrecessionPoint(p, origin, scale));
-      }
-      ctx.strokeStyle = '#0f172a';
-      ctx.lineWidth = 8;
-      ctx.beginPath();
-      rimPoints.forEach((p, index) => index === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
-      ctx.stroke();
-      ctx.strokeStyle = '#94a3b8';
+      ctx.translate(wheel.x, wheel.y);
+      ctx.rotate(axisAngle + Math.PI / 2);
+      const wheelGradient = ctx.createLinearGradient(-42, 0, 42, 0);
+      wheelGradient.addColorStop(0, '#0f172a');
+      wheelGradient.addColorStop(.5, '#64748b');
+      wheelGradient.addColorStop(1, '#0f172a');
+      ctx.fillStyle = wheelGradient;
+      ctx.strokeStyle = '#020617';
       ctx.lineWidth = 3;
       ctx.beginPath();
-      rimPoints.forEach((p, index) => index === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
+      ctx.ellipse(0, 0, compact ? 34 : 43, compact ? 10 : 13, 0, 0, Math.PI * 2);
+      ctx.fill();
       ctx.stroke();
-      for (let spoke = 0; spoke < 4; spoke += 1) {
-        const angle = spinAngle + spoke * Math.PI / 2;
-        const p3 = {
-          x: wheelCenter3.x + 0.25 * (Math.cos(angle) * e1.x + Math.sin(angle) * e2.x),
-          y: wheelCenter3.y + 0.25 * (Math.cos(angle) * e1.y + Math.sin(angle) * e2.y),
-          z: wheelCenter3.z + 0.25 * (Math.cos(angle) * e1.z + Math.sin(angle) * e2.z)
-        };
-        const p = projectPrecessionPoint(p3, origin, scale);
+      const spoke = time * spinOmega * .08;
+      ctx.strokeStyle = '#e2e8f0';
+      ctx.lineWidth = 2;
+      [-1, 1].forEach(sign => {
         ctx.beginPath();
-        ctx.moveTo(wheelCenter.x, wheelCenter.y);
-        ctx.lineTo(p.x, p.y);
+        ctx.moveTo(0, 0);
+        ctx.lineTo(Math.cos(spoke) * 39 * sign, Math.sin(spoke) * 10 * sign);
         ctx.stroke();
-      }
+      });
       ctx.restore();
 
       ctx.save();
       ctx.fillStyle = '#334155';
       ctx.beginPath();
-      ctx.arc(origin.x, origin.y, 11, 0, Math.PI * 2);
+      ctx.arc(pivot.x, pivot.y, 11, 0, Math.PI * 2);
       ctx.fill();
-      ctx.fillStyle = '#64748b';
-      ctx.fillRect(origin.x - 28, origin.y + 9, 56, 12);
+      ctx.fillRect(pivot.x - 34, pivot.y + 8, 68, 13);
       ctx.restore();
-      drawCenteredText(ctx, '固定支點', origin.x, origin.y + 38, '#475569', compact ? 11 : 14);
+      drawCenteredText(ctx, '固定支點', pivot.x, pivot.y + 42, '#475569', 13);
 
       if ($('prec-show-vectors').checked) {
-        const lEnd = projectPrecessionPoint(pointOnAxis(compact ? 1.52 : 1.42), origin, scale);
-        const torqueEnd3 = {
-          x: wheelCenter3.x + e1.x * (compact ? 0.82 : 0.62),
-          y: wheelCenter3.y + e1.y * (compact ? 0.82 : 0.62),
-          z: wheelCenter3.z
-        };
-        const torqueEnd = projectPrecessionPoint(torqueEnd3, origin, scale);
-        drawLabeledArrow(ctx, origin, lEnd, css('--blue'), compact ? 'L' : 'L（沿轉軸）', 3);
-        drawLabeledArrow(ctx, wheelCenter, torqueEnd, css('--red'), 'τ', 3);
+        const lEnd = { x: tip.x + ux * 54, y: tip.y + uy * 54 };
+        drawLabeledArrow(ctx, pivot, lEnd, css('--blue'), 'L（沿轉軸）', 3);
+        const tangentLength = compact ? 54 : 70;
+        const tangent = { x: -Math.sin(phi), y: .35 * Math.cos(phi) };
+        const tangentNorm = Math.hypot(tangent.x, tangent.y) || 1;
         const deltaEnd = {
-          x: lEnd.x + (torqueEnd.x - wheelCenter.x) * .30,
-          y: lEnd.y + (torqueEnd.y - wheelCenter.y) * .30
+          x: lEnd.x + tangent.x / tangentNorm * tangentLength,
+          y: lEnd.y + tangent.y / tangentNorm * tangentLength
         };
-        drawLabeledArrow(ctx, lEnd, deltaEnd, css('--green'), 'ΔL', 3);
-        drawLabeledArrow(ctx, wheelCenter, {
-          x: wheelCenter.x,
-          y: wheelCenter.y + (compact ? 72 : 62)
-        }, css('--orange'), 'mg');
+        drawLabeledArrow(ctx, lEnd, deltaEnd, css('--red'), 'ΔL', 3);
+        drawLabeledArrow(ctx, wheel, { x: wheel.x, y: wheel.y + 66 }, css('--orange'), 'mg');
       }
 
-      drawCenteredText(ctx, `自轉 ${rpm.toFixed(0)} rpm`, w * 0.18, 36, '#334155', compact ? 11 : 14);
-      drawCenteredText(ctx, `進動 Ω = ${precessionOmega.toFixed(2)} rad/s`, w * 0.78, 36, '#334155', compact ? 11 : 14);
-      const steps = compact
-        ? ['① L 沿軸', '② 重力產生 τ', '③ L 轉向＝進動']
-        : ['① 高速自轉產生角動量 L', '② 重力與力臂產生外力矩 τ', '③ 每一小段 ΔL 讓轉軸沿圓錐進動'];
-      const gap = 8;
-      const boxW = (w - 32 - gap * 2) / 3;
-      const boxY = h - 48;
-      steps.forEach((text, index) => {
-        const x = 16 + index * (boxW + gap);
+      if (!compact) {
+        const panel = { x: w * .67, y: 52, width: w * .29, height: h - 100 };
         ctx.save();
-        ctx.fillStyle = index === 0 ? 'rgba(37,99,235,.09)' : (index === 1 ? 'rgba(190,18,60,.08)' : 'rgba(21,128,61,.09)');
-        ctx.strokeStyle = index === 0 ? 'rgba(37,99,235,.35)' : (index === 1 ? 'rgba(190,18,60,.32)' : 'rgba(21,128,61,.35)');
-        ctx.lineWidth = 1;
+        ctx.fillStyle = '#f8fafc';
+        ctx.strokeStyle = '#cbd5e1';
+        ctx.lineWidth = 1.2;
         ctx.beginPath();
-        ctx.roundRect(x, boxY, boxW, 34, 6);
+        ctx.roundRect(panel.x, panel.y, panel.width, panel.height, 8);
         ctx.fill();
         ctx.stroke();
-        ctx.fillStyle = '#334155';
-        ctx.font = `700 ${compact ? 10 : 12}px "Microsoft JhengHei", Arial, sans-serif`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'middle';
-        ctx.fillText(text, x + boxW / 2, boxY + 17);
         ctx.restore();
-      });
+        drawCenteredText(ctx, '把每一瞬間放大看', panel.x + panel.width / 2, panel.y + 28, '#334155', 15);
+        const base = { x: panel.x + 42, y: panel.y + panel.height * .58 };
+        const lEnd = { x: panel.x + panel.width * .68, y: base.y };
+        const deltaEnd = { x: lEnd.x, y: panel.y + panel.height * .28 };
+        const primeEnd = { x: deltaEnd.x, y: deltaEnd.y };
+        drawLabeledArrow(ctx, base, lEnd, css('--blue'), '原來的 L', 3);
+        drawLabeledArrow(ctx, lEnd, deltaEnd, css('--red'), '', 3);
+        drawLabeledArrow(ctx, base, primeEnd, css('--green'), '', 3);
+        strokeSegment(ctx, lEnd, { x: primeEnd.x, y: primeEnd.y }, '#94a3b8', 1, [4, 4]);
+        drawSceneLabel(ctx, deltaEnd.x - 8, (lEnd.y + deltaEnd.y) / 2, 'ΔL = τΔt', 'right');
+        drawSceneLabel(ctx, (base.x + primeEnd.x) / 2 - 8, (base.y + primeEnd.y) / 2 - 16, '新的 L′');
+        drawCenteredText(ctx, 'ΔL 加在側面', panel.x + panel.width / 2, panel.y + panel.height * .77, css('--red'), 14);
+        drawCenteredText(ctx, '所以 L 主要轉向，不是立刻消失', panel.x + panel.width / 2, panel.y + panel.height * .86, '#475569', 13);
+      }
+    }
+
+    function drawHelicopterCase(ctx, w, h) {
+      const rpm = number('heli-main-rpm');
+      const tailEnabled = $('heli-tail-enabled').checked;
+      const compact = w < 680;
+      const reaction = rpm / 420;
+      const yaw = tailEnabled ? .025 * Math.sin(time * .9) : -time * .42 * reaction;
+      const rotorAngle = time * rpm * .12;
+      setText('heli-main-rpm-out', `${rpm.toFixed(0)} rpm`);
+      $('prec-L').innerHTML = `主旋翼角動量 L<small>從上方看，主旋翼逆時針轉</small>`;
+      $('prec-torque').innerHTML = `機身反作用扭矩 ∝ ${reaction.toFixed(2)}<small>機身傾向往相反方向旋轉</small>`;
+      $('prec-omega').innerHTML = tailEnabled
+        ? '尾旋翼反扭矩：啟用<small>尾端側向力 × 長力臂</small>'
+        : '尾旋翼反扭矩：0<small>沒有抵銷主旋翼反作用扭矩</small>';
+      $('prec-period').classList.toggle('warning', !tailEnabled);
+      $('prec-period').innerHTML = tailEnabled
+        ? '結果：航向穩定<small>兩個相反扭矩接近平衡</small>'
+        : '結果：機身持續偏航<small>方向與主旋翼旋轉相反</small>';
+
+      const center = { x: w * (compact ? .47 : .38), y: h * .54 };
+      const rotorR = Math.min(w * (compact ? .29 : .19), h * .34, 145);
+      ctx.save();
+      ctx.fillStyle = '#f8fafc';
+      ctx.fillRect(0, 0, w, h);
+      ctx.strokeStyle = '#dbe3ec';
+      ctx.lineWidth = 1;
+      for (let r = 55; r <= rotorR + 45; r += 45) {
+        ctx.beginPath();
+        ctx.arc(center.x, center.y, r, 0, Math.PI * 2);
+        ctx.stroke();
+      }
+      ctx.beginPath();
+      ctx.moveTo(center.x - rotorR - 60, center.y);
+      ctx.lineTo(center.x + rotorR + 60, center.y);
+      ctx.moveTo(center.x, center.y - rotorR - 50);
+      ctx.lineTo(center.x, center.y + rotorR + 50);
+      ctx.stroke();
+      ctx.restore();
+      drawSceneLabel(ctx, center.x - rotorR - 44, 24, '俯視圖：灰線是起始航向');
+
+      ctx.save();
+      ctx.translate(center.x, center.y);
+      ctx.strokeStyle = '#94a3b8';
+      ctx.setLineDash([7, 6]);
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(-rotorR - 60, 0);
+      ctx.lineTo(rotorR + 60, 0);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.restore();
+
+      ctx.save();
+      ctx.translate(center.x, center.y);
+      ctx.rotate(yaw);
+      ctx.fillStyle = '#0f766e';
+      ctx.strokeStyle = '#134e4a';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.ellipse(25, 0, 65, 34, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = '#bae6fd';
+      ctx.beginPath();
+      ctx.ellipse(48, 0, 28, 22, 0, -.9, .9);
+      ctx.fill();
+      ctx.strokeStyle = '#475569';
+      ctx.lineWidth = 15;
+      ctx.beginPath();
+      ctx.moveTo(-32, 0);
+      ctx.lineTo(-145, 0);
+      ctx.stroke();
+      ctx.fillStyle = '#334155';
+      ctx.beginPath();
+      ctx.moveTo(84, 0);
+      ctx.lineTo(66, -13);
+      ctx.lineTo(66, 13);
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.save();
+      ctx.rotate(rotorAngle);
+      ctx.strokeStyle = 'rgba(37,99,235,.82)';
+      ctx.lineWidth = 7;
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ctx.moveTo(-rotorR, 0);
+      ctx.lineTo(rotorR, 0);
+      ctx.moveTo(0, -rotorR);
+      ctx.lineTo(0, rotorR);
+      ctx.stroke();
+      ctx.restore();
+      ctx.fillStyle = '#1e293b';
+      ctx.beginPath();
+      ctx.arc(0, 0, 10, 0, Math.PI * 2);
+      ctx.fill();
+
+      const tailX = -151;
+      ctx.save();
+      ctx.translate(tailX, 0);
+      ctx.rotate(tailEnabled ? rotorAngle * 2.8 : 0);
+      ctx.strokeStyle = tailEnabled ? css('--green') : '#94a3b8';
+      ctx.lineWidth = 5;
+      ctx.beginPath();
+      ctx.moveTo(-20, 0);
+      ctx.lineTo(20, 0);
+      ctx.moveTo(0, -20);
+      ctx.lineTo(0, 20);
+      ctx.stroke();
+      ctx.restore();
+      if (!tailEnabled) {
+        ctx.strokeStyle = css('--red');
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.moveTo(tailX - 15, -15);
+        ctx.lineTo(tailX + 15, 15);
+        ctx.moveTo(tailX + 15, -15);
+        ctx.lineTo(tailX - 15, 15);
+        ctx.stroke();
+      }
+      if (tailEnabled) {
+        drawLabeledArrow(ctx, { x: tailX, y: 4 }, { x: tailX, y: -72 }, css('--green'), '尾旋翼推力');
+      }
+      ctx.restore();
+
+      if ($('heli-show-torque').checked) {
+        drawArcArrow(ctx, center.x, center.y, rotorR + 22, .15, Math.PI * 1.55, css('--blue'), '主旋翼');
+        drawArcArrow(ctx, center.x, center.y, Math.max(48, rotorR * .48), Math.PI * 1.15, -.15, css('--red'), '機身反向');
+      }
+      const nose = { x: center.x + Math.cos(yaw) * (rotorR + 46), y: center.y + Math.sin(yaw) * (rotorR + 46) };
+      drawLabeledArrow(ctx, center, nose, tailEnabled ? '#475569' : css('--red'), tailEnabled ? '機鼻方向幾乎不變' : '機身正在反向偏航', 3);
+
+      if (!compact) {
+        const panelX = w * .70;
+        const panelY = 54;
+        const panelW = w * .27;
+        const panelH = h - 108;
+        ctx.save();
+        ctx.fillStyle = '#f8fafc';
+        ctx.strokeStyle = '#cbd5e1';
+        ctx.beginPath();
+        ctx.roundRect(panelX, panelY, panelW, panelH, 8);
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
+        drawCenteredText(ctx, '偏航扭矩收支', panelX + panelW / 2, panelY + 28, '#334155', 15);
+        drawArcArrow(ctx, panelX + panelW / 2, panelY + 122, 50, .2, Math.PI * 1.55, css('--blue'), '旋翼');
+        drawArcArrow(ctx, panelX + panelW / 2, panelY + 122, 29, Math.PI * 1.15, -.15, css('--red'), '機身');
+        const equationY = panelY + panelH * .62;
+        drawCenteredText(ctx, tailEnabled ? '反作用扭矩 + 尾旋翼反扭矩 ≈ 0' : '反作用扭矩 + 0 ≠ 0', panelX + panelW / 2, equationY, tailEnabled ? css('--green') : css('--red'), 14);
+        drawCenteredText(ctx, tailEnabled ? '航向可維持' : '機身會越轉越明顯', panelX + panelW / 2, equationY + 42, '#334155', 16);
+      }
+    }
+
+    function drawPrecession() {
+      const canvas = $('precession-canvas');
+      const { ctx, w, h } = resizeCanvas(canvas);
+      clearCanvas(ctx, w, h);
+      setText('prec-speed-out', `${number('prec-speed').toFixed(2)}x`);
+      updateAngularCopy(activeAngular);
+      if (activeAngular === 'helicopter') drawHelicopterCase(ctx, w, h);
+      else drawGyroscopeCase(ctx, w, h);
     }
 
     function drawPulleyWheel(ctx, x, y, radius, fixed = false) {
@@ -5796,24 +6123,50 @@
       drawSceneLabel(ctx, 18, 18, '藍色線是一條連續且不可伸長的繩；亮點沿同一條繩移動');
     }
 
+    const earthOrbit = { name: '地球', period: 1, a: 1, e: .0167, inclination: 0, color: '#2563eb' };
     const retroPlanets = {
-      mercury: { name: '水星', period: .2408, radius: .387, color: '#be123c', type: 'inner' },
-      venus: { name: '金星', period: .6152, radius: .723, color: '#be123c', type: 'inner' },
-      mars: { name: '火星', period: 1.8808, radius: 1.524, color: '#be123c', type: 'outer' },
-      jupiter: { name: '木星', period: 11.862, radius: 5.203, color: '#be123c', type: 'outer' },
-      saturn: { name: '土星', period: 29.457, radius: 9.537, color: '#be123c', type: 'outer' }
+      mercury: { name: '水星', period: .2408, a: .387, e: .2056, inclination: 7.00, color: '#be123c', type: 'inner' },
+      venus: { name: '金星', period: .6152, a: .723, e: .0068, inclination: 3.39, color: '#be123c', type: 'inner' },
+      mars: { name: '火星', period: 1.8808, a: 1.524, e: .0934, inclination: 1.85, color: '#be123c', type: 'outer' },
+      jupiter: { name: '木星', period: 11.862, a: 5.203, e: .0489, inclination: 1.30, color: '#be123c', type: 'outer' },
+      saturn: { name: '土星', period: 29.457, a: 9.537, e: .0565, inclination: 2.49, color: '#be123c', type: 'outer' }
     };
 
-    function retroState(planet, years, phase) {
-      const earthAngle = Math.PI * 2 * years;
-      const planetAngle = Math.PI * 2 * years / planet.period + phase;
-      const earth = { x: Math.cos(earthAngle), y: Math.sin(earthAngle) };
-      const outer = {
-        x: planet.radius * Math.cos(planetAngle),
-        y: planet.radius * Math.sin(planetAngle)
+    function solveEccentricAnomaly(meanAnomaly, eccentricity) {
+      let eccentricAnomaly = meanAnomaly;
+      for (let i = 0; i < 7; i += 1) {
+        eccentricAnomaly -= (eccentricAnomaly - eccentricity * Math.sin(eccentricAnomaly) - meanAnomaly) /
+          (1 - eccentricity * Math.cos(eccentricAnomaly));
+      }
+      return eccentricAnomaly;
+    }
+
+    function orbitPosition(body, years, phase, model) {
+      const meanAnomaly = Math.PI * 2 * years / body.period + phase;
+      const eccentricity = model === 'kepler' ? body.e : 0;
+      const eccentricAnomaly = solveEccentricAnomaly(meanAnomaly, eccentricity);
+      const x = body.a * (Math.cos(eccentricAnomaly) - eccentricity);
+      const transverse = body.a * Math.sqrt(1 - eccentricity * eccentricity) * Math.sin(eccentricAnomaly);
+      const inclination = body.inclination * Math.PI / 180;
+      return {
+        x,
+        y: transverse * Math.cos(inclination),
+        z: transverse * Math.sin(inclination)
       };
-      const relative = { x: outer.x - earth.x, y: outer.y - earth.y };
-      return { earth, outer, relative, earthAngle, planetAngle, angle: Math.atan2(relative.y, relative.x) };
+    }
+
+    function retroState(planet, years, phase, model = 'circle') {
+      const earth = orbitPosition(earthOrbit, years, 0, model);
+      const outer = orbitPosition(planet, years, phase, model);
+      const relative = { x: outer.x - earth.x, y: outer.y - earth.y, z: outer.z - earth.z };
+      const horizontalDistance = Math.hypot(relative.x, relative.y);
+      return {
+        earth,
+        outer,
+        relative,
+        angle: Math.atan2(relative.y, relative.x),
+        latitude: Math.atan2(relative.z, horizontalDistance)
+      };
     }
 
     function signedAngleDelta(a, b) {
@@ -5823,15 +6176,29 @@
       return delta;
     }
 
-    function drawOrbitCircle(ctx, center, radius, color, dash = []) {
+    function drawOrbitPath(ctx, center, scale, body, model, color, dash = []) {
       ctx.save();
       ctx.strokeStyle = color;
       ctx.lineWidth = 1.5;
       ctx.setLineDash(dash);
       ctx.beginPath();
-      ctx.arc(center.x, center.y, radius, 0, Math.PI * 2);
+      for (let i = 0; i <= 180; i += 1) {
+        const point = orbitPosition(body, body.period * i / 180, 0, model);
+        const x = center.x + point.x * scale;
+        const y = center.y - point.y * scale;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
       ctx.stroke();
       ctx.restore();
+    }
+
+    function retroAngularRate(planet, years, phase, model) {
+      const epsilon = .00035;
+      return signedAngleDelta(
+        retroState(planet, years + epsilon, phase, model).angle,
+        retroState(planet, years - epsilon, phase, model).angle
+      ) / (2 * epsilon);
     }
 
     function drawRetrograde() {
@@ -5839,15 +6206,15 @@
       const { ctx, w, h } = resizeCanvas(canvas);
       clearCanvas(ctx, w, h);
       const planet = retroPlanets[$('retro-planet').value];
+      const model = $('retro-orbit-model').value;
       const phaseDeg = number('retro-phase');
       const phase = phaseDeg * Math.PI / 180;
       const history = number('retro-history');
-      const years = time * 0.2;
-      const state = retroState(planet, years, phase);
-      const epsilon = 0.0005;
-      const before = retroState(planet, years - epsilon, phase).angle;
-      const after = retroState(planet, years + epsilon, phase).angle;
-      const angularRate = signedAngleDelta(after, before) / (2 * epsilon);
+      const synodicPeriod = 1 / Math.abs(1 / planet.period - 1);
+      const rawYears = time * .2;
+      const years = ((rawYears + synodicPeriod / 2) % synodicPeriod) - synodicPeriod / 2;
+      const state = retroState(planet, years, phase, model);
+      const angularRate = retroAngularRate(planet, years, phase, model);
       const retrograde = angularRate < 0;
       const angleDeg = state.angle * 180 / Math.PI;
       const compact = w < 680;
@@ -5861,41 +6228,45 @@
       $('retro-motion').innerHTML = retrograde
         ? '目前：逆行<small>視黃經正在減少</small>'
         : '目前：順行<small>視黃經正在增加</small>';
-      $('retro-angle').innerHTML = `地球視方向 = ${angleDeg.toFixed(1)}°<small>兩種模型完全相同</small>`;
-      $('retro-model').innerHTML = `2 個日心圓 ↔ 均輪＋本輪<small>${innerPlanet ? '內合附近，行星追越地球視線' : '衝附近，地球追越外行星'}</small>`;
+      $('retro-angle').innerHTML = `視黃經 = ${angleDeg.toFixed(1)}°<small>角速度 ${angularRate.toFixed(2)} rad/年</small>`;
+      $('retro-model').innerHTML = model === 'kepler'
+        ? `克卜勒橢圓：e = ${planet.e.toFixed(3)}<small>太陽在焦點；等時間不等距</small>`
+        : `等速圓軌道<small>${innerPlanet ? `${planet.name}在內合附近追越地球` : `地球在衝附近追越${planet.name}`}</small>`;
 
-      const topBottom = h * 0.67;
-      const leftCenter = { x: w * 0.25, y: topBottom * 0.52 };
-      const rightCenter = { x: w * 0.75, y: topBottom * 0.52 };
-      const halfWidth = w * 0.45;
-      const leftScale = Math.min(halfWidth * 0.38, topBottom * 0.37) / Math.max(1, planet.radius);
-      const rightScale = Math.min(halfWidth * 0.39, topBottom * 0.38) / (planet.radius + 1);
-      const leftMap = point => ({ x: leftCenter.x + point.x * leftScale, y: leftCenter.y - point.y * leftScale });
-      const rightMap = point => ({ x: rightCenter.x + point.x * rightScale, y: rightCenter.y - point.y * rightScale });
-
-      ctx.save();
-      ctx.strokeStyle = '#e2e8f0';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.moveTo(w / 2, 20);
-      ctx.lineTo(w / 2, topBottom - 6);
-      ctx.stroke();
-      ctx.restore();
-      drawCenteredText(ctx, compact ? (innerPlanet ? '日心：內合追越' : '日心：地球追越') : (innerPlanet ? `日心模型：${planet.name}在內合附近追越視線` : '日心模型：地球追越外行星'), leftCenter.x, 24, '#1f2933', compact ? 11 : 14);
-      drawCenteredText(ctx, compact ? '地心：均輪＋本輪' : '地心模型：均輪＋本輪', rightCenter.x, 24, '#1f2933', compact ? 11 : 14);
-
+      const topBottom = h * .61;
+      const orbitCenter = { x: w * (compact ? .5 : .29), y: topBottom * .55 };
+      const maxA = Math.max(1, planet.a * (1 + (model === 'kepler' ? planet.e : 0)));
+      const orbitScale = Math.min(w * (compact ? .40 : .235), topBottom * .36) / maxA;
+      const orbitMap = point => ({ x: orbitCenter.x + point.x * orbitScale, y: orbitCenter.y - point.y * orbitScale });
+      drawCenteredText(ctx, innerPlanet ? `${planet.name}追越地球（內合附近）` : `地球追越${planet.name}（衝附近）`, orbitCenter.x, 26, '#1f2933', compact ? 12 : 15);
       if ($('retro-show-orbits').checked) {
-        drawOrbitCircle(ctx, leftCenter, leftScale, 'rgba(37, 99, 235, .42)', [5, 5]);
-        drawOrbitCircle(ctx, leftCenter, planet.radius * leftScale, 'rgba(190, 18, 60, .38)', [7, 6]);
-        drawOrbitCircle(ctx, rightCenter, planet.radius * rightScale, 'rgba(71, 85, 105, .44)', [7, 6]);
+        drawOrbitPath(ctx, orbitCenter, orbitScale, earthOrbit, model, 'rgba(37,99,235,.42)', [5, 5]);
+        drawOrbitPath(ctx, orbitCenter, orbitScale, planet, model, 'rgba(190,18,60,.42)', [7, 6]);
       }
 
-      const earthPoint = leftMap(state.earth);
-      const planetPoint = leftMap(state.outer);
+      if ($('retro-show-trail').checked) {
+        for (let i = 0; i <= 10; i += 1) {
+          const sampleTime = years - history / 2 + history * i / 10;
+          const sample = retroState(planet, sampleTime, phase, model);
+          const ePoint = orbitMap(sample.earth);
+          const pPoint = orbitMap(sample.outer);
+          ctx.fillStyle = 'rgba(37,99,235,.32)';
+          ctx.beginPath();
+          ctx.arc(ePoint.x, ePoint.y, 2.8, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.fillStyle = 'rgba(190,18,60,.42)';
+          ctx.beginPath();
+          ctx.arc(pPoint.x, pPoint.y, 3.2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+
+      const earthPoint = orbitMap(state.earth);
+      const planetPoint = orbitMap(state.outer);
       ctx.save();
       ctx.fillStyle = css('--orange');
       ctx.beginPath();
-      ctx.arc(leftCenter.x, leftCenter.y, 9, 0, Math.PI * 2);
+      ctx.arc(orbitCenter.x, orbitCenter.y, 9, 0, Math.PI * 2);
       ctx.fill();
       ctx.fillStyle = css('--blue');
       ctx.beginPath();
@@ -5906,142 +6277,145 @@
       ctx.arc(planetPoint.x, planetPoint.y, 8, 0, Math.PI * 2);
       ctx.fill();
       ctx.restore();
-      drawCenteredText(ctx, '太陽', leftCenter.x, leftCenter.y + 22, css('--orange'), compact ? 11 : 14);
+      drawCenteredText(ctx, '太陽（焦點）', orbitCenter.x, orbitCenter.y + 23, css('--orange'), compact ? 10 : 13);
       drawCenteredText(ctx, '地球', earthPoint.x - (compact ? 13 : 0), earthPoint.y + 18, css('--blue'), compact ? 11 : 14);
       drawCenteredText(ctx, planet.name, planetPoint.x + (compact ? 14 : 0), planetPoint.y + 20, planet.color, compact ? 11 : 14);
       if ($('retro-show-sight').checked) {
         drawLabeledArrow(ctx, earthPoint, planetPoint, css('--green'), compact ? '' : '地球視線');
       }
 
-      if ($('retro-show-trail').checked) {
+      // Three snapshots make the changing line of sight explicit before showing the sky trail.
+      if (!compact) {
+        const panelX = w * .58;
+        const panelY = 52;
+        const panelW = w * .38;
+        const panelH = topBottom - 76;
         ctx.save();
-        ctx.lineWidth = 2.4;
-        [['earth', 'rgba(37,99,235,.58)'], ['outer', 'rgba(190,18,60,.62)']].forEach(([key, color]) => {
-          ctx.strokeStyle = color;
-          ctx.beginPath();
-          for (let index = 0; index <= 100; index += 1) {
-            const sample = retroState(planet, years - history + history * index / 100, phase);
-            const point = leftMap(sample[key]);
-            if (index === 0) ctx.moveTo(point.x, point.y);
-            else ctx.lineTo(point.x, point.y);
-          }
-          ctx.stroke();
+        ctx.fillStyle = '#f8fafc';
+        ctx.strokeStyle = '#cbd5e1';
+        ctx.beginPath();
+        ctx.roundRect(panelX, panelY, panelW, panelH, 8);
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
+        drawCenteredText(ctx, '把地球固定：比較三個等時間的視線', panelX + panelW / 2, panelY + 25, '#334155', 14);
+        const deltaTime = Math.min(history * .20, synodicPeriod * .16);
+        const snapshots = [
+          { t: years - deltaTime, label: '① 稍早', color: '#64748b' },
+          { t: years, label: '② 現在', color: css('--orange') },
+          { t: years + deltaTime, label: '③ 稍後', color: css('--blue') }
+        ];
+        const angles = snapshots.map(item => retroState(planet, item.t, phase, model).angle);
+        const maxDelta = Math.max(.04, ...angles.map(angle => Math.abs(signedAngleDelta(angle, state.angle))));
+        const fanOrigin = { x: panelX + panelW * .50, y: panelY + panelH * .80 };
+        ctx.fillStyle = css('--blue');
+        ctx.beginPath();
+        ctx.arc(fanOrigin.x, fanOrigin.y, 7, 0, Math.PI * 2);
+        ctx.fill();
+        drawSceneLabel(ctx, fanOrigin.x + 12, fanOrigin.y + 8, '地球');
+        snapshots.forEach((item, index) => {
+          const displayAngle = -Math.PI / 2 + signedAngleDelta(angles[index], state.angle) / maxDelta * .55;
+          const end = { x: fanOrigin.x + Math.cos(displayAngle) * panelH * .48, y: fanOrigin.y + Math.sin(displayAngle) * panelH * .48 };
+          drawLabeledArrow(ctx, fanOrigin, end, item.color, item.label, 2.8);
         });
-        ctx.restore();
+        drawCenteredText(ctx, '視線夾角為了看清楚已放大', panelX + panelW / 2, panelY + panelH - 8, '#64748b', 11);
       }
 
-      const deferentCenter = rightMap(state.outer);
-      const relativePoint = rightMap(state.relative);
-      if ($('retro-show-orbits').checked) {
-        drawOrbitCircle(ctx, deferentCenter, rightScale, 'rgba(37, 99, 235, .55)', [4, 5]);
+      const skyLeft = 22;
+      const skyRight = w - 22;
+      const skyTop = topBottom + 34;
+      const skyBottom = h - 22;
+      const skyMidY = (skyTop + skyBottom) / 2 + 8;
+      const reference = retroState(planet, 0, phase, model);
+      const referenceSamples = [];
+      for (let i = 0; i <= 200; i += 1) {
+        const sampleTime = -history / 2 + history * i / 200;
+        const sample = retroState(planet, sampleTime, phase, model);
+        referenceSamples.push(Math.abs(signedAngleDelta(sample.angle, reference.angle)));
       }
-      ctx.save();
-      ctx.fillStyle = css('--blue');
-      ctx.beginPath();
-      ctx.arc(rightCenter.x, rightCenter.y, 8, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = '#64748b';
-      ctx.beginPath();
-      ctx.arc(deferentCenter.x, deferentCenter.y, 5, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = planet.color;
-      ctx.beginPath();
-      ctx.arc(relativePoint.x, relativePoint.y, 8, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.restore();
-      drawCenteredText(ctx, '地球', rightCenter.x - (compact ? 13 : 0), rightCenter.y + 20, css('--blue'), compact ? 11 : 14);
-      drawCenteredText(ctx, compact ? '均輪心' : '均輪中心', deferentCenter.x, deferentCenter.y - 15, '#64748b', compact ? 11 : 14);
-      drawCenteredText(ctx, planet.name, relativePoint.x + (compact ? 14 : 0), relativePoint.y + 20, planet.color, compact ? 11 : 14);
-      if ($('retro-show-sight').checked) {
-        drawLabeledArrow(ctx, rightCenter, relativePoint, css('--green'), compact ? '' : '相同視線');
-      }
-
-      if ($('retro-show-trail').checked) {
-        ctx.save();
-        ctx.strokeStyle = 'rgba(190, 18, 60, .48)';
-        ctx.lineWidth = 2;
-        ctx.beginPath();
-        for (let i = 0; i <= 150; i += 1) {
-          const sampleTime = years - history + history * i / 150;
-          const sample = retroState(planet, sampleTime, phase);
-          const p = rightMap(sample.relative);
-          if (i === 0) ctx.moveTo(p.x, p.y);
-          else ctx.lineTo(p.x, p.y);
-        }
-        ctx.stroke();
-        ctx.restore();
-      }
-
-      const graphLeft = 52;
-      const graphRight = w - 28;
-      const graphTop = topBottom + 54;
-      const graphBottom = h - 36;
+      const longitudeSpan = Math.max(.07, ...referenceSamples) * 1.14;
       const samples = [];
-      let unwrapped = 0;
-      let previousAngle = null;
-      for (let i = 0; i <= 180; i += 1) {
-        const sampleTime = years - history + history * i / 180;
-        const sampleAngle = retroState(planet, sampleTime, phase).angle;
-        if (previousAngle === null) unwrapped = sampleAngle;
-        else unwrapped += signedAngleDelta(sampleAngle, previousAngle);
-        const rateBefore = retroState(planet, sampleTime - epsilon, phase).angle;
-        const rateAfter = retroState(planet, sampleTime + epsilon, phase).angle;
-        samples.push({ value: unwrapped, retro: signedAngleDelta(rateAfter, rateBefore) < 0 });
-        previousAngle = sampleAngle;
+      for (let i = 0; i <= 220; i += 1) {
+        const sampleTime = years - history / 2 + history * i / 220;
+        const sample = retroState(planet, sampleTime, phase, model);
+        samples.push({
+          time: sampleTime,
+          longitude: signedAngleDelta(sample.angle, reference.angle),
+          latitude: sample.latitude,
+          retro: retroAngularRate(planet, sampleTime, phase, model) < 0
+        });
       }
-      const values = samples.map(sample => sample.value);
-      let minValue = Math.min(...values);
-      let maxValue = Math.max(...values);
-      if (maxValue - minValue < 0.08) {
-        minValue -= 0.04;
-        maxValue += 0.04;
-      }
-      const graphY = value => graphBottom - 10 - (value - minValue) / (maxValue - minValue) * (graphBottom - graphTop - 20);
+      const latitudeSpan = Math.max(.003, ...samples.map(sample => Math.abs(sample.latitude))) * 1.18;
+      const skyX = longitude => (skyLeft + skyRight) / 2 + longitude / longitudeSpan * (skyRight - skyLeft) * .45;
+      const skyY = latitude => skyMidY - latitude / latitudeSpan * (skyBottom - skyTop) * .31;
       ctx.save();
-      ctx.strokeStyle = '#cbd5e1';
-      ctx.lineWidth = 1;
+      const skyGradient = ctx.createLinearGradient(0, skyTop, 0, skyBottom);
+      skyGradient.addColorStop(0, '#071526');
+      skyGradient.addColorStop(1, '#0f2740');
+      ctx.fillStyle = skyGradient;
+      ctx.strokeStyle = '#29465f';
+      ctx.lineWidth = 1.5;
       ctx.beginPath();
-      ctx.moveTo(graphLeft, graphTop);
-      ctx.lineTo(graphLeft, graphBottom);
-      ctx.lineTo(graphRight, graphBottom);
+      ctx.roundRect(skyLeft, skyTop, skyRight - skyLeft, skyBottom - skyTop, 8);
+      ctx.fill();
       ctx.stroke();
-      for (let i = 1; i < samples.length; i += 1) {
-        if (samples[i].retro) {
-          ctx.save();
-          ctx.strokeStyle = 'rgba(190,18,60,.13)';
-          ctx.lineWidth = 10;
-          ctx.beginPath();
-          ctx.moveTo(graphLeft + (i - 1) / 180 * (graphRight - graphLeft), graphY(samples[i - 1].value));
-          ctx.lineTo(graphLeft + i / 180 * (graphRight - graphLeft), graphY(samples[i].value));
-          ctx.stroke();
-          ctx.restore();
-        }
-        ctx.strokeStyle = samples[i].retro ? css('--red') : css('--green');
-        ctx.lineWidth = 3;
+      for (let i = 0; i < 64; i += 1) {
+        const sx = skyLeft + 12 + ((i * 83) % Math.max(20, skyRight - skyLeft - 24));
+        const sy = skyTop + 12 + ((i * 47 + i * i * 3) % Math.max(20, skyBottom - skyTop - 24));
+        const size = i % 9 === 0 ? 1.8 : 1;
+        ctx.fillStyle = i % 7 === 0 ? '#fde68a' : 'rgba(255,255,255,.75)';
         ctx.beginPath();
-        ctx.moveTo(graphLeft + (i - 1) / 180 * (graphRight - graphLeft), graphY(samples[i - 1].value));
-        ctx.lineTo(graphLeft + i / 180 * (graphRight - graphLeft), graphY(samples[i].value));
-        ctx.stroke();
+        ctx.arc(sx, sy, size, 0, Math.PI * 2);
+        ctx.fill();
       }
-      for (let i = 12; i < samples.length; i += 18) {
-        const x = graphLeft + i / 180 * (graphRight - graphLeft);
-        const y = graphY(samples[i].value);
-        const previousY = graphY(samples[i - 2].value);
-        ctx.fillStyle = samples[i].retro ? css('--red') : css('--green');
-        ctx.beginPath();
-        ctx.arc(x, y, 4.5, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.beginPath();
-        ctx.moveTo(x + 8, y);
-        ctx.lineTo(x + 1, y + (y > previousY ? -5 : 5));
-        ctx.lineTo(x + 1, y + (y > previousY ? 5 : -5));
-        ctx.closePath();
-        ctx.fill();
+      ctx.strokeStyle = 'rgba(148,163,184,.38)';
+      ctx.beginPath();
+      ctx.moveTo(skyLeft + 10, skyMidY);
+      ctx.lineTo(skyRight - 10, skyMidY);
+      ctx.stroke();
+      ctx.restore();
+
+      ctx.save();
+      ctx.beginPath();
+      ctx.rect(skyLeft + 1, skyTop + 1, skyRight - skyLeft - 2, skyBottom - skyTop - 2);
+      ctx.clip();
+      if ($('retro-show-trail').checked) {
+        for (let i = 1; i < samples.length; i += 1) {
+          ctx.strokeStyle = samples[i].retro ? '#fb7185' : '#4ade80';
+          ctx.lineWidth = samples[i].retro ? 4.4 : 3;
+          ctx.beginPath();
+          ctx.moveTo(skyX(samples[i - 1].longitude), skyY(samples[i - 1].latitude));
+          ctx.lineTo(skyX(samples[i].longitude), skyY(samples[i].latitude));
+          ctx.stroke();
+          if (i % 22 === 0) {
+            ctx.fillStyle = samples[i].retro ? '#fb7185' : '#86efac';
+            ctx.beginPath();
+            ctx.arc(skyX(samples[i].longitude), skyY(samples[i].latitude), 3.8, 0, Math.PI * 2);
+            ctx.fill();
+          }
+        }
+      }
+      const currentX = skyX(signedAngleDelta(state.angle, reference.angle));
+      const currentY = skyY(state.latitude);
+      ctx.save();
+      ctx.fillStyle = '#ffffff';
+      ctx.strokeStyle = planet.color;
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.arc(currentX, currentY, 7, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
+      drawSceneLabel(ctx, currentX + 12, currentY - 10, `現在的${planet.name}`);
+      const retroSamples = samples.filter(sample => sample.retro);
+      if (retroSamples.length) {
+        const middleRetro = retroSamples[Math.floor(retroSamples.length / 2)];
+        drawSceneLabel(ctx, skyX(middleRetro.longitude), Math.max(skyTop + 22, skyY(middleRetro.latitude) - 26), '← 紅色折返段＝逆行');
       }
       ctx.restore();
-      drawCenteredText(ctx, `地球天空中的${planet.name}位置（綠：順行；紅色粗段：逆行）`, w / 2, graphTop - 22, '#334155');
-      drawCenteredText(ctx, `過去 ${history.toFixed(2)} 年`, graphLeft + 42, graphBottom + 18, '#64748b');
-      drawCenteredText(ctx, '現在', graphRight - 12, graphBottom + 18, '#64748b');
+      drawCenteredText(ctx, `固定星空上的${planet.name}軌跡（左右：視黃經；上下：黃緯已放大）`, w / 2, skyTop - 12, '#334155', compact ? 11 : 14);
+      drawSceneLabel(ctx, skyLeft + 14, skyBottom - 8, '綠：順行 →');
+      drawSceneLabel(ctx, skyRight - 14, skyBottom - 8, '紅：逆行 ←', 'right');
     }
 
     function drawActive() {
@@ -6113,6 +6487,25 @@
       requestAnimationFrame(drawActive);
     }
 
+    function setAngularMode(name) {
+      activeAngular = name;
+      document.querySelectorAll('.angular-mode').forEach(btn => {
+        const active = btn.dataset.angular === name;
+        btn.classList.toggle('active', active);
+        btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+      });
+      document.querySelectorAll('.gyro-only').forEach(element => {
+        element.hidden = name !== 'gyro';
+      });
+      document.querySelectorAll('.heli-only').forEach(element => {
+        element.hidden = name !== 'helicopter';
+      });
+      time = 0;
+      last = performance.now();
+      updateAngularCopy(name);
+      requestAnimationFrame(drawActive);
+    }
+
     function setMirrorLesson(name) {
       mirrorLesson = name;
       document.querySelectorAll('.mirror-lesson').forEach(btn => {
@@ -6156,6 +6549,10 @@
 
     document.querySelectorAll('.topic-mode').forEach(btn => {
       btn.addEventListener('click', () => setMechanicsMode(btn.dataset.mechanics));
+    });
+
+    document.querySelectorAll('.angular-mode').forEach(btn => {
+      btn.addEventListener('click', () => setAngularMode(btn.dataset.angular));
     });
 
     document.querySelectorAll('.mirror-lesson').forEach(btn => {
@@ -6256,6 +6653,19 @@
       const planet = retroPlanets[$('retro-planet').value];
       $('retro-phase').value = '0';
       $('retro-history').value = planet.type === 'inner' ? (planet.name === '水星' ? '.30' : '.55') : '.80';
+      time = 0;
+      last = performance.now();
+      drawActive();
+    });
+
+    $('retro-orbit-model').addEventListener('change', () => {
+      time = 0;
+      last = performance.now();
+      drawActive();
+    });
+
+    $('retro-jump').addEventListener('click', () => {
+      $('retro-phase').value = '0';
       time = 0;
       last = performance.now();
       drawActive();
