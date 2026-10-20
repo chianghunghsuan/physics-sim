@@ -256,6 +256,12 @@
       cursor: ns-resize;
       touch-action: none;
     }
+    #reflection-canvas {
+      cursor: grab;
+      touch-action: none;
+    }
+    #reflection-canvas.dragging { cursor: grabbing; }
+    #microscope-canvas, #eye-canvas { height: min(64vh, 540px); min-height: 420px; }
     .controls {
       margin-top: 16px;
       display: grid;
@@ -369,6 +375,7 @@
       .mode-buttons { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       canvas { height: 330px; min-height: 280px; }
       #mirror-canvas.parallel-expanded { height: 410px; min-height: 380px; }
+      #microscope-canvas, #eye-canvas { height: 430px; min-height: 390px; }
       button.optics-mode, button.topic-mode { min-width: 112px; flex: 1 1 112px; }
       #retrograde-canvas { height: 430px; min-height: 390px; }
     }
@@ -388,6 +395,7 @@
           <button type="button" class="tab" data-tab="doppler" role="tab" aria-selected="false">都卜勒效應</button>
           <button type="button" class="tab" data-tab="ripple" role="tab" aria-selected="false">水波槽干涉</button>
           <button type="button" class="tab" data-tab="double" role="tab" aria-selected="false">雙狹縫干涉</button>
+          <button type="button" class="tab" data-tab="single" role="tab" aria-selected="false">單狹縫繞射</button>
           <button type="button" class="tab" data-tab="huygens" role="tab" aria-selected="false">惠更斯原理</button>
           <button type="button" class="tab" data-tab="optics" role="tab" aria-selected="false">幾何光學</button>
           <button type="button" class="tab" data-tab="mechanics" role="tab" aria-selected="false">力學現象</button>
@@ -668,6 +676,57 @@
         </section>
       </section>
 
+      <section id="panel-single" class="panel" role="tabpanel">
+        <div class="module-head">
+          <div>
+            <h2>單狹縫繞射</h2>
+            <p class="module-copy">平面波只從一條有限寬度的狹縫通過。狹縫內各點依惠更斯原理發出次波，屏幕上的光強由這些次波的相位疊加形成。</p>
+          </div>
+          <div class="legend" aria-label="單狹縫繞射圖例">
+            <span class="blue"><i class="dot"></i>入射平面波</span>
+            <span class="orange"><i class="dot"></i>狹縫次波源</span>
+            <span class="green"><i class="dot"></i>繞射波</span>
+            <span class="purple"><i class="dot"></i>屏幕光強</span>
+          </div>
+        </div>
+        <div class="values" aria-live="polite">
+          <div class="badge" id="sgl-lambda">λ = 550 nm<small>波長越長，繞射越明顯</small></div>
+          <div class="badge" id="sgl-ratio">a/λ = 182<small>縫越窄，中央亮紋越寬</small></div>
+          <div class="badge" id="sgl-angle">第一暗紋 θ₁ = 0.32°<small>sin θ₁ = λ/a</small></div>
+          <div class="badge" id="sgl-width">中央亮紋寬 = 22.0 mm<small>約為兩側亮紋寬的 2 倍</small></div>
+        </div>
+        <div class="plot-wrap wave-lab">
+          <canvas id="single-canvas" role="img" aria-label="單狹縫內多個次波源形成繞射圖樣與中央寬亮紋。"></canvas>
+        </div>
+        <div class="controls">
+          <div class="control">
+            <label for="sgl-lambda-in">波長 λ：<span id="sgl-lambda-out">550 nm</span></label>
+            <input id="sgl-lambda-in" type="range" min="420" max="680" step="5" value="550">
+          </div>
+          <div class="control">
+            <label for="sgl-a">狹縫寬 a：<span id="sgl-a-out">0.10 mm</span></label>
+            <input id="sgl-a" type="range" min="0.03" max="0.30" step="0.01" value="0.10">
+          </div>
+          <div class="control">
+            <label for="sgl-D">屏幕距離 D：<span id="sgl-D-out">2.00 m</span></label>
+            <input id="sgl-D" type="range" min="0.5" max="4" step="0.05" value="2">
+          </div>
+          <div class="control">
+            <label for="sgl-speed">播放速度：<span id="sgl-speed-out">0.35x</span></label>
+            <input id="sgl-speed" type="range" min="0.1" max="1.5" step="0.05" value="0.35">
+          </div>
+        </div>
+        <div class="checks">
+          <label class="check"><input type="checkbox" id="sgl-show-wavelets" checked>顯示狹縫內的次波</label>
+          <label class="check"><input type="checkbox" id="sgl-show-minima" checked>標示第一、二暗紋</label>
+          <label class="check"><input type="checkbox" id="sgl-show-profile" checked>顯示光強曲線</label>
+        </div>
+        <section class="teacher-note">
+          <p><strong>講法：</strong>先看狹縫內一排同相次波源；中央方向路徑差為零，所以全部相加。偏離中央後，各點逐漸不同相，第一暗紋恰好能把狹縫配對成互相抵消的兩半。</p>
+          <p><strong>強調：</strong>單狹縫中央亮紋從第一個負暗紋跨到第一個正暗紋，因此寬度約為其他亮紋的兩倍；兩側亮紋也會快速變暗。</p>
+        </section>
+      </section>
+
       <section id="panel-huygens" class="panel" role="tabpanel">
         <div class="module-head">
           <div>
@@ -733,6 +792,7 @@
           <button type="button" class="optics-mode" data-optics="reflection" aria-pressed="false">鏡像文字</button>
           <button type="button" class="optics-mode" data-optics="trifold" aria-pressed="false">多面鏡</button>
           <button type="button" class="optics-mode" data-optics="microscope" aria-pressed="false">顯微鏡</button>
+          <button type="button" class="optics-mode" data-optics="eye" aria-pressed="false">眼睛成像</button>
         </div>
 
         <div id="optics-view-mirror" class="optics-view active">
@@ -894,6 +954,7 @@
               <select id="reflection-mode">
                 <option value="vertical" selected>直立面鏡：左右翻轉</option>
                 <option value="water">水平水面：上下翻轉</option>
+                <option value="turnover">翻面觀察：上下左右都相反</option>
               </select>
             </div>
             <div class="control">
@@ -918,6 +979,7 @@
           </div>
           <div class="checks">
             <label class="check"><input type="checkbox" id="reflection-show-guide" checked>顯示物像等距輔助線</label>
+            <button type="button" class="secondary" id="reflection-reset-position">重設文字位置</button>
           </div>
         </div>
 
@@ -929,8 +991,8 @@
             </div>
             <div class="legend" aria-label="多面鏡圖例">
               <span class="orange"><i class="dot"></i>人物</span>
-              <span class="purple"><i class="dot"></i>一次像</span>
-              <span class="green"><i class="dot"></i>二次以上像</span>
+              <span class="purple"><i class="dot"></i>不同顏色＝不同反射層數</span>
+              <span class="green"><i class="dot"></i>標籤＝反射路徑</span>
               <span class="red"><i class="dot"></i>對稱作圖線</span>
             </div>
           </div>
@@ -968,6 +1030,7 @@
           <div class="checks">
             <label class="check"><input type="checkbox" id="tri-show-guides" checked>顯示一次像的對稱作圖線</label>
             <label class="check"><input type="checkbox" id="tri-show-labels" checked>標示反射次數</label>
+            <label class="check"><input type="checkbox" id="tri-color-depth" checked>依反射層數換色</label>
             <label class="check"><input type="checkbox" id="tri-visible-only" checked>只顯示由人物所在觀察點可見的像</label>
           </div>
         </div>
@@ -976,7 +1039,7 @@
           <div class="module-head">
             <div>
               <h2>複式顯微鏡成像</h2>
-              <p class="module-copy">物鏡先把小物體放大成倒立的中間實像，再由目鏡把中間像當成物體，形成供眼睛觀察的放大虛像。</p>
+              <p class="module-copy">以鉛直顯微鏡呈現標本、載物台、物鏡、鏡筒與目鏡。物鏡先形成倒立中間實像，目鏡再把它放大成供眼睛觀察的虛像。</p>
             </div>
             <div class="legend" aria-label="顯微鏡圖例">
               <span class="blue"><i class="dot"></i>物鏡前光線</span>
@@ -1016,6 +1079,60 @@
             <label class="check"><input type="checkbox" id="micro-show-objective" checked>顯示物鏡成像光線</label>
             <label class="check"><input type="checkbox" id="micro-show-eyepiece" checked>顯示目鏡成像光線</label>
             <label class="check"><input type="checkbox" id="micro-show-extensions" checked>顯示最終虛像延長線</label>
+          </div>
+        </div>
+
+        <div id="optics-view-eye" class="optics-view">
+          <div class="module-head">
+            <div>
+              <h2>眼睛、晶狀體與視網膜成像</h2>
+              <p class="module-copy">光先經角膜折射，穿過瞳孔，再由晶狀體調節會聚能力；清楚視物時，光線必須正好在視網膜上形成倒立實像。</p>
+            </div>
+            <div class="legend" aria-label="眼睛成像圖例">
+              <span class="blue"><i class="dot"></i>入射光</span>
+              <span class="green"><i class="dot"></i>折射光</span>
+              <span class="orange"><i class="dot"></i>晶狀體</span>
+              <span class="red"><i class="dot"></i>視網膜／成像位置</span>
+            </div>
+          </div>
+          <div class="values" aria-live="polite">
+            <div class="badge" id="eye-object-badge">物距 = 80 cm<small>遠物入射光較平行</small></div>
+            <div class="badge" id="eye-power-badge">晶狀體焦距 = 1.70 cm<small>近物需要較強會聚</small></div>
+            <div class="badge" id="eye-focus-badge">焦點落在視網膜<small>形成清楚倒立實像</small></div>
+            <div class="badge" id="eye-state-badge">正視眼<small>眼軸長度正常</small></div>
+          </div>
+          <div class="plot-wrap">
+            <canvas id="eye-canvas" role="img" aria-label="眼球剖面、角膜、虹膜、瞳孔、晶狀體、視網膜及光線成像。"></canvas>
+          </div>
+          <div class="controls">
+            <div class="control">
+              <label for="eye-object-distance">觀看距離：<span id="eye-object-distance-out">80 cm</span></label>
+              <input id="eye-object-distance" type="range" min="15" max="200" step="5" value="80">
+            </div>
+            <div class="control">
+              <label for="eye-accommodation">晶狀體調節：<span id="eye-accommodation-out">自動</span></label>
+              <input id="eye-accommodation" type="range" min="0" max="100" step="1" value="55">
+            </div>
+            <div class="control">
+              <label for="eye-condition">眼球狀態</label>
+              <select id="eye-condition">
+                <option value="normal" selected>正視眼</option>
+                <option value="myopia">近視：眼軸偏長</option>
+                <option value="hyperopia">遠視：眼軸偏短</option>
+              </select>
+            </div>
+            <div class="control">
+              <label for="eye-correction">矯正鏡片</label>
+              <select id="eye-correction">
+                <option value="none" selected>不使用</option>
+                <option value="concave">凹透鏡（近視矯正）</option>
+                <option value="convex">凸透鏡（遠視矯正）</option>
+              </select>
+            </div>
+          </div>
+          <div class="checks">
+            <label class="check"><input type="checkbox" id="eye-show-labels" checked>顯示眼球構造標示</label>
+            <label class="check"><input type="checkbox" id="eye-show-ideal" checked>顯示理想焦點</label>
           </div>
         </div>
       </section>
@@ -1166,6 +1283,7 @@
                 <option value="1">單一定滑輪（n=1）</option>
                 <option value="2" selected>單一動滑輪（n=2）</option>
                 <option value="4">四股滑輪組（n=4）</option>
+                <option value="6">六股滑輪組（n=6）</option>
               </select>
             </div>
             <div class="control">
@@ -1188,9 +1306,10 @@
           <div class="checks">
             <label class="check"><input type="checkbox" id="pulley-show-force" checked>顯示拉力與重量</label>
             <label class="check"><input type="checkbox" id="pulley-show-rulers" checked>顯示自由端／負載位移尺</label>
+            <label class="check"><input type="checkbox" id="pulley-show-segments" checked>標示每股繩長如何縮短</label>
           </div>
           <section class="teacher-note">
-            <p><strong>講法：</strong>保持拉繩速度不變，只切換 n=1、2、4。學生會直接看到負載越省力，上升得越慢；右側位移尺則顯示自由端走了負載的 n 倍距離。</p>
+            <p><strong>講法：</strong>保持拉繩速度不變，只切換 n=1、2、4、6。學生會直接看到負載越省力，上升得越慢；右側繩長表則顯示自由端走了負載的 n 倍距離。</p>
             <p><strong>強調：</strong>理想滑輪沒有省功：Fs = mgh。省下多少力，就要多拉相同比例的距離與時間。</p>
           </section>
         </div>
@@ -1200,12 +1319,12 @@
         <div class="module-head">
           <div>
             <h2>地心說與日心說如何描述行星逆行</h2>
-            <p class="module-copy">左側用地球追越外行星解釋逆行；右側把相同的相對位置拆成均輪與本輪。兩種畫法得到相同視方向，但需要的結構不同。</p>
+            <p class="module-copy">外行星由地球追越、內行星由行星追越地球，都會使地球天空中的視方向短暫反轉。右側把同一相對位置拆成均輪與本輪，比較兩種模型。</p>
           </div>
           <div class="legend" aria-label="行星逆行圖例">
             <span class="orange"><i class="dot"></i>太陽</span>
             <span class="blue"><i class="dot"></i>地球</span>
-            <span class="red"><i class="dot"></i>外行星</span>
+            <span class="red"><i class="dot"></i>被觀測行星</span>
             <span class="green"><i class="dot"></i>視線／視位置</span>
           </div>
         </div>
@@ -1222,6 +1341,8 @@
           <div class="control">
             <label for="retro-planet">觀測行星</label>
             <select id="retro-planet">
+              <option value="mercury">水星</option>
+              <option value="venus">金星</option>
               <option value="mars" selected>火星</option>
               <option value="jupiter">木星</option>
               <option value="saturn">土星</option>
@@ -1233,7 +1354,7 @@
           </div>
           <div class="control">
             <label for="retro-history">軌跡長度：<span id="retro-history-out">0.80 年</span></label>
-            <input id="retro-history" type="range" min="0.3" max="2" step="0.05" value="0.8">
+            <input id="retro-history" type="range" min="0.1" max="2" step="0.05" value="0.8">
           </div>
           <div class="control">
             <label for="retro-speed">播放速度：<span id="retro-speed-out">0.10x</span></label>
@@ -1246,7 +1367,7 @@
           <label class="check"><input type="checkbox" id="retro-show-trail" checked>保留行星與視位置軌跡</label>
         </div>
         <section class="teacher-note">
-          <p><strong>講法：</strong>先看左側：地球較快，在會合附近超越外行星，視方向短暫反轉。再看右側：地心模型以均輪中心繞地球、行星再繞本輪，也能造出完全相同的相對位置。</p>
+            <p><strong>講法：</strong>先看左側的兩個公轉位置，再沿地球視線看下方星空尺。外行星在衝附近被地球追越；水星、金星則在內合附近快速越過地球與太陽之間，兩者都會在星空背景上留下折返軌跡。</p>
           <p><strong>強調：</strong>「能解釋」不等於模型同樣簡潔。簡化圓軌道下，日心模型用地球與行星各自繞太陽；地心模型要為每顆行星配置均輪、本輪及相位關係。</p>
         </section>
       </section>
@@ -1265,6 +1386,8 @@
     let time = 0;
     let last = performance.now();
     let standingPresetSignature = '';
+    const reflectionOffset = { x: 0, y: 0 };
+    let draggingReflection = false;
 
     function number(id) {
       return Number($(id).value);
@@ -1326,6 +1449,7 @@
       if (activeModule === 'doppler') return number('dop-speed');
       if (activeModule === 'ripple') return number('rip-speed');
       if (activeModule === 'double') return number('dbl-speed');
+      if (activeModule === 'single') return number('sgl-speed');
       if (activeModule === 'huygens') return number('huy-speed');
       if (activeModule === 'mechanics') {
         if (activeMechanics === 'circular') return number('circ-speed');
@@ -1531,6 +1655,10 @@
       const plotW = w - padX * 2;
       const scaleY = Math.min(95, h * 0.25) / Math.max(1, s.AR, s.AL);
       const tracker = standingTrackedPhase(s);
+      const trackerWaveVisible = tracker.movingRight
+        ? $('stand-show-right').checked
+        : $('stand-show-left').checked;
+      if (!trackerWaveVisible) return;
       const px = padX + (tracker.x / s.L) * plotW;
       const py = base - tracker.value * scaleY;
       const color = tracker.movingRight ? css('--blue') : css('--orange');
@@ -2452,6 +2580,125 @@
       drawCenteredText(ctx, '亮暗屏', (screenX + screenRight) / 2, h - 12, '#cbd5e1');
     }
 
+    function drawSingleSlit() {
+      const canvas = $('single-canvas');
+      const { ctx, w, h } = resizeCanvas(canvas);
+      const lambdaNm = number('sgl-lambda-in');
+      const slitMm = number('sgl-a');
+      const screenM = number('sgl-D');
+      const lambdaM = lambdaNm * 1e-9;
+      const slitM = slitMm * 1e-3;
+      const ratio = slitM / lambdaM;
+      const firstAngle = Math.asin(Math.min(1, lambdaM / slitM));
+      const centralWidthMm = 2 * screenM * Math.tan(firstAngle) * 1000;
+      const lightRgb = visibleWavelengthRgb(lambdaNm);
+      const lightColor = lightRgb.join(', ');
+
+      setText('sgl-lambda-out', `${lambdaNm.toFixed(0)} nm`);
+      setText('sgl-a-out', `${slitMm.toFixed(2)} mm`);
+      setText('sgl-D-out', `${screenM.toFixed(2)} m`);
+      setText('sgl-speed-out', `${number('sgl-speed').toFixed(2)}x`);
+      $('sgl-lambda').innerHTML = `λ = ${lambdaNm.toFixed(0)} nm<small>${lambdaNm > 610 ? '偏紅光，繞射角較大' : (lambdaNm < 480 ? '偏藍光，繞射角較小' : '可見光')}</small>`;
+      $('sgl-ratio').innerHTML = `a/λ = ${ratio.toFixed(0)}<small>實際尺度；畫面將角度放大呈現</small>`;
+      $('sgl-angle').innerHTML = `第一暗紋 θ₁ = ${(firstAngle * 180 / Math.PI).toFixed(3)}°<small>sin θ₁ = λ/a</small>`;
+      $('sgl-width').innerHTML = `中央亮紋寬 = ${centralWidthMm.toFixed(1)} mm<small>2D tan θ₁；兩側亮紋較窄且較暗</small>`;
+
+      ctx.fillStyle = '#050d1a';
+      ctx.fillRect(0, 0, w, h);
+      const centerY = h / 2;
+      const sourceX = 22;
+      const barrierX = w * .31;
+      const screenX = w * .84;
+      const screenRight = w - 18;
+      const slitPx = 40 + (slitMm - .03) / .27 * Math.min(120, h * .27);
+      const lambdaPx = 18 + (lambdaNm - 420) / 260 * 8;
+      const travel = time * 72;
+      const offset = positiveModulo(travel, lambdaPx);
+      const firstMinPx = Math.max(24, Math.min(h * .40, centralWidthMm / 22 * h * .24));
+
+      ctx.save();
+      ctx.strokeStyle = `rgba(${lightColor}, .62)`;
+      ctx.lineWidth = 1.5;
+      for (let x = sourceX + offset; x < barrierX - 5; x += lambdaPx) {
+        ctx.beginPath();
+        ctx.moveTo(x, 24);
+        ctx.lineTo(x, h - 24);
+        ctx.stroke();
+      }
+      ctx.restore();
+
+      const sourceCount = 11;
+      const sources = Array.from({ length: sourceCount }, (_, index) => ({
+        x: barrierX,
+        y: centerY - slitPx / 2 + slitPx * index / (sourceCount - 1)
+      }));
+      if ($('sgl-show-wavelets').checked) {
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(barrierX + 1, 18, screenX - barrierX - 2, h - 36);
+        ctx.clip();
+        const maxR = Math.hypot(screenX - barrierX, h);
+        sources.forEach(source => {
+          drawCrestRings(ctx, source.x, source.y, offset, lambdaPx, maxR, `rgba(${lightColor}, .22)`, -Math.PI / 2, Math.PI / 2);
+        });
+        ctx.restore();
+      }
+
+      drawSlottedBarrier(ctx, barrierX, 22, h - 22, [{ start: centerY - slitPx / 2, end: centerY + slitPx / 2 }]);
+      sources.forEach(source => drawGlowPoint(ctx, source.x, source.y, 1.4, '251, 146, 60'));
+      drawSceneLabel(ctx, barrierX - 14, 18, `單狹縫 a=${slitMm.toFixed(2)} mm`, 'right');
+
+      ctx.save();
+      ctx.fillStyle = 'rgba(2, 6, 23, .94)';
+      ctx.fillRect(screenX, 22, screenRight - screenX, h - 44);
+      ctx.strokeStyle = 'rgba(186, 230, 253, .7)';
+      ctx.strokeRect(screenX, 22, screenRight - screenX, h - 44);
+      ctx.shadowColor = `rgb(${lightColor})`;
+      ctx.shadowBlur = 12;
+      for (let py = 24; py < h - 24; py += 2) {
+        const beta = Math.PI * (py - centerY) / firstMinPx;
+        const intensity = sinc(beta) ** 2;
+        ctx.fillStyle = `rgba(${lightColor}, ${.018 + .95 * intensity})`;
+        ctx.fillRect(screenX + 3, py, screenRight - screenX - 6, 2.2);
+      }
+      ctx.restore();
+
+      if ($('sgl-show-profile').checked) {
+        ctx.save();
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        for (let py = 24; py <= h - 24; py += 2) {
+          const beta = Math.PI * (py - centerY) / firstMinPx;
+          const intensity = sinc(beta) ** 2;
+          const px = screenX + 4 + intensity * (screenRight - screenX - 10);
+          if (py === 24) ctx.moveTo(px, py);
+          else ctx.lineTo(px, py);
+        }
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      if ($('sgl-show-minima').checked) {
+        ctx.save();
+        ctx.setLineDash([6, 6]);
+        ctx.lineWidth = 1.4;
+        ctx.strokeStyle = 'rgba(148,163,184,.78)';
+        [-2, -1, 1, 2].forEach(order => {
+          const y = centerY + order * firstMinPx;
+          if (y < 24 || y > h - 24) return;
+          ctx.beginPath();
+          ctx.moveTo(barrierX, centerY);
+          ctx.lineTo(screenX, y);
+          ctx.stroke();
+          drawSceneLabel(ctx, screenX - 8, y - 14, `${order > 0 ? '+' : ''}${order} 暗紋`, 'right');
+        });
+        ctx.restore();
+      }
+      drawSceneLabel(ctx, 24, h - 38, '平面波');
+      drawSceneLabel(ctx, screenRight - 4, h - 38, '光強屏', 'right');
+    }
+
     function huygensPoints(mode, count, aperture, w, h, barrierX) {
       const points = [];
       const centerY = h / 2;
@@ -3056,24 +3303,46 @@
     function drawLensShape(ctx, lensX, axis, h, type) {
       const top = 46;
       const bottom = h - 46;
+      const halfHeight = (bottom - top) / 2;
+      const edge = type === 'convex' ? 7 : 24;
+      const center = type === 'convex' ? 29 : 7;
+      const glass = ctx.createLinearGradient(lensX - 34, 0, lensX + 34, 0);
+      glass.addColorStop(0, 'rgba(125, 211, 252, .30)');
+      glass.addColorStop(.48, 'rgba(240, 249, 255, .82)');
+      glass.addColorStop(1, 'rgba(56, 189, 248, .28)');
       ctx.save();
-      ctx.strokeStyle = css('--purple');
-      ctx.lineWidth = 3.5;
+      ctx.strokeStyle = '#0369a1';
+      ctx.fillStyle = glass;
+      ctx.lineWidth = 3;
       ctx.lineCap = 'round';
       ctx.beginPath();
       if (type === 'convex') {
-        ctx.moveTo(lensX, top);
-        ctx.quadraticCurveTo(lensX - 24, axis, lensX, bottom);
-        ctx.quadraticCurveTo(lensX + 24, axis, lensX, top);
+        ctx.moveTo(lensX - edge, top);
+        ctx.bezierCurveTo(lensX - center, axis - halfHeight * .48, lensX - center, axis + halfHeight * .48, lensX - edge, bottom);
+        ctx.lineTo(lensX + edge, bottom);
+        ctx.bezierCurveTo(lensX + center, axis + halfHeight * .48, lensX + center, axis - halfHeight * .48, lensX + edge, top);
+        ctx.closePath();
       } else {
-        ctx.moveTo(lensX - 22, top);
-        ctx.quadraticCurveTo(lensX + 3, axis, lensX - 22, bottom);
-        ctx.moveTo(lensX + 22, top);
-        ctx.quadraticCurveTo(lensX - 3, axis, lensX + 22, bottom);
+        ctx.moveTo(lensX - edge, top);
+        ctx.bezierCurveTo(lensX - center, axis - halfHeight * .36, lensX - center, axis + halfHeight * .36, lensX - edge, bottom);
+        ctx.lineTo(lensX + edge, bottom);
+        ctx.bezierCurveTo(lensX + center, axis + halfHeight * .36, lensX + center, axis - halfHeight * .36, lensX + edge, top);
+        ctx.closePath();
       }
+      ctx.fill();
       ctx.stroke();
+      ctx.strokeStyle = 'rgba(255,255,255,.9)';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(lensX - 3, top + 12);
+      ctx.lineTo(lensX - 3, bottom - 12);
+      ctx.stroke();
+      ctx.fillStyle = '#0369a1';
+      ctx.beginPath();
+      ctx.arc(lensX, axis, 3.5, 0, Math.PI * 2);
+      ctx.fill();
       ctx.fillStyle = css('--muted');
-      ctx.font = '13px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.font = '700 13px "Microsoft JhengHei", Arial, sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText(type === 'convex' ? '凸透鏡' : '凹透鏡', lensX, bottom + 22);
       ctx.restore();
@@ -3780,30 +4049,36 @@
       const preferredSize = number('reflection-font-size');
       const showGuide = $('reflection-show-guide').checked;
       const vertical = mode === 'vertical';
+      const water = mode === 'water';
 
       setText('reflection-do-out', `${objectDistance.toFixed(0)} cm`);
       setText('reflection-font-size-out', preferredSize.toFixed(0));
       $('reflection-distance').innerHTML = `do = ${objectDistance.toFixed(0)} cm｜di = -${objectDistance.toFixed(0)} cm<small>|di| = do，物與像到反射面等距</small>`;
       $('reflection-size').innerHTML = '物像大小 1：1<small>平面反射不放大也不縮小</small>';
       $('reflection-direction').innerHTML = vertical
-        ? '水平鏡射<small>上下不變，畫面左右翻轉</small>'
-        : '垂直鏡射<small>左右不變，畫面上下翻轉</small>';
+        ? '水平鏡射<small>上下不變，左右位置反向</small>'
+        : water
+          ? '垂直鏡射<small>左右不變，上下位置反向</small>'
+          : '中心對稱<small>上下、左右位置都反向，相當於旋轉 180°</small>';
       $('reflection-status').innerHTML = vertical
-        ? '直立平面鏡虛像<small>像位於鏡後等距處</small>'
-        : '平靜水面倒影<small>像位於水面下等距處</small>';
+        ? '直立平面鏡虛像<small>拖曳物體，鏡後的像同步對稱移動</small>'
+        : water
+          ? '平靜水面倒影<small>把物體往上拉，倒影會等距往下移</small>'
+          : '上下左右皆相反<small>拖曳物體，像會越過中心往相反方向移</small>';
 
       ctx.save();
-      ctx.fillStyle = vertical ? 'rgba(37,99,235,.025)' : 'rgba(249,115,22,.025)';
+      ctx.fillStyle = vertical ? 'rgba(37,99,235,.025)' : (water ? 'rgba(14,165,233,.035)' : 'rgba(124,58,237,.025)');
       ctx.fillRect(0, 0, w, h);
       ctx.restore();
 
       if (vertical) {
         const mirrorX = w / 2;
-        const y = h / 2;
+        const y = Math.max(60, Math.min(h - 60, h / 2 + reflectionOffset.y));
         const maxOffset = Math.max(46, w / 2 - 72);
         const offset = 30 + (objectDistance / 100) * (maxOffset - 30);
-        const objectX = mirrorX - offset;
-        const imageX = mirrorX + offset;
+        const dragX = Math.max(-maxOffset + offset + 20, Math.min(maxOffset - offset - 20, reflectionOffset.x));
+        const objectX = mirrorX - offset + dragX;
+        const imageX = mirrorX + offset - dragX;
         const sideClearance = Math.max(46, 2 * Math.min(offset - 24, objectX - 34));
         const size = fittedReflectionTextSize(ctx, text, style, preferredSize, sideClearance);
         ctx.fillStyle = 'rgba(124,58,237,.035)';
@@ -3832,13 +4107,14 @@
         drawVerticalMirror(ctx, mirrorX, h);
         drawSceneLabel(ctx, mirrorX - 16, 18, '鏡前｜物體側', 'right');
         drawSceneLabel(ctx, mirrorX + 16, 18, '鏡後｜虛像側');
-      } else {
+      } else if (water) {
         const surfaceY = h / 2;
-        const x = w / 2;
+        const x = Math.max(70, Math.min(w - 70, w / 2 + reflectionOffset.x));
         const maxOffset = Math.max(48, h / 2 - 68);
         const offset = 34 + (objectDistance / 100) * (maxOffset - 34);
-        const objectY = surfaceY - offset;
-        const imageY = surfaceY + offset;
+        const dragY = Math.max(-maxOffset + offset + 18, Math.min(maxOffset - offset - 18, reflectionOffset.y));
+        const objectY = surfaceY - offset + dragY;
+        const imageY = surfaceY + offset - dragY;
         const size = fittedReflectionTextSize(ctx, text, style, preferredSize, Math.max(100, w - 120));
         drawWaterSurface(ctx, w, surfaceY, h);
         if (showGuide) {
@@ -3864,6 +4140,33 @@
         drawReflectionText(ctx, text, x, imageY, size, style, '#2563eb', false, true, 0.62);
         drawSceneLabel(ctx, 22, surfaceY - 20, '水面上｜物體');
         drawSceneLabel(ctx, 22, surfaceY + 22, '水面下｜虛像');
+      } else {
+        const center = { x: w / 2, y: h / 2 };
+        const offsetX = 48 + objectDistance / 100 * Math.max(20, w * .18);
+        const offsetY = 34 + objectDistance / 100 * Math.max(16, h * .18);
+        const objectX = Math.max(70, Math.min(w - 70, center.x - offsetX + reflectionOffset.x));
+        const objectY = Math.max(58, Math.min(h - 58, center.y - offsetY + reflectionOffset.y));
+        const imageX = 2 * center.x - objectX;
+        const imageY = 2 * center.y - objectY;
+        const size = fittedReflectionTextSize(ctx, text, style, preferredSize, Math.max(100, w * .38));
+        ctx.save();
+        ctx.strokeStyle = 'rgba(124,58,237,.35)';
+        ctx.setLineDash([7, 7]);
+        ctx.beginPath();
+        ctx.moveTo(center.x, 24);
+        ctx.lineTo(center.x, h - 24);
+        ctx.moveTo(24, center.y);
+        ctx.lineTo(w - 24, center.y);
+        ctx.stroke();
+        ctx.fillStyle = css('--purple');
+        ctx.beginPath();
+        ctx.arc(center.x, center.y, 5, 0, Math.PI * 2);
+        ctx.fill();
+        if (showGuide) strokeSegment(ctx, { x: objectX, y: objectY }, { x: imageX, y: imageY }, 'rgba(15,118,110,.7)', 1.8, [7, 6]);
+        ctx.restore();
+        drawReflectionText(ctx, text, objectX, objectY, size, style, css('--orange'), false, false, 1);
+        drawReflectionText(ctx, text, imageX, imageY, size, style, css('--image'), true, true, .82);
+        drawSceneLabel(ctx, center.x - 14, center.y - 16, '對稱中心', 'right');
       }
     }
 
@@ -3929,6 +4232,11 @@
         ctx.fillText(label, point.x, point.y + 14);
       }
       ctx.restore();
+    }
+
+    function mirrorDepthColor(order) {
+      const palette = ['#7c3aed', '#0284c7', '#15803d', '#ea580c', '#be123c', '#475569'];
+      return palette[(Math.max(1, order) - 1) % palette.length];
     }
 
     function segmentIntersection(p1, p2, a, b) {
@@ -4031,10 +4339,12 @@
             const key = `${Math.round(point.x * 1000)}:${Math.round(point.y * 1000)}`;
             let candidate = candidateMap.get(key);
             if (!candidate) {
-              candidate = { point, order, pathCount: 0, visibleOrder: null, visiblePath: null, hits: null };
+              candidate = { point, order, firstPath: path, pathCount: 0, visibleOrder: null, visiblePath: null, hits: null };
               candidateMap.set(key, candidate);
+            } else if (order < candidate.order) {
+              candidate.order = order;
+              candidate.firstPath = path;
             }
-            candidate.order = Math.min(candidate.order, order);
             candidate.pathCount++;
             const hits = validateMirrorPath(person, person, path, mirrors);
             if (hits && (candidate.visibleOrder === null || order < candidate.visibleOrder)) {
@@ -4128,10 +4438,12 @@
         .sort((a, b) => (b.visibleOrder ?? b.order) - (a.visibleOrder ?? a.order))
         .forEach(image => {
           const order = image.visibleOrder ?? image.order;
-          const color = image.visiblePath
-            ? (order === 1 ? css('--image') : css('--green'))
-            : css('--muted');
-          const label = $('tri-show-labels').checked ? `${order}` : '';
+          const color = $('tri-color-depth').checked
+            ? mirrorDepthColor(order)
+            : (image.visiblePath ? css('--image') : css('--muted'));
+          const path = image.visiblePath || [];
+          const pathText = path.length ? path.map(index => `M${index + 1}`).join('→') : '';
+          const label = $('tri-show-labels').checked ? `${order}次${pathText ? ` ${pathText}` : ''}` : '';
           drawPersonSymbol(ctx, image.screen, color, label, true, order);
         });
 
@@ -4145,6 +4457,18 @@
         const midpoint = { x: (mirror.a.x + mirror.b.x) / 2, y: (mirror.a.y + mirror.b.y) / 2 };
         ctx.fillText(`${w < 500 ? 'M' : '鏡'}${mirror.index + 1}`, midpoint.x, midpoint.y - 12);
       });
+      if ($('tri-color-depth').checked) {
+        const legendOrders = Math.min(maxOrder, 6);
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'middle';
+        ctx.font = `700 ${w < 500 ? 10 : 12}px "Microsoft JhengHei", Arial, sans-serif`;
+        for (let order = 1; order <= legendOrders; order += 1) {
+          const x = 24 + (order - 1) * (w < 500 ? 54 : 70);
+          ctx.fillStyle = mirrorDepthColor(order);
+          ctx.fillRect(x, h - 22, 12, 4);
+          ctx.fillText(`${order}次`, x + 16, h - 20);
+        }
+      }
       const offCanvasCount = selectedImages.length - selectedImages.filter(image => inCanvas(toScreen(image.point))).length;
       if (offCanvasCount > 0) {
         ctx.textAlign = 'right';
@@ -4340,6 +4664,356 @@
       }
     }
 
+    function pointAtY(a, b, y) {
+      const dy = b.y - a.y;
+      if (Math.abs(dy) < 1e-9) return { x: b.x, y };
+      const t = (y - a.y) / dy;
+      return { x: a.x + (b.x - a.x) * t, y };
+    }
+
+    function drawVerticalLens(ctx, axisX, y, width, label) {
+      const half = width / 2;
+      const thickness = Math.max(8, width * .16);
+      const glass = ctx.createLinearGradient(0, y - thickness, 0, y + thickness);
+      glass.addColorStop(0, 'rgba(125,211,252,.35)');
+      glass.addColorStop(.5, 'rgba(240,249,255,.9)');
+      glass.addColorStop(1, 'rgba(56,189,248,.32)');
+      ctx.save();
+      ctx.fillStyle = glass;
+      ctx.strokeStyle = '#0369a1';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(axisX - half, y);
+      ctx.quadraticCurveTo(axisX, y - thickness * 1.7, axisX + half, y);
+      ctx.quadraticCurveTo(axisX, y + thickness * 1.7, axisX - half, y);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = '#334155';
+      ctx.font = '700 12px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.textAlign = 'left';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(label, axisX + half + 10, y);
+      ctx.restore();
+    }
+
+    function drawCompactLens(ctx, x, y, height, type, label = '') {
+      const top = y - height / 2;
+      const bottom = y + height / 2;
+      const edge = type === 'convex' ? 5 : 16;
+      const middle = type === 'convex' ? 18 : 5;
+      ctx.save();
+      ctx.fillStyle = 'rgba(186,230,253,.55)';
+      ctx.strokeStyle = '#0369a1';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(x - edge, top);
+      ctx.quadraticCurveTo(x - middle, y, x - edge, bottom);
+      ctx.lineTo(x + edge, bottom);
+      ctx.quadraticCurveTo(x + middle, y, x + edge, top);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      if (label) {
+        ctx.fillStyle = '#334155';
+        ctx.font = '700 11px "Microsoft JhengHei", Arial, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(label, x, bottom + 16);
+      }
+      ctx.restore();
+    }
+
+    function drawSideArrow(ctx, axisX, y, width, color, label, dashed = false) {
+      const tipX = axisX + width;
+      const direction = width >= 0 ? 1 : -1;
+      ctx.save();
+      ctx.strokeStyle = color;
+      ctx.fillStyle = color;
+      ctx.lineWidth = 3;
+      if (dashed) ctx.setLineDash([6, 5]);
+      ctx.beginPath();
+      ctx.moveTo(axisX, y);
+      ctx.lineTo(tipX, y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.beginPath();
+      ctx.moveTo(tipX, y);
+      ctx.lineTo(tipX - direction * 10, y - 6);
+      ctx.lineTo(tipX - direction * 10, y + 6);
+      ctx.closePath();
+      dashed ? ctx.stroke() : ctx.fill();
+      ctx.font = '700 12px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.textAlign = width >= 0 ? 'left' : 'right';
+      ctx.textBaseline = 'bottom';
+      ctx.fillText(label, tipX + direction * 6, y - 7);
+      ctx.restore();
+    }
+
+    function drawMicroscopeVertical() {
+      const canvas = $('microscope-canvas');
+      const { ctx, w, h } = resizeCanvas(canvas);
+      clearCanvas(ctx, w, h);
+      const objectDistance = number('micro-do');
+      const objectiveF = number('micro-fo');
+      const tubeLength = number('micro-length');
+      const eyepieceF = number('micro-fe');
+      const imageDistance1 = opticalImageDistance(objectiveF, objectDistance);
+      const finiteFirst = Number.isFinite(imageDistance1) && Math.abs(imageDistance1) < 200;
+      const m1 = finiteFirst ? -imageDistance1 / objectDistance : NaN;
+      const eyeObjectDistance = finiteFirst ? tubeLength - imageDistance1 : NaN;
+      const validFirst = finiteFirst && imageDistance1 > 0 && eyeObjectDistance > 0;
+      const imageDistance2 = validFirst ? opticalImageDistance(eyepieceF, eyeObjectDistance) : NaN;
+      const finiteFinal = Number.isFinite(imageDistance2) && Math.abs(imageDistance2) < 300;
+      const m2 = finiteFinal ? -imageDistance2 / eyeObjectDistance : NaN;
+      const totalM = finiteFinal ? m1 * m2 : NaN;
+      const finalVirtual = finiteFinal && imageDistance2 < 0;
+
+      setText('micro-do-out', `${objectDistance.toFixed(1)} cm`);
+      setText('micro-fo-out', `${objectiveF.toFixed(1)} cm`);
+      setText('micro-length-out', `${tubeLength.toFixed(1)} cm`);
+      setText('micro-fe-out', `${eyepieceF.toFixed(1)} cm`);
+      $('micro-intermediate').innerHTML = finiteFirst
+        ? `中間像距 = ${imageDistance1.toFixed(1)} cm<small>${imageDistance1 > 0 ? '物鏡上方形成倒立實像' : '目前未形成標準實像'}</small>`
+        : '中間像在無限遠<small>標本太接近物鏡焦點</small>';
+      $('micro-eye-object').innerHTML = validFirst
+        ? `目鏡物距 = ${eyeObjectDistance.toFixed(1)} cm<small>${eyeObjectDistance < eyepieceF ? '中間像位於目鏡焦內' : '中間像位於目鏡焦外'}</small>`
+        : '目鏡無有效物體<small>先讓物鏡形成鏡筒內的實像</small>';
+      $('micro-final').innerHTML = finiteFinal
+        ? `最終${finalVirtual ? '虛像' : '實像'}距 = ${imageDistance2.toFixed(1)} cm<small>目鏡上方光線由眼睛接收</small>`
+        : '最終像未形成<small>目前不是標準顯微鏡配置</small>';
+      $('micro-mag').innerHTML = finiteFinal
+        ? `總放大率 = ${Math.abs(totalM).toFixed(1)}×<small>最終像相對原物${totalM < 0 ? '倒立' : '正立'}</small>`
+        : '總放大率無法計算<small>調整物距或鏡筒長度</small>';
+      ['micro-intermediate', 'micro-eye-object', 'micro-final', 'micro-mag'].forEach(id => $(id).classList.remove('warning'));
+      $('micro-intermediate').classList.toggle('warning', !finiteFirst || imageDistance1 <= 0);
+      $('micro-eye-object').classList.toggle('warning', !validFirst);
+      $('micro-final').classList.toggle('warning', !finiteFinal || !finalVirtual);
+      $('micro-mag').classList.toggle('warning', !finiteFinal);
+
+      const compact = w < 620;
+      const axisX = w * (compact ? .47 : .52);
+      const eyepieceY = h * .22;
+      const objectiveY = h * .66;
+      const scale = (objectiveY - eyepieceY) / tubeLength;
+      const objectY = objectiveY + objectDistance * scale;
+      const intermediateY = finiteFirst ? objectiveY - imageDistance1 * scale : null;
+      const finalPhysicalY = finiteFinal ? eyepieceY - imageDistance2 * scale : null;
+      const finalY = finiteFinal ? Math.max(52, Math.min(h - 42, finalPhysicalY)) : null;
+      const objectWidth = compact ? 22 : 28;
+      const intermediateWidth = finiteFirst ? Math.max(-90, Math.min(90, m1 * objectWidth)) : 0;
+      const finalWidth = finiteFinal ? Math.max(-150, Math.min(150, totalM * objectWidth)) : 0;
+      const objectTip = { x: axisX + objectWidth, y: objectY };
+      const intermediateTip = finiteFirst ? { x: axisX + intermediateWidth, y: intermediateY } : null;
+
+      ctx.save();
+      ctx.fillStyle = 'rgba(15,23,42,.035)';
+      ctx.beginPath();
+      ctx.roundRect(axisX - (compact ? 54 : 72), eyepieceY - 18, compact ? 108 : 144, objectiveY - eyepieceY + 40, 18);
+      ctx.fill();
+      ctx.strokeStyle = '#475569';
+      ctx.lineWidth = compact ? 7 : 10;
+      ctx.stroke();
+      ctx.strokeStyle = '#94a3b8';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([6, 6]);
+      ctx.beginPath();
+      ctx.moveTo(axisX, 30);
+      ctx.lineTo(axisX, h - 28);
+      ctx.stroke();
+      ctx.restore();
+
+      const stageY = Math.min(h - 44, objectY + 22);
+      ctx.save();
+      ctx.fillStyle = '#64748b';
+      ctx.fillRect(axisX - (compact ? 92 : 140), stageY, compact ? 184 : 280, 9);
+      ctx.fillStyle = '#bae6fd';
+      ctx.fillRect(axisX - 42, stageY - 5, 84, 5);
+      ctx.fillStyle = '#0f172a';
+      ctx.font = '700 12px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.textAlign = 'right';
+      ctx.fillText('載物台與玻片', axisX - (compact ? 98 : 146), stageY + 6);
+      ctx.restore();
+
+      if (validFirst && $('micro-show-objective').checked) {
+        const p1 = { x: objectTip.x, y: objectiveY };
+        const p2 = { x: axisX, y: objectiveY };
+        drawRay(ctx, objectTip, p1, css('--blue'), 2.1);
+        drawRay(ctx, objectTip, p2, css('--blue'), 2.1);
+        drawRay(ctx, p1, intermediateTip, css('--green'), 2.5);
+        drawRay(ctx, p2, intermediateTip, css('--green'), 2.5);
+      }
+
+      if (validFirst && finiteFinal && $('micro-show-eyepiece').checked) {
+        const p1 = { x: intermediateTip.x, y: eyepieceY };
+        const p2 = { x: axisX, y: eyepieceY };
+        drawRay(ctx, intermediateTip, p1, css('--green'), 2.1);
+        drawRay(ctx, intermediateTip, p2, css('--green'), 2.1);
+        const finalTip = { x: axisX + finalWidth, y: finalY };
+        const endY = 34;
+        drawRay(ctx, p1, pointAtY(finalTip, p1, endY), css('--image'), 2.5);
+        drawRay(ctx, p2, pointAtY(finalTip, p2, endY), css('--image'), 2.5);
+        if (finalVirtual && $('micro-show-extensions').checked) {
+          strokeSegment(ctx, p1, finalTip, css('--red'), 1.7, [7, 7], .68);
+          strokeSegment(ctx, p2, finalTip, css('--red'), 1.7, [7, 7], .68);
+        }
+        drawSideArrow(ctx, axisX, finalY, finalWidth, css('--image'), finalVirtual ? '最終虛像' : '最終實像', finalVirtual);
+      }
+
+      drawVerticalLens(ctx, axisX, objectiveY, compact ? 92 : 126, '物鏡');
+      drawVerticalLens(ctx, axisX, eyepieceY, compact ? 116 : 154, '目鏡');
+      drawSideArrow(ctx, axisX, objectY, objectWidth, css('--orange'), '');
+      drawSceneLabel(ctx, axisX - 12, objectY + 14, '微小標本', 'right');
+      if (validFirst && intermediateY > eyepieceY + 16 && intermediateY < objectiveY - 16) {
+        drawSideArrow(ctx, axisX, intermediateY, intermediateWidth, css('--green'), '倒立中間實像');
+      }
+
+      ctx.save();
+      ctx.strokeStyle = '#334155';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.ellipse(axisX, 22, 34, 16, 0, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.fillStyle = '#0f172a';
+      ctx.beginPath();
+      ctx.arc(axisX, 24, 5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+      drawSceneLabel(ctx, axisX + 46, 16, '觀察眼');
+      drawSceneLabel(ctx, 20, 20, '光由標本向上傳播，依序通過物鏡與目鏡');
+    }
+
+    function drawEye() {
+      const canvas = $('eye-canvas');
+      const { ctx, w, h } = resizeCanvas(canvas);
+      clearCanvas(ctx, w, h);
+      const objectDistance = number('eye-object-distance');
+      const accommodation = number('eye-accommodation');
+      const condition = $('eye-condition').value;
+      const correction = $('eye-correction').value;
+      const axis = h * .53;
+      const corneaX = w * .47;
+      const lensX = w * .60;
+      const normalRetinaDistance = 1.72;
+      const retinaDistance = condition === 'myopia' ? 1.88 : (condition === 'hyperopia' ? 1.56 : normalRetinaDistance);
+      let focal = 2.02 - accommodation * .006;
+      if (correction === 'concave') focal += .11;
+      if (correction === 'convex') focal -= .11;
+      const imageDistance = 1 / (1 / focal - 1 / objectDistance);
+      const focusError = imageDistance - retinaDistance;
+      const stateName = condition === 'myopia' ? '近視眼' : (condition === 'hyperopia' ? '遠視眼' : '正視眼');
+      const conditionText = condition === 'myopia' ? '眼軸偏長，未矯正時焦點常落在視網膜前' : (condition === 'hyperopia' ? '眼軸偏短，未調節時焦點常落在視網膜後' : '眼軸長度正常');
+
+      setText('eye-object-distance-out', `${objectDistance.toFixed(0)} cm`);
+      setText('eye-accommodation-out', `${accommodation.toFixed(0)}%`);
+      $('eye-object-badge').innerHTML = `物距 = ${objectDistance.toFixed(0)} cm<small>${objectDistance > 100 ? '遠物入射光近似平行' : '近物入射光較發散'}</small>`;
+      $('eye-power-badge').innerHTML = `等效焦距 = ${focal.toFixed(2)} cm<small>調節越強，焦距越短、會聚力越大</small>`;
+      $('eye-focus-badge').classList.toggle('warning', Math.abs(focusError) > .055);
+      $('eye-focus-badge').innerHTML = Math.abs(focusError) <= .055
+        ? '焦點落在視網膜<small>形成清楚倒立實像</small>'
+        : `焦點落在視網膜${focusError < 0 ? '前' : '後'}<small>相差 ${Math.abs(focusError).toFixed(2)} cm，影像模糊</small>`;
+      $('eye-state-badge').innerHTML = `${stateName}<small>${conditionText}</small>`;
+
+      const eyeCenter = { x: w * .70, y: axis };
+      const eyeRx = Math.min(w * .25, 230);
+      const eyeRy = Math.min(h * .37, 150);
+      const retinaX = lensX + (retinaDistance / normalRetinaDistance) * (eyeCenter.x + eyeRx * .82 - lensX);
+      const focusX = lensX + (imageDistance / normalRetinaDistance) * (eyeCenter.x + eyeRx * .82 - lensX);
+      const objectX = Math.max(42, corneaX - w * .34);
+      const objectHeight = Math.min(84, h * .23);
+      const objectTip = { x: objectX, y: axis - objectHeight };
+      const focus = { x: focusX, y: axis + objectHeight * .23 };
+
+      ctx.save();
+      const vitreous = ctx.createRadialGradient(eyeCenter.x - 30, axis - 30, 20, eyeCenter.x, axis, eyeRx);
+      vitreous.addColorStop(0, 'rgba(240,249,255,.88)');
+      vitreous.addColorStop(1, 'rgba(186,230,253,.30)');
+      ctx.fillStyle = vitreous;
+      ctx.strokeStyle = '#475569';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.ellipse(eyeCenter.x, eyeCenter.y, eyeRx, eyeRy, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
+
+      ctx.save();
+      ctx.strokeStyle = '#0284c7';
+      ctx.lineWidth = 5;
+      ctx.beginPath();
+      ctx.arc(corneaX + 18, axis, eyeRy * .72, Math.PI * .56, Math.PI * 1.44);
+      ctx.stroke();
+      ctx.strokeStyle = '#0f766e';
+      ctx.lineWidth = 8;
+      ctx.beginPath();
+      ctx.moveTo(lensX - 38, axis - eyeRy * .45);
+      ctx.lineTo(lensX - 22, axis - 18);
+      ctx.moveTo(lensX - 38, axis + eyeRy * .45);
+      ctx.lineTo(lensX - 22, axis + 18);
+      ctx.stroke();
+      ctx.restore();
+      drawCompactLens(ctx, lensX, axis, eyeRy * 1.12, 'convex');
+
+      ctx.save();
+      ctx.strokeStyle = css('--red');
+      ctx.lineWidth = 5;
+      ctx.beginPath();
+      ctx.arc(eyeCenter.x, axis, eyeRx * .88, -Math.PI * .37, Math.PI * .37);
+      ctx.stroke();
+      ctx.strokeStyle = '#64748b';
+      ctx.lineWidth = 12;
+      ctx.beginPath();
+      ctx.moveTo(eyeCenter.x + eyeRx * .86, axis + 34);
+      ctx.lineTo(eyeCenter.x + eyeRx + 38, axis + 54);
+      ctx.stroke();
+      ctx.restore();
+
+      if (correction !== 'none') {
+        drawCompactLens(ctx, corneaX - 42, axis, eyeRy * 1.05, correction === 'concave' ? 'concave' : 'convex', '矯正鏡片');
+      }
+      ctx.save();
+      ctx.strokeStyle = css('--orange');
+      ctx.fillStyle = css('--orange');
+      ctx.lineWidth = 5;
+      ctx.beginPath();
+      ctx.moveTo(objectX, axis);
+      ctx.lineTo(objectTip.x, objectTip.y);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(objectTip.x, objectTip.y);
+      ctx.lineTo(objectTip.x - 7, objectTip.y + 14);
+      ctx.lineTo(objectTip.x + 7, objectTip.y + 14);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+      drawSceneLabel(ctx, objectX + 10, objectTip.y - 18, '物體');
+
+      const pupilPoints = [axis - 14, axis, axis + 14];
+      pupilPoints.forEach((pupilY, index) => {
+        const atLens = { x: lensX, y: pupilY + (index - 1) * 7 };
+        drawRay(ctx, objectTip, { x: corneaX, y: pupilY }, css('--blue'), 1.8);
+        drawRay(ctx, { x: corneaX, y: pupilY }, atLens, css('--blue'), 1.8);
+        drawRay(ctx, atLens, focus, css('--green'), 2.2);
+      });
+      ctx.save();
+      ctx.fillStyle = css('--red');
+      ctx.beginPath();
+      ctx.arc(focus.x, focus.y, 6, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+      if ($('eye-show-ideal').checked) {
+        strokeSegment(ctx, { x: retinaX, y: axis - 44 }, { x: retinaX, y: axis + 44 }, 'rgba(190,18,60,.7)', 1.4, [5, 5]);
+        drawSceneLabel(ctx, retinaX - 4, axis + 52, '視網膜位置', 'right');
+      }
+      if ($('eye-show-labels').checked) {
+        drawSceneLabel(ctx, corneaX - 2, axis - eyeRy - 18, '角膜');
+        drawSceneLabel(ctx, lensX - 20, axis - eyeRy * .58, '虹膜／瞳孔', 'right');
+        drawSceneLabel(ctx, lensX + 8, axis - eyeRy * .62, '晶狀體');
+        drawSceneLabel(ctx, eyeCenter.x + 22, axis - eyeRy * .58, '玻璃體');
+        drawSceneLabel(ctx, retinaX + 4, axis - eyeRy * .47, '視網膜');
+        drawSceneLabel(ctx, eyeCenter.x + eyeRx, axis + 70, '視神經');
+      }
+    }
+
     function drawLabeledArrow(ctx, from, to, color, label, width = 2.4) {
       drawArrow(ctx, from.x, from.y, to.x, to.y, color);
       ctx.save();
@@ -4381,12 +5055,16 @@
           : '往返途中<small>速度與加速度方向持續改變</small>';
 
       const compact = w < 680;
-      const circleCenter = { x: w * (compact ? 0.23 : 0.2), y: h * 0.49 };
-      const radius = Math.min(h * 0.3, w * (compact ? 0.18 : 0.14));
-      const projectionX = w * (compact ? 0.5 : 0.43);
-      const projectionY = h * 0.83;
-      const graphLeft = w * (compact ? 0.62 : 0.56);
-      const graphRight = w - 24;
+      const circleCenter = vertical
+        ? { x: w * (compact ? .23 : .2), y: h * .49 }
+        : { x: w * .5, y: h * .28 };
+      const radius = vertical
+        ? Math.min(h * .3, w * (compact ? .18 : .14))
+        : Math.min(h * .19, w * .2);
+      const projectionX = w * (compact ? .5 : .43);
+      const projectionY = circleCenter.y + radius + Math.max(38, h * .08);
+      const graphLeft = vertical ? w * (compact ? .62 : .56) : w * .08;
+      const graphRight = vertical ? w - 24 : w * .92;
       const point = {
         x: circleCenter.x + radius * Math.cos(theta),
         y: circleCenter.y - radius * Math.sin(theta)
@@ -4462,10 +5140,10 @@
         }, css('--purple'), 'aᶜ');
       }
 
-      const graphTop = 44;
+      const graphTop = vertical ? 44 : projectionY + 46;
       const graphBottom = h - 42;
       const graphMid = (graphTop + graphBottom) / 2;
-      const graphAmp = (graphBottom - graphTop) * 0.39;
+      const graphAmp = Math.max(18, (graphBottom - graphTop) * 0.36);
       ctx.save();
       ctx.strokeStyle = '#cbd5e1';
       ctx.lineWidth = 1.2;
@@ -4475,7 +5153,7 @@
       ctx.moveTo(graphLeft, graphMid);
       ctx.lineTo(graphRight, graphMid);
       ctx.stroke();
-      drawCenteredText(ctx, '投影位移－時間', (graphLeft + graphRight) / 2, 22, '#334155');
+      drawCenteredText(ctx, '投影位移－時間', (graphLeft + graphRight) / 2, vertical ? 22 : graphTop - 16, '#334155');
       drawCenteredText(ctx, '現在', graphRight - 8, graphBottom + 18, '#64748b');
       if ($('circ-show-trail').checked) {
         ctx.strokeStyle = css('--green');
@@ -4499,7 +5177,13 @@
       ctx.arc(graphRight, graphY, 6, 0, Math.PI * 2);
       ctx.fill();
       ctx.restore();
-      drawCenteredText(ctx, '同一相位 θ', (circleCenter.x + projectionX) / 2, h - 18, '#64748b');
+      drawCenteredText(
+        ctx,
+        '同一相位 θ',
+        vertical ? (circleCenter.x + projectionX) / 2 : circleCenter.x,
+        vertical ? h - 18 : projectionY + 30,
+        '#64748b'
+      );
     }
 
     function projectPrecessionPoint(point, origin, scale) {
@@ -4538,7 +5222,7 @@
       $('prec-omega').innerHTML = `進動角速度 Ω = ${precessionOmega.toFixed(2)} rad/s<small>Ω = mgr/L</small>`;
       $('prec-period').innerHTML = `進動週期 = ${precessionPeriod.toFixed(2)} s<small>轉得越快，進動越慢</small>`;
 
-      const origin = { x: w * (compact ? 0.5 : 0.48), y: h * (compact ? 0.76 : 0.74) };
+      const origin = { x: w * (compact ? 0.5 : 0.48), y: h * (compact ? 0.68 : 0.66) };
       const scale = Math.min(w * (compact ? 0.34 : 0.26), h * (compact ? 0.52 : 0.48));
       const n = {
         x: Math.sin(tilt) * Math.cos(phi),
@@ -4645,8 +5329,13 @@
           z: wheelCenter3.z
         };
         const torqueEnd = projectPrecessionPoint(torqueEnd3, origin, scale);
-        drawLabeledArrow(ctx, origin, lEnd, css('--blue'), 'L', 3);
-        drawLabeledArrow(ctx, wheelCenter, torqueEnd, css('--red'), compact ? 'τ' : 'τ = ΔL/Δt', 3);
+        drawLabeledArrow(ctx, origin, lEnd, css('--blue'), compact ? 'L' : 'L（沿轉軸）', 3);
+        drawLabeledArrow(ctx, wheelCenter, torqueEnd, css('--red'), 'τ', 3);
+        const deltaEnd = {
+          x: lEnd.x + (torqueEnd.x - wheelCenter.x) * .30,
+          y: lEnd.y + (torqueEnd.y - wheelCenter.y) * .30
+        };
+        drawLabeledArrow(ctx, lEnd, deltaEnd, css('--green'), 'ΔL', 3);
         drawLabeledArrow(ctx, wheelCenter, {
           x: wheelCenter.x,
           y: wheelCenter.y + (compact ? 72 : 62)
@@ -4655,6 +5344,29 @@
 
       drawCenteredText(ctx, `自轉 ${rpm.toFixed(0)} rpm`, w * 0.18, 36, '#334155', compact ? 11 : 14);
       drawCenteredText(ctx, `進動 Ω = ${precessionOmega.toFixed(2)} rad/s`, w * 0.78, 36, '#334155', compact ? 11 : 14);
+      const steps = compact
+        ? ['① L 沿軸', '② 重力產生 τ', '③ L 轉向＝進動']
+        : ['① 高速自轉產生角動量 L', '② 重力與力臂產生外力矩 τ', '③ 每一小段 ΔL 讓轉軸沿圓錐進動'];
+      const gap = 8;
+      const boxW = (w - 32 - gap * 2) / 3;
+      const boxY = h - 48;
+      steps.forEach((text, index) => {
+        const x = 16 + index * (boxW + gap);
+        ctx.save();
+        ctx.fillStyle = index === 0 ? 'rgba(37,99,235,.09)' : (index === 1 ? 'rgba(190,18,60,.08)' : 'rgba(21,128,61,.09)');
+        ctx.strokeStyle = index === 0 ? 'rgba(37,99,235,.35)' : (index === 1 ? 'rgba(190,18,60,.32)' : 'rgba(21,128,61,.35)');
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.roundRect(x, boxY, boxW, 34, 6);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = '#334155';
+        ctx.font = `700 ${compact ? 10 : 12}px "Microsoft JhengHei", Arial, sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(text, x + boxW / 2, boxY + 17);
+        ctx.restore();
+      });
     }
 
     function drawPulleyWheel(ctx, x, y, radius, fixed = false) {
@@ -4871,10 +5583,225 @@
       }
     }
 
+    function appendArcPoints(points, cx, cy, radius, start, end, steps = 14) {
+      for (let index = 1; index <= steps; index += 1) {
+        const angle = start + (end - start) * index / steps;
+        points.push({ x: cx + radius * Math.cos(angle), y: cy + radius * Math.sin(angle) });
+      }
+    }
+
+    function drawFlowAlongPolyline(ctx, points, phase, color = '#93c5fd') {
+      const lengths = [];
+      let total = 0;
+      for (let index = 1; index < points.length; index += 1) {
+        const length = Math.hypot(points[index].x - points[index - 1].x, points[index].y - points[index - 1].y);
+        lengths.push(length);
+        total += length;
+      }
+      if (total < 1) return;
+      ctx.save();
+      ctx.fillStyle = color;
+      for (let distance = positiveModulo(phase, 34); distance < total; distance += 34) {
+        let remaining = distance;
+        let segment = 0;
+        while (segment < lengths.length - 1 && remaining > lengths[segment]) {
+          remaining -= lengths[segment];
+          segment += 1;
+        }
+        const fraction = lengths[segment] ? remaining / lengths[segment] : 0;
+        const a = points[segment];
+        const b = points[segment + 1];
+        const x = a.x + (b.x - a.x) * fraction;
+        const y = a.y + (b.y - a.y) * fraction;
+        ctx.beginPath();
+        ctx.arc(x, y, 3.2, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    function drawPulleyPhysical() {
+      const canvas = $('pulley-canvas');
+      const { ctx, w, h } = resizeCanvas(canvas);
+      clearCanvas(ctx, w, h);
+      const strands = Number($('pulley-mode').value);
+      const mass = number('pulley-mass');
+      const pullSpeed = number('pulley-pull-speed');
+      const targetHeight = number('pulley-height');
+      const force = mass * 9.8 / strands;
+      const pullDistance = strands * targetHeight;
+      const completionTime = pullDistance / pullSpeed;
+      const cycleTime = completionTime + 1.2;
+      const localTime = time % cycleTime;
+      const pulled = Math.min(pullDistance, pullSpeed * localTime);
+      const rise = pulled / strands;
+      const compact = w < 680;
+
+      setText('pulley-mass-out', `${mass.toFixed(0)} kg`);
+      setText('pulley-pull-speed-out', `${pullSpeed.toFixed(2)} m/s`);
+      setText('pulley-height-out', `${targetHeight.toFixed(2)} m`);
+      setText('pulley-speed-out', `${number('pulley-speed').toFixed(2)}x`);
+      $('pulley-strands').innerHTML = `支撐繩股 n = ${strands}<small>${strands === 1 ? '定滑輪只改變施力方向' : `動滑輪組由 ${strands} 股同張力繩索支撐`}</small>`;
+      $('pulley-force').innerHTML = `理想拉力 F = ${force.toFixed(1)} N<small>${strands}F = mg；忽略繩重與摩擦</small>`;
+      $('pulley-distance').innerHTML = `拉繩距離 s = ${pullDistance.toFixed(2)} m<small>負載上升 h = ${targetHeight.toFixed(2)} m；s = ${strands}h</small>`;
+      $('pulley-time').innerHTML = `完成時間 = ${completionTime.toFixed(2)} s<small>固定拉繩速度 ${pullSpeed.toFixed(2)} m/s</small>`;
+
+      const beamY = 48;
+      const topY = 96;
+      const lowerBaseY = h - 126;
+      const freeBaseY = topY + 52;
+      const availablePullPx = Math.max(70, h - freeBaseY - 62);
+      const pxPerMeter = Math.min(60, availablePullPx / Math.max(.5, pullDistance));
+      const lowerY = lowerBaseY - rise * pxPerMeter;
+      const freeY = freeBaseY + pulled * pxPerMeter;
+      const ropePoints = [];
+      let freeX;
+      let loadX;
+      let movingCenters = [];
+      let fixedCenters = [];
+
+      ctx.save();
+      ctx.strokeStyle = '#64748b';
+      ctx.lineWidth = 7;
+      ctx.beginPath();
+      ctx.moveTo(24, beamY);
+      ctx.lineTo(w * (compact ? .76 : .72), beamY);
+      ctx.stroke();
+      ctx.restore();
+
+      if (strands === 1) {
+        const radius = compact ? 27 : 33;
+        const pulleyX = w * (compact ? .38 : .43);
+        loadX = pulleyX - radius;
+        freeX = pulleyX + radius;
+        fixedCenters = [{ x: pulleyX, y: topY }];
+        ropePoints.push({ x: loadX, y: lowerY - 28 }, { x: loadX, y: topY });
+        appendArcPoints(ropePoints, pulleyX, topY, radius, Math.PI, Math.PI * 2);
+        ropePoints.push({ x: freeX, y: freeY });
+      } else {
+        const count = strands / 2;
+        const radius = compact ? 17 : 23;
+        const step = compact ? 40 : 58;
+        const totalWidth = (count * 2 - 1) * step + radius * 2;
+        const startX = Math.max(34 + radius, w * (compact ? .08 : .12));
+        const maxEnd = w * (compact ? .72 : .68);
+        const scaleStep = Math.min(step, (maxEnd - startX - radius) / Math.max(1, count * 2 - 1));
+        movingCenters = Array.from({ length: count }, (_, index) => ({ x: startX + index * 2 * scaleStep, y: lowerY }));
+        fixedCenters = Array.from({ length: count }, (_, index) => ({ x: startX + (index * 2 + 1) * scaleStep, y: topY }));
+        const anchorX = movingCenters[0].x - radius;
+        ropePoints.push({ x: anchorX, y: beamY + 2 }, { x: anchorX, y: lowerY });
+        for (let index = 0; index < count; index += 1) {
+          appendArcPoints(ropePoints, movingCenters[index].x, lowerY, radius, Math.PI, 0);
+          ropePoints.push({ x: fixedCenters[index].x - radius, y: topY });
+          appendArcPoints(ropePoints, fixedCenters[index].x, topY, radius, Math.PI, Math.PI * 2);
+          if (index < count - 1) {
+            ropePoints.push({ x: movingCenters[index + 1].x - radius, y: lowerY });
+          }
+        }
+        freeX = fixedCenters[fixedCenters.length - 1].x + radius;
+        ropePoints.push({ x: freeX, y: freeY });
+        loadX = (movingCenters[0].x + movingCenters[movingCenters.length - 1].x) / 2;
+        ctx.save();
+        ctx.fillStyle = '#475569';
+        ctx.fillRect(anchorX - 8, beamY - 5, 16, 10);
+        ctx.restore();
+      }
+
+      ctx.save();
+      ctx.strokeStyle = '#2563eb';
+      ctx.lineWidth = compact ? 3 : 4;
+      ctx.lineJoin = 'round';
+      ctx.lineCap = 'round';
+      ctx.beginPath();
+      ropePoints.forEach((point, index) => index === 0 ? ctx.moveTo(point.x, point.y) : ctx.lineTo(point.x, point.y));
+      ctx.stroke();
+      ctx.restore();
+      drawFlowAlongPolyline(ctx, ropePoints, time * pullSpeed * 90);
+
+      fixedCenters.forEach(center => drawPulleyWheel(ctx, center.x, center.y, strands === 1 ? (compact ? 27 : 33) : (compact ? 17 : 23), true));
+      movingCenters.forEach(center => drawPulleyWheel(ctx, center.x, center.y, compact ? 17 : 23, false));
+      if (movingCenters.length) {
+        ctx.save();
+        ctx.strokeStyle = '#475569';
+        ctx.lineWidth = 6;
+        ctx.beginPath();
+        ctx.moveTo(movingCenters[0].x - (compact ? 22 : 30), lowerY + (compact ? 24 : 31));
+        ctx.lineTo(movingCenters[movingCenters.length - 1].x + (compact ? 22 : 30), lowerY + (compact ? 24 : 31));
+        ctx.moveTo(loadX, lowerY + (compact ? 24 : 31));
+        ctx.lineTo(loadX, lowerY + 54);
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      const loadTop = strands === 1 ? lowerY - 28 : lowerY + 54;
+      ctx.save();
+      ctx.fillStyle = css('--orange');
+      ctx.fillRect(loadX - (compact ? 34 : 42), loadTop, compact ? 68 : 84, compact ? 42 : 50);
+      ctx.fillStyle = '#ffffff';
+      ctx.font = `700 ${compact ? 13 : 16}px "Microsoft JhengHei", Arial, sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.fillText(`${mass.toFixed(0)} kg`, loadX, loadTop + (compact ? 26 : 31));
+      ctx.restore();
+
+      ctx.save();
+      ctx.fillStyle = '#0f766e';
+      ctx.beginPath();
+      ctx.arc(freeX, freeY, 8, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#0f766e';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(freeX - 15, freeY + 14);
+      ctx.lineTo(freeX, freeY);
+      ctx.lineTo(freeX + 15, freeY + 14);
+      ctx.stroke();
+      ctx.restore();
+      drawSceneLabel(ctx, freeX, Math.min(h - 20, freeY + 24), `自由端已拉 ${pulled.toFixed(2)} m`, 'center');
+
+      if ($('pulley-show-segments').checked && strands > 1) {
+        const midY = (topY + lowerY) / 2;
+        drawSceneLabel(
+          ctx,
+          Math.max(18, movingCenters[0].x - (compact ? 12 : 18)),
+          midY,
+          compact ? `${strands} 股各縮短 ${rise.toFixed(1)} m` : `${strands} 股支撐繩各縮短 h = ${rise.toFixed(2)} m`
+        );
+      }
+
+      if ($('pulley-show-force').checked) {
+        drawLabeledArrow(ctx, { x: freeX + 20, y: Math.max(topY + 30, freeY - 65) }, { x: freeX + 20, y: Math.max(topY + 65, freeY - 18) }, css('--blue'), `F=${force.toFixed(0)}N`);
+        drawLabeledArrow(ctx, { x: loadX - 50, y: loadTop + 4 }, { x: loadX - 50, y: loadTop + 46 }, css('--red'), `mg=${(mass * 9.8).toFixed(0)}N`);
+      }
+
+      if ($('pulley-show-rulers').checked) {
+        const panelX = w * (compact ? .80 : .83);
+        const panelW = w - panelX - 14;
+        ctx.save();
+        ctx.fillStyle = 'rgba(248,250,252,.96)';
+        ctx.strokeStyle = '#cbd5e1';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.roundRect(panelX, 72, panelW, h - 100, 7);
+        ctx.fill();
+        ctx.stroke();
+        ctx.restore();
+        drawCenteredText(ctx, '繩長守恆', panelX + panelW / 2, 96, '#334155', compact ? 10 : 14);
+        drawCenteredText(ctx, `自由端 s`, panelX + panelW / 2, 132, css('--blue'), compact ? 10 : 13);
+        drawCenteredText(ctx, `${pulled.toFixed(2)} m`, panelX + panelW / 2, 154, css('--blue'), compact ? 12 : 18);
+        drawCenteredText(ctx, `負載 h`, panelX + panelW / 2, 198, css('--green'), compact ? 10 : 13);
+        drawCenteredText(ctx, `${rise.toFixed(2)} m`, panelX + panelW / 2, 220, css('--green'), compact ? 12 : 18);
+        drawCenteredText(ctx, `s = ${strands}h`, panelX + panelW / 2, 270, '#475569', compact ? 11 : 16);
+        drawCenteredText(ctx, `${strands} 股各縮短 h`, panelX + panelW / 2, 296, '#64748b', compact ? 9 : 12);
+      }
+      drawSceneLabel(ctx, 18, 18, '藍色線是一條連續且不可伸長的繩；亮點沿同一條繩移動');
+    }
+
     const retroPlanets = {
-      mars: { name: '火星', period: 1.8808, radius: 1.524, color: '#be123c' },
-      jupiter: { name: '木星', period: 11.862, radius: 5.203, color: '#be123c' },
-      saturn: { name: '土星', period: 29.457, radius: 9.537, color: '#be123c' }
+      mercury: { name: '水星', period: .2408, radius: .387, color: '#be123c', type: 'inner' },
+      venus: { name: '金星', period: .6152, radius: .723, color: '#be123c', type: 'inner' },
+      mars: { name: '火星', period: 1.8808, radius: 1.524, color: '#be123c', type: 'outer' },
+      jupiter: { name: '木星', period: 11.862, radius: 5.203, color: '#be123c', type: 'outer' },
+      saturn: { name: '土星', period: 29.457, radius: 9.537, color: '#be123c', type: 'outer' }
     };
 
     function retroState(planet, years, phase) {
@@ -4928,19 +5855,20 @@
       setText('retro-phase-out', `${phaseDeg.toFixed(0)}°`);
       setText('retro-history-out', `${history.toFixed(2)} 年`);
       setText('retro-speed-out', `${number('retro-speed').toFixed(2)}x`);
-      $('retro-planet-badge').innerHTML = `觀測${planet.name}<small>外行星公轉週期 ${planet.period.toFixed(2)} 年</small>`;
+      const innerPlanet = planet.type === 'inner';
+      $('retro-planet-badge').innerHTML = `觀測${planet.name}<small>${innerPlanet ? '內' : '外'}行星公轉週期 ${planet.period.toFixed(2)} 年</small>`;
       $('retro-motion').classList.toggle('warning', retrograde);
       $('retro-motion').innerHTML = retrograde
         ? '目前：逆行<small>視黃經正在減少</small>'
         : '目前：順行<small>視黃經正在增加</small>';
       $('retro-angle').innerHTML = `地球視方向 = ${angleDeg.toFixed(1)}°<small>兩種模型完全相同</small>`;
-      $('retro-model').innerHTML = `2 個日心圓 ↔ 均輪＋本輪<small>簡化等速圓模型；軌道半徑依比例</small>`;
+      $('retro-model').innerHTML = `2 個日心圓 ↔ 均輪＋本輪<small>${innerPlanet ? '內合附近，行星追越地球視線' : '衝附近，地球追越外行星'}</small>`;
 
       const topBottom = h * 0.67;
       const leftCenter = { x: w * 0.25, y: topBottom * 0.52 };
       const rightCenter = { x: w * 0.75, y: topBottom * 0.52 };
       const halfWidth = w * 0.45;
-      const leftScale = Math.min(halfWidth * 0.38, topBottom * 0.37) / planet.radius;
+      const leftScale = Math.min(halfWidth * 0.38, topBottom * 0.37) / Math.max(1, planet.radius);
       const rightScale = Math.min(halfWidth * 0.39, topBottom * 0.38) / (planet.radius + 1);
       const leftMap = point => ({ x: leftCenter.x + point.x * leftScale, y: leftCenter.y - point.y * leftScale });
       const rightMap = point => ({ x: rightCenter.x + point.x * rightScale, y: rightCenter.y - point.y * rightScale });
@@ -4953,7 +5881,7 @@
       ctx.lineTo(w / 2, topBottom - 6);
       ctx.stroke();
       ctx.restore();
-      drawCenteredText(ctx, compact ? '日心：地球追越' : '日心模型：地球追越外行星', leftCenter.x, 24, '#1f2933', compact ? 11 : 14);
+      drawCenteredText(ctx, compact ? (innerPlanet ? '日心：內合追越' : '日心：地球追越') : (innerPlanet ? `日心模型：${planet.name}在內合附近追越視線` : '日心模型：地球追越外行星'), leftCenter.x, 24, '#1f2933', compact ? 11 : 14);
       drawCenteredText(ctx, compact ? '地心：均輪＋本輪' : '地心模型：均輪＋本輪', rightCenter.x, 24, '#1f2933', compact ? 11 : 14);
 
       if ($('retro-show-orbits').checked) {
@@ -4983,6 +5911,23 @@
       drawCenteredText(ctx, planet.name, planetPoint.x + (compact ? 14 : 0), planetPoint.y + 20, planet.color, compact ? 11 : 14);
       if ($('retro-show-sight').checked) {
         drawLabeledArrow(ctx, earthPoint, planetPoint, css('--green'), compact ? '' : '地球視線');
+      }
+
+      if ($('retro-show-trail').checked) {
+        ctx.save();
+        ctx.lineWidth = 2.4;
+        [['earth', 'rgba(37,99,235,.58)'], ['outer', 'rgba(190,18,60,.62)']].forEach(([key, color]) => {
+          ctx.strokeStyle = color;
+          ctx.beginPath();
+          for (let index = 0; index <= 100; index += 1) {
+            const sample = retroState(planet, years - history + history * index / 100, phase);
+            const point = leftMap(sample[key]);
+            if (index === 0) ctx.moveTo(point.x, point.y);
+            else ctx.lineTo(point.x, point.y);
+          }
+          ctx.stroke();
+        });
+        ctx.restore();
       }
 
       const deferentCenter = rightMap(state.outer);
@@ -5061,6 +6006,16 @@
       ctx.lineTo(graphRight, graphBottom);
       ctx.stroke();
       for (let i = 1; i < samples.length; i += 1) {
+        if (samples[i].retro) {
+          ctx.save();
+          ctx.strokeStyle = 'rgba(190,18,60,.13)';
+          ctx.lineWidth = 10;
+          ctx.beginPath();
+          ctx.moveTo(graphLeft + (i - 1) / 180 * (graphRight - graphLeft), graphY(samples[i - 1].value));
+          ctx.lineTo(graphLeft + i / 180 * (graphRight - graphLeft), graphY(samples[i].value));
+          ctx.stroke();
+          ctx.restore();
+        }
         ctx.strokeStyle = samples[i].retro ? css('--red') : css('--green');
         ctx.lineWidth = 3;
         ctx.beginPath();
@@ -5068,8 +6023,23 @@
         ctx.lineTo(graphLeft + i / 180 * (graphRight - graphLeft), graphY(samples[i].value));
         ctx.stroke();
       }
+      for (let i = 12; i < samples.length; i += 18) {
+        const x = graphLeft + i / 180 * (graphRight - graphLeft);
+        const y = graphY(samples[i].value);
+        const previousY = graphY(samples[i - 2].value);
+        ctx.fillStyle = samples[i].retro ? css('--red') : css('--green');
+        ctx.beginPath();
+        ctx.arc(x, y, 4.5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(x + 8, y);
+        ctx.lineTo(x + 1, y + (y > previousY ? -5 : 5));
+        ctx.lineTo(x + 1, y + (y > previousY ? 5 : -5));
+        ctx.closePath();
+        ctx.fill();
+      }
       ctx.restore();
-      drawCenteredText(ctx, '地球天空中的視位置（綠：順行；紅：逆行）', w / 2, graphTop - 22, '#334155');
+      drawCenteredText(ctx, `地球天空中的${planet.name}位置（綠：順行；紅色粗段：逆行）`, w / 2, graphTop - 22, '#334155');
       drawCenteredText(ctx, `過去 ${history.toFixed(2)} 年`, graphLeft + 42, graphBottom + 18, '#64748b');
       drawCenteredText(ctx, '現在', graphRight - 12, graphBottom + 18, '#64748b');
     }
@@ -5079,11 +6049,12 @@
       else if (activeModule === 'doppler') drawDoppler();
       else if (activeModule === 'ripple') drawRipple();
       else if (activeModule === 'double') drawDoubleSlit();
+      else if (activeModule === 'single') drawSingleSlit();
       else if (activeModule === 'huygens') drawHuygens();
       else if (activeModule === 'mechanics') {
         if (activeMechanics === 'circular') drawCircularProjection();
         else if (activeMechanics === 'precession') drawPrecession();
-        else drawPulley();
+        else drawPulleyPhysical();
       }
       else if (activeModule === 'retrograde') drawRetrograde();
       else if (activeModule === 'optics') {
@@ -5091,7 +6062,8 @@
         else if (activeOptics === 'lens') drawLens();
         else if (activeOptics === 'reflection') drawReflection();
         else if (activeOptics === 'trifold') drawTrifoldMirrors();
-        else drawMicroscope();
+        else if (activeOptics === 'microscope') drawMicroscopeVertical();
+        else drawEye();
       }
     }
 
@@ -5247,6 +6219,46 @@
 
     $('mirror-canvas').addEventListener('pointercancel', () => {
       draggingMirrorRay = false;
+    });
+
+    let reflectionPointer = null;
+    $('reflection-canvas').addEventListener('pointerdown', event => {
+      if (activeModule !== 'optics' || activeOptics !== 'reflection') return;
+      draggingReflection = true;
+      reflectionPointer = { x: event.clientX, y: event.clientY };
+      event.currentTarget.classList.add('dragging');
+      event.currentTarget.setPointerCapture(event.pointerId);
+    });
+    $('reflection-canvas').addEventListener('pointermove', event => {
+      if (!draggingReflection || !reflectionPointer) return;
+      reflectionOffset.x += event.clientX - reflectionPointer.x;
+      reflectionOffset.y += event.clientY - reflectionPointer.y;
+      reflectionPointer = { x: event.clientX, y: event.clientY };
+      drawActive();
+    });
+    function finishReflectionDrag(event) {
+      draggingReflection = false;
+      reflectionPointer = null;
+      $('reflection-canvas').classList.remove('dragging');
+      if (event && event.currentTarget.hasPointerCapture(event.pointerId)) {
+        event.currentTarget.releasePointerCapture(event.pointerId);
+      }
+    }
+    $('reflection-canvas').addEventListener('pointerup', finishReflectionDrag);
+    $('reflection-canvas').addEventListener('pointercancel', finishReflectionDrag);
+    $('reflection-reset-position').addEventListener('click', () => {
+      reflectionOffset.x = 0;
+      reflectionOffset.y = 0;
+      drawActive();
+    });
+
+    $('retro-planet').addEventListener('change', () => {
+      const planet = retroPlanets[$('retro-planet').value];
+      $('retro-phase').value = '0';
+      $('retro-history').value = planet.type === 'inner' ? (planet.name === '水星' ? '.30' : '.55') : '.80';
+      time = 0;
+      last = performance.now();
+      drawActive();
     });
 
     $('global-play').addEventListener('click', () => {
