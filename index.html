@@ -174,15 +174,16 @@
       gap: 6px;
       margin: 0 0 14px;
     }
-    button.brake-layer, button.motor-layer {
+    button.brake-layer, button.motor-layer, button.scatter-scene {
       background: #e2e8f0;
       color: var(--ink);
       padding: 8px 12px;
     }
-    button.brake-layer.active, button.motor-layer.active {
+    button.brake-layer.active, button.motor-layer.active, button.scatter-scene.active {
       background: #334155;
       color: #ffffff;
     }
+    .control.is-muted { opacity: .46; }
     .law-chain {
       display: grid;
       grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -309,12 +310,13 @@
       height: min(68vh, 580px);
       min-height: 460px;
     }
-    #refraction-canvas, #scattering-canvas {
+    #refraction-canvas {
       height: min(68vh, 590px);
       min-height: 470px;
     }
-    #brake-canvas { height: min(78vh, 700px); min-height: 590px; }
-    #motor-canvas { height: min(72vh, 640px); min-height: 540px; }
+    #scattering-canvas { height: min(76vh, 680px); min-height: 560px; }
+    #brake-canvas { height: min(84vh, 780px); min-height: 680px; }
+    #motor-canvas { height: min(80vh, 720px); min-height: 620px; }
     .controls {
       margin-top: 16px;
       display: grid;
@@ -432,9 +434,10 @@
       canvas { height: 330px; min-height: 280px; }
       #mirror-canvas.parallel-expanded { height: 410px; min-height: 380px; }
       #microscope-canvas, #eye-canvas, #circular-canvas, #precession-canvas { height: 470px; min-height: 430px; }
-      #refraction-canvas, #scattering-canvas { height: 500px; min-height: 440px; }
-      #brake-canvas { height: 690px; min-height: 650px; }
-      #motor-canvas { height: 590px; min-height: 550px; }
+      #refraction-canvas { height: 500px; min-height: 440px; }
+      #scattering-canvas { height: 680px; min-height: 620px; }
+      #brake-canvas { height: 860px; min-height: 810px; }
+      #motor-canvas { height: 720px; min-height: 680px; }
       button.optics-mode, button.topic-mode { min-width: 112px; flex: 1 1 112px; }
       button.light-mode, button.em-mode { min-width: 132px; flex: 1 1 132px; }
       #retrograde-canvas { height: 520px; min-height: 480px; }
@@ -1385,7 +1388,7 @@
       <section id="panel-light" class="panel" role="tabpanel">
         <div class="phenomenon-switch" role="group" aria-label="光的傳播主題">
           <button type="button" class="light-mode active" data-light="refraction" aria-pressed="true">折射與全反射</button>
-          <button type="button" class="light-mode" data-light="scattering" aria-pressed="false">大氣散射</button>
+          <button type="button" class="light-mode" data-light="scattering" aria-pressed="false">大氣光學</button>
         </div>
 
         <div id="light-view-refraction" class="light-view active">
@@ -1449,8 +1452,8 @@
         <div id="light-view-scattering" class="light-view">
           <div class="module-head">
             <div>
-              <h2>大氣散射：藍天與紅色夕陽</h2>
-              <p class="module-copy">讓紅、綠、藍光包沿同一路徑穿過大氣。小分子對短波長散射較強，所以側看天空偏藍；太陽接近地平線時路徑變長，直達眼睛的光則偏紅。</p>
+              <h2>大氣光學：散射、折射與星光閃爍</h2>
+              <p class="module-copy">白天模式比較不同波長如何被大氣散射；星光模式則把平均折射偏移與湍流造成的快速光束漂移分開呈現。</p>
             </div>
             <div class="legend" aria-label="散射圖例">
               <span class="blue"><i class="dot"></i>短波藍光</span>
@@ -1464,15 +1467,19 @@
             <div class="badge" id="scatter-direct">直達光：近白色<small>藍光尚未大量離開光束</small></div>
             <div class="badge" id="scatter-status">晴朗天空<small>分子尺度遠小於可見光波長</small></div>
           </div>
+          <div class="lesson-steps" role="group" aria-label="大氣光學觀察場景">
+            <button type="button" class="scatter-scene active" data-scatter-scene="daylight" aria-pressed="true">日光散射</button>
+            <button type="button" class="scatter-scene" data-scatter-scene="star" aria-pressed="false">星光折射與閃爍</button>
+          </div>
           <div class="plot-wrap">
-            <canvas id="scattering-canvas" role="img" aria-label="太陽光穿越大氣時，不同波長散射與直達觀察者的動態示意。"></canvas>
+            <canvas id="scattering-canvas" role="img" aria-label="日光散射，以及星光穿過分層與擾動大氣後產生視位置偏移與閃爍的動態示意。"></canvas>
           </div>
           <div class="controls">
             <div class="control">
-              <label for="scatter-elevation">太陽仰角：<span id="scatter-elevation-out">55°</span></label>
+              <label for="scatter-elevation">光源真實仰角：<span id="scatter-elevation-out">55°</span></label>
               <input id="scatter-elevation" type="range" min="2" max="80" step="1" value="55">
             </div>
-            <div class="control">
+            <div class="control" id="scatter-type-control">
               <label for="scatter-density">大氣密度：<span id="scatter-density-out">1.00x</span></label>
               <input id="scatter-density" type="range" min="0.4" max="2" step="0.05" value="1">
             </div>
@@ -1487,20 +1494,27 @@
               <label for="scatter-speed">播放速度：<span id="scatter-speed-out">0.35x</span></label>
               <input id="scatter-speed" type="range" min="0.1" max="1.5" step="0.05" value="0.35">
             </div>
+            <div class="control">
+              <label for="scatter-turbulence">大氣擾動：<span id="scatter-turbulence-out">1.00x</span></label>
+              <input id="scatter-turbulence" type="range" min="0" max="2" step="0.05" value="1">
+            </div>
           </div>
           <div class="presets">
-            <button type="button" class="preset scatter-preset" data-elevation="65" data-density="1" data-type="rayleigh">正午藍天</button>
-            <button type="button" class="preset scatter-preset" data-elevation="6" data-density="1.2" data-type="rayleigh">紅色夕陽</button>
-            <button type="button" class="preset scatter-preset" data-elevation="25" data-density="1.5" data-type="mie">霧霾白光</button>
+            <button type="button" class="preset scatter-preset" data-scene="daylight" data-elevation="65" data-density="1" data-turbulence="0.4" data-type="rayleigh">正午藍天</button>
+            <button type="button" class="preset scatter-preset" data-scene="daylight" data-elevation="6" data-density="1.2" data-turbulence="0.7" data-type="rayleigh">紅色夕陽</button>
+            <button type="button" class="preset scatter-preset" data-scene="daylight" data-elevation="25" data-density="1.5" data-turbulence="0.8" data-type="mie">霧霾白光</button>
+            <button type="button" class="preset scatter-preset" data-scene="star" data-elevation="8" data-density="1" data-turbulence="1.5" data-type="rayleigh">低空星光</button>
+            <button type="button" class="preset scatter-preset" data-scene="star" data-elevation="70" data-density="1" data-turbulence="0.5" data-type="rayleigh">高空星光</button>
           </div>
           <div class="checks">
             <label class="check"><input type="checkbox" id="scatter-show-packets" checked>顯示紅綠藍光包</label>
             <label class="check"><input type="checkbox" id="scatter-show-rays" checked>顯示散射到眼睛的路徑</label>
             <label class="check"><input type="checkbox" id="scatter-show-bars" checked>顯示波長比較</label>
+            <label class="check"><input type="checkbox" id="scatter-show-layers" checked>顯示大氣分層與擾動</label>
           </div>
           <section class="teacher-note">
-            <p><strong>講法：</strong>先用正午藍天看藍色光包較常離開直射光束，再把太陽拉低。路徑變長後，更多藍綠光被散到別處，抵達觀察者的直射光逐漸變橘紅。</p>
-            <p><strong>限制：</strong>為了讓課堂看得清楚，分子與散射事件被放大；顏色強弱仍依波長關係與目前大氣路徑計算。</p>
+            <p><strong>講法：</strong>日光模式先比較紅、綠、藍光離開直射光束的比例。星光模式先關閉擾動，只看大氣使星星的平均視位置升高；再增加擾動，觀察星點位置與進入望遠鏡的光量同時快速改變。</p>
+            <p><strong>限制：</strong>實際折射偏移只有角分量級、閃爍只有角秒量級；畫面將角度放大供課堂觀察，數值欄仍顯示未放大的物理量。</p>
           </section>
         </div>
       </section>
@@ -1731,6 +1745,7 @@
     let activeMechanics = 'circular';
     let activeAngular = 'gyro';
     let activeLight = 'refraction';
+    let activeScatterScene = 'daylight';
     let activeElectromagnetism = 'brake';
     let activeBrakeLayer = 'all';
     let activeMotorLayer = 'all';
@@ -7019,11 +7034,281 @@
       return `rgb(${Math.round(transmission.red * scale)},${Math.round(transmission.green * scale)},${Math.round(transmission.blue * scale)})`;
     }
 
+    function atmosphericRefractionArcmin(elevation, density) {
+      const safeElevation = Math.max(.5, elevation);
+      const corrected = safeElevation + 10.3 / (safeElevation + 5.11);
+      return density * 1.02 / Math.tan(corrected * Math.PI / 180);
+    }
+
+    function rayBoundaryPoint(observer, angle, rect) {
+      const cos = Math.max(.001, Math.cos(angle));
+      const sin = Math.max(.001, Math.sin(angle));
+      const toLeft = (observer.x - rect.x - 16) / cos;
+      const toTop = (observer.y - rect.y - 18) / sin;
+      const distance = Math.min(toLeft, toTop);
+      return { x: observer.x - cos * distance, y: observer.y - sin * distance };
+    }
+
+    function cubicPoint(p0, p1, p2, p3, t) {
+      const u = 1 - t;
+      return {
+        x: u * u * u * p0.x + 3 * u * u * t * p1.x + 3 * u * t * t * p2.x + t * t * t * p3.x,
+        y: u * u * u * p0.y + 3 * u * u * t * p1.y + 3 * u * t * t * p2.y + t * t * t * p3.y
+      };
+    }
+
+    function drawStarShape(ctx, x, y, outer, inner, color, alpha = 1) {
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.fillStyle = color;
+      ctx.globalAlpha = alpha;
+      ctx.shadowColor = color;
+      ctx.shadowBlur = outer * 1.8;
+      ctx.beginPath();
+      for (let i = 0; i < 10; i += 1) {
+        const radius = i % 2 === 0 ? outer : inner;
+        const angle = -Math.PI / 2 + i * Math.PI / 5;
+        const px = Math.cos(angle) * radius;
+        const py = Math.sin(angle) * radius;
+        if (i === 0) ctx.moveTo(px, py);
+        else ctx.lineTo(px, py);
+      }
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
+
+    function drawStarlightScintillation(ctx, w, h, elevation, density, turbulence) {
+      const compact = w < 720;
+      const refractionArcmin = atmosphericRefractionArcmin(elevation, density);
+      const pathLength = Math.min(8, 1 / (Math.sin(elevation * Math.PI / 180) + .055));
+      const jitterArcsec = turbulence * density * (.45 + pathLength * .42);
+      const flickerDepth = clampValue(turbulence * pathLength * .075, 0, .62);
+      const flicker = Math.sin(time * 7.1) * .58 + Math.sin(time * 12.7 + 1.4) * .27 + Math.sin(time * 19.3) * .15;
+      const brightness = clampValue(1 - flickerDepth * (.52 + .48 * flicker), .18, 1);
+      const jitterWave = turbulence * (Math.sin(time * 5.3) + .42 * Math.sin(time * 11.7 + .8));
+      const visualRefraction = clampValue(refractionArcmin * .72, .45, 9);
+      const visualJitter = jitterWave * clampValue(.35 + pathLength * .09, .4, 1.15);
+      const trueAngle = elevation * Math.PI / 180;
+      const apparentAngle = clampValue(elevation + visualRefraction + visualJitter, 3, 87) * Math.PI / 180;
+      const scene = compact
+        ? { x: 10, y: 10, w: w - 20, h: h * .62 }
+        : { x: 10, y: 10, w: w * .68 - 14, h: h - 20 };
+      const inset = compact
+        ? { x: 10, y: h * .65, w: w - 20, h: h * .35 - 10 }
+        : { x: w * .69, y: 10, w: w * .31 - 10, h: h - 20 };
+
+      const night = ctx.createLinearGradient(0, scene.y, 0, scene.y + scene.h);
+      night.addColorStop(0, '#030712');
+      night.addColorStop(.72, '#0b2741');
+      night.addColorStop(1, '#204968');
+      ctx.fillStyle = night;
+      ctx.fillRect(0, 0, w, h);
+      ctx.fillStyle = 'rgba(2,6,23,.88)';
+      ctx.strokeStyle = '#35546b';
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.roundRect(scene.x, scene.y, scene.w, scene.h, 8);
+      ctx.fill();
+      ctx.stroke();
+
+      const atmosphereTop = scene.y + 38;
+      const groundY = scene.y + scene.h * .86;
+      if ($('scatter-show-layers').checked) {
+        const layerCount = 6;
+        for (let layer = 0; layer < layerCount; layer += 1) {
+          const y0 = atmosphereTop + layer * (groundY - atmosphereTop) / layerCount;
+          const y1 = atmosphereTop + (layer + 1) * (groundY - atmosphereTop) / layerCount;
+          ctx.fillStyle = `rgba(56,189,248,${.025 + layer * .018 * density})`;
+          ctx.fillRect(scene.x + 1, y0, scene.w - 2, y1 - y0);
+          ctx.strokeStyle = `rgba(125,211,252,${.10 + layer * .025})`;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(scene.x + 8, y1);
+          for (let x = scene.x + 8; x <= scene.x + scene.w - 8; x += 18) {
+            ctx.lineTo(x, y1 + Math.sin(x * .025 + time * (1.1 + layer * .12)) * turbulence * 2.5);
+          }
+          ctx.stroke();
+        }
+        for (let i = 0; i < (compact ? 16 : 26); i += 1) {
+          const cellX = scene.x + 28 + ((i * 79 + time * (8 + i % 3)) % Math.max(40, scene.w - 56));
+          const cellY = atmosphereTop + 20 + ((i * 53 + i * i * 3) % Math.max(40, groundY - atmosphereTop - 38));
+          const cellR = 8 + (i % 4) * 3;
+          ctx.strokeStyle = `rgba(147,197,253,${.12 + turbulence * .10})`;
+          ctx.beginPath();
+          ctx.ellipse(cellX, cellY, cellR * 1.7, cellR, -.28, 0, Math.PI * 2);
+          ctx.stroke();
+        }
+      }
+
+      ctx.fillStyle = '#111827';
+      ctx.fillRect(scene.x, groundY, scene.w, scene.y + scene.h - groundY);
+      ctx.strokeStyle = '#475569';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(scene.x, groundY);
+      ctx.lineTo(scene.x + scene.w, groundY);
+      ctx.stroke();
+
+      const observer = { x: scene.x + scene.w * .84, y: groundY - 16 };
+      const truePoint = rayBoundaryPoint(observer, trueAngle, { x: scene.x, y: atmosphereTop, w: scene.w, h: groundY - atmosphereTop });
+      const apparentPoint = rayBoundaryPoint(observer, apparentAngle, { x: scene.x, y: atmosphereTop, w: scene.w, h: groundY - atmosphereTop });
+      const rayDistance = Math.hypot(observer.x - truePoint.x, observer.y - truePoint.y);
+      const cp1 = {
+        x: truePoint.x + Math.cos(trueAngle) * rayDistance * .34,
+        y: truePoint.y + Math.sin(trueAngle) * rayDistance * .34
+      };
+      const cp2 = {
+        x: observer.x - Math.cos(apparentAngle) * rayDistance * .31,
+        y: observer.y - Math.sin(apparentAngle) * rayDistance * .31
+      };
+
+      ctx.save();
+      ctx.setLineDash([7, 6]);
+      ctx.strokeStyle = 'rgba(148,163,184,.72)';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(observer.x, observer.y);
+      ctx.lineTo(truePoint.x, truePoint.y);
+      ctx.stroke();
+      ctx.strokeStyle = '#c084fc';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(observer.x, observer.y);
+      ctx.lineTo(apparentPoint.x, apparentPoint.y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.restore();
+
+      if ($('scatter-show-rays').checked) {
+        [-1, 0, 1].forEach(bundle => {
+          const offset = bundle * (2 + turbulence * 1.7);
+          ctx.strokeStyle = bundle === 0 ? '#f8fafc' : 'rgba(125,211,252,.38)';
+          ctx.lineWidth = bundle === 0 ? 3 : 1.3;
+          ctx.shadowColor = '#93c5fd';
+          ctx.shadowBlur = bundle === 0 ? 8 : 0;
+          ctx.beginPath();
+          ctx.moveTo(truePoint.x, truePoint.y + offset);
+          ctx.bezierCurveTo(cp1.x, cp1.y + offset, cp2.x, cp2.y + offset * .35, observer.x, observer.y + offset * .18);
+          ctx.stroke();
+        });
+        ctx.shadowBlur = 0;
+      }
+
+      if ($('scatter-show-packets').checked) {
+        for (let i = 0; i < 11; i += 1) {
+          const phase = ((time * .22 + i / 11) % 1 + 1) % 1;
+          const photon = cubicPoint(truePoint, cp1, cp2, observer, phase);
+          ctx.fillStyle = '#ffffff';
+          ctx.shadowColor = '#93c5fd';
+          ctx.shadowBlur = 9;
+          ctx.beginPath();
+          ctx.arc(photon.x, photon.y, 2.3, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.shadowBlur = 0;
+      }
+
+      drawStarShape(ctx, truePoint.x, truePoint.y, 8, 3.4, '#f8fafc', .82);
+      drawStarShape(ctx, apparentPoint.x, apparentPoint.y, 7 + brightness * 3, 3, '#c084fc', .45 + brightness * .45);
+      drawSceneLabel(ctx, Math.max(scene.x + 8, truePoint.x + 10), Math.max(scene.y + 8, truePoint.y - 28), '真實方向');
+      drawSceneLabel(ctx, Math.max(scene.x + 8, apparentPoint.x + 10), Math.min(groundY - 42, apparentPoint.y + 10), '視位置較高');
+
+      ctx.save();
+      ctx.translate(observer.x, observer.y);
+      ctx.rotate(-apparentAngle);
+      ctx.fillStyle = '#94a3b8';
+      ctx.fillRect(-4, -12, 31, 24);
+      ctx.fillStyle = '#38bdf8';
+      ctx.fillRect(-8, -15, 7, 30);
+      ctx.fillStyle = '#334155';
+      ctx.fillRect(22, -7, 17, 14);
+      ctx.restore();
+      ctx.strokeStyle = '#64748b';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(observer.x + 12, observer.y + 12);
+      ctx.lineTo(observer.x + 3, groundY + 22);
+      ctx.moveTo(observer.x + 12, observer.y + 12);
+      ctx.lineTo(observer.x + 25, groundY + 22);
+      ctx.stroke();
+      drawSceneLabel(ctx, scene.x + 12, scene.y + 12, '折射：平均視位置偏高；擾動：位置與亮度快速變動');
+
+      ctx.fillStyle = '#07111f';
+      ctx.strokeStyle = '#35546b';
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.roundRect(inset.x, inset.y, inset.w, inset.h, 8);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = '#e2e8f0';
+      ctx.font = `800 ${compact ? 12 : 14}px "Microsoft JhengHei", Arial, sans-serif`;
+      ctx.fillText('望遠鏡視野：同一顆星的像', inset.x + 14, inset.y + 24);
+
+      const viewCenter = { x: inset.x + inset.w * .5, y: inset.y + inset.h * (compact ? .40 : .32) };
+      const viewRadius = Math.min(inset.w * .24, inset.h * (compact ? .22 : .16), 62);
+      ctx.strokeStyle = '#475569';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.arc(viewCenter.x, viewCenter.y, viewRadius, 0, Math.PI * 2);
+      ctx.moveTo(viewCenter.x - viewRadius, viewCenter.y);
+      ctx.lineTo(viewCenter.x + viewRadius, viewCenter.y);
+      ctx.moveTo(viewCenter.x, viewCenter.y - viewRadius);
+      ctx.lineTo(viewCenter.x, viewCenter.y + viewRadius);
+      ctx.stroke();
+      ctx.fillStyle = '#94a3b8';
+      ctx.font = '600 10px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.fillText('平均位置', viewCenter.x + 6, viewCenter.y - 6);
+      const spotX = viewCenter.x + Math.sin(time * 5.3) * viewRadius * .42 * clampValue(turbulence, 0, 1.5);
+      const spotY = viewCenter.y + Math.sin(time * 7.7 + 1.1) * viewRadius * .25 * clampValue(turbulence, 0, 1.5);
+      drawStarShape(ctx, spotX, spotY, 4 + brightness * 7, 2 + brightness * 2.2, brightness > .55 ? '#f8fafc' : '#93c5fd', .38 + brightness * .62);
+
+      const graphX = inset.x + 18;
+      const graphW = inset.w - 36;
+      const graphY = inset.y + inset.h * (compact ? .70 : .62);
+      const graphH = compact ? 42 : 58;
+      ctx.strokeStyle = '#475569';
+      ctx.strokeRect(graphX, graphY, graphW, graphH);
+      ctx.strokeStyle = '#f8fafc';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      for (let i = 0; i <= 80; i += 1) {
+        const sampleTime = time - (80 - i) * .035;
+        const sample = Math.sin(sampleTime * 7.1) * .58 + Math.sin(sampleTime * 12.7 + 1.4) * .27 + Math.sin(sampleTime * 19.3) * .15;
+        const sampleBrightness = clampValue(1 - flickerDepth * (.52 + .48 * sample), .18, 1);
+        const x = graphX + i / 80 * graphW;
+        const y = graphY + graphH - sampleBrightness * (graphH - 8) - 4;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+      ctx.fillStyle = '#cbd5e1';
+      ctx.font = '700 10px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.fillText(`進眼光量 ${(brightness * 100).toFixed(0)}%`, graphX, graphY - 8);
+      ctx.fillText('時間 →', graphX + graphW - 40, graphY + graphH + 15);
+      ctx.fillStyle = '#93c5fd';
+      ctx.fillText(`位置抖動約 ${jitterArcsec.toFixed(1)}″`, graphX, graphY + graphH + (compact ? 15 : 34));
+
+      setText('scatter-elevation-out', `${elevation.toFixed(0)}°`);
+      setText('scatter-density-out', `${density.toFixed(2)}x`);
+      setText('scatter-speed-out', `${number('scatter-speed').toFixed(2)}x`);
+      setText('scatter-turbulence-out', `${turbulence.toFixed(2)}x`);
+      $('scatter-path').innerHTML = `真實高度 = ${elevation.toFixed(1)}°<small>越接近地平線，通過的大氣越長</small>`;
+      $('scatter-blue').innerHTML = `平均折射 = ${refractionArcmin.toFixed(2)}′<small>標準近似；圖中角度已放大</small>`;
+      $('scatter-direct').innerHTML = `視高度 ≈ ${(elevation + refractionArcmin / 60).toFixed(2)}°<small>觀察者沿最後方向反推，所以看得較高</small>`;
+      $('scatter-status').innerHTML = `星光閃爍：光量 ${(brightness * 100).toFixed(0)}%<small>湍流使星像漂移約 ${jitterArcsec.toFixed(1)}″</small>`;
+    }
+
     function drawScattering() {
       const canvas = $('scattering-canvas');
       const { ctx, w, h } = resizeCanvas(canvas);
       const elevation = number('scatter-elevation');
       const density = number('scatter-density');
+      const turbulence = number('scatter-turbulence');
+      if (activeScatterScene === 'star') {
+        drawStarlightScintillation(ctx, w, h, elevation, density, turbulence);
+        return;
+      }
       const rayleigh = $('scatter-type').value === 'rayleigh';
       const elevationRad = elevation * Math.PI / 180;
       const pathLength = Math.min(8, 1 / (Math.sin(elevationRad) + .055));
@@ -7182,6 +7467,7 @@
       setText('scatter-elevation-out', `${elevation.toFixed(0)}°`);
       setText('scatter-density-out', `${density.toFixed(2)}x`);
       setText('scatter-speed-out', `${number('scatter-speed').toFixed(2)}x`);
+      setText('scatter-turbulence-out', `${turbulence.toFixed(2)}x`);
       $('scatter-path').innerHTML = `相對路徑 = ${pathLength.toFixed(1)}<small>太陽越低，穿越大氣越長</small>`;
       $('scatter-blue').innerHTML = `藍／紅散射比 = ${(weights.blue / weights.red).toFixed(1)}<small>${rayleigh ? 'Rayleigh：強度約與 1/λ⁴ 成正比' : 'Mie：對波長選擇較弱，外觀偏白'}</small>`;
       const warm = transmission.blue < transmission.red * .7;
@@ -7485,6 +7771,247 @@
       ctx.restore();
     }
 
+    function isoPoint(origin, x, y, z, scale) {
+      return {
+        x: origin.x + (x - z) * .866 * scale,
+        y: origin.y + (x + z) * .5 * scale - y * scale
+      };
+    }
+
+    function fillPolygon(ctx, points, fill, stroke = 'rgba(15,23,42,.35)') {
+      ctx.fillStyle = fill;
+      ctx.strokeStyle = stroke;
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      points.forEach((point, index) => index ? ctx.lineTo(point.x, point.y) : ctx.moveTo(point.x, point.y));
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+    }
+
+    function drawIsoCuboid(ctx, origin, box, scale, colors, label) {
+      ctx.save();
+      const p = (x, y, z) => isoPoint(origin, x, y, z, scale);
+      const x0 = box.x;
+      const x1 = box.x + box.w;
+      const y0 = box.y;
+      const y1 = box.y + box.h;
+      const z0 = box.z;
+      const z1 = box.z + box.d;
+      const a = p(x0, y0, z0);
+      const b = p(x1, y0, z0);
+      const c = p(x1, y1, z0);
+      const d = p(x0, y1, z0);
+      const e = p(x0, y0, z1);
+      const f = p(x1, y0, z1);
+      const g = p(x1, y1, z1);
+      const h = p(x0, y1, z1);
+      fillPolygon(ctx, [e, f, g, h], colors.back || colors.side);
+      fillPolygon(ctx, [b, f, g, c], colors.side);
+      fillPolygon(ctx, [d, c, g, h], colors.top);
+      fillPolygon(ctx, [a, b, c, d], colors.front);
+      if (label) {
+        const labelPoint = p((x0 + x1) / 2, (y0 + y1) / 2, z0 - .02);
+        ctx.fillStyle = '#ffffff';
+        ctx.font = `900 ${Math.max(12, Math.min(24, scale * .34))}px Arial, sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(label, labelPoint.x, labelPoint.y);
+      }
+      ctx.restore();
+    }
+
+    function drawIsoArrow(ctx, origin, start, end, scale, color, label) {
+      ctx.save();
+      const a = isoPoint(origin, start.x, start.y, start.z, scale);
+      const b = isoPoint(origin, end.x, end.y, end.z, scale);
+      drawArrow(ctx, a.x, a.y, b.x, b.y, color);
+      if (label) {
+        ctx.fillStyle = color;
+        ctx.font = '800 11px "Microsoft JhengHei", Arial, sans-serif';
+        ctx.textAlign = 'left';
+        ctx.fillText(label, b.x + 5, b.y - 5);
+      }
+      ctx.restore();
+    }
+
+    function drawIsoDisk(ctx, origin, radius, scale, state) {
+      const diskColor = state.material === 'copper'
+        ? ['#f5c49f', '#9a4e2c']
+        : state.material === 'plastic'
+          ? ['#bce4e1', '#357b78']
+          : ['#f8fafc', '#64748b'];
+      const circlePoints = z => Array.from({ length: 97 }, (_, index) => {
+        const angle = index / 96 * Math.PI * 2;
+        return isoPoint(origin, Math.cos(angle) * radius, Math.sin(angle) * radius, z, scale);
+      });
+      fillPolygon(ctx, circlePoints(.12), diskColor[1], '#334155');
+      const gradient = ctx.createLinearGradient(origin.x - radius * scale, origin.y - radius * scale, origin.x + radius * scale, origin.y + radius * scale);
+      gradient.addColorStop(0, diskColor[0]);
+      gradient.addColorStop(1, diskColor[1]);
+      fillPolygon(ctx, circlePoints(0), gradient, '#334155');
+      ctx.strokeStyle = 'rgba(255,255,255,.55)';
+      ctx.lineWidth = 1.2;
+      for (let i = 0; i < 12; i += 1) {
+        const angle = state.angle + i / 12 * Math.PI * 2;
+        const inner = isoPoint(origin, Math.cos(angle) * radius * .20, Math.sin(angle) * radius * .20, -.01, scale);
+        const outer = isoPoint(origin, Math.cos(angle) * radius * .92, Math.sin(angle) * radius * .92, -.01, scale);
+        ctx.beginPath();
+        ctx.moveTo(inner.x, inner.y);
+        ctx.lineTo(outer.x, outer.y);
+        ctx.stroke();
+      }
+      if (state.slotted) {
+        ctx.strokeStyle = '#eef2f6';
+        ctx.lineWidth = Math.max(5, scale * .10);
+        for (let i = 0; i < 14; i += 1) {
+          const angle = state.angle + i / 14 * Math.PI * 2;
+          const inner = isoPoint(origin, Math.cos(angle) * radius * .48, Math.sin(angle) * radius * .48, -.02, scale);
+          const outer = isoPoint(origin, Math.cos(angle) * radius * .98, Math.sin(angle) * radius * .98, -.02, scale);
+          ctx.beginPath();
+          ctx.moveTo(inner.x, inner.y);
+          ctx.lineTo(outer.x, outer.y);
+          ctx.stroke();
+        }
+      }
+      const shaftBack = isoPoint(origin, 0, 0, 1.65, scale);
+      const shaftFront = isoPoint(origin, 0, 0, -1.7, scale);
+      ctx.strokeStyle = '#334155';
+      ctx.lineWidth = Math.max(7, scale * .12);
+      ctx.beginPath();
+      ctx.moveTo(shaftBack.x, shaftBack.y);
+      ctx.lineTo(shaftFront.x, shaftFront.y);
+      ctx.stroke();
+      ctx.fillStyle = '#1e293b';
+      ctx.beginPath();
+      ctx.ellipse(shaftFront.x, shaftFront.y, scale * .15, scale * .09, -.52, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    function drawIsoCurrentLoop(ctx, origin, center, rx, ry, z, scale, direction, strength, phase, color) {
+      const point = angle => isoPoint(
+        origin,
+        center.x + Math.cos(angle) * rx,
+        center.y + Math.sin(angle) * ry,
+        z,
+        scale
+      );
+      ctx.save();
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2.2 + strength * 3;
+      ctx.shadowColor = color;
+      ctx.shadowBlur = 8;
+      ctx.beginPath();
+      for (let i = 0; i <= 64; i += 1) {
+        const p = point(i / 64 * Math.PI * 2);
+        if (i === 0) ctx.moveTo(p.x, p.y);
+        else ctx.lineTo(p.x, p.y);
+      }
+      ctx.stroke();
+      for (let i = 0; i < 9; i += 1) {
+        const angle = direction * (phase * 2 + i / 9 * Math.PI * 2);
+        const p = point(angle);
+        ctx.fillStyle = '#fff7ed';
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, 2.8, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      const arrowAngle = direction > 0 ? .1 : Math.PI - .1;
+      const p1 = point(arrowAngle - direction * .14);
+      const p2 = point(arrowAngle + direction * .14);
+      drawArrow(ctx, p1.x, p1.y, p2.x, p2.y, color);
+      ctx.restore();
+    }
+
+    function drawBrakeSpeedPanel(ctx, rect, state, compact) {
+      ctx.fillStyle = '#071827';
+      ctx.strokeStyle = '#31506a';
+      ctx.lineWidth = 1.3;
+      ctx.beginPath();
+      ctx.roundRect(rect.x, rect.y, rect.w, rect.h, 8);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = '#e2e8f0';
+      ctx.font = `800 ${compact ? 12 : 14}px "Microsoft JhengHei", Arial, sans-serif`;
+      ctx.fillText('減速實測：同時刻與無磁場參考比較', rect.x + 14, rect.y + 24);
+
+      const graph = { x: rect.x + 38, y: rect.y + 48, w: rect.w - 58, h: Math.min(compact ? 96 : 150, rect.h * .38) };
+      ctx.strokeStyle = '#64748b';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(graph.x, graph.y);
+      ctx.lineTo(graph.x, graph.y + graph.h);
+      ctx.lineTo(graph.x + graph.w, graph.y + graph.h);
+      ctx.stroke();
+      const xMax = Math.max(5, Math.min(16, time + 2, state.gamma > .001 ? 3.2 / state.gamma : 8));
+      ctx.setLineDash([6, 5]);
+      ctx.strokeStyle = '#94a3b8';
+      ctx.beginPath();
+      ctx.moveTo(graph.x, graph.y + 5);
+      ctx.lineTo(graph.x + graph.w, graph.y + 5);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.strokeStyle = '#f97316';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      for (let i = 0; i <= 90; i += 1) {
+        const t = i / 90 * xMax;
+        const omega = state.gamma > .000001 ? state.omega0 * Math.exp(-state.gamma * t) : state.omega0;
+        const x = graph.x + i / 90 * graph.w;
+        const y = graph.y + graph.h - omega / state.omega0 * (graph.h - 10) - 5;
+        if (i === 0) ctx.moveTo(x, y);
+        else ctx.lineTo(x, y);
+      }
+      ctx.stroke();
+      const dotRatio = clampValue(time / xMax, 0, 1);
+      const dotX = graph.x + dotRatio * graph.w;
+      const dotY = graph.y + graph.h - state.omega / state.omega0 * (graph.h - 10) - 5;
+      ctx.fillStyle = '#fbbf24';
+      ctx.beginPath();
+      ctx.arc(dotX, dotY, 5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#cbd5e1';
+      ctx.font = '700 10px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.fillText('ω', graph.x - 18, graph.y + 6);
+      ctx.fillText('時間 →', graph.x + graph.w - 40, graph.y + graph.h + 16);
+      ctx.fillStyle = '#94a3b8';
+      ctx.fillText(`無磁場：${state.omega0.toFixed(1)} rad/s`, graph.x + 8, graph.y + 19);
+      ctx.fillStyle = '#fdba74';
+      ctx.fillText(`實際：${state.omega.toFixed(2)} rad/s`, graph.x + 8, graph.y + 36);
+
+      const localY = graph.y + graph.h + 38;
+      ctx.fillStyle = '#e2e8f0';
+      ctx.font = `800 ${compact ? 11 : 13}px "Microsoft JhengHei", Arial, sans-serif`;
+      ctx.fillText('導體局部：電流只在磁通改變處形成閉合迴路', rect.x + 14, localY);
+      const localOrigin = { x: rect.x + rect.w * .50, y: rect.y + rect.h * .80 };
+      const localScale = Math.min(rect.w / 6.2, (rect.h - (localY - rect.y)) / 3.0);
+      const sheet = [
+        isoPoint(localOrigin, -2.1, -.65, 0, localScale),
+        isoPoint(localOrigin, 2.1, -.65, 0, localScale),
+        isoPoint(localOrigin, 2.1, .65, 0, localScale),
+        isoPoint(localOrigin, -2.1, .65, 0, localScale)
+      ];
+      fillPolygon(ctx, sheet, 'rgba(148,163,184,.45)', '#cbd5e1');
+      const fieldPatch = [
+        isoPoint(localOrigin, -.05, -.65, -.02, localScale),
+        isoPoint(localOrigin, 1.65, -.65, -.02, localScale),
+        isoPoint(localOrigin, 1.65, .65, -.02, localScale),
+        isoPoint(localOrigin, -.05, .65, -.02, localScale)
+      ];
+      fillPolygon(ctx, fieldPatch, 'rgba(37,99,235,.34)', '#60a5fa');
+      if ($('brake-show-field').checked) {
+        [-.38, 0, .38].forEach(y => drawIsoArrow(ctx, localOrigin, { x: .35, y, z: -.6 }, { x: .35, y, z: .58 }, localScale, '#60a5fa', ''));
+      }
+      if ($('brake-show-current').checked && state.current > .0005 && activeBrakeLayer !== 'flux') {
+        drawIsoCurrentLoop(ctx, localOrigin, { x: .02, y: 0 }, .56, .46, -.06, localScale, -1, clampValue(state.current / 2.2, .12, 1), time, '#fb923c');
+      }
+      const currentPoint = isoPoint(localOrigin, -.05, .78, -.06, localScale);
+      ctx.fillStyle = '#fdba74';
+      ctx.font = '800 10px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('橘色＝渦電流 I', currentPoint.x, currentPoint.y);
+    }
+
     function drawMagneticBrake() {
       const canvas = $('brake-canvas');
       const { ctx, w, h } = resizeCanvas(canvas);
@@ -7494,18 +8021,18 @@
       const showCurrent = $('brake-show-current').checked && ['all', 'current', 'force'].includes(activeBrakeLayer);
       const showForce = $('brake-show-force').checked && ['all', 'force'].includes(activeBrakeLayer);
       const scene = compact
-        ? { x: 10, y: 10, w: w - 20, h: 302 }
-        : { x: 14, y: 14, w: w * .55 - 20, h: h - 82 };
-      const microscope = compact
-        ? { x: 10, y: 326, w: w - 20, h: h - 390 }
-        : { x: w * .56, y: 14, w: w * .44 - 14, h: h - 82 };
+        ? { x: 10, y: 10, w: w - 20, h: 430 }
+        : { x: 12, y: 12, w: w * .62 - 18, h: h - 76 };
+      const diagnostics = compact
+        ? { x: 10, y: 452, w: w - 20, h: h - 520 }
+        : { x: w * .63, y: 12, w: w * .37 - 12, h: h - 76 };
 
       const backdrop = ctx.createLinearGradient(0, 0, 0, h);
       backdrop.addColorStop(0, '#f8fafc');
-      backdrop.addColorStop(1, '#e4ebf1');
+      backdrop.addColorStop(1, '#dfe8ef');
       ctx.fillStyle = backdrop;
       ctx.fillRect(0, 0, w, h);
-      ctx.fillStyle = 'rgba(255,255,255,.7)';
+      ctx.fillStyle = 'rgba(255,255,255,.78)';
       ctx.strokeStyle = '#cbd5e1';
       ctx.lineWidth = 1.2;
       ctx.beginPath();
@@ -7513,177 +8040,88 @@
       ctx.fill();
       ctx.stroke();
 
-      const radius = Math.min(scene.w * (compact ? .28 : .31), scene.h * .31, compact ? 100 : 170);
-      const cx = scene.x + scene.w * (compact ? .36 : .37);
-      const cy = scene.y + scene.h * .51;
-      const patch = {
-        x: cx + radius * .42,
-        y: cy - radius * .47,
-        w: radius * .68,
-        h: radius * .94
-      };
+      const scale = Math.min(scene.w / (compact ? 5.5 : 6.5), scene.h / 4.65);
+      const origin = { x: scene.x + scene.w * (compact ? .43 : .42), y: scene.y + scene.h * .58 };
+      const radius = 1.52;
+      const poleBoxBack = { x: .62, y: -.72, z: .52, w: .92, h: 1.44, d: .78 };
+      const poleBoxFront = { x: .62, y: -.72, z: -1.30, w: .92, h: 1.44, d: .78 };
 
-      ctx.save();
-      ctx.fillStyle = '#1e3a8a';
-      ctx.strokeStyle = '#172554';
-      ctx.lineWidth = 2;
-      ctx.setLineDash([6, 4]);
-      ctx.beginPath();
-      ctx.roundRect(patch.x + 8, patch.y + 8, patch.w, patch.h, 8);
-      ctx.fill();
-      ctx.stroke();
-      ctx.setLineDash([]);
-      ctx.fillStyle = '#dbeafe';
-      ctx.font = `700 ${compact ? 10 : 12}px "Microsoft JhengHei", Arial, sans-serif`;
-      if (!compact) ctx.fillText('S 後方極靴', patch.x + 13, patch.y + patch.h + 24);
-      ctx.restore();
+      drawIsoCuboid(ctx, origin, poleBoxBack, scale, { front: '#2563eb', side: '#1e3a8a', top: '#60a5fa' }, 'S');
+      drawIsoDisk(ctx, origin, radius, scale, state);
 
-      ctx.save();
-      ctx.translate(cx, cy);
-      ctx.rotate(state.angle);
-      const diskGradient = ctx.createRadialGradient(-radius * .30, -radius * .34, 5, 0, 0, radius);
-      if (state.material === 'copper') {
-        diskGradient.addColorStop(0, '#ffd0aa');
-        diskGradient.addColorStop(.52, '#b96838');
-        diskGradient.addColorStop(1, '#6f3a24');
-      } else if (state.material === 'plastic') {
-        diskGradient.addColorStop(0, '#d8f1f0');
-        diskGradient.addColorStop(.52, '#69b9b6');
-        diskGradient.addColorStop(1, '#2f7775');
-      } else {
-        diskGradient.addColorStop(0, '#ffffff');
-        diskGradient.addColorStop(.52, '#a9b6c4');
-        diskGradient.addColorStop(1, '#526273');
-      }
-      ctx.fillStyle = diskGradient;
-      ctx.strokeStyle = '#334155';
-      ctx.lineWidth = 3;
-      ctx.beginPath();
-      ctx.arc(0, 0, radius, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
-      ctx.strokeStyle = 'rgba(255,255,255,.5)';
-      ctx.lineWidth = 1.3;
-      for (let i = 0; i < 12; i += 1) {
-        const angle = i / 12 * Math.PI * 2;
-        ctx.beginPath();
-        ctx.moveTo(Math.cos(angle) * radius * .22, Math.sin(angle) * radius * .22);
-        ctx.lineTo(Math.cos(angle) * radius * .93, Math.sin(angle) * radius * .93);
-        ctx.stroke();
-      }
-      if (state.slotted) {
-        ctx.strokeStyle = '#eef2f6';
-        ctx.lineWidth = Math.max(7, radius * .075);
-        for (let i = 0; i < 14; i += 1) {
-          const angle = i / 14 * Math.PI * 2;
-          ctx.beginPath();
-          ctx.moveTo(Math.cos(angle) * radius * .48, Math.sin(angle) * radius * .48);
-          ctx.lineTo(Math.cos(angle) * radius * .98, Math.sin(angle) * radius * .98);
-          ctx.stroke();
-        }
-      }
-      ctx.fillStyle = '#334155';
-      ctx.beginPath();
-      ctx.arc(0, 0, radius * .12, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.restore();
-
-      ctx.fillStyle = '#475569';
-      ctx.fillRect(cx - 7, cy, 14, scene.y + scene.h - cy - 18);
-      ctx.fillStyle = '#334155';
-      ctx.beginPath();
-      ctx.ellipse(cx, scene.y + scene.h - 14, radius * .34, 9, 0, 0, Math.PI * 2);
-      ctx.fill();
-
-      if ($('brake-show-field').checked && state.B > .001) drawPerpendicularField(ctx, patch, state.B, .96);
-      else {
-        ctx.strokeStyle = '#64748b';
-        ctx.setLineDash([6, 5]);
-        ctx.strokeRect(patch.x, patch.y, patch.w, patch.h);
-        ctx.setLineDash([]);
+      if ($('brake-show-field').checked && state.B > .001) {
+        [-.45, 0, .45].forEach(y => {
+          [.83, 1.22].forEach(x => drawIsoArrow(ctx, origin, { x, y, z: -.48 }, { x, y, z: .48 }, scale, '#2563eb', ''));
+        });
+        const bLabel = isoPoint(origin, 1.58, .78, 0, scale);
+        drawSceneLabel(ctx, bLabel.x, bLabel.y, 'B：N → S，穿過圓盤');
       }
 
-      ctx.save();
-      ctx.strokeStyle = '#b91c1c';
-      ctx.lineWidth = compact ? 8 : 11;
-      ctx.beginPath();
-      ctx.roundRect(patch.x - 5, patch.y - 5, patch.w + 10, patch.h + 10, 9);
-      ctx.stroke();
-      ctx.fillStyle = '#991b1b';
-      ctx.font = `800 ${compact ? 11 : 14}px "Microsoft JhengHei", Arial, sans-serif`;
-      if (compact) {
-        ctx.fillStyle = '#fee2e2';
-        ctx.font = '800 9px "Microsoft JhengHei", Arial, sans-serif';
-        ctx.fillText('N 極靴', patch.x + 5, patch.y + 14);
-      } else {
-        ctx.fillText('N 前方極靴', patch.x - 2, patch.y - 13);
-      }
-      ctx.restore();
-
-      drawArrow(ctx, patch.x + patch.w + 18, patch.y - 20, patch.x + patch.w + 18, patch.y + 38, '#475569');
-      ctx.fillStyle = '#334155';
-      ctx.font = `700 ${compact ? 10 : 12}px "Microsoft JhengHei", Arial, sans-serif`;
-      ctx.fillText(`v = ${state.surfaceSpeed.toFixed(2)} m/s`, patch.x + patch.w + 23, patch.y + 12);
-
-      const loopRadius = compact ? Math.max(11, radius * .14) : Math.max(18, radius * .23);
-      const entry = { x: patch.x + patch.w * .30, y: patch.y - 3 };
-      const exit = { x: patch.x + patch.w * .70, y: patch.y + patch.h + 3 };
+      const strength = clampValue(state.current / 2.5, .12, 1);
       if (showFlux) {
-        drawFluxSymbol(ctx, entry.x, entry.y, false, '#16a34a', 8, .95);
-        drawFluxSymbol(ctx, exit.x, exit.y, true, '#ea580c', 8, .95);
+        const enterFlux = isoPoint(origin, 1.02, -.63, -.08, scale);
+        const exitFlux = isoPoint(origin, 1.02, .63, -.08, scale);
+        drawFluxSymbol(ctx, enterFlux.x, enterFlux.y, false, '#16a34a', 7, .95);
+        drawFluxSymbol(ctx, exitFlux.x, exitFlux.y, true, '#ea580c', 7, .95);
       }
       if (showCurrent && state.current > .0005) {
-        const strength = clampValue(state.current / 2.5, .12, 1);
-        drawCurrentLoop(ctx, entry, loopRadius, loopRadius * .78, -1, strength, time, '#16a34a');
-        drawCurrentLoop(ctx, exit, loopRadius, loopRadius * .78, 1, strength, time, '#ea580c');
+        drawIsoCurrentLoop(ctx, origin, { x: 1.02, y: -.58 }, .38, .33, -.12, scale, -1, strength, time, '#16a34a');
+        drawIsoCurrentLoop(ctx, origin, { x: 1.02, y: .58 }, .38, .33, -.12, scale, 1, strength, time, '#f97316');
       }
+
+      ctx.save();
+      ctx.globalAlpha = .92;
+      drawIsoCuboid(ctx, origin, poleBoxFront, scale, { front: '#dc2626', side: '#991b1b', top: '#f87171' }, 'N');
+      ctx.restore();
+
+      const velocityStart = { x: 1.64, y: -.28, z: -.12 };
+      const velocityEnd = { x: 1.64, y: .42, z: -.12 };
+      drawIsoArrow(ctx, origin, velocityStart, velocityEnd, scale, '#334155', `v=${state.surfaceSpeed.toFixed(2)} m/s`);
       if (showForce && state.force > .00001) {
-        drawArrow(ctx, entry.x + loopRadius + 7, patch.y + 17, entry.x + loopRadius + 7, patch.y - 27, '#be123c');
-        drawArrow(ctx, exit.x - loopRadius - 7, patch.y + patch.h - 17, exit.x - loopRadius - 7, patch.y + patch.h - 61, '#be123c');
-        ctx.fillStyle = '#be123c';
-        ctx.font = `700 ${compact ? 10 : 12}px "Microsoft JhengHei", Arial, sans-serif`;
-        if (!compact) {
-          ctx.fillText('F↑', entry.x + loopRadius + 12, patch.y - 23);
-          ctx.fillText('F↑', exit.x - loopRadius - 25, patch.y + patch.h - 63);
-        }
+        drawIsoArrow(ctx, origin, { x: 1.76, y: .38, z: -.16 }, { x: 1.76, y: -.36, z: -.16 }, scale, '#be123c', 'F 反向');
       }
 
-      if (compact) {
-        drawSceneLabel(ctx, patch.x - 11, patch.y - 39, '進入 Φ↑');
-        drawSceneLabel(ctx, patch.x - 11, patch.y + patch.h + 10, '離開 Φ↓');
-      } else {
-        ctx.fillStyle = '#334155';
-        ctx.font = '700 11px "Microsoft JhengHei", Arial, sans-serif';
-        ctx.fillText('進入：Φ⊗增加', Math.max(scene.x + 8, entry.x - loopRadius), Math.max(scene.y + 18, entry.y - loopRadius - 8));
-        ctx.fillText('離開：Φ⊗減少', Math.max(scene.x + 8, exit.x - loopRadius), Math.min(scene.y + scene.h - 8, exit.y + loopRadius + 15));
-      }
+      const actualMarker = isoPoint(origin, Math.cos(state.angle) * radius, Math.sin(state.angle) * radius, -.18, scale);
+      const referenceAngle = state.omega0 * time;
+      const referenceMarker = isoPoint(origin, Math.cos(referenceAngle) * radius, Math.sin(referenceAngle) * radius, -.20, scale);
+      const centerPoint = isoPoint(origin, 0, 0, -.18, scale);
+      ctx.save();
+      ctx.setLineDash([5, 4]);
+      ctx.strokeStyle = '#64748b';
+      ctx.beginPath();
+      ctx.moveTo(centerPoint.x, centerPoint.y);
+      ctx.lineTo(referenceMarker.x, referenceMarker.y);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = '#94a3b8';
+      ctx.beginPath();
+      ctx.arc(referenceMarker.x, referenceMarker.y, 6, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.strokeStyle = '#f59e0b';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(centerPoint.x, centerPoint.y);
+      ctx.lineTo(actualMarker.x, actualMarker.y);
+      ctx.stroke();
+      ctx.fillStyle = '#fbbf24';
+      ctx.shadowColor = '#f59e0b';
+      ctx.shadowBlur = 10;
+      ctx.beginPath();
+      ctx.arc(actualMarker.x, actualMarker.y, 7, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+      drawSceneLabel(ctx, scene.x + 12, scene.y + 12, '黃色＝實際減速圓盤　灰色＝無磁場參考');
 
-      if (showForce && state.force > .00001) {
-        ctx.save();
-        ctx.strokeStyle = '#be123c';
-        ctx.lineWidth = 4;
-        ctx.beginPath();
-        ctx.arc(cx, cy, radius + 18, .18, 1.35);
-        ctx.stroke();
-        ctx.fillStyle = '#be123c';
-        ctx.beginPath();
-        ctx.arc(cx + Math.cos(.18) * (radius + 18), cy + Math.sin(.18) * (radius + 18), 5, 0, Math.PI * 2);
-        ctx.fill();
-        ctx.restore();
-      }
-      const sceneSummary = activeBrakeLayer === 'flux'
-        ? '先看金屬進出磁區時的 Φ 增減'
-        : activeBrakeLayer === 'current'
-          ? '楞次定律：感應電流反抗 Φ 的改變'
-          : showForce && state.force > .00001
-            ? '兩個局部 F 都反抗圓盤向下運動'
-            : '沒有磁通變化，就沒有磁煞車力';
-      drawSceneLabel(ctx, scene.x + 10, scene.y + 10, sceneSummary);
-
+      const legendY = scene.y + scene.h - 58;
+      ctx.fillStyle = '#475569';
+      ctx.font = `700 ${compact ? 10 : 12}px "Microsoft JhengHei", Arial, sans-serif`;
+      ctx.textAlign = 'left';
+      ctx.fillText('橘／綠閉合圈：圓盤導體內的渦電流', scene.x + 14, legendY);
+      ctx.fillText('藍箭頭：穿過圓盤厚度的磁場', scene.x + 14, legendY + 20);
       if ($('brake-show-heat').checked) {
-        const barW = Math.min(150, scene.w * .31);
+        const barW = Math.min(170, scene.w * .34);
         const barX = scene.x + scene.w - barW - 14;
-        const barY = scene.y + scene.h - 26;
+        const barY = scene.y + scene.h - 30;
         ctx.fillStyle = '#cbd5e1';
         ctx.fillRect(barX, barY, barW, 10);
         const heatGradient = ctx.createLinearGradient(barX, 0, barX + barW, 0);
@@ -7692,18 +8130,18 @@
         ctx.fillStyle = heatGradient;
         ctx.fillRect(barX, barY, barW * clampValue(state.heat, 0, 1), 10);
         ctx.fillStyle = '#475569';
-        ctx.font = `700 ${compact ? 9 : 11}px "Microsoft JhengHei", Arial, sans-serif`;
-        ctx.fillText(`焦耳熱 ${(state.heatEnergy).toFixed(2)} J`, barX, barY - 7);
+        ctx.font = '700 10px "Microsoft JhengHei", Arial, sans-serif';
+        ctx.fillText(`動能轉熱 ${(state.heat * 100).toFixed(0)}%`, barX, barY - 7);
       }
 
-      drawBrakeMicroscope(ctx, microscope, state, { showFlux, showCurrent, showForce, compact });
+      drawBrakeSpeedPanel(ctx, diagnostics, state, compact);
       drawBrakeCausalStrip(ctx, w, h, state);
 
       const materialName = state.material === 'copper' ? '銅' : state.material === 'aluminum' ? '鋁' : '塑膠';
       setText('brake-field-out', `${state.B.toFixed(2)} T`);
       setText('brake-start-out', `${state.omega0.toFixed(1)} rad/s`);
       setText('brake-speed-out', `${number('brake-speed').toFixed(2)}x`);
-      $('brake-omega').innerHTML = `角速度 ω = ${state.omega.toFixed(2)} rad/s<small>邊緣速度 v = ${state.surfaceSpeed.toFixed(2)} m/s</small>`;
+      $('brake-omega').innerHTML = `角速度 ω = ${state.omega.toFixed(2)} rad/s<small>無磁場參考仍為 ${state.omega0.toFixed(1)} rad/s</small>`;
       $('brake-current').innerHTML = `|dΦ/dt| = ${(state.fluxRate * 1000).toFixed(1)} mWb/s<small>ε = ${state.emf.toFixed(3)} V；${materialName}渦流 I ≈ ${state.current.toFixed(2)} A</small>`;
       $('brake-torque').innerHTML = `磁力 F = ${state.force.toFixed(3)} N<small>τ = ${state.torque.toFixed(4)} N·m，方向反抗轉動</small>`;
       $('brake-heat').innerHTML = `轉為熱 = ${(state.heat * 100).toFixed(0)}%<small>累積約 ${state.heatEnergy.toFixed(2)} J；無接觸仍耗散</small>`;
@@ -7813,8 +8251,8 @@
 
     function drawMotorVectorProof(ctx, x, y, width, leftCurrentUp, compact) {
       const height = compact ? 98 : 116;
-      const leftForce = leftCurrentUp ? '⊗' : '⊙';
-      const rightForce = leftCurrentUp ? '⊙' : '⊗';
+      const leftForce = leftCurrentUp ? '−z' : '+z';
+      const rightForce = leftCurrentUp ? '+z' : '−z';
       ctx.save();
       ctx.fillStyle = 'rgba(15,23,42,.94)';
       ctx.strokeStyle = '#64748b';
@@ -7848,7 +8286,7 @@
       }
       ctx.fillStyle = '#cbd5e1';
       ctx.font = '600 10px "Microsoft JhengHei", Arial, sans-serif';
-      ctx.fillText('⊙ 紙外　⊗ 紙內；兩力形成力偶', x + 13, y + (compact ? 87 : 102));
+      ctx.fillText('±z 是線圈前後方向；兩力形成力偶', x + 13, y + (compact ? 87 : 102));
       ctx.restore();
     }
 
@@ -7863,57 +8301,68 @@
       const showForce = $('motor-show-force').checked && ['all', 'force', 'torque'].includes(activeMotorLayer);
       const showTorque = ['all', 'torque'].includes(activeMotorLayer);
       const showVector = $('motor-show-vector').checked && ['all', 'force', 'torque'].includes(activeMotorLayer);
-      const center = { x: w * .50, y: h * .38 };
-      const poleW = compact ? 78 : Math.min(142, w * .14);
-      const poleH = compact ? 185 : 225;
-      const poleY = center.y - poleH / 2;
-      const leftPoleX = compact ? 18 : w * .09;
-      const rightPoleX = w - leftPoleX - poleW;
-      const halfHeight = compact ? 63 : 78;
-      const halfWidth = compact ? 54 : 82;
-      const depth = compact ? 18 : 30;
-
       const background = ctx.createLinearGradient(0, 0, 0, h);
       background.addColorStop(0, '#f8fafc');
       background.addColorStop(1, '#e7edf2');
       ctx.fillStyle = background;
       ctx.fillRect(0, 0, w, h);
+      const sceneBottom = h - (compact ? 132 : 148);
+      ctx.fillStyle = 'rgba(255,255,255,.72)';
+      ctx.strokeStyle = '#cbd5e1';
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.roundRect(10, 10, w - 20, sceneBottom - 16, 8);
+      ctx.fill();
+      ctx.stroke();
       ctx.fillStyle = '#dbe3e9';
-      ctx.fillRect(0, h * .86, w, h * .14);
+      ctx.beginPath();
+      ctx.moveTo(11, sceneBottom - 66);
+      ctx.lineTo(w - 11, sceneBottom - 66);
+      ctx.lineTo(w - 11, sceneBottom - 7);
+      ctx.lineTo(11, sceneBottom - 7);
+      ctx.closePath();
+      ctx.fill();
 
-      drawMagnetBlock(ctx, leftPoleX, poleY, poleW, poleH, 'N', '#ef4444', '#991b1b');
-      drawMagnetBlock(ctx, rightPoleX, poleY, poleW, poleH, 'S', '#60a5fa', '#1e3a8a');
+      const origin = { x: w * (compact ? .49 : .48), y: sceneBottom * .55 };
+      const scale = Math.min(w / (compact ? 7.2 : 8.6), sceneBottom / 5.6);
+      const northBox = { x: -2.55, y: -1.38, z: -1.15, w: .92, h: 2.76, d: 2.30 };
+      const southBox = { x: 1.63, y: -1.38, z: -1.15, w: .92, h: 2.76, d: 2.30 };
+      drawIsoCuboid(ctx, origin, southBox, scale, { front: '#2563eb', side: '#1e3a8a', top: '#60a5fa' }, 'S');
+
       if (showField) {
-        const fieldGradient = ctx.createLinearGradient(leftPoleX + poleW, 0, rightPoleX, 0);
-        fieldGradient.addColorStop(0, 'rgba(59,130,246,.12)');
-        fieldGradient.addColorStop(.5, 'rgba(147,197,253,.20)');
-        fieldGradient.addColorStop(1, 'rgba(59,130,246,.12)');
-        ctx.fillStyle = fieldGradient;
-        ctx.fillRect(leftPoleX + poleW, poleY + 9, rightPoleX - leftPoleX - poleW, poleH - 18);
-        const lines = compact ? 4 : 6;
-        for (let i = 0; i < lines; i += 1) {
-          const y = center.y - halfHeight + i * (halfHeight * 2) / (lines - 1);
-          drawArrow(ctx, leftPoleX + poleW + 10, y, rightPoleX - 10, y, `rgba(37,99,235,${.35 + state.B * .45})`);
-        }
-        drawSceneLabel(
-          ctx,
-          compact ? 10 : center.x,
-          16,
-          `磁場 B：N → S（${state.B.toFixed(2)} T）`,
-          compact ? 'left' : 'right'
-        );
+        [-.85, 0, .85].forEach(y => {
+          [-.62, 0, .62].forEach(z => {
+            drawIsoArrow(ctx, origin, { x: -1.52, y, z }, { x: 1.52, y, z }, scale, `rgba(37,99,235,${.45 + state.B * .35})`, '');
+          });
+        });
       }
+      drawIsoCuboid(ctx, origin, northBox, scale, { front: '#dc2626', side: '#991b1b', top: '#f87171' }, 'N');
+      drawSceneLabel(ctx, 20, 20, `等角視圖：B 由 N → S（${state.B.toFixed(2)} T）`);
+      const triad = { x: 62, y: sceneBottom - 82 };
+      drawArrow(ctx, triad.x, triad.y, triad.x + 40, triad.y + 23, '#2563eb');
+      drawArrow(ctx, triad.x, triad.y, triad.x, triad.y - 45, '#0f766e');
+      drawArrow(ctx, triad.x, triad.y, triad.x - 40, triad.y + 23, '#7c3aed');
+      ctx.font = '800 10px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.fillStyle = '#2563eb';
+      ctx.fillText('+x（B）', triad.x + 43, triad.y + 26);
+      ctx.fillStyle = '#0f766e';
+      ctx.fillText('+y', triad.x + 5, triad.y - 42);
+      ctx.fillStyle = '#7c3aed';
+      ctx.fillText('+z', triad.x - 57, triad.y + 27);
 
-      const ux = Math.cos(state.angle) * halfWidth;
-      const uy = Math.sin(state.angle) * depth;
-      const topLeft = { x: center.x - ux, y: center.y - halfHeight - uy };
-      const topRight = { x: center.x + ux, y: center.y - halfHeight + uy };
-      const bottomRight = { x: center.x + ux, y: center.y + halfHeight + uy };
-      const bottomLeft = { x: center.x - ux, y: center.y + halfHeight - uy };
-      const loop = [topLeft, topRight, bottomRight, bottomLeft, topLeft];
+      const radial = { x: Math.cos(state.angle) * 1.06, z: Math.sin(state.angle) * 1.06 };
+      const topAWorld = { x: -radial.x, y: 1.25, z: -radial.z };
+      const topBWorld = { x: radial.x, y: 1.25, z: radial.z };
+      const bottomBWorld = { x: radial.x, y: -1.25, z: radial.z };
+      const bottomAWorld = { x: -radial.x, y: -1.25, z: -radial.z };
+      const topA = isoPoint(origin, topAWorld.x, topAWorld.y, topAWorld.z, scale);
+      const topB = isoPoint(origin, topBWorld.x, topBWorld.y, topBWorld.z, scale);
+      const bottomB = isoPoint(origin, bottomBWorld.x, bottomBWorld.y, bottomBWorld.z, scale);
+      const bottomA = isoPoint(origin, bottomAWorld.x, bottomAWorld.y, bottomAWorld.z, scale);
+      const loop = [topA, topB, bottomB, bottomA, topA];
       ctx.save();
       ctx.strokeStyle = '#b45309';
-      ctx.lineWidth = compact ? 7 : 9;
+      ctx.lineWidth = compact ? 7 : 10;
       ctx.lineJoin = 'round';
       ctx.shadowColor = 'rgba(180,83,9,.3)';
       ctx.shadowBlur = 7;
@@ -7922,16 +8371,19 @@
       loop.slice(1).forEach(point => ctx.lineTo(point.x, point.y));
       ctx.stroke();
       ctx.restore();
+
+      const shaftTop = isoPoint(origin, 0, 1.75, 0, scale);
+      const shaftBottom = isoPoint(origin, 0, -1.85, 0, scale);
       ctx.save();
       ctx.strokeStyle = '#475569';
-      ctx.lineWidth = 8;
+      ctx.lineWidth = compact ? 7 : 9;
       ctx.beginPath();
-      ctx.moveTo(center.x, center.y - halfHeight - 40);
-      ctx.lineTo(center.x, center.y + halfHeight + 95);
+      ctx.moveTo(shaftTop.x, shaftTop.y);
+      ctx.lineTo(shaftBottom.x, shaftBottom.y);
       ctx.stroke();
       ctx.fillStyle = '#334155';
       ctx.beginPath();
-      ctx.ellipse(center.x, center.y, 11, 17, 0, 0, Math.PI * 2);
+      ctx.ellipse(origin.x, origin.y, 10, 16, 0, 0, Math.PI * 2);
       ctx.fill();
       ctx.restore();
 
@@ -7940,17 +8392,17 @@
       const route = currentReversed ? [...loop].reverse() : loop;
       if (showCurrent) {
         drawPolylineParticles(ctx, route, compact ? 13 : 18, time * .22, '#fb923c', 3.6);
-        const leftFrom = pointOnSegment(topLeft, bottomLeft, leftCurrentUp ? .72 : .28);
-        const leftTo = pointOnSegment(topLeft, bottomLeft, leftCurrentUp ? .28 : .72);
-        const rightFrom = pointOnSegment(topRight, bottomRight, leftCurrentUp ? .28 : .72);
-        const rightTo = pointOnSegment(topRight, bottomRight, leftCurrentUp ? .72 : .28);
+        const leftFrom = pointOnSegment(topA, bottomA, leftCurrentUp ? .72 : .28);
+        const leftTo = pointOnSegment(topA, bottomA, leftCurrentUp ? .28 : .72);
+        const rightFrom = pointOnSegment(topB, bottomB, leftCurrentUp ? .28 : .72);
+        const rightTo = pointOnSegment(topB, bottomB, leftCurrentUp ? .72 : .28);
         drawArrow(ctx, leftFrom.x, leftFrom.y, leftTo.x, leftTo.y, '#f97316');
         drawArrow(ctx, rightFrom.x, rightFrom.y, rightTo.x, rightTo.y, '#f97316');
       }
       if (showElectrons) drawPolylineParticles(ctx, route, compact ? 9 : 13, time * .17, '#a78bfa', 2.4, true);
 
-      const leftMid = pointOnSegment(topLeft, bottomLeft, .5);
-      const rightMid = pointOnSegment(topRight, bottomRight, .5);
+      const leftMid = pointOnSegment(topA, bottomA, .5);
+      const rightMid = pointOnSegment(topB, bottomB, .5);
       if (showCurrent) {
         ctx.save();
         ctx.font = `800 ${compact ? 11 : 13}px "Microsoft JhengHei", Arial, sans-serif`;
@@ -7961,74 +8413,74 @@
         ctx.fillText(`I${leftCurrentUp ? '↓' : '↑'}`, rightMid.x + 13, rightMid.y - 24);
         ctx.restore();
       }
-      const leftOut = leftCurrentUp ? '⊗' : '⊙';
-      const rightOut = leftCurrentUp ? '⊙' : '⊗';
+      const leftOut = leftCurrentUp ? '−z' : '+z';
+      const rightOut = leftCurrentUp ? '+z' : '−z';
       if (showForce && state.B > .001) {
-        [
-          { p: leftMid, symbol: leftOut, offset: -38 },
-          { p: rightMid, symbol: rightOut, offset: 38 }
-        ].forEach(item => {
-          ctx.save();
-          ctx.fillStyle = 'rgba(255,255,255,.9)';
-          ctx.strokeStyle = '#be123c';
-          ctx.lineWidth = 2.5;
-          ctx.beginPath();
-          ctx.arc(item.p.x, item.p.y, 20, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.stroke();
-          ctx.fillStyle = '#be123c';
-          ctx.font = '800 24px Arial, sans-serif';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText(item.symbol, item.p.x, item.p.y + 1);
-          ctx.restore();
-          drawSceneLabel(ctx, item.p.x + item.offset, item.p.y + 27, `${item.symbol} 磁力 F`, item.offset > 0 ? 'left' : 'right');
-        });
+        const leftForceSign = leftCurrentUp ? -1 : 1;
+        const rightForceSign = -leftForceSign;
+        drawIsoArrow(ctx, origin, { x: topAWorld.x, y: 0, z: topAWorld.z }, { x: topAWorld.x, y: 0, z: topAWorld.z + leftForceSign * .9 }, scale, '#be123c', `F${leftOut}`);
+        drawIsoArrow(ctx, origin, { x: topBWorld.x, y: 0, z: topBWorld.z }, { x: topBWorld.x, y: 0, z: topBWorld.z + rightForceSign * .9 }, scale, '#be123c', `F${rightOut}`);
       }
 
-      const commutatorCenter = { x: center.x, y: Math.min(h - 125, center.y + halfHeight + 92) };
-      drawCommutator(ctx, commutatorCenter, compact ? 29 : 36, state.angle, state.halfTurn, showCurrent, showElectrons, time);
+      const commutatorCenter = isoPoint(origin, 0, -1.72, 0, scale);
       ctx.save();
+      ctx.translate(commutatorCenter.x, commutatorCenter.y);
+      ctx.rotate(-.52);
+      ctx.strokeStyle = '#c56a28';
+      ctx.lineWidth = compact ? 10 : 13;
+      ctx.beginPath();
+      ctx.ellipse(0, 0, compact ? 30 : 38, compact ? 17 : 21, 0, .12, Math.PI - .12);
+      ctx.stroke();
+      ctx.strokeStyle = '#e39b55';
+      ctx.beginPath();
+      ctx.ellipse(0, 0, compact ? 30 : 38, compact ? 17 : 21, 0, Math.PI + .12, Math.PI * 2 - .12);
+      ctx.stroke();
+      ctx.restore();
+      ctx.fillStyle = '#334155';
+      ctx.fillRect(commutatorCenter.x - (compact ? 54 : 68), commutatorCenter.y - 8, compact ? 24 : 30, 16);
+      ctx.fillRect(commutatorCenter.x + (compact ? 30 : 38), commutatorCenter.y - 8, compact ? 24 : 30, 16);
+
+      const batteryY = sceneBottom - 38;
+      const batteryX = origin.x - 34;
       ctx.strokeStyle = '#475569';
       ctx.lineWidth = 3;
       ctx.beginPath();
-      ctx.moveTo(commutatorCenter.x - (compact ? 63 : 77), commutatorCenter.y);
-      ctx.lineTo(commutatorCenter.x - (compact ? 105 : 145), commutatorCenter.y);
-      ctx.lineTo(commutatorCenter.x - (compact ? 105 : 145), h - 35);
-      ctx.moveTo(commutatorCenter.x + (compact ? 63 : 77), commutatorCenter.y);
-      ctx.lineTo(commutatorCenter.x + (compact ? 105 : 145), commutatorCenter.y);
-      ctx.lineTo(commutatorCenter.x + (compact ? 105 : 145), h - 35);
+      ctx.moveTo(commutatorCenter.x - (compact ? 54 : 68), commutatorCenter.y);
+      ctx.lineTo(origin.x - (compact ? 92 : 128), commutatorCenter.y);
+      ctx.lineTo(origin.x - (compact ? 92 : 128), batteryY + 12);
+      ctx.lineTo(batteryX, batteryY + 12);
+      ctx.moveTo(commutatorCenter.x + (compact ? 54 : 68), commutatorCenter.y);
+      ctx.lineTo(origin.x + (compact ? 92 : 128), commutatorCenter.y);
+      ctx.lineTo(origin.x + (compact ? 92 : 128), batteryY + 12);
+      ctx.lineTo(batteryX + 68, batteryY + 12);
       ctx.stroke();
-      const batteryX = center.x - 34;
-      const batteryY = h - 48;
       ctx.fillStyle = '#334155';
       ctx.fillRect(batteryX, batteryY, 68, 24);
       ctx.fillStyle = '#f8fafc';
       ctx.font = '800 14px Arial, sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillText(`+  ${state.voltage.toFixed(1)} V  −`, center.x, batteryY + 17);
-      ctx.restore();
+      ctx.fillText(`+  ${state.voltage.toFixed(1)} V  −`, origin.x, batteryY + 17);
       drawSceneLabel(
         ctx,
-        compact ? center.x + 50 : center.x + 68,
-        compact ? commutatorCenter.y - 20 : commutatorCenter.y + 26,
+        commutatorCenter.x + (compact ? 42 : 54),
+        commutatorCenter.y - 18,
         '分裂環：每半圈換向',
         'left'
       );
 
       if (showTorque) {
-        const arcRadius = compact ? 34 : 45;
-        const arcStart = Math.PI * .15;
-        const arcEnd = Math.PI * 1.75;
+        const torqueCenter = isoPoint(origin, 0, 1.62, 0, scale);
+        const arcRadiusX = compact ? 34 : 47;
+        const arcRadiusY = compact ? 15 : 21;
         ctx.save();
         ctx.strokeStyle = state.stalled ? '#94a3b8' : '#0f766e';
         ctx.fillStyle = state.stalled ? '#94a3b8' : '#0f766e';
         ctx.lineWidth = 4;
         ctx.beginPath();
-        ctx.arc(center.x, poleY - 8, arcRadius, arcStart, arcEnd);
+        ctx.ellipse(torqueCenter.x, torqueCenter.y, arcRadiusX, arcRadiusY, 0, .2, Math.PI * 1.8);
         ctx.stroke();
-        const arrowX = center.x + Math.cos(arcEnd) * arcRadius;
-        const arrowY = poleY - 8 + Math.sin(arcEnd) * arcRadius;
+        const arrowX = torqueCenter.x + Math.cos(Math.PI * 1.8) * arcRadiusX;
+        const arrowY = torqueCenter.y + Math.sin(Math.PI * 1.8) * arcRadiusY;
         ctx.beginPath();
         ctx.moveTo(arrowX, arrowY);
         ctx.lineTo(arrowX - 10, arrowY - 2);
@@ -8037,13 +8489,13 @@
         ctx.fill();
         ctx.font = '700 13px "Microsoft JhengHei", Arial, sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText(state.stalled ? '負載過大：無法啟動' : '兩側磁力形成同向力矩', center.x, poleY - 17);
+        ctx.fillText(state.stalled ? '負載過大：無法啟動' : '兩側 F 形成繞軸力矩', torqueCenter.x, torqueCenter.y - 30);
         ctx.restore();
       }
 
       if (showVector) {
-        const proofWidth = compact ? w - 24 : Math.min(292, w * .28);
-        drawMotorVectorProof(ctx, compact ? 12 : w - proofWidth - 16, compact ? h - 154 : h - 174, proofWidth, leftCurrentUp, compact);
+        const proofWidth = compact ? w - 24 : Math.min(330, w * .31);
+        drawMotorVectorProof(ctx, compact ? 12 : w - proofWidth - 16, compact ? h - 112 : h - 132, proofWidth, leftCurrentUp, compact);
       }
 
       setText('motor-voltage-out', `${state.voltage.toFixed(1)} V`);
@@ -8134,6 +8586,21 @@
       document.querySelectorAll('.light-view').forEach(view => {
         view.classList.toggle('active', view.id === `light-view-${name}`);
       });
+      time = 0;
+      last = performance.now();
+      requestAnimationFrame(drawActive);
+    }
+
+    function setScatterScene(name) {
+      activeScatterScene = name;
+      document.querySelectorAll('.scatter-scene').forEach(button => {
+        const active = button.dataset.scatterScene === name;
+        button.classList.toggle('active', active);
+        button.setAttribute('aria-pressed', active ? 'true' : 'false');
+      });
+      const starMode = name === 'star';
+      $('scatter-type').disabled = starMode;
+      $('scatter-type-control').classList.toggle('is-muted', starMode);
       time = 0;
       last = performance.now();
       requestAnimationFrame(drawActive);
@@ -8253,6 +8720,10 @@
       btn.addEventListener('click', () => setLightMode(btn.dataset.light));
     });
 
+    document.querySelectorAll('.scatter-scene').forEach(button => {
+      button.addEventListener('click', () => setScatterScene(button.dataset.scatterScene));
+    });
+
     document.querySelectorAll('.em-mode').forEach(btn => {
       btn.addEventListener('click', () => setElectromagnetismMode(btn.dataset.em));
     });
@@ -8299,8 +8770,10 @@
 
     document.querySelectorAll('.scatter-preset').forEach(button => {
       button.addEventListener('click', () => {
+        setScatterScene(button.dataset.scene || 'daylight');
         $('scatter-elevation').value = button.dataset.elevation;
         $('scatter-density').value = button.dataset.density;
+        $('scatter-turbulence').value = button.dataset.turbulence || '1';
         $('scatter-type').value = button.dataset.type;
         time = 0;
         last = performance.now();
