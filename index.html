@@ -168,6 +168,38 @@
     }
     .light-view, .em-view { display: none; }
     .light-view.active, .em-view.active { display: block; }
+    .lesson-steps {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin: 0 0 14px;
+    }
+    button.brake-layer, button.motor-layer {
+      background: #e2e8f0;
+      color: var(--ink);
+      padding: 8px 12px;
+    }
+    button.brake-layer.active, button.motor-layer.active {
+      background: #334155;
+      color: #ffffff;
+    }
+    .law-chain {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      margin-top: 12px;
+      border-top: 1px solid var(--line);
+      border-bottom: 1px solid var(--line);
+      background: #f8fafc;
+    }
+    .law-step {
+      min-width: 0;
+      padding: 10px 12px;
+      border-right: 1px solid var(--line);
+    }
+    .law-step:last-child { border-right: 0; }
+    .law-step strong, .law-step span { display: block; }
+    .law-step strong { color: #0f766e; font-size: 14px; }
+    .law-step span { color: var(--muted); font-size: 13px; line-height: 1.45; }
     button.preset {
       background: #e2e8f0;
       color: #1f2933;
@@ -277,10 +309,12 @@
       height: min(68vh, 580px);
       min-height: 460px;
     }
-    #refraction-canvas, #scattering-canvas, #brake-canvas, #motor-canvas {
+    #refraction-canvas, #scattering-canvas {
       height: min(68vh, 590px);
       min-height: 470px;
     }
+    #brake-canvas { height: min(78vh, 700px); min-height: 590px; }
+    #motor-canvas { height: min(72vh, 640px); min-height: 540px; }
     .controls {
       margin-top: 16px;
       display: grid;
@@ -387,6 +421,9 @@
       main { width: calc(100% - 16px); margin-top: 8px; }
       header, .content { padding-left: 18px; padding-right: 18px; }
       .values, .controls { grid-template-columns: 1fr; }
+      .law-chain { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .law-step:nth-child(2) { border-right: 0; }
+      .law-step:nth-child(-n+2) { border-bottom: 1px solid var(--line); }
       .boundary-setup { grid-template-columns: 1fr; }
       .boundary-summary { grid-column: auto; }
       .mode-presets-head { display: block; }
@@ -395,7 +432,9 @@
       canvas { height: 330px; min-height: 280px; }
       #mirror-canvas.parallel-expanded { height: 410px; min-height: 380px; }
       #microscope-canvas, #eye-canvas, #circular-canvas, #precession-canvas { height: 470px; min-height: 430px; }
-      #refraction-canvas, #scattering-canvas, #brake-canvas, #motor-canvas { height: 500px; min-height: 440px; }
+      #refraction-canvas, #scattering-canvas { height: 500px; min-height: 440px; }
+      #brake-canvas { height: 690px; min-height: 650px; }
+      #motor-canvas { height: 590px; min-height: 550px; }
       button.optics-mode, button.topic-mode { min-width: 112px; flex: 1 1 112px; }
       button.light-mode, button.em-mode { min-width: 132px; flex: 1 1 132px; }
       #retrograde-canvas { height: 520px; min-height: 480px; }
@@ -1486,12 +1525,24 @@
           </div>
           <div class="values" aria-live="polite">
             <div class="badge" id="brake-omega">角速度 ω = 12.0 rad/s<small>磁鐵接近後逐漸下降</small></div>
-            <div class="badge" id="brake-current">渦電流相對值 = 0.00<small>約與導電率、B、速度成正比</small></div>
-            <div class="badge" id="brake-torque">煞車力矩 = 0.00<small>方向永遠反抗當下轉動</small></div>
+            <div class="badge" id="brake-current">|dΦ/dt| = 0.0 mWb/s<small>磁通量變化才會產生感應電流</small></div>
+            <div class="badge" id="brake-torque">磁力 F = 0.000 N<small>F = IℓB，方向由 I × B 決定</small></div>
             <div class="badge" id="brake-heat">轉為熱 = 0%<small>沒有接觸摩擦，但仍耗散能量</small></div>
           </div>
+          <div class="lesson-steps" role="group" aria-label="磁煞車觀察層次">
+            <button type="button" class="brake-layer active" data-brake-layer="all" aria-pressed="true">完整因果</button>
+            <button type="button" class="brake-layer" data-brake-layer="flux" aria-pressed="false">1 磁通量變化</button>
+            <button type="button" class="brake-layer" data-brake-layer="current" aria-pressed="false">2 渦電流方向</button>
+            <button type="button" class="brake-layer" data-brake-layer="force" aria-pressed="false">3 I × B 磁力</button>
+          </div>
           <div class="plot-wrap">
-            <canvas id="brake-canvas" role="img" aria-label="導體圓盤通過磁鐵時的渦電流、磁場、反向力矩與減速動畫。"></canvas>
+            <canvas id="brake-canvas" role="img" aria-label="導體圓盤通過垂直磁場時，追蹤金屬區塊的磁通、渦電流、I 叉乘 B 磁力與減速動畫。"></canvas>
+          </div>
+          <div class="law-chain" aria-label="磁煞車定律鏈">
+            <div class="law-step"><strong>1 運動</strong><span id="brake-proof-motion">圓盤邊緣 v = rω</span></div>
+            <div class="law-step"><strong>2 磁通</strong><span id="brake-proof-flux">Φ = B · A重疊</span></div>
+            <div class="law-step"><strong>3 感應</strong><span id="brake-proof-current">ε = −dΦ/dt，電流反抗變化</span></div>
+            <div class="law-step"><strong>4 磁力</strong><span id="brake-proof-force">F = Iℓ × B，合力反向</span></div>
           </div>
           <div class="controls">
             <div class="control">
@@ -1523,13 +1574,15 @@
             </div>
           </div>
           <div class="checks">
+            <label class="check"><input type="checkbox" id="brake-show-flux" checked>顯示磁通量追蹤</label>
             <label class="check"><input type="checkbox" id="brake-show-current" checked>顯示渦電流與電子流</label>
             <label class="check"><input type="checkbox" id="brake-show-field" checked>顯示磁場</label>
+            <label class="check"><input type="checkbox" id="brake-show-force" checked>顯示局部磁力</label>
             <label class="check"><input type="checkbox" id="brake-show-heat" checked>顯示熱能累積</label>
           </div>
           <section class="teacher-note">
-            <p><strong>講法：</strong>先把 B 設為 0，確認圓盤保持轉動；再逐步增加 B，依序指出「磁通改變 → 渦電流 → 反向力矩 → 減速發熱」。切換開槽圓盤，可看見電流迴路被截斷後煞車變弱。</p>
-            <p><strong>強調：</strong>渦電流煞車力隨速度下降，因此單靠它不會在有限時間內把物體鎖死；實際系統仍需要停車保持裝置。</p>
+            <p><strong>講法：</strong>依序按 1、2、3。先追蹤同一塊金屬往下穿越「⊗」磁區：進入時 Φ 增加、完全位於均勻磁區時 Φ 不變、離開時 Φ 減少。接著才用楞次定律判斷渦電流，最後在真正位於磁區內的電流段套用 I × B。</p>
+            <p><strong>模型界線：</strong>方向、B² 與速度比例、材料及開槽效應依物理定律計算；圓盤內實際渦電流會是連續分布，此處用兩個主要迴路做教學化呈現，不宣稱是有限元素分析。</p>
           </section>
         </div>
 
@@ -1552,8 +1605,20 @@
             <div class="badge" id="motor-speed-badge">轉速 = 0 rpm<small>啟動後逐漸接近平衡轉速</small></div>
             <div class="badge" id="motor-commutator">換向器：A 接正極<small>跨過半圈時交換電流方向</small></div>
           </div>
+          <div class="lesson-steps" role="group" aria-label="直流馬達觀察層次">
+            <button type="button" class="motor-layer active" data-motor-layer="all" aria-pressed="true">完整因果</button>
+            <button type="button" class="motor-layer" data-motor-layer="current" aria-pressed="false">1 找電流方向</button>
+            <button type="button" class="motor-layer" data-motor-layer="force" aria-pressed="false">2 判斷 I × B</button>
+            <button type="button" class="motor-layer" data-motor-layer="torque" aria-pressed="false">3 合成力矩</button>
+          </div>
           <div class="plot-wrap">
             <canvas id="motor-canvas" role="img" aria-label="包含磁極、線圈、電流粒子、受力方向、分裂環換向器與電刷的直流馬達動畫。"></canvas>
+          </div>
+          <div class="law-chain" aria-label="馬達磁力定律鏈">
+            <div class="law-step"><strong>1 電流</strong><span id="motor-proof-current">兩側導線電流方向相反</span></div>
+            <div class="law-step"><strong>2 磁場</strong><span id="motor-proof-field">B 由 N 極指向 S 極</span></div>
+            <div class="law-step"><strong>3 受力</strong><span id="motor-proof-force">F = Iℓ × B，兩側力相反</span></div>
+            <div class="law-step"><strong>4 力矩</strong><span id="motor-proof-torque">力偶使線圈繼續轉動</span></div>
           </div>
           <div class="controls">
             <div class="control">
@@ -1582,6 +1647,7 @@
             <label class="check"><input type="checkbox" id="motor-show-electrons" checked>顯示電子流</label>
             <label class="check"><input type="checkbox" id="motor-show-field" checked>顯示磁場</label>
             <label class="check"><input type="checkbox" id="motor-show-force" checked>顯示兩側受力</label>
+            <label class="check"><input type="checkbox" id="motor-show-vector" checked>顯示 I × B 向量驗證</label>
           </div>
           <section class="teacher-note">
             <p><strong>講法：</strong>先暫停，沿著橘色粒子找出線圈兩側電流，再用 I × B 判斷紅色受力。播放後盯著下方分裂環：每跨過半圈，刷子接觸的銅片交換，線圈電流反向，但轉動力矩仍維持同向。</p>
@@ -1666,6 +1732,8 @@
     let activeAngular = 'gyro';
     let activeLight = 'refraction';
     let activeElectromagnetism = 'brake';
+    let activeBrakeLayer = 'all';
+    let activeMotorLayer = 'all';
     let mirrorLesson = 'image';
     let mirrorParallelMode = 'single';
     let running = true;
@@ -7154,41 +7222,112 @@
       const B = number('brake-field');
       const omega0 = number('brake-start');
       const slotted = $('brake-disk').value === 'slotted';
-      const conductivity = material === 'copper' ? 1.2 : material === 'aluminum' ? .78 : .008;
-      const loopFactor = slotted ? .27 : 1;
-      const gamma = conductivity * B * B * loopFactor * .28;
-      const omega = gamma > 0.00001 ? omega0 * Math.exp(-gamma * time) : omega0;
-      const angle = gamma > 0.00001 ? omega0 / gamma * (1 - Math.exp(-gamma * time)) : omega0 * time;
-      const current = conductivity * B * omega * loopFactor / 15;
-      const torque = gamma * omega;
+      const radiusM = .18;
+      const effectiveLength = .06;
+      const inertia = .013;
+      const resistance = material === 'copper' ? .026 : material === 'aluminum' ? .040 : 5000;
+      const loopFactor = slotted ? .22 : 1;
+      const gamma = B * B * effectiveLength * effectiveLength * radiusM * radiusM * loopFactor / (resistance * inertia);
+      const omega = gamma > 0.000001 ? omega0 * Math.exp(-gamma * time) : omega0;
+      const angle = gamma > 0.000001 ? omega0 / gamma * (1 - Math.exp(-gamma * time)) : omega0 * time;
+      const surfaceSpeed = radiusM * omega;
+      const fluxRate = B * effectiveLength * surfaceSpeed;
+      const emf = fluxRate;
+      const current = emf / resistance * loopFactor;
+      const force = current * effectiveLength * B;
+      const torque = force * radiusM;
       const heat = omega0 > 0 ? 1 - (omega * omega) / (omega0 * omega0) : 0;
-      return { material, B, omega0, slotted, conductivity, loopFactor, gamma, omega, angle, current, torque, heat };
+      const heatEnergy = .5 * inertia * Math.max(0, omega0 * omega0 - omega * omega);
+      const trackedPhase = ((angle / (Math.PI * 2)) % 1 + 1) % 1;
+      return {
+        material, B, omega0, slotted, radiusM, effectiveLength, inertia, resistance,
+        loopFactor, gamma, omega, angle, surfaceSpeed, fluxRate, emf, current,
+        force, torque, heat, heatEnergy, trackedPhase
+      };
     }
 
-    function drawBrakeCausalStrip(ctx, w, h, activeStrength) {
-      const labels = ['圓盤轉動', '磁通量改變', '渦電流', '反向力矩', '焦耳熱'];
+    function drawFluxSymbol(ctx, x, y, intoPage, color = '#2563eb', radius = 8, alpha = 1) {
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.strokeStyle = color;
+      ctx.fillStyle = color;
+      ctx.lineWidth = 1.8;
+      ctx.beginPath();
+      ctx.arc(x, y, radius, 0, Math.PI * 2);
+      ctx.stroke();
+      if (intoPage) {
+        ctx.beginPath();
+        ctx.moveTo(x - radius * .48, y - radius * .48);
+        ctx.lineTo(x + radius * .48, y + radius * .48);
+        ctx.moveTo(x + radius * .48, y - radius * .48);
+        ctx.lineTo(x - radius * .48, y + radius * .48);
+        ctx.stroke();
+      } else {
+        ctx.beginPath();
+        ctx.arc(x, y, Math.max(2.2, radius * .25), 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    function drawPerpendicularField(ctx, rect, B, alpha = 1) {
+      ctx.save();
+      const field = ctx.createLinearGradient(rect.x, rect.y, rect.x + rect.w, rect.y + rect.h);
+      field.addColorStop(0, `rgba(37,99,235,${.07 + B * .07})`);
+      field.addColorStop(.5, `rgba(14,165,233,${.17 + B * .09})`);
+      field.addColorStop(1, `rgba(37,99,235,${.07 + B * .07})`);
+      ctx.fillStyle = field;
+      ctx.globalAlpha = alpha;
+      ctx.fillRect(rect.x, rect.y, rect.w, rect.h);
+      ctx.strokeStyle = '#2563eb';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([6, 5]);
+      ctx.strokeRect(rect.x, rect.y, rect.w, rect.h);
+      ctx.setLineDash([]);
+      const columns = Math.max(2, Math.floor(rect.w / 30));
+      const rows = Math.max(2, Math.floor(rect.h / 30));
+      for (let row = 0; row < rows; row += 1) {
+        for (let column = 0; column < columns; column += 1) {
+          drawFluxSymbol(
+            ctx,
+            rect.x + (column + .5) * rect.w / columns,
+            rect.y + (row + .5) * rect.h / rows,
+            true,
+            '#1d4ed8',
+            Math.min(7, rect.w / columns * .22),
+            .35 + B * .45
+          );
+        }
+      }
+      ctx.restore();
+    }
+
+    function drawBrakeCausalStrip(ctx, w, h, state) {
+      const labels = ['v = rω', 'dΦ/dt', 'ε → I渦流', 'Iℓ × B', 'τ反向 → 熱'];
       const colors = ['#475569', '#2563eb', '#ea580c', '#be123c', '#dc2626'];
       const compact = w < 720;
-      const gap = compact ? 7 : 12;
-      const totalW = Math.min(w - 32, 890);
+      const gap = compact ? 5 : 10;
+      const totalW = Math.min(w - 24, 930);
       const boxW = (totalW - gap * 4) / 5;
       const left = (w - totalW) / 2;
-      const y = h - 62;
+      const y = h - 49;
+      const strength = clampValue(state.current / 2.5, 0, 1);
       labels.forEach((label, index) => {
         const x = left + index * (boxW + gap);
-        ctx.fillStyle = index === 0 || activeStrength > .015 ? `${colors[index]}18` : 'rgba(148,163,184,.10)';
-        ctx.strokeStyle = index === 0 || activeStrength > .015 ? colors[index] : '#94a3b8';
-        ctx.lineWidth = 1.4;
+        const active = index === 0 || strength > .001;
+        ctx.fillStyle = active ? `${colors[index]}16` : 'rgba(148,163,184,.08)';
+        ctx.strokeStyle = active ? colors[index] : '#94a3b8';
+        ctx.lineWidth = 1.2;
         ctx.beginPath();
-        ctx.roundRect(x, y, boxW, 38, 7);
+        ctx.roundRect(x, y, boxW, 32, 6);
         ctx.fill();
         ctx.stroke();
-        ctx.fillStyle = colors[index];
-        ctx.font = `700 ${compact ? 10 : 12}px "Microsoft JhengHei", Arial, sans-serif`;
+        ctx.fillStyle = active ? colors[index] : '#94a3b8';
+        ctx.font = `700 ${compact ? 9 : 11}px "Microsoft JhengHei", Arial, sans-serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
-        ctx.fillText(label, x + boxW / 2, y + 19);
-        if (index < labels.length - 1) drawArrow(ctx, x + boxW + 2, y + 19, x + boxW + gap - 2, y + 19, '#64748b');
+        ctx.fillText(label, x + boxW / 2, y + 16);
+        if (index < labels.length - 1) drawArrow(ctx, x + boxW + 1, y + 16, x + boxW + gap - 1, y + 16, '#94a3b8');
       });
     }
 
@@ -7215,44 +7354,206 @@
       ctx.restore();
     }
 
+    function drawBrakeMicroscope(ctx, rect, state, options) {
+      const { showFlux, showCurrent, showForce, compact } = options;
+      ctx.save();
+      ctx.fillStyle = '#081827';
+      ctx.strokeStyle = '#31506a';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.roundRect(rect.x, rect.y, rect.w, rect.h, 8);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = '#e2e8f0';
+      ctx.font = `700 ${compact ? 12 : 14}px "Microsoft JhengHei", Arial, sans-serif`;
+      ctx.fillText('局部追蹤：同一塊金屬往下穿越磁區', rect.x + 13, rect.y + 23);
+
+      const trackX = rect.x + rect.w * .27;
+      const loopRadius = compact ? 19 : 23;
+      const top = rect.y + 47;
+      const bottom = rect.y + rect.h - 58;
+      const zoneTop = rect.y + rect.h * .31;
+      const zoneBottom = rect.y + rect.h * .69;
+      const centerY = top + state.trackedPhase * (bottom - top);
+      const fieldRect = { x: rect.x + 20, y: zoneTop, w: rect.w * .49, h: zoneBottom - zoneTop };
+      if ($('brake-show-field').checked && state.B > .001) drawPerpendicularField(ctx, fieldRect, state.B, .95);
+      else {
+        ctx.strokeStyle = '#64748b';
+        ctx.setLineDash([5, 5]);
+        ctx.strokeRect(fieldRect.x, fieldRect.y, fieldRect.w, fieldRect.h);
+        ctx.setLineDash([]);
+      }
+      ctx.fillStyle = '#93c5fd';
+      ctx.font = `700 ${compact ? 10 : 12}px "Microsoft JhengHei", Arial, sans-serif`;
+      ctx.fillText('外加 B ⊗（進入紙面）', fieldRect.x + 8, fieldRect.y + 17);
+      drawArrow(ctx, trackX - 38, top + 4, trackX - 38, top + 46, '#e2e8f0');
+      ctx.fillStyle = '#e2e8f0';
+      ctx.fillText('v', trackX - 50, top + 25);
+
+      let overlap = 0;
+      let change = 0;
+      if (centerY >= zoneTop - loopRadius && centerY < zoneTop + loopRadius) {
+        overlap = (centerY - (zoneTop - loopRadius)) / (2 * loopRadius);
+        change = 1;
+      } else if (centerY >= zoneTop + loopRadius && centerY <= zoneBottom - loopRadius) {
+        overlap = 1;
+      } else if (centerY > zoneBottom - loopRadius && centerY <= zoneBottom + loopRadius) {
+        overlap = (zoneBottom + loopRadius - centerY) / (2 * loopRadius);
+        change = -1;
+      }
+      overlap = clampValue(overlap, 0, 1);
+      const hasInduction = Math.abs(change) > .5 && state.current > .0005;
+
+      ctx.save();
+      ctx.strokeStyle = '#f8fafc';
+      ctx.fillStyle = `rgba(96,165,250,${showFlux ? .12 + overlap * .36 : .05})`;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(trackX, centerY, loopRadius, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
+      if (showCurrent && hasInduction) {
+        const clockwise = change < 0;
+        drawCurrentLoop(ctx, { x: trackX, y: centerY }, loopRadius, loopRadius, clockwise ? 1 : -1, clampValue(state.current / 2.4, .12, 1), time, '#fb923c');
+        drawFluxSymbol(ctx, trackX, centerY, change < 0, change < 0 ? '#fb923c' : '#22c55e', 7, .95);
+      }
+      if (showForce && hasInduction) {
+        drawArrow(ctx, trackX + loopRadius + 16, centerY + 22, trackX + loopRadius + 16, centerY - 24, '#fb7185');
+        ctx.fillStyle = '#fb7185';
+        ctx.font = `700 ${compact ? 10 : 12}px "Microsoft JhengHei", Arial, sans-serif`;
+        ctx.fillText('F 磁力', trackX + loopRadius + 22, centerY - 9);
+      }
+
+      const stateLabel = change > 0
+        ? '進入：Φ⊗ 增加 → I 逆時針'
+        : change < 0
+          ? '離開：Φ⊗ 減少 → I 順時針'
+          : overlap > .99
+            ? '完全位於均勻磁區：Φ 不變 → I = 0'
+            : '磁區外：Φ = 0 → I = 0';
+      ctx.fillStyle = change === 0 ? '#cbd5e1' : '#fbbf24';
+      ctx.font = `700 ${compact ? 10 : 12}px "Microsoft JhengHei", Arial, sans-serif`;
+      ctx.fillText(stateLabel, rect.x + 13, rect.y + rect.h - 18);
+
+      const graphX = rect.x + rect.w * .59;
+      const graphW = rect.w * .35;
+      const graphTop = rect.y + 53;
+      const graphH = Math.max(68, rect.h * .29);
+      ctx.strokeStyle = '#64748b';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(graphX, graphTop + graphH);
+      ctx.lineTo(graphX + graphW, graphTop + graphH);
+      ctx.lineTo(graphX + graphW, graphTop);
+      ctx.stroke();
+      ctx.strokeStyle = '#60a5fa';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(graphX, graphTop + graphH);
+      ctx.lineTo(graphX + graphW * .24, graphTop + graphH);
+      ctx.lineTo(graphX + graphW * .39, graphTop + 8);
+      ctx.lineTo(graphX + graphW * .61, graphTop + 8);
+      ctx.lineTo(graphX + graphW * .76, graphTop + graphH);
+      ctx.lineTo(graphX + graphW, graphTop + graphH);
+      ctx.stroke();
+      const graphDotX = graphX + state.trackedPhase * graphW;
+      const graphDotY = graphTop + graphH - overlap * (graphH - 8);
+      ctx.fillStyle = '#f8fafc';
+      ctx.beginPath();
+      ctx.arc(graphDotX, graphDotY, 4.5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = '#bfdbfe';
+      ctx.font = `700 ${compact ? 10 : 11}px "Microsoft JhengHei", Arial, sans-serif`;
+      ctx.fillText('磁通 Φ', graphX, graphTop - 8);
+
+      const rows = [
+        ['A重疊', `${Math.round(overlap * 100)}%`],
+        ['dΦ/dt', change > 0 ? '正' : change < 0 ? '負' : '0'],
+        ['感應電流', hasInduction ? (change > 0 ? '逆時針' : '順時針') : '0'],
+        ['磁力', hasInduction ? '向上，反抗 v' : '0']
+      ];
+      rows.forEach((row, index) => {
+        const y = graphTop + graphH + 25 + index * (compact ? 20 : 23);
+        ctx.fillStyle = '#94a3b8';
+        ctx.textAlign = 'left';
+        ctx.fillText(row[0], graphX, y);
+        ctx.fillStyle = index === 3 && hasInduction ? '#fb7185' : '#f8fafc';
+        ctx.textAlign = 'right';
+        ctx.fillText(row[1], graphX + graphW, y);
+      });
+      ctx.restore();
+    }
+
     function drawMagneticBrake() {
       const canvas = $('brake-canvas');
       const { ctx, w, h } = resizeCanvas(canvas);
       const state = brakeState();
-      const cx = w * (w < 700 ? .38 : .34);
-      const cy = h * .43;
-      const radius = Math.min(h * .30, w * .25, 155);
-      const magnetX = cx + radius * .54;
-      const magnetW = Math.min(150, w * .18);
-      const magnetH = 64;
-      const gapTop = cy - 24;
+      const compact = w < 720;
+      const showFlux = $('brake-show-flux').checked && ['all', 'flux', 'current', 'force'].includes(activeBrakeLayer);
+      const showCurrent = $('brake-show-current').checked && ['all', 'current', 'force'].includes(activeBrakeLayer);
+      const showForce = $('brake-show-force').checked && ['all', 'force'].includes(activeBrakeLayer);
+      const scene = compact
+        ? { x: 10, y: 10, w: w - 20, h: 302 }
+        : { x: 14, y: 14, w: w * .55 - 20, h: h - 82 };
+      const microscope = compact
+        ? { x: 10, y: 326, w: w - 20, h: h - 390 }
+        : { x: w * .56, y: 14, w: w * .44 - 14, h: h - 82 };
 
       const backdrop = ctx.createLinearGradient(0, 0, 0, h);
       backdrop.addColorStop(0, '#f8fafc');
-      backdrop.addColorStop(1, '#e8eef3');
+      backdrop.addColorStop(1, '#e4ebf1');
       ctx.fillStyle = backdrop;
       ctx.fillRect(0, 0, w, h);
-      ctx.fillStyle = '#cbd5e1';
-      ctx.fillRect(0, h * .72, w, 5);
-      ctx.fillStyle = '#dbe2e8';
-      ctx.fillRect(0, h * .72 + 5, w, h * .28 - 5);
+      ctx.fillStyle = 'rgba(255,255,255,.7)';
+      ctx.strokeStyle = '#cbd5e1';
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.roundRect(scene.x, scene.y, scene.w, scene.h, 8);
+      ctx.fill();
+      ctx.stroke();
+
+      const radius = Math.min(scene.w * (compact ? .28 : .31), scene.h * .31, compact ? 100 : 170);
+      const cx = scene.x + scene.w * (compact ? .36 : .37);
+      const cy = scene.y + scene.h * .51;
+      const patch = {
+        x: cx + radius * .42,
+        y: cy - radius * .47,
+        w: radius * .68,
+        h: radius * .94
+      };
+
+      ctx.save();
+      ctx.fillStyle = '#1e3a8a';
+      ctx.strokeStyle = '#172554';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([6, 4]);
+      ctx.beginPath();
+      ctx.roundRect(patch.x + 8, patch.y + 8, patch.w, patch.h, 8);
+      ctx.fill();
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = '#dbeafe';
+      ctx.font = `700 ${compact ? 10 : 12}px "Microsoft JhengHei", Arial, sans-serif`;
+      ctx.fillText('S 後方極靴', patch.x + 13, patch.y + patch.h + 24);
+      ctx.restore();
 
       ctx.save();
       ctx.translate(cx, cy);
       ctx.rotate(state.angle);
-      const diskGradient = ctx.createRadialGradient(-radius * .28, -radius * .32, 8, 0, 0, radius);
+      const diskGradient = ctx.createRadialGradient(-radius * .30, -radius * .34, 5, 0, 0, radius);
       if (state.material === 'copper') {
-        diskGradient.addColorStop(0, '#f5c09a');
-        diskGradient.addColorStop(.55, '#b96b3b');
-        diskGradient.addColorStop(1, '#75452d');
+        diskGradient.addColorStop(0, '#ffd0aa');
+        diskGradient.addColorStop(.52, '#b96838');
+        diskGradient.addColorStop(1, '#6f3a24');
       } else if (state.material === 'plastic') {
         diskGradient.addColorStop(0, '#d8f1f0');
-        diskGradient.addColorStop(.55, '#7bc8c4');
-        diskGradient.addColorStop(1, '#397e7c');
+        diskGradient.addColorStop(.52, '#69b9b6');
+        diskGradient.addColorStop(1, '#2f7775');
       } else {
-        diskGradient.addColorStop(0, '#f8fafc');
-        diskGradient.addColorStop(.55, '#aab6c3');
-        diskGradient.addColorStop(1, '#64748b');
+        diskGradient.addColorStop(0, '#ffffff');
+        diskGradient.addColorStop(.52, '#a9b6c4');
+        diskGradient.addColorStop(1, '#526273');
       }
       ctx.fillStyle = diskGradient;
       ctx.strokeStyle = '#334155';
@@ -7261,18 +7562,18 @@
       ctx.arc(0, 0, radius, 0, Math.PI * 2);
       ctx.fill();
       ctx.stroke();
-      ctx.strokeStyle = 'rgba(255,255,255,.48)';
-      ctx.lineWidth = 1.4;
+      ctx.strokeStyle = 'rgba(255,255,255,.5)';
+      ctx.lineWidth = 1.3;
       for (let i = 0; i < 12; i += 1) {
         const angle = i / 12 * Math.PI * 2;
         ctx.beginPath();
-        ctx.moveTo(Math.cos(angle) * radius * .20, Math.sin(angle) * radius * .20);
-        ctx.lineTo(Math.cos(angle) * radius * .92, Math.sin(angle) * radius * .92);
+        ctx.moveTo(Math.cos(angle) * radius * .22, Math.sin(angle) * radius * .22);
+        ctx.lineTo(Math.cos(angle) * radius * .93, Math.sin(angle) * radius * .93);
         ctx.stroke();
       }
       if (state.slotted) {
         ctx.strokeStyle = '#eef2f6';
-        ctx.lineWidth = Math.max(8, radius * .075);
+        ctx.lineWidth = Math.max(7, radius * .075);
         for (let i = 0; i < 14; i += 1) {
           const angle = i / 14 * Math.PI * 2;
           ctx.beginPath();
@@ -7288,80 +7589,108 @@
       ctx.restore();
 
       ctx.fillStyle = '#475569';
-      ctx.fillRect(cx - 9, cy, 18, h * .30);
+      ctx.fillRect(cx - 7, cy, 14, scene.y + scene.h - cy - 18);
       ctx.fillStyle = '#334155';
       ctx.beginPath();
-      ctx.ellipse(cx, h * .75, 55, 12, 0, 0, Math.PI * 2);
+      ctx.ellipse(cx, scene.y + scene.h - 14, radius * .34, 9, 0, 0, Math.PI * 2);
       ctx.fill();
 
-      drawMagnetBlock(ctx, magnetX, gapTop - magnetH, magnetW, magnetH, 'N', '#f87171', '#991b1b');
-      drawMagnetBlock(ctx, magnetX, gapTop + 48, magnetW, magnetH, 'S', '#60a5fa', '#1e3a8a');
-      if ($('brake-show-field').checked && state.B > .01) {
-        for (let i = 0; i < 5; i += 1) {
-          const x = magnetX + 18 + i * (magnetW - 36) / 4;
-          drawArrow(ctx, x, gapTop - 2, x, gapTop + 45, `rgba(37,99,235,${.35 + state.B * .45})`);
-        }
-        drawSceneLabel(ctx, magnetX + magnetW, gapTop + 5, `B = ${state.B.toFixed(2)} T`, 'right');
+      if ($('brake-show-field').checked && state.B > .001) drawPerpendicularField(ctx, patch, state.B, .96);
+      else {
+        ctx.strokeStyle = '#64748b';
+        ctx.setLineDash([6, 5]);
+        ctx.strokeRect(patch.x, patch.y, patch.w, patch.h);
+        ctx.setLineDash([]);
       }
 
-      const overlap = { x: cx + radius * .63, y: cy };
-      if ($('brake-show-current').checked && state.current > .001) {
-        const strength = clampValue(state.current * 1.6, .08, 1);
-        drawCurrentLoop(ctx, { x: overlap.x - 25, y: overlap.y - 33 }, radius * .23, radius * .15, 1, strength, time, '#ea580c');
-        drawCurrentLoop(ctx, { x: overlap.x + 27, y: overlap.y + 34 }, radius * .22, radius * .14, -1, strength, time, '#c2410c');
-        drawSceneLabel(ctx, overlap.x - radius * .35, overlap.y + radius * .37, state.slotted ? '開槽切斷大型渦流迴路' : '進入／離開磁區的渦流方向相反');
-      }
-
-      const direction = state.omega >= 0 ? -1 : 1;
       ctx.save();
-      ctx.strokeStyle = '#be123c';
-      ctx.fillStyle = '#be123c';
-      ctx.lineWidth = 4;
+      ctx.strokeStyle = '#b91c1c';
+      ctx.lineWidth = compact ? 8 : 11;
       ctx.beginPath();
-      ctx.arc(cx, cy, radius + 21, direction > 0 ? .2 : Math.PI + .2, direction > 0 ? 1.25 : Math.PI + 1.25, direction < 0);
+      ctx.roundRect(patch.x - 5, patch.y - 5, patch.w + 10, patch.h + 10, 9);
       ctx.stroke();
-      const endAngle = direction > 0 ? 1.25 : Math.PI + 1.25;
-      const arrowX = cx + Math.cos(endAngle) * (radius + 21);
-      const arrowY = cy + Math.sin(endAngle) * (radius + 21);
-      ctx.beginPath();
-      ctx.arc(arrowX, arrowY, 5, 0, Math.PI * 2);
-      ctx.fill();
+      ctx.fillStyle = '#991b1b';
+      ctx.font = `800 ${compact ? 11 : 14}px "Microsoft JhengHei", Arial, sans-serif`;
+      ctx.fillText('N 前方極靴', patch.x - 2, patch.y - 13);
       ctx.restore();
-      drawSceneLabel(ctx, Math.max(14, cx - radius), Math.max(18, cy - radius - 54), state.B > .01 && state.material !== 'plastic' ? '紅色：反抗轉動的煞車力矩' : '幾乎沒有磁煞車力矩');
+
+      drawArrow(ctx, patch.x + patch.w + 18, patch.y - 20, patch.x + patch.w + 18, patch.y + 38, '#475569');
+      ctx.fillStyle = '#334155';
+      ctx.font = `700 ${compact ? 10 : 12}px "Microsoft JhengHei", Arial, sans-serif`;
+      ctx.fillText(`v = ${state.surfaceSpeed.toFixed(2)} m/s`, patch.x + patch.w + 23, patch.y + 12);
+
+      const loopRadius = Math.max(18, radius * .23);
+      const entry = { x: patch.x + patch.w * .30, y: patch.y - 3 };
+      const exit = { x: patch.x + patch.w * .70, y: patch.y + patch.h + 3 };
+      if (showFlux) {
+        drawFluxSymbol(ctx, entry.x, entry.y, false, '#16a34a', 8, .95);
+        drawFluxSymbol(ctx, exit.x, exit.y, true, '#ea580c', 8, .95);
+      }
+      if (showCurrent && state.current > .0005) {
+        const strength = clampValue(state.current / 2.5, .12, 1);
+        drawCurrentLoop(ctx, entry, loopRadius, loopRadius * .78, -1, strength, time, '#16a34a');
+        drawCurrentLoop(ctx, exit, loopRadius, loopRadius * .78, 1, strength, time, '#ea580c');
+      }
+      if (showForce && state.force > .00001) {
+        drawArrow(ctx, entry.x + loopRadius + 7, patch.y + 17, entry.x + loopRadius + 7, patch.y - 27, '#be123c');
+        drawArrow(ctx, exit.x - loopRadius - 7, patch.y + patch.h - 17, exit.x - loopRadius - 7, patch.y + patch.h - 61, '#be123c');
+        ctx.fillStyle = '#be123c';
+        ctx.font = `700 ${compact ? 10 : 12}px "Microsoft JhengHei", Arial, sans-serif`;
+        ctx.fillText('F↑', entry.x + loopRadius + 12, patch.y - 23);
+        ctx.fillText('F↑', exit.x - loopRadius - 25, patch.y + patch.h - 63);
+      }
+
+      ctx.fillStyle = '#334155';
+      ctx.font = `700 ${compact ? 9 : 11}px "Microsoft JhengHei", Arial, sans-serif`;
+      ctx.fillText('進入：Φ⊗增加', Math.max(scene.x + 8, entry.x - loopRadius), Math.max(scene.y + 18, entry.y - loopRadius - 8));
+      ctx.fillText('離開：Φ⊗減少', Math.max(scene.x + 8, exit.x - loopRadius), Math.min(scene.y + scene.h - 8, exit.y + loopRadius + 15));
+
+      if (showForce && state.force > .00001) {
+        ctx.save();
+        ctx.strokeStyle = '#be123c';
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.arc(cx, cy, radius + 18, .18, 1.35);
+        ctx.stroke();
+        ctx.fillStyle = '#be123c';
+        ctx.beginPath();
+        ctx.arc(cx + Math.cos(.18) * (radius + 18), cy + Math.sin(.18) * (radius + 18), 5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.restore();
+      }
+      drawSceneLabel(ctx, scene.x + 10, scene.y + 10, state.force > .00001 ? '兩個局部 F 都反抗圓盤向下運動' : '沒有磁通變化，就沒有磁煞車力');
 
       if ($('brake-show-heat').checked) {
-        const barX = w - Math.min(210, w * .25);
-        const barY = cy + radius * .62;
-        const barW = Math.min(165, w * .20);
-        ctx.fillStyle = 'rgba(255,255,255,.86)';
-        ctx.strokeStyle = '#94a3b8';
-        ctx.beginPath();
-        ctx.roundRect(barX - 12, barY - 26, barW + 28, 76, 8);
-        ctx.fill();
-        ctx.stroke();
-        ctx.fillStyle = '#475569';
-        ctx.font = '700 12px "Microsoft JhengHei", Arial, sans-serif';
-        ctx.fillText('動能轉為導體內能', barX, barY - 7);
-        ctx.fillStyle = '#e2e8f0';
-        ctx.fillRect(barX, barY + 6, barW, 14);
+        const barW = Math.min(150, scene.w * .31);
+        const barX = scene.x + scene.w - barW - 14;
+        const barY = scene.y + scene.h - 26;
+        ctx.fillStyle = '#cbd5e1';
+        ctx.fillRect(barX, barY, barW, 10);
         const heatGradient = ctx.createLinearGradient(barX, 0, barX + barW, 0);
         heatGradient.addColorStop(0, '#fbbf24');
         heatGradient.addColorStop(1, '#dc2626');
         ctx.fillStyle = heatGradient;
-        ctx.fillRect(barX, barY + 6, barW * clampValue(state.heat, 0, 1), 14);
+        ctx.fillRect(barX, barY, barW * clampValue(state.heat, 0, 1), 10);
         ctx.fillStyle = '#475569';
-        ctx.fillText(`${(state.heat * 100).toFixed(0)}%`, barX + barW + 6, barY + 18);
+        ctx.font = `700 ${compact ? 9 : 11}px "Microsoft JhengHei", Arial, sans-serif`;
+        ctx.fillText(`焦耳熱 ${(state.heatEnergy).toFixed(2)} J`, barX, barY - 7);
       }
-      drawBrakeCausalStrip(ctx, w, h, state.current);
+
+      drawBrakeMicroscope(ctx, microscope, state, { showFlux, showCurrent, showForce, compact });
+      drawBrakeCausalStrip(ctx, w, h, state);
 
       const materialName = state.material === 'copper' ? '銅' : state.material === 'aluminum' ? '鋁' : '塑膠';
       setText('brake-field-out', `${state.B.toFixed(2)} T`);
       setText('brake-start-out', `${state.omega0.toFixed(1)} rad/s`);
       setText('brake-speed-out', `${number('brake-speed').toFixed(2)}x`);
-      $('brake-omega').innerHTML = `角速度 ω = ${state.omega.toFixed(2)} rad/s<small>${state.gamma < .001 ? '幾乎等速轉動' : `時間常數約 ${(1 / state.gamma).toFixed(1)} s`}</small>`;
-      $('brake-current').innerHTML = `渦電流相對值 = ${state.current.toFixed(2)}<small>${materialName}${state.slotted ? '且有開槽，電流迴路受阻' : '完整圓盤可形成大迴路'}</small>`;
-      $('brake-torque').innerHTML = `煞車力矩 = ${state.torque.toFixed(2)}（相對值）<small>方向永遠反抗當下轉動</small>`;
-      $('brake-heat').innerHTML = `轉為熱 = ${(state.heat * 100).toFixed(0)}%<small>由圓盤損失的轉動動能估算</small>`;
+      $('brake-omega').innerHTML = `角速度 ω = ${state.omega.toFixed(2)} rad/s<small>邊緣速度 v = ${state.surfaceSpeed.toFixed(2)} m/s</small>`;
+      $('brake-current').innerHTML = `|dΦ/dt| = ${(state.fluxRate * 1000).toFixed(1)} mWb/s<small>ε = ${state.emf.toFixed(3)} V；${materialName}渦流 I ≈ ${state.current.toFixed(2)} A</small>`;
+      $('brake-torque').innerHTML = `磁力 F = ${state.force.toFixed(3)} N<small>τ = ${state.torque.toFixed(4)} N·m，方向反抗轉動</small>`;
+      $('brake-heat').innerHTML = `轉為熱 = ${(state.heat * 100).toFixed(0)}%<small>累積約 ${state.heatEnergy.toFixed(2)} J；無接觸仍耗散</small>`;
+      setText('brake-proof-motion', `v = rω = ${state.radiusM.toFixed(2)} × ${state.omega.toFixed(2)} = ${state.surfaceSpeed.toFixed(2)} m/s`);
+      setText('brake-proof-flux', `|dΦ/dt| ≈ Bℓv = ${(state.fluxRate * 1000).toFixed(1)} mWb/s`);
+      setText('brake-proof-current', `ε=${state.emf.toFixed(3)} V；I≈${state.current.toFixed(2)} A，方向反抗 ΔΦ`);
+      setText('brake-proof-force', `F≈IℓB=${state.force.toFixed(3)} N；τ≈${state.torque.toFixed(4)} N·m`);
     }
 
     function polylinePoint(points, ratio) {
@@ -7410,9 +7739,11 @@
       const angle = .52 + targetOmega * (time - tau * (1 - Math.exp(-time / tau)));
       const current = Math.max(.08, stallCurrent * (1 - .58 * (targetOmega ? omega / targetOmega : 0)));
       const torque = turns * current * B * area * Math.abs(Math.sin(angle));
+      const activeLength = .12;
+      const sideForce = turns * current * activeLength * B;
       const halfTurn = Math.floor((((angle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2)) / Math.PI);
       const stalled = available <= .001;
-      return { voltage, B, turns, load, area, driveMax, targetOmega, omega: stalled ? 0 : omega, angle: stalled ? .52 : angle, current, torque, halfTurn, stalled };
+      return { voltage, B, turns, load, area, activeLength, sideForce, driveMax, targetOmega, omega: stalled ? 0 : omega, angle: stalled ? .52 : angle, current, torque, halfTurn, stalled };
     }
 
     function drawCommutator(ctx, center, radius, angle, halfTurn, showCurrent, showElectrons, phase) {
@@ -7460,11 +7791,52 @@
       ctx.restore();
     }
 
+    function drawMotorVectorProof(ctx, x, y, width, leftCurrentUp) {
+      const height = 116;
+      const leftForce = leftCurrentUp ? '⊗' : '⊙';
+      const rightForce = leftCurrentUp ? '⊙' : '⊗';
+      ctx.save();
+      ctx.fillStyle = 'rgba(15,23,42,.94)';
+      ctx.strokeStyle = '#64748b';
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.roundRect(x, y, width, height, 8);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillStyle = '#f8fafc';
+      ctx.font = '800 12px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillText('右手定則：F = N I ℓ × B', x + 13, y + 22);
+      ctx.font = '700 13px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.fillStyle = '#fb923c';
+      ctx.fillText(`左導線  I${leftCurrentUp ? '↑' : '↓'}`, x + 13, y + 50);
+      ctx.fillStyle = '#93c5fd';
+      ctx.fillText('× B→', x + 116, y + 50);
+      ctx.fillStyle = '#fb7185';
+      ctx.fillText(`= F${leftForce}`, x + width - 67, y + 50);
+      ctx.fillStyle = '#fb923c';
+      ctx.fillText(`右導線  I${leftCurrentUp ? '↓' : '↑'}`, x + 13, y + 78);
+      ctx.fillStyle = '#93c5fd';
+      ctx.fillText('× B→', x + 116, y + 78);
+      ctx.fillStyle = '#fb7185';
+      ctx.fillText(`= F${rightForce}`, x + width - 67, y + 78);
+      ctx.fillStyle = '#cbd5e1';
+      ctx.font = '600 10px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.fillText('⊙ 指向紙外　⊗ 指向紙內；兩力形成力偶', x + 13, y + 102);
+      ctx.restore();
+    }
+
     function drawMotor() {
       const canvas = $('motor-canvas');
       const { ctx, w, h } = resizeCanvas(canvas);
       const state = motorState();
       const compact = w < 720;
+      const showField = $('motor-show-field').checked;
+      const showCurrent = $('motor-show-current').checked && ['all', 'current', 'force', 'torque'].includes(activeMotorLayer);
+      const showElectrons = $('motor-show-electrons').checked && showCurrent;
+      const showForce = $('motor-show-force').checked && ['all', 'force', 'torque'].includes(activeMotorLayer);
+      const showTorque = ['all', 'torque'].includes(activeMotorLayer);
+      const showVector = $('motor-show-vector').checked && ['all', 'force', 'torque'].includes(activeMotorLayer);
       const center = { x: w * .50, y: h * .38 };
       const poleW = compact ? 78 : Math.min(142, w * .14);
       const poleH = compact ? 185 : 225;
@@ -7485,7 +7857,13 @@
 
       drawMagnetBlock(ctx, leftPoleX, poleY, poleW, poleH, 'N', '#ef4444', '#991b1b');
       drawMagnetBlock(ctx, rightPoleX, poleY, poleW, poleH, 'S', '#60a5fa', '#1e3a8a');
-      if ($('motor-show-field').checked) {
+      if (showField) {
+        const fieldGradient = ctx.createLinearGradient(leftPoleX + poleW, 0, rightPoleX, 0);
+        fieldGradient.addColorStop(0, 'rgba(59,130,246,.12)');
+        fieldGradient.addColorStop(.5, 'rgba(147,197,253,.20)');
+        fieldGradient.addColorStop(1, 'rgba(59,130,246,.12)');
+        ctx.fillStyle = fieldGradient;
+        ctx.fillRect(leftPoleX + poleW, poleY + 9, rightPoleX - leftPoleX - poleW, poleH - 18);
         const lines = compact ? 4 : 6;
         for (let i = 0; i < lines; i += 1) {
           const y = center.y - halfHeight + i * (halfHeight * 2) / (lines - 1);
@@ -7532,15 +7910,34 @@
       ctx.restore();
 
       const currentReversed = state.halfTurn === 1;
+      const leftCurrentUp = !currentReversed;
       const route = currentReversed ? [...loop].reverse() : loop;
-      if ($('motor-show-current').checked) drawPolylineParticles(ctx, route, compact ? 13 : 18, time * .22, '#fb923c', 3.6);
-      if ($('motor-show-electrons').checked) drawPolylineParticles(ctx, route, compact ? 9 : 13, time * .17, '#a78bfa', 2.4, true);
+      if (showCurrent) {
+        drawPolylineParticles(ctx, route, compact ? 13 : 18, time * .22, '#fb923c', 3.6);
+        const leftFrom = pointOnSegment(topLeft, bottomLeft, leftCurrentUp ? .72 : .28);
+        const leftTo = pointOnSegment(topLeft, bottomLeft, leftCurrentUp ? .28 : .72);
+        const rightFrom = pointOnSegment(topRight, bottomRight, leftCurrentUp ? .28 : .72);
+        const rightTo = pointOnSegment(topRight, bottomRight, leftCurrentUp ? .72 : .28);
+        drawArrow(ctx, leftFrom.x, leftFrom.y, leftTo.x, leftTo.y, '#f97316');
+        drawArrow(ctx, rightFrom.x, rightFrom.y, rightTo.x, rightTo.y, '#f97316');
+      }
+      if (showElectrons) drawPolylineParticles(ctx, route, compact ? 9 : 13, time * .17, '#a78bfa', 2.4, true);
 
       const leftMid = pointOnSegment(topLeft, bottomLeft, .5);
       const rightMid = pointOnSegment(topRight, bottomRight, .5);
-      if ($('motor-show-force').checked) {
-        const leftOut = currentReversed ? '⊗' : '⊙';
-        const rightOut = currentReversed ? '⊙' : '⊗';
+      if (showCurrent) {
+        ctx.save();
+        ctx.font = `800 ${compact ? 11 : 13}px "Microsoft JhengHei", Arial, sans-serif`;
+        ctx.fillStyle = '#c2410c';
+        ctx.textAlign = 'right';
+        ctx.fillText(`I${leftCurrentUp ? '↑' : '↓'}`, leftMid.x - 13, leftMid.y - 24);
+        ctx.textAlign = 'left';
+        ctx.fillText(`I${leftCurrentUp ? '↓' : '↑'}`, rightMid.x + 13, rightMid.y - 24);
+        ctx.restore();
+      }
+      const leftOut = leftCurrentUp ? '⊗' : '⊙';
+      const rightOut = leftCurrentUp ? '⊙' : '⊗';
+      if (showForce && state.B > .001) {
         [
           { p: leftMid, symbol: leftOut, offset: -38 },
           { p: rightMid, symbol: rightOut, offset: 38 }
@@ -7564,7 +7961,7 @@
       }
 
       const commutatorCenter = { x: center.x, y: Math.min(h - 125, center.y + halfHeight + 92) };
-      drawCommutator(ctx, commutatorCenter, compact ? 29 : 36, state.angle, state.halfTurn, $('motor-show-current').checked, $('motor-show-electrons').checked, time);
+      drawCommutator(ctx, commutatorCenter, compact ? 29 : 36, state.angle, state.halfTurn, showCurrent, showElectrons, time);
       ctx.save();
       ctx.strokeStyle = '#475569';
       ctx.lineWidth = 3;
@@ -7593,17 +7990,35 @@
         compact ? 'right' : 'left'
       );
 
-      ctx.save();
-      ctx.strokeStyle = state.stalled ? '#94a3b8' : '#0f766e';
-      ctx.lineWidth = 4;
-      ctx.beginPath();
-      ctx.arc(center.x, poleY - 8, compact ? 34 : 45, Math.PI * .15, Math.PI * 1.75);
-      ctx.stroke();
-      ctx.fillStyle = state.stalled ? '#64748b' : '#0f766e';
-      ctx.font = '700 13px "Microsoft JhengHei", Arial, sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText(state.stalled ? '負載過大：無法啟動' : '力矩方向保持一致', center.x, poleY - 17);
-      ctx.restore();
+      if (showTorque) {
+        const arcRadius = compact ? 34 : 45;
+        const arcStart = Math.PI * .15;
+        const arcEnd = Math.PI * 1.75;
+        ctx.save();
+        ctx.strokeStyle = state.stalled ? '#94a3b8' : '#0f766e';
+        ctx.fillStyle = state.stalled ? '#94a3b8' : '#0f766e';
+        ctx.lineWidth = 4;
+        ctx.beginPath();
+        ctx.arc(center.x, poleY - 8, arcRadius, arcStart, arcEnd);
+        ctx.stroke();
+        const arrowX = center.x + Math.cos(arcEnd) * arcRadius;
+        const arrowY = poleY - 8 + Math.sin(arcEnd) * arcRadius;
+        ctx.beginPath();
+        ctx.moveTo(arrowX, arrowY);
+        ctx.lineTo(arrowX - 10, arrowY - 2);
+        ctx.lineTo(arrowX - 4, arrowY + 8);
+        ctx.closePath();
+        ctx.fill();
+        ctx.font = '700 13px "Microsoft JhengHei", Arial, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(state.stalled ? '負載過大：無法啟動' : '兩側磁力形成同向力矩', center.x, poleY - 17);
+        ctx.restore();
+      }
+
+      if (showVector) {
+        const proofWidth = compact ? w - 24 : Math.min(292, w * .28);
+        drawMotorVectorProof(ctx, compact ? 12 : w - proofWidth - 16, h - 174, proofWidth, leftCurrentUp);
+      }
 
       setText('motor-voltage-out', `${state.voltage.toFixed(1)} V`);
       setText('motor-field-out', `${state.B.toFixed(2)} T`);
@@ -7614,6 +8029,10 @@
       $('motor-torque').innerHTML = `電磁力矩 τ = ${state.torque.toFixed(2)} N·m<small>τ = NIAB sinθ；目前負載 ${state.load.toFixed(2)} N·m</small>`;
       $('motor-speed-badge').innerHTML = `轉速 = ${(state.omega * 60 / (Math.PI * 2)).toFixed(0)} rpm<small>${state.stalled ? '啟動力矩小於負載' : `目標約 ${(state.targetOmega * 60 / (Math.PI * 2)).toFixed(0)} rpm`}</small>`;
       $('motor-commutator').innerHTML = `換向器：${state.halfTurn === 0 ? 'A 接正極' : 'B 接正極'}<small>跨過半圈時交換線圈電流方向</small>`;
+      setText('motor-proof-current', `左側 I${leftCurrentUp ? '↑' : '↓'}；右側 I${leftCurrentUp ? '↓' : '↑'}（每半圈換向）`);
+      setText('motor-proof-field', `B = ${state.B.toFixed(2)} T，由 N → S（向右）`);
+      setText('motor-proof-force', `左 F${leftOut}；右 F${rightOut}；每側約 ${state.sideForce.toFixed(2)} N`);
+      setText('motor-proof-torque', `兩力形成力偶；τ = ${state.torque.toFixed(3)} N·m`);
     }
 
     function drawActive() {
@@ -7709,6 +8128,26 @@
       requestAnimationFrame(drawActive);
     }
 
+    function setBrakeLayer(name) {
+      activeBrakeLayer = name;
+      document.querySelectorAll('.brake-layer').forEach(button => {
+        const active = button.dataset.brakeLayer === name;
+        button.classList.toggle('active', active);
+        button.setAttribute('aria-pressed', active ? 'true' : 'false');
+      });
+      requestAnimationFrame(drawActive);
+    }
+
+    function setMotorLayer(name) {
+      activeMotorLayer = name;
+      document.querySelectorAll('.motor-layer').forEach(button => {
+        const active = button.dataset.motorLayer === name;
+        button.classList.toggle('active', active);
+        button.setAttribute('aria-pressed', active ? 'true' : 'false');
+      });
+      requestAnimationFrame(drawActive);
+    }
+
     function setMechanicsMode(name) {
       activeMechanics = name;
       document.querySelectorAll('.topic-mode').forEach(btn => {
@@ -7790,6 +8229,14 @@
 
     document.querySelectorAll('.em-mode').forEach(btn => {
       btn.addEventListener('click', () => setElectromagnetismMode(btn.dataset.em));
+    });
+
+    document.querySelectorAll('.brake-layer').forEach(button => {
+      button.addEventListener('click', () => setBrakeLayer(button.dataset.brakeLayer));
+    });
+
+    document.querySelectorAll('.motor-layer').forEach(button => {
+      button.addEventListener('click', () => setMotorLayer(button.dataset.motorLayer));
     });
 
     document.querySelectorAll('.topic-mode').forEach(btn => {
