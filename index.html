@@ -98,7 +98,7 @@
       background: var(--accent);
       color: #ffffff;
     }
-    .optics-switch, .topic-switch {
+    .optics-switch, .topic-switch, .phenomenon-switch {
       display: flex;
       flex-wrap: wrap;
       width: fit-content;
@@ -156,6 +156,18 @@
     }
     .optics-view, .topic-view { display: none; }
     .optics-view.active, .topic-view.active { display: block; }
+    button.light-mode, button.em-mode {
+      min-width: 156px;
+      background: transparent;
+      color: var(--ink);
+    }
+    button.light-mode.active, button.em-mode.active {
+      background: var(--accent);
+      color: #ffffff;
+      box-shadow: 0 2px 7px rgba(15, 118, 110, .2);
+    }
+    .light-view, .em-view { display: none; }
+    .light-view.active, .em-view.active { display: block; }
     button.preset {
       background: #e2e8f0;
       color: #1f2933;
@@ -264,6 +276,10 @@
     #microscope-canvas, #eye-canvas, #circular-canvas, #precession-canvas {
       height: min(68vh, 580px);
       min-height: 460px;
+    }
+    #refraction-canvas, #scattering-canvas, #brake-canvas, #motor-canvas {
+      height: min(68vh, 590px);
+      min-height: 470px;
     }
     .controls {
       margin-top: 16px;
@@ -379,7 +395,9 @@
       canvas { height: 330px; min-height: 280px; }
       #mirror-canvas.parallel-expanded { height: 410px; min-height: 380px; }
       #microscope-canvas, #eye-canvas, #circular-canvas, #precession-canvas { height: 470px; min-height: 430px; }
+      #refraction-canvas, #scattering-canvas, #brake-canvas, #motor-canvas { height: 500px; min-height: 440px; }
       button.optics-mode, button.topic-mode { min-width: 112px; flex: 1 1 112px; }
+      button.light-mode, button.em-mode { min-width: 132px; flex: 1 1 132px; }
       #retrograde-canvas { height: 520px; min-height: 480px; }
     }
   </style>
@@ -388,7 +406,7 @@
   <main>
     <header>
       <h1>高中物理現象模擬器</h1>
-      <p class="subtitle">把課堂上最需要「看見過程」的物理現象放在同一頁：波動、光學、力學與行星運動都能調參數、暫停與慢速播放，方便在電子白板上逐步打開重點。</p>
+      <p class="subtitle">把課堂上最需要「看見過程」的物理現象放在同一頁：波動、光學、力學、電磁學與行星運動都能調參數、暫停與慢速播放，方便在電子白板上逐步打開重點。</p>
     </header>
 
     <div class="content">
@@ -401,6 +419,8 @@
           <button type="button" class="tab" data-tab="single" role="tab" aria-selected="false">單狹縫繞射</button>
           <button type="button" class="tab" data-tab="huygens" role="tab" aria-selected="false">惠更斯原理</button>
           <button type="button" class="tab" data-tab="optics" role="tab" aria-selected="false">幾何光學</button>
+          <button type="button" class="tab" data-tab="light" role="tab" aria-selected="false">折射與散射</button>
+          <button type="button" class="tab" data-tab="electromagnetism" role="tab" aria-selected="false">電磁現象</button>
           <button type="button" class="tab" data-tab="mechanics" role="tab" aria-selected="false">力學現象</button>
           <button type="button" class="tab" data-tab="retrograde" role="tab" aria-selected="false">行星逆行</button>
         </div>
@@ -1323,6 +1343,253 @@
         </div>
       </section>
 
+      <section id="panel-light" class="panel" role="tabpanel">
+        <div class="phenomenon-switch" role="group" aria-label="光的傳播主題">
+          <button type="button" class="light-mode active" data-light="refraction" aria-pressed="true">折射與全反射</button>
+          <button type="button" class="light-mode" data-light="scattering" aria-pressed="false">大氣散射</button>
+        </div>
+
+        <div id="light-view-refraction" class="light-view active">
+          <div class="module-head">
+            <div>
+              <h2>折射、臨界角與全反射</h2>
+              <p class="module-copy">光粒子沿著真正計算出的路徑前進；跨越介面時頻率不變，速度與波長隨折射率改變。入射角超過臨界角後，透射光消失並全部反射。</p>
+            </div>
+            <div class="legend" aria-label="折射圖例">
+              <span class="blue"><i class="dot"></i>入射光</span>
+              <span class="orange"><i class="dot"></i>反射光</span>
+              <span class="green"><i class="dot"></i>折射光</span>
+              <span class="purple"><i class="dot"></i>法線／角度</span>
+            </div>
+          </div>
+          <div class="values" aria-live="polite">
+            <div class="badge" id="ref-angles">θ₁ = 45.0°；θ₂ = 28.1°<small>n₁ sinθ₁ = n₂ sinθ₂</small></div>
+            <div class="badge" id="ref-speed">v₂/v₁ = 0.67<small>頻率不變，波長跟速度同比改變</small></div>
+            <div class="badge" id="ref-energy">反射 5%｜透射 95%<small>線條亮度依 Fresnel 比例呈現</small></div>
+            <div class="badge" id="ref-status">一般折射<small>光進入高折射率介質，向法線偏折</small></div>
+          </div>
+          <div class="plot-wrap">
+            <canvas id="refraction-canvas" role="img" aria-label="光束由介質一入射介質二，顯示入射、反射、折射、波前與移動光粒子。"></canvas>
+          </div>
+          <div class="controls">
+            <div class="control">
+              <label for="ref-n1">上方折射率 n₁：<span id="ref-n1-out">1.00</span></label>
+              <input id="ref-n1" type="range" min="1" max="1.8" step="0.01" value="1">
+            </div>
+            <div class="control">
+              <label for="ref-n2">下方折射率 n₂：<span id="ref-n2-out">1.50</span></label>
+              <input id="ref-n2" type="range" min="1" max="1.8" step="0.01" value="1.5">
+            </div>
+            <div class="control">
+              <label for="ref-angle">入射角：<span id="ref-angle-out">45.0°</span></label>
+              <input id="ref-angle" type="range" min="0" max="80" step="0.2" value="45">
+            </div>
+            <div class="control">
+              <label for="ref-play-speed">播放速度：<span id="ref-play-speed-out">0.45x</span></label>
+              <input id="ref-play-speed" type="range" min="0.1" max="1.5" step="0.05" value="0.45">
+            </div>
+          </div>
+          <div class="presets">
+            <button type="button" class="preset ref-preset" data-n1="1" data-n2="1.5" data-angle="45">空氣 → 玻璃</button>
+            <button type="button" class="preset ref-preset" data-n1="1.33" data-n2="1" data-angle="35">水 → 空氣</button>
+            <button type="button" class="preset ref-preset" data-n1="1.5" data-n2="1" data-angle="41.8">玻璃臨界角</button>
+            <button type="button" class="preset ref-preset" data-n1="1.5" data-n2="1" data-angle="55">玻璃全反射</button>
+          </div>
+          <div class="checks">
+            <label class="check"><input type="checkbox" id="ref-show-particles" checked>顯示移動光粒子</label>
+            <label class="check"><input type="checkbox" id="ref-show-wavefronts" checked>顯示波前間距</label>
+            <label class="check"><input type="checkbox" id="ref-show-angles" checked>顯示法線與角度</label>
+            <label class="check"><input type="checkbox" id="ref-show-fiber" checked>全反射時顯示光纖應用</label>
+          </div>
+          <section class="teacher-note">
+            <p><strong>講法：</strong>先固定角度，只改 n₂，觀察下方光粒子的速度與波前間距同時改變。再切到「玻璃臨界角」，慢慢提高角度：折射光先貼近介面，越過臨界角後才完全消失。</p>
+            <p><strong>強調：</strong>全反射要同時滿足由高折射率射向低折射率，以及入射角大於臨界角；不是任何反射都叫全反射。</p>
+          </section>
+        </div>
+
+        <div id="light-view-scattering" class="light-view">
+          <div class="module-head">
+            <div>
+              <h2>大氣散射：藍天與紅色夕陽</h2>
+              <p class="module-copy">讓紅、綠、藍光包沿同一路徑穿過大氣。小分子對短波長散射較強，所以側看天空偏藍；太陽接近地平線時路徑變長，直達眼睛的光則偏紅。</p>
+            </div>
+            <div class="legend" aria-label="散射圖例">
+              <span class="blue"><i class="dot"></i>短波藍光</span>
+              <span class="green"><i class="dot"></i>綠光</span>
+              <span class="red"><i class="dot"></i>長波紅光</span>
+            </div>
+          </div>
+          <div class="values" aria-live="polite">
+            <div class="badge" id="scatter-path">相對路徑 = 1.4<small>太陽越低，穿越大氣越長</small></div>
+            <div class="badge" id="scatter-blue">藍光散射權重 = 4.1<small>Rayleigh：強度約與 1/λ⁴ 成正比</small></div>
+            <div class="badge" id="scatter-direct">直達光：近白色<small>藍光尚未大量離開光束</small></div>
+            <div class="badge" id="scatter-status">晴朗天空<small>分子尺度遠小於可見光波長</small></div>
+          </div>
+          <div class="plot-wrap">
+            <canvas id="scattering-canvas" role="img" aria-label="太陽光穿越大氣時，不同波長散射與直達觀察者的動態示意。"></canvas>
+          </div>
+          <div class="controls">
+            <div class="control">
+              <label for="scatter-elevation">太陽仰角：<span id="scatter-elevation-out">55°</span></label>
+              <input id="scatter-elevation" type="range" min="2" max="80" step="1" value="55">
+            </div>
+            <div class="control">
+              <label for="scatter-density">大氣密度：<span id="scatter-density-out">1.00x</span></label>
+              <input id="scatter-density" type="range" min="0.4" max="2" step="0.05" value="1">
+            </div>
+            <div class="control">
+              <label for="scatter-type">散射粒子</label>
+              <select id="scatter-type">
+                <option value="rayleigh" selected>小分子（Rayleigh）</option>
+                <option value="mie">霧滴／懸浮微粒（Mie）</option>
+              </select>
+            </div>
+            <div class="control">
+              <label for="scatter-speed">播放速度：<span id="scatter-speed-out">0.35x</span></label>
+              <input id="scatter-speed" type="range" min="0.1" max="1.5" step="0.05" value="0.35">
+            </div>
+          </div>
+          <div class="presets">
+            <button type="button" class="preset scatter-preset" data-elevation="65" data-density="1" data-type="rayleigh">正午藍天</button>
+            <button type="button" class="preset scatter-preset" data-elevation="6" data-density="1.2" data-type="rayleigh">紅色夕陽</button>
+            <button type="button" class="preset scatter-preset" data-elevation="25" data-density="1.5" data-type="mie">霧霾白光</button>
+          </div>
+          <div class="checks">
+            <label class="check"><input type="checkbox" id="scatter-show-packets" checked>顯示紅綠藍光包</label>
+            <label class="check"><input type="checkbox" id="scatter-show-rays" checked>顯示散射到眼睛的路徑</label>
+            <label class="check"><input type="checkbox" id="scatter-show-bars" checked>顯示波長比較</label>
+          </div>
+          <section class="teacher-note">
+            <p><strong>講法：</strong>先用正午藍天看藍色光包較常離開直射光束，再把太陽拉低。路徑變長後，更多藍綠光被散到別處，抵達觀察者的直射光逐漸變橘紅。</p>
+            <p><strong>限制：</strong>為了讓課堂看得清楚，分子與散射事件被放大；顏色強弱仍依波長關係與目前大氣路徑計算。</p>
+          </section>
+        </div>
+      </section>
+
+      <section id="panel-electromagnetism" class="panel" role="tabpanel">
+        <div class="phenomenon-switch" role="group" aria-label="電磁現象主題">
+          <button type="button" class="em-mode active" data-em="brake" aria-pressed="true">磁煞車</button>
+          <button type="button" class="em-mode" data-em="motor" aria-pressed="false">直流馬達</button>
+        </div>
+
+        <div id="em-view-brake" class="em-view active">
+          <div class="module-head">
+            <div>
+              <h2>磁煞車與渦電流</h2>
+              <p class="module-copy">導體圓盤切過磁場時，磁通量的改變在盤內產生封閉渦電流。渦電流形成的磁場反抗原本的運動，動能最後轉為焦耳熱。</p>
+            </div>
+            <div class="legend" aria-label="磁煞車圖例">
+              <span class="blue"><i class="dot"></i>外加磁場</span>
+              <span class="orange"><i class="dot"></i>渦電流／電子</span>
+              <span class="red"><i class="dot"></i>反向煞車力矩</span>
+            </div>
+          </div>
+          <div class="values" aria-live="polite">
+            <div class="badge" id="brake-omega">角速度 ω = 12.0 rad/s<small>磁鐵接近後逐漸下降</small></div>
+            <div class="badge" id="brake-current">渦電流相對值 = 0.00<small>約與導電率、B、速度成正比</small></div>
+            <div class="badge" id="brake-torque">煞車力矩 = 0.00<small>方向永遠反抗當下轉動</small></div>
+            <div class="badge" id="brake-heat">轉為熱 = 0%<small>沒有接觸摩擦，但仍耗散能量</small></div>
+          </div>
+          <div class="plot-wrap">
+            <canvas id="brake-canvas" role="img" aria-label="導體圓盤通過磁鐵時的渦電流、磁場、反向力矩與減速動畫。"></canvas>
+          </div>
+          <div class="controls">
+            <div class="control">
+              <label for="brake-material">圓盤材料</label>
+              <select id="brake-material">
+                <option value="copper">銅</option>
+                <option value="aluminum" selected>鋁</option>
+                <option value="plastic">塑膠</option>
+              </select>
+            </div>
+            <div class="control">
+              <label for="brake-field">磁場 B：<span id="brake-field-out">0.70 T</span></label>
+              <input id="brake-field" type="range" min="0" max="1.2" step="0.02" value="0.7">
+            </div>
+            <div class="control">
+              <label for="brake-start">初始角速度：<span id="brake-start-out">12.0 rad/s</span></label>
+              <input id="brake-start" type="range" min="2" max="20" step="0.5" value="12">
+            </div>
+            <div class="control">
+              <label for="brake-disk">圓盤結構</label>
+              <select id="brake-disk">
+                <option value="solid" selected>完整圓盤</option>
+                <option value="slotted">開槽圓盤</option>
+              </select>
+            </div>
+            <div class="control">
+              <label for="brake-speed">播放速度：<span id="brake-speed-out">0.40x</span></label>
+              <input id="brake-speed" type="range" min="0.1" max="1.5" step="0.05" value="0.4">
+            </div>
+          </div>
+          <div class="checks">
+            <label class="check"><input type="checkbox" id="brake-show-current" checked>顯示渦電流與電子流</label>
+            <label class="check"><input type="checkbox" id="brake-show-field" checked>顯示磁場</label>
+            <label class="check"><input type="checkbox" id="brake-show-heat" checked>顯示熱能累積</label>
+          </div>
+          <section class="teacher-note">
+            <p><strong>講法：</strong>先把 B 設為 0，確認圓盤保持轉動；再逐步增加 B，依序指出「磁通改變 → 渦電流 → 反向力矩 → 減速發熱」。切換開槽圓盤，可看見電流迴路被截斷後煞車變弱。</p>
+            <p><strong>強調：</strong>渦電流煞車力隨速度下降，因此單靠它不會在有限時間內把物體鎖死；實際系統仍需要停車保持裝置。</p>
+          </section>
+        </div>
+
+        <div id="em-view-motor" class="em-view">
+          <div class="module-head">
+            <div>
+              <h2>直流馬達：電流、受力與換向</h2>
+              <p class="module-copy">電池先驅動線圈電流，磁場對兩側導線施加相反方向的力；分裂環換向器每半圈交換接點，使力矩持續朝同一方向。</p>
+            </div>
+            <div class="legend" aria-label="馬達圖例">
+              <span class="blue"><i class="dot"></i>磁場 B</span>
+              <span class="orange"><i class="dot"></i>傳統電流 I</span>
+              <span class="purple"><i class="dot"></i>電子流</span>
+              <span class="red"><i class="dot"></i>磁力 F</span>
+            </div>
+          </div>
+          <div class="values" aria-live="polite">
+            <div class="badge" id="motor-current">線圈電流 I = 2.3 A<small>電子流方向與傳統電流相反</small></div>
+            <div class="badge" id="motor-torque">電磁力矩 τ = 0.18 N·m<small>τ = NIAB sinθ</small></div>
+            <div class="badge" id="motor-speed-badge">轉速 = 0 rpm<small>啟動後逐漸接近平衡轉速</small></div>
+            <div class="badge" id="motor-commutator">換向器：A 接正極<small>跨過半圈時交換電流方向</small></div>
+          </div>
+          <div class="plot-wrap">
+            <canvas id="motor-canvas" role="img" aria-label="包含磁極、線圈、電流粒子、受力方向、分裂環換向器與電刷的直流馬達動畫。"></canvas>
+          </div>
+          <div class="controls">
+            <div class="control">
+              <label for="motor-voltage">電壓：<span id="motor-voltage-out">9.0 V</span></label>
+              <input id="motor-voltage" type="range" min="1" max="15" step="0.5" value="9">
+            </div>
+            <div class="control">
+              <label for="motor-field">磁場 B：<span id="motor-field-out">0.60 T</span></label>
+              <input id="motor-field" type="range" min="0.1" max="1.2" step="0.05" value="0.6">
+            </div>
+            <div class="control">
+              <label for="motor-turns">線圈匝數 N：<span id="motor-turns-out">40</span></label>
+              <input id="motor-turns" type="range" min="10" max="100" step="5" value="40">
+            </div>
+            <div class="control">
+              <label for="motor-load">負載力矩：<span id="motor-load-out">0.05 N·m</span></label>
+              <input id="motor-load" type="range" min="0" max="0.25" step="0.01" value="0.05">
+            </div>
+            <div class="control">
+              <label for="motor-speed">播放速度：<span id="motor-speed-out">0.35x</span></label>
+              <input id="motor-speed" type="range" min="0.1" max="1.5" step="0.05" value="0.35">
+            </div>
+          </div>
+          <div class="checks">
+            <label class="check"><input type="checkbox" id="motor-show-current" checked>顯示傳統電流</label>
+            <label class="check"><input type="checkbox" id="motor-show-electrons" checked>顯示電子流</label>
+            <label class="check"><input type="checkbox" id="motor-show-field" checked>顯示磁場</label>
+            <label class="check"><input type="checkbox" id="motor-show-force" checked>顯示兩側受力</label>
+          </div>
+          <section class="teacher-note">
+            <p><strong>講法：</strong>先暫停，沿著橘色粒子找出線圈兩側電流，再用 I × B 判斷紅色受力。播放後盯著下方分裂環：每跨過半圈，刷子接觸的銅片交換，線圈電流反向，但轉動力矩仍維持同向。</p>
+            <p><strong>強調：</strong>電能先進入線圈，再由磁力做機械功；電壓、磁場或匝數增加會提高可用力矩，負載太大則無法啟動。</p>
+          </section>
+        </div>
+      </section>
+
       <section id="panel-retrograde" class="panel" role="tabpanel">
         <div class="module-head">
           <div>
@@ -1397,6 +1664,8 @@
     let activeOptics = 'mirror';
     let activeMechanics = 'circular';
     let activeAngular = 'gyro';
+    let activeLight = 'refraction';
+    let activeElectromagnetism = 'brake';
     let mirrorLesson = 'image';
     let mirrorParallelMode = 'single';
     let running = true;
@@ -1468,6 +1737,12 @@
       if (activeModule === 'double') return number('dbl-speed');
       if (activeModule === 'single') return number('sgl-speed');
       if (activeModule === 'huygens') return number('huy-speed');
+      if (activeModule === 'light') {
+        return activeLight === 'refraction' ? number('ref-play-speed') : number('scatter-speed');
+      }
+      if (activeModule === 'electromagnetism') {
+        return activeElectromagnetism === 'brake' ? number('brake-speed') : number('motor-speed');
+      }
       if (activeModule === 'mechanics') {
         if (activeMechanics === 'circular') return number('circ-speed');
         if (activeMechanics === 'precession') return number('prec-speed');
@@ -6418,6 +6693,917 @@
       drawSceneLabel(ctx, skyRight - 14, skyBottom - 8, '紅：逆行 ←', 'right');
     }
 
+    function clampValue(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+
+    function pointOnSegment(a, b, ratio) {
+      return {
+        x: a.x + (b.x - a.x) * ratio,
+        y: a.y + (b.y - a.y) * ratio
+      };
+    }
+
+    function drawMovingParticles(ctx, a, b, count, phase, color, alpha = 1, radius = 3.5) {
+      ctx.save();
+      ctx.fillStyle = color;
+      ctx.shadowColor = color;
+      ctx.shadowBlur = 10;
+      ctx.globalAlpha = alpha;
+      for (let i = 0; i < count; i += 1) {
+        const ratio = ((i / count + phase) % 1 + 1) % 1;
+        const point = pointOnSegment(a, b, ratio);
+        ctx.beginPath();
+        ctx.arc(point.x, point.y, radius, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    function drawBeamSegment(ctx, a, b, color, energy, width = 4) {
+      const alpha = clampValue(0.16 + energy * 0.84, 0.08, 1);
+      ctx.save();
+      ctx.lineCap = 'round';
+      ctx.strokeStyle = color;
+      ctx.globalAlpha = alpha * .16;
+      ctx.lineWidth = width + 13;
+      ctx.shadowColor = color;
+      ctx.shadowBlur = 18;
+      ctx.beginPath();
+      ctx.moveTo(a.x, a.y);
+      ctx.lineTo(b.x, b.y);
+      ctx.stroke();
+      ctx.globalAlpha = alpha;
+      ctx.shadowBlur = 0;
+      ctx.lineWidth = Math.max(1.4, width * (.35 + .65 * Math.sqrt(energy)));
+      ctx.beginPath();
+      ctx.moveTo(a.x, a.y);
+      ctx.lineTo(b.x, b.y);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawWavefrontSet(ctx, a, b, refractiveIndex, phase, color, alpha) {
+      const dx = b.x - a.x;
+      const dy = b.y - a.y;
+      const length = Math.hypot(dx, dy);
+      if (length < 10) return;
+      const ux = dx / length;
+      const uy = dy / length;
+      const spacing = 48 / refractiveIndex;
+      const offset = ((phase * spacing) % spacing + spacing) % spacing;
+      ctx.save();
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1.35;
+      ctx.globalAlpha = alpha;
+      for (let distance = offset; distance < length; distance += spacing) {
+        const x = a.x + ux * distance;
+        const y = a.y + uy * distance;
+        const nx = -uy * 13;
+        const ny = ux * 13;
+        ctx.beginPath();
+        ctx.moveTo(x - nx, y - ny);
+        ctx.lineTo(x + nx, y + ny);
+        ctx.stroke();
+      }
+      ctx.restore();
+    }
+
+    function refractionState() {
+      const n1 = number('ref-n1');
+      const n2 = number('ref-n2');
+      const theta1 = number('ref-angle') * Math.PI / 180;
+      const sinTheta2 = n1 * Math.sin(theta1) / n2;
+      const tir = sinTheta2 > 1;
+      const theta2 = tir ? Math.PI / 2 : Math.asin(clampValue(sinTheta2, -1, 1));
+      const cos1 = Math.cos(theta1);
+      const cos2 = Math.cos(theta2);
+      let reflectance = 1;
+      if (!tir) {
+        const rs = (n1 * cos1 - n2 * cos2) / (n1 * cos1 + n2 * cos2);
+        const rp = (n1 * cos2 - n2 * cos1) / (n1 * cos2 + n2 * cos1);
+        reflectance = (rs * rs + rp * rp) / 2;
+      }
+      const critical = n1 > n2 ? Math.asin(n2 / n1) : null;
+      return { n1, n2, theta1, theta2, tir, reflectance, transmittance: 1 - reflectance, critical };
+    }
+
+    function drawAngleArc(ctx, center, radius, from, to, color, label) {
+      ctx.save();
+      ctx.strokeStyle = color;
+      ctx.fillStyle = color;
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(center.x, center.y, radius, from, to, to < from);
+      ctx.stroke();
+      const mid = (from + to) / 2;
+      ctx.font = '700 13px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(label, center.x + Math.cos(mid) * (radius + 16), center.y + Math.sin(mid) * (radius + 16));
+      ctx.restore();
+    }
+
+    function drawFiberInset(ctx, w, h, phase) {
+      const boxW = Math.min(250, w * .29);
+      const boxH = 88;
+      const left = w - boxW - 18;
+      const top = h - boxH - 18;
+      ctx.save();
+      ctx.fillStyle = 'rgba(5,18,35,.9)';
+      ctx.strokeStyle = '#60a5fa';
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.roundRect(left, top, boxW, boxH, 8);
+      ctx.fill();
+      ctx.stroke();
+      ctx.strokeStyle = 'rgba(147,197,253,.75)';
+      ctx.lineWidth = 9;
+      ctx.beginPath();
+      ctx.moveTo(left + 14, top + 24);
+      ctx.bezierCurveTo(left + boxW * .34, top + 8, left + boxW * .62, top + 78, left + boxW - 14, top + 47);
+      ctx.stroke();
+      ctx.strokeStyle = '#f8fafc';
+      ctx.lineWidth = 2.2;
+      ctx.setLineDash([15, 11]);
+      ctx.lineDashOffset = -phase * 30;
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = '#dbeafe';
+      ctx.font = '700 12px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.fillText('光纖：反覆全反射把光留在芯層', left + 13, top + boxH - 10);
+      ctx.restore();
+    }
+
+    function drawRefraction() {
+      const canvas = $('refraction-canvas');
+      const { ctx, w, h } = resizeCanvas(canvas);
+      const state = refractionState();
+      const interfaceY = h * .51;
+      const origin = { x: w * .49, y: interfaceY };
+      const rayLength = Math.min(w * .39, h * .42);
+      const incidentStart = {
+        x: origin.x - Math.sin(state.theta1) * rayLength,
+        y: origin.y - Math.cos(state.theta1) * rayLength
+      };
+      const reflectedEnd = {
+        x: origin.x + Math.sin(state.theta1) * rayLength,
+        y: origin.y - Math.cos(state.theta1) * rayLength
+      };
+      const refractedEnd = {
+        x: origin.x + Math.sin(state.theta2) * rayLength,
+        y: origin.y + Math.cos(state.theta2) * rayLength
+      };
+
+      const upper = ctx.createLinearGradient(0, 0, 0, interfaceY);
+      upper.addColorStop(0, '#eff8ff');
+      upper.addColorStop(1, `rgba(191,219,254,${.18 + (state.n1 - 1) * .35})`);
+      ctx.fillStyle = upper;
+      ctx.fillRect(0, 0, w, interfaceY);
+      const lower = ctx.createLinearGradient(0, interfaceY, 0, h);
+      lower.addColorStop(0, `rgba(165,243,252,${.15 + (state.n2 - 1) * .4})`);
+      lower.addColorStop(1, '#e7f5f2');
+      ctx.fillStyle = lower;
+      ctx.fillRect(0, interfaceY, w, h - interfaceY);
+      ctx.strokeStyle = '#0f766e';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(0, interfaceY);
+      ctx.lineTo(w, interfaceY);
+      ctx.stroke();
+      drawSceneLabel(ctx, 18, 16, `介質 1｜n₁=${state.n1.toFixed(2)}｜v=c/n₁`);
+      drawSceneLabel(ctx, 18, interfaceY + 16, `介質 2｜n₂=${state.n2.toFixed(2)}｜v=c/n₂`);
+
+      if ($('ref-show-angles').checked) {
+        ctx.save();
+        ctx.strokeStyle = 'rgba(124,58,237,.68)';
+        ctx.lineWidth = 1.5;
+        ctx.setLineDash([7, 6]);
+        ctx.beginPath();
+        ctx.moveTo(origin.x, 25);
+        ctx.lineTo(origin.x, h - 25);
+        ctx.stroke();
+        ctx.restore();
+        drawAngleArc(ctx, origin, 55, -Math.PI / 2 - state.theta1, -Math.PI / 2, '#7c3aed', `θ₁ ${Math.round(state.theta1 * 180 / Math.PI)}°`);
+        if (!state.tir) drawAngleArc(ctx, origin, 58, Math.PI / 2 - state.theta2, Math.PI / 2, '#15803d', `θ₂ ${Math.round(state.theta2 * 180 / Math.PI)}°`);
+      }
+
+      drawBeamSegment(ctx, incidentStart, origin, '#2563eb', 1, 4.5);
+      drawBeamSegment(ctx, origin, reflectedEnd, '#ea580c', state.reflectance, 4.5);
+      if (!state.tir) drawBeamSegment(ctx, origin, refractedEnd, '#15803d', state.transmittance, 4.5);
+      else {
+        const glow = ctx.createRadialGradient(origin.x, interfaceY, 2, origin.x, interfaceY, 75);
+        glow.addColorStop(0, 'rgba(34,211,238,.34)');
+        glow.addColorStop(1, 'rgba(34,211,238,0)');
+        ctx.fillStyle = glow;
+        ctx.fillRect(origin.x - 90, interfaceY - 16, 180, 85);
+      }
+
+      const wavePhase1 = time * 2.4 / state.n1;
+      const wavePhase2 = time * 2.4 / state.n2;
+      if ($('ref-show-wavefronts').checked) {
+        drawWavefrontSet(ctx, incidentStart, origin, state.n1, wavePhase1, '#1d4ed8', .42);
+        drawWavefrontSet(ctx, origin, reflectedEnd, state.n1, wavePhase1, '#c2410c', .22 + state.reflectance * .5);
+        if (!state.tir) drawWavefrontSet(ctx, origin, refractedEnd, state.n2, wavePhase2, '#047857', .25 + state.transmittance * .35);
+      }
+      if ($('ref-show-particles').checked) {
+        drawMovingParticles(ctx, incidentStart, origin, 9, time * .24 / state.n1, '#93c5fd', 1, 3.6);
+        drawMovingParticles(ctx, origin, reflectedEnd, 7, time * .24 / state.n1, '#fdba74', .3 + .7 * state.reflectance, 3.4);
+        if (!state.tir) drawMovingParticles(ctx, origin, refractedEnd, 9, time * .24 / state.n2, '#86efac', .35 + .65 * state.transmittance, 3.6);
+      }
+
+      ctx.save();
+      ctx.fillStyle = '#ffffff';
+      ctx.strokeStyle = '#0f766e';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(origin.x, origin.y, 6, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
+
+      if (state.tir && $('ref-show-fiber').checked) drawFiberInset(ctx, w, h, time);
+
+      const angleDeg = state.theta1 * 180 / Math.PI;
+      const theta2Deg = state.theta2 * 180 / Math.PI;
+      const critDeg = state.critical ? state.critical * 180 / Math.PI : null;
+      setText('ref-n1-out', state.n1.toFixed(2));
+      setText('ref-n2-out', state.n2.toFixed(2));
+      setText('ref-angle-out', `${angleDeg.toFixed(1)}°`);
+      setText('ref-play-speed-out', `${number('ref-play-speed').toFixed(2)}x`);
+      $('ref-angles').innerHTML = state.tir
+        ? `θ₁ = ${angleDeg.toFixed(1)}°；無折射角<small>θc = ${critDeg.toFixed(1)}°，目前已超過臨界角</small>`
+        : `θ₁ = ${angleDeg.toFixed(1)}°；θ₂ = ${theta2Deg.toFixed(1)}°<small>n₁ sinθ₁ = n₂ sinθ₂</small>`;
+      $('ref-speed').innerHTML = `v₂/v₁ = ${(state.n1 / state.n2).toFixed(2)}<small>λ₂/λ₁ 同樣為 ${(state.n1 / state.n2).toFixed(2)}；頻率不變</small>`;
+      $('ref-energy').innerHTML = state.tir
+        ? '反射 100%｜透射 0%<small>理想介面忽略吸收；下方只剩倏逝場</small>'
+        : `反射 ${(state.reflectance * 100).toFixed(1)}%｜透射 ${(state.transmittance * 100).toFixed(1)}%<small>線條亮度依 Fresnel 比例呈現</small>`;
+      if (state.tir) $('ref-status').innerHTML = `全反射<small>n₁ > n₂ 且 θ₁ > θc=${critDeg.toFixed(1)}°</small>`;
+      else if (state.critical && Math.abs(angleDeg - critDeg) < .5) $('ref-status').innerHTML = `接近臨界角<small>折射光沿著介面前進</small>`;
+      else if (state.n2 > state.n1) $('ref-status').innerHTML = '向法線偏折<small>進入高折射率介質，速度與波長變小</small>';
+      else if (state.n2 < state.n1) $('ref-status').innerHTML = '離法線偏折<small>進入低折射率介質，速度與波長變大</small>';
+      else $('ref-status').innerHTML = '不偏折<small>兩側折射率相同，但仍沿原方向前進</small>';
+    }
+
+    function wavelengthRgb(transmission) {
+      const sum = transmission.red + transmission.green + transmission.blue || 1;
+      const scale = 255 / Math.max(transmission.red, transmission.green, transmission.blue, .01);
+      return `rgb(${Math.round(transmission.red * scale)},${Math.round(transmission.green * scale)},${Math.round(transmission.blue * scale)})`;
+    }
+
+    function drawScattering() {
+      const canvas = $('scattering-canvas');
+      const { ctx, w, h } = resizeCanvas(canvas);
+      const elevation = number('scatter-elevation');
+      const density = number('scatter-density');
+      const rayleigh = $('scatter-type').value === 'rayleigh';
+      const elevationRad = elevation * Math.PI / 180;
+      const pathLength = Math.min(8, 1 / (Math.sin(elevationRad) + .055));
+      const exponent = rayleigh ? 4 : 1.05;
+      const weights = {
+        red: Math.pow(550 / 650, exponent),
+        green: Math.pow(550 / 530, exponent),
+        blue: Math.pow(550 / 450, exponent)
+      };
+      const opticalDepth = density * pathLength * (rayleigh ? .075 : .12);
+      const transmission = {
+        red: Math.exp(-opticalDepth * weights.red),
+        green: Math.exp(-opticalDepth * weights.green),
+        blue: Math.exp(-opticalDepth * weights.blue)
+      };
+      const directColor = wavelengthRgb(transmission);
+      const horizon = h * .82;
+      const sun = {
+        x: 62 + (elevation / 80) * w * .08,
+        y: horizon - Math.sin(elevationRad) * h * .62
+      };
+      const observer = { x: w * .84, y: horizon - 6 };
+
+      const sky = ctx.createLinearGradient(0, 0, 0, horizon);
+      const blueStrength = clampValue((1 - transmission.blue) * (rayleigh ? 1.4 : .45), 0, 1);
+      sky.addColorStop(0, rayleigh ? `rgb(${Math.round(20 + 55 * (1 - blueStrength))},${Math.round(80 + 75 * blueStrength)},${Math.round(130 + 100 * blueStrength)})` : '#aeb8bd');
+      sky.addColorStop(1, elevation < 15 ? '#f4a261' : rayleigh ? '#cfe8f7' : '#d8d4c8');
+      ctx.fillStyle = sky;
+      ctx.fillRect(0, 0, w, horizon);
+      ctx.fillStyle = '#31483a';
+      ctx.fillRect(0, horizon, w, h - horizon);
+
+      ctx.save();
+      ctx.globalAlpha = .24 + density * .08;
+      for (let i = 0; i < 120; i += 1) {
+        const x = 16 + ((i * 83 + 19) % Math.max(20, w - 32));
+        const y = 22 + ((i * 47 + i * i * 7) % Math.max(20, horizon - 45));
+        ctx.fillStyle = rayleigh ? (i % 3 === 0 ? '#bfdbfe' : '#f8fafc') : '#f1f5f9';
+        ctx.beginPath();
+        ctx.arc(x, y, rayleigh ? 1.4 : 2.8, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+
+      const sunGlow = ctx.createRadialGradient(sun.x, sun.y, 3, sun.x, sun.y, 38);
+      sunGlow.addColorStop(0, '#ffffff');
+      sunGlow.addColorStop(.25, directColor);
+      sunGlow.addColorStop(1, 'rgba(251,191,36,0)');
+      ctx.fillStyle = sunGlow;
+      ctx.fillRect(sun.x - 42, sun.y - 42, 84, 84);
+      ctx.fillStyle = directColor;
+      ctx.beginPath();
+      ctx.arc(sun.x, sun.y, 13, 0, Math.PI * 2);
+      ctx.fill();
+      drawSceneLabel(ctx, 16, 14, elevation < 15 ? '低角度：大氣路徑很長' : '高角度：大氣路徑較短');
+
+      ctx.save();
+      ctx.strokeStyle = directColor;
+      ctx.globalAlpha = .5;
+      ctx.lineWidth = 10;
+      ctx.shadowColor = directColor;
+      ctx.shadowBlur = 16;
+      ctx.beginPath();
+      ctx.moveTo(sun.x, sun.y);
+      ctx.lineTo(observer.x, observer.y);
+      ctx.stroke();
+      ctx.lineWidth = 2;
+      ctx.globalAlpha = .9;
+      ctx.shadowBlur = 0;
+      ctx.stroke();
+      ctx.restore();
+
+      if ($('scatter-show-packets').checked) {
+        const channels = [
+          { color: '#ef4444', value: transmission.red, offset: -7, speed: .17 },
+          { color: '#22c55e', value: transmission.green, offset: 0, speed: .19 },
+          { color: '#38bdf8', value: transmission.blue, offset: 7, speed: .21 }
+        ];
+        const dx = observer.x - sun.x;
+        const dy = observer.y - sun.y;
+        const length = Math.hypot(dx, dy);
+        const nx = -dy / length;
+        const ny = dx / length;
+        channels.forEach(channel => {
+          const a = { x: sun.x + nx * channel.offset, y: sun.y + ny * channel.offset };
+          const b = { x: observer.x + nx * channel.offset, y: observer.y + ny * channel.offset };
+          drawMovingParticles(ctx, a, b, 9, time * channel.speed, channel.color, .25 + .75 * channel.value, 3.2);
+        });
+      }
+
+      if ($('scatter-show-rays').checked) {
+        const eventCount = rayleigh ? 7 : 5;
+        for (let i = 0; i < eventCount; i += 1) {
+          const ratio = .18 + i / (eventCount + 2) * .67;
+          const event = pointOnSegment(sun, observer, ratio);
+          const lift = (i % 2 ? -1 : 1) * (40 + (i % 3) * 18);
+          const scatterPoint = { x: event.x + 30 + i * 4, y: clampValue(event.y + lift, 45, horizon - 50) };
+          const color = rayleigh ? '#7dd3fc' : '#f8fafc';
+          ctx.save();
+          ctx.strokeStyle = color;
+          ctx.globalAlpha = rayleigh ? .48 : .35;
+          ctx.lineWidth = 1.4;
+          ctx.setLineDash([5, 5]);
+          ctx.beginPath();
+          ctx.moveTo(event.x, event.y);
+          ctx.quadraticCurveTo(scatterPoint.x, scatterPoint.y, observer.x, observer.y - 18);
+          ctx.stroke();
+          ctx.setLineDash([]);
+          ctx.fillStyle = color;
+          ctx.shadowColor = color;
+          ctx.shadowBlur = 8;
+          ctx.beginPath();
+          ctx.arc(event.x, event.y, 4, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+        }
+      }
+
+      ctx.save();
+      ctx.fillStyle = '#f8fafc';
+      ctx.strokeStyle = '#334155';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(observer.x, observer.y - 17, 11, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.fillRect(observer.x - 8, observer.y - 6, 16, 28);
+      ctx.restore();
+      drawSceneLabel(ctx, w - 18, horizon - 72, '觀察者收到直達光', 'right');
+
+      if ($('scatter-show-bars').checked) {
+        const barX = w - 172;
+        const barY = 34;
+        const barW = 118;
+        ctx.save();
+        ctx.fillStyle = 'rgba(255,255,255,.84)';
+        ctx.strokeStyle = 'rgba(51,65,85,.35)';
+        ctx.beginPath();
+        ctx.roundRect(barX - 12, barY - 15, 158, 118, 8);
+        ctx.fill();
+        ctx.stroke();
+        [['藍 450 nm', weights.blue, '#0ea5e9'], ['綠 530 nm', weights.green, '#22c55e'], ['紅 650 nm', weights.red, '#ef4444']].forEach((entry, index) => {
+          const normalized = entry[1] / weights.blue;
+          const y = barY + index * 31;
+          ctx.fillStyle = '#334155';
+          ctx.font = '700 11px "Microsoft JhengHei", Arial, sans-serif';
+          ctx.fillText(entry[0], barX, y);
+          ctx.fillStyle = 'rgba(148,163,184,.25)';
+          ctx.fillRect(barX, y + 7, barW, 8);
+          ctx.fillStyle = entry[2];
+          ctx.fillRect(barX, y + 7, barW * normalized, 8);
+        });
+        ctx.restore();
+      }
+
+      setText('scatter-elevation-out', `${elevation.toFixed(0)}°`);
+      setText('scatter-density-out', `${density.toFixed(2)}x`);
+      setText('scatter-speed-out', `${number('scatter-speed').toFixed(2)}x`);
+      $('scatter-path').innerHTML = `相對路徑 = ${pathLength.toFixed(1)}<small>太陽越低，穿越大氣越長</small>`;
+      $('scatter-blue').innerHTML = `藍／紅散射比 = ${(weights.blue / weights.red).toFixed(1)}<small>${rayleigh ? 'Rayleigh：強度約與 1/λ⁴ 成正比' : 'Mie：對波長選擇較弱，外觀偏白'}</small>`;
+      const warm = transmission.blue < transmission.red * .7;
+      $('scatter-direct').innerHTML = `直達光：${warm ? '橘紅色' : rayleigh ? '近白色' : '偏白'}<small>R ${(transmission.red * 100).toFixed(0)}%｜G ${(transmission.green * 100).toFixed(0)}%｜B ${(transmission.blue * 100).toFixed(0)}%</small>`;
+      $('scatter-status').innerHTML = rayleigh
+        ? `${elevation < 15 ? '夕陽情境' : '晴朗天空'}<small>短波光較容易被分子散到側方</small>`
+        : '霧滴／懸浮微粒<small>各色光散射較接近，因此霧偏白</small>';
+    }
+
+    function drawCurrentLoop(ctx, center, rx, ry, direction, strength, phase, color) {
+      ctx.save();
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 2.2 + strength * 2;
+      ctx.globalAlpha = .35 + strength * .6;
+      ctx.beginPath();
+      ctx.ellipse(center.x, center.y, rx, ry, 0, 0, Math.PI * 2);
+      ctx.stroke();
+      for (let i = 0; i < 10; i += 1) {
+        const angle = direction * (phase * 1.7 + i / 10 * Math.PI * 2);
+        const x = center.x + Math.cos(angle) * rx;
+        const y = center.y + Math.sin(angle) * ry;
+        ctx.fillStyle = '#fef3c7';
+        ctx.shadowColor = color;
+        ctx.shadowBlur = 8;
+        ctx.beginPath();
+        ctx.arc(x, y, 3, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      const arrowAngle = direction > 0 ? .2 : Math.PI - .2;
+      const p1 = { x: center.x + Math.cos(arrowAngle) * rx, y: center.y + Math.sin(arrowAngle) * ry };
+      const tangent = { x: -Math.sin(arrowAngle) * direction, y: Math.cos(arrowAngle) * direction };
+      drawArrow(ctx, p1.x - tangent.x * 13, p1.y - tangent.y * 13, p1.x + tangent.x * 13, p1.y + tangent.y * 13, color);
+      ctx.restore();
+    }
+
+    function brakeState() {
+      const material = $('brake-material').value;
+      const B = number('brake-field');
+      const omega0 = number('brake-start');
+      const slotted = $('brake-disk').value === 'slotted';
+      const conductivity = material === 'copper' ? 1.2 : material === 'aluminum' ? .78 : .008;
+      const loopFactor = slotted ? .27 : 1;
+      const gamma = conductivity * B * B * loopFactor * .28;
+      const omega = gamma > 0.00001 ? omega0 * Math.exp(-gamma * time) : omega0;
+      const angle = gamma > 0.00001 ? omega0 / gamma * (1 - Math.exp(-gamma * time)) : omega0 * time;
+      const current = conductivity * B * omega * loopFactor / 15;
+      const torque = gamma * omega;
+      const heat = omega0 > 0 ? 1 - (omega * omega) / (omega0 * omega0) : 0;
+      return { material, B, omega0, slotted, conductivity, loopFactor, gamma, omega, angle, current, torque, heat };
+    }
+
+    function drawBrakeCausalStrip(ctx, w, h, activeStrength) {
+      const labels = ['圓盤轉動', '磁通量改變', '渦電流', '反向力矩', '焦耳熱'];
+      const colors = ['#475569', '#2563eb', '#ea580c', '#be123c', '#dc2626'];
+      const compact = w < 720;
+      const gap = compact ? 7 : 12;
+      const totalW = Math.min(w - 32, 890);
+      const boxW = (totalW - gap * 4) / 5;
+      const left = (w - totalW) / 2;
+      const y = h - 62;
+      labels.forEach((label, index) => {
+        const x = left + index * (boxW + gap);
+        ctx.fillStyle = index === 0 || activeStrength > .015 ? `${colors[index]}18` : 'rgba(148,163,184,.10)';
+        ctx.strokeStyle = index === 0 || activeStrength > .015 ? colors[index] : '#94a3b8';
+        ctx.lineWidth = 1.4;
+        ctx.beginPath();
+        ctx.roundRect(x, y, boxW, 38, 7);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = colors[index];
+        ctx.font = `700 ${compact ? 10 : 12}px "Microsoft JhengHei", Arial, sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(label, x + boxW / 2, y + 19);
+        if (index < labels.length - 1) drawArrow(ctx, x + boxW + 2, y + 19, x + boxW + gap - 2, y + 19, '#64748b');
+      });
+    }
+
+    function drawMagnetBlock(ctx, x, y, width, height, label, color1, color2) {
+      const gradient = ctx.createLinearGradient(x, y, x + width, y + height);
+      gradient.addColorStop(0, color1);
+      gradient.addColorStop(1, color2);
+      ctx.save();
+      ctx.fillStyle = gradient;
+      ctx.strokeStyle = 'rgba(15,23,42,.42)';
+      ctx.lineWidth = 2;
+      ctx.shadowColor = 'rgba(15,23,42,.2)';
+      ctx.shadowBlur = 8;
+      ctx.beginPath();
+      ctx.roundRect(x, y, width, height, 7);
+      ctx.fill();
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = '#ffffff';
+      ctx.font = `800 ${Math.min(30, height * .48)}px Arial, sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(label, x + width / 2, y + height / 2);
+      ctx.restore();
+    }
+
+    function drawMagneticBrake() {
+      const canvas = $('brake-canvas');
+      const { ctx, w, h } = resizeCanvas(canvas);
+      const state = brakeState();
+      const cx = w * (w < 700 ? .38 : .34);
+      const cy = h * .43;
+      const radius = Math.min(h * .30, w * .25, 155);
+      const magnetX = cx + radius * .54;
+      const magnetW = Math.min(150, w * .18);
+      const magnetH = 64;
+      const gapTop = cy - 24;
+
+      const backdrop = ctx.createLinearGradient(0, 0, 0, h);
+      backdrop.addColorStop(0, '#f8fafc');
+      backdrop.addColorStop(1, '#e8eef3');
+      ctx.fillStyle = backdrop;
+      ctx.fillRect(0, 0, w, h);
+      ctx.fillStyle = '#cbd5e1';
+      ctx.fillRect(0, h * .72, w, 5);
+      ctx.fillStyle = '#dbe2e8';
+      ctx.fillRect(0, h * .72 + 5, w, h * .28 - 5);
+
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(state.angle);
+      const diskGradient = ctx.createRadialGradient(-radius * .28, -radius * .32, 8, 0, 0, radius);
+      if (state.material === 'copper') {
+        diskGradient.addColorStop(0, '#f5c09a');
+        diskGradient.addColorStop(.55, '#b96b3b');
+        diskGradient.addColorStop(1, '#75452d');
+      } else if (state.material === 'plastic') {
+        diskGradient.addColorStop(0, '#d8f1f0');
+        diskGradient.addColorStop(.55, '#7bc8c4');
+        diskGradient.addColorStop(1, '#397e7c');
+      } else {
+        diskGradient.addColorStop(0, '#f8fafc');
+        diskGradient.addColorStop(.55, '#aab6c3');
+        diskGradient.addColorStop(1, '#64748b');
+      }
+      ctx.fillStyle = diskGradient;
+      ctx.strokeStyle = '#334155';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.arc(0, 0, radius, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.strokeStyle = 'rgba(255,255,255,.48)';
+      ctx.lineWidth = 1.4;
+      for (let i = 0; i < 12; i += 1) {
+        const angle = i / 12 * Math.PI * 2;
+        ctx.beginPath();
+        ctx.moveTo(Math.cos(angle) * radius * .20, Math.sin(angle) * radius * .20);
+        ctx.lineTo(Math.cos(angle) * radius * .92, Math.sin(angle) * radius * .92);
+        ctx.stroke();
+      }
+      if (state.slotted) {
+        ctx.strokeStyle = '#eef2f6';
+        ctx.lineWidth = Math.max(8, radius * .075);
+        for (let i = 0; i < 14; i += 1) {
+          const angle = i / 14 * Math.PI * 2;
+          ctx.beginPath();
+          ctx.moveTo(Math.cos(angle) * radius * .48, Math.sin(angle) * radius * .48);
+          ctx.lineTo(Math.cos(angle) * radius * .98, Math.sin(angle) * radius * .98);
+          ctx.stroke();
+        }
+      }
+      ctx.fillStyle = '#334155';
+      ctx.beginPath();
+      ctx.arc(0, 0, radius * .12, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+
+      ctx.fillStyle = '#475569';
+      ctx.fillRect(cx - 9, cy, 18, h * .30);
+      ctx.fillStyle = '#334155';
+      ctx.beginPath();
+      ctx.ellipse(cx, h * .75, 55, 12, 0, 0, Math.PI * 2);
+      ctx.fill();
+
+      drawMagnetBlock(ctx, magnetX, gapTop - magnetH, magnetW, magnetH, 'N', '#f87171', '#991b1b');
+      drawMagnetBlock(ctx, magnetX, gapTop + 48, magnetW, magnetH, 'S', '#60a5fa', '#1e3a8a');
+      if ($('brake-show-field').checked && state.B > .01) {
+        for (let i = 0; i < 5; i += 1) {
+          const x = magnetX + 18 + i * (magnetW - 36) / 4;
+          drawArrow(ctx, x, gapTop - 2, x, gapTop + 45, `rgba(37,99,235,${.35 + state.B * .45})`);
+        }
+        drawSceneLabel(ctx, magnetX + magnetW, gapTop + 5, `B = ${state.B.toFixed(2)} T`, 'right');
+      }
+
+      const overlap = { x: cx + radius * .63, y: cy };
+      if ($('brake-show-current').checked && state.current > .001) {
+        const strength = clampValue(state.current * 1.6, .08, 1);
+        drawCurrentLoop(ctx, { x: overlap.x - 25, y: overlap.y - 33 }, radius * .23, radius * .15, 1, strength, time, '#ea580c');
+        drawCurrentLoop(ctx, { x: overlap.x + 27, y: overlap.y + 34 }, radius * .22, radius * .14, -1, strength, time, '#c2410c');
+        drawSceneLabel(ctx, overlap.x - radius * .35, overlap.y + radius * .37, state.slotted ? '開槽切斷大型渦流迴路' : '進入／離開磁區的渦流方向相反');
+      }
+
+      const direction = state.omega >= 0 ? -1 : 1;
+      ctx.save();
+      ctx.strokeStyle = '#be123c';
+      ctx.fillStyle = '#be123c';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.arc(cx, cy, radius + 21, direction > 0 ? .2 : Math.PI + .2, direction > 0 ? 1.25 : Math.PI + 1.25, direction < 0);
+      ctx.stroke();
+      const endAngle = direction > 0 ? 1.25 : Math.PI + 1.25;
+      const arrowX = cx + Math.cos(endAngle) * (radius + 21);
+      const arrowY = cy + Math.sin(endAngle) * (radius + 21);
+      ctx.beginPath();
+      ctx.arc(arrowX, arrowY, 5, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+      drawSceneLabel(ctx, Math.max(14, cx - radius), Math.max(18, cy - radius - 54), state.B > .01 && state.material !== 'plastic' ? '紅色：反抗轉動的煞車力矩' : '幾乎沒有磁煞車力矩');
+
+      if ($('brake-show-heat').checked) {
+        const barX = w - Math.min(210, w * .25);
+        const barY = cy + radius * .62;
+        const barW = Math.min(165, w * .20);
+        ctx.fillStyle = 'rgba(255,255,255,.86)';
+        ctx.strokeStyle = '#94a3b8';
+        ctx.beginPath();
+        ctx.roundRect(barX - 12, barY - 26, barW + 28, 76, 8);
+        ctx.fill();
+        ctx.stroke();
+        ctx.fillStyle = '#475569';
+        ctx.font = '700 12px "Microsoft JhengHei", Arial, sans-serif';
+        ctx.fillText('動能轉為導體內能', barX, barY - 7);
+        ctx.fillStyle = '#e2e8f0';
+        ctx.fillRect(barX, barY + 6, barW, 14);
+        const heatGradient = ctx.createLinearGradient(barX, 0, barX + barW, 0);
+        heatGradient.addColorStop(0, '#fbbf24');
+        heatGradient.addColorStop(1, '#dc2626');
+        ctx.fillStyle = heatGradient;
+        ctx.fillRect(barX, barY + 6, barW * clampValue(state.heat, 0, 1), 14);
+        ctx.fillStyle = '#475569';
+        ctx.fillText(`${(state.heat * 100).toFixed(0)}%`, barX + barW + 6, barY + 18);
+      }
+      drawBrakeCausalStrip(ctx, w, h, state.current);
+
+      const materialName = state.material === 'copper' ? '銅' : state.material === 'aluminum' ? '鋁' : '塑膠';
+      setText('brake-field-out', `${state.B.toFixed(2)} T`);
+      setText('brake-start-out', `${state.omega0.toFixed(1)} rad/s`);
+      setText('brake-speed-out', `${number('brake-speed').toFixed(2)}x`);
+      $('brake-omega').innerHTML = `角速度 ω = ${state.omega.toFixed(2)} rad/s<small>${state.gamma < .001 ? '幾乎等速轉動' : `時間常數約 ${(1 / state.gamma).toFixed(1)} s`}</small>`;
+      $('brake-current').innerHTML = `渦電流相對值 = ${state.current.toFixed(2)}<small>${materialName}${state.slotted ? '且有開槽，電流迴路受阻' : '完整圓盤可形成大迴路'}</small>`;
+      $('brake-torque').innerHTML = `煞車力矩 = ${state.torque.toFixed(2)}（相對值）<small>方向永遠反抗當下轉動</small>`;
+      $('brake-heat').innerHTML = `轉為熱 = ${(state.heat * 100).toFixed(0)}%<small>由圓盤損失的轉動動能估算</small>`;
+    }
+
+    function polylinePoint(points, ratio) {
+      let total = 0;
+      const lengths = [];
+      for (let i = 1; i < points.length; i += 1) {
+        const length = Math.hypot(points[i].x - points[i - 1].x, points[i].y - points[i - 1].y);
+        lengths.push(length);
+        total += length;
+      }
+      let target = (((ratio % 1) + 1) % 1) * total;
+      for (let i = 0; i < lengths.length; i += 1) {
+        if (target <= lengths[i]) return pointOnSegment(points[i], points[i + 1], target / lengths[i]);
+        target -= lengths[i];
+      }
+      return points[points.length - 1];
+    }
+
+    function drawPolylineParticles(ctx, points, count, phase, color, radius, reverse = false) {
+      ctx.save();
+      ctx.fillStyle = color;
+      ctx.shadowColor = color;
+      ctx.shadowBlur = 8;
+      for (let i = 0; i < count; i += 1) {
+        const ratio = i / count + (reverse ? -phase : phase);
+        const point = polylinePoint(points, ratio);
+        ctx.beginPath();
+        ctx.arc(point.x, point.y, radius, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    function motorState() {
+      const voltage = number('motor-voltage');
+      const B = number('motor-field');
+      const turns = number('motor-turns');
+      const load = number('motor-load');
+      const stallCurrent = voltage / 3.6;
+      const area = .008;
+      const driveMax = turns * stallCurrent * B * area;
+      const available = Math.max(0, driveMax * .72 - load);
+      const targetOmega = available / .075;
+      const tau = 1.15;
+      const omega = targetOmega * (1 - Math.exp(-time / tau));
+      const angle = .52 + targetOmega * (time - tau * (1 - Math.exp(-time / tau)));
+      const current = Math.max(.08, stallCurrent * (1 - .58 * (targetOmega ? omega / targetOmega : 0)));
+      const torque = turns * current * B * area * Math.abs(Math.sin(angle));
+      const halfTurn = Math.floor((((angle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2)) / Math.PI);
+      const stalled = available <= .001;
+      return { voltage, B, turns, load, area, driveMax, targetOmega, omega: stalled ? 0 : omega, angle: stalled ? .52 : angle, current, torque, halfTurn, stalled };
+    }
+
+    function drawCommutator(ctx, center, radius, angle, halfTurn, showCurrent, showElectrons, phase) {
+      ctx.save();
+      ctx.lineCap = 'round';
+      ctx.lineWidth = 12;
+      ctx.strokeStyle = '#c56a28';
+      ctx.beginPath();
+      ctx.arc(center.x, center.y, radius, angle + .12, angle + Math.PI - .12);
+      ctx.stroke();
+      ctx.strokeStyle = '#e39b55';
+      ctx.beginPath();
+      ctx.arc(center.x, center.y, radius, angle + Math.PI + .12, angle + Math.PI * 2 - .12);
+      ctx.stroke();
+      ctx.fillStyle = '#334155';
+      ctx.fillRect(center.x - radius - 34, center.y - 9, 26, 18);
+      ctx.fillRect(center.x + radius + 8, center.y - 9, 26, 18);
+      ctx.fillStyle = '#f8fafc';
+      ctx.font = '700 11px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('電刷', center.x - radius - 21, center.y - 16);
+      ctx.fillText('電刷', center.x + radius + 21, center.y - 16);
+      if (showCurrent) {
+        const sign = halfTurn === 0 ? 1 : -1;
+        for (let i = 0; i < 8; i += 1) {
+          const a = angle + sign * (phase * 1.8 + i / 8 * Math.PI * 2);
+          ctx.fillStyle = '#fb923c';
+          ctx.shadowColor = '#fb923c';
+          ctx.shadowBlur = 6;
+          ctx.beginPath();
+          ctx.arc(center.x + Math.cos(a) * radius, center.y + Math.sin(a) * radius, 2.8, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+      if (showElectrons) {
+        const sign = halfTurn === 0 ? -1 : 1;
+        for (let i = 0; i < 5; i += 1) {
+          const a = angle + sign * (phase * 1.35 + i / 5 * Math.PI * 2);
+          ctx.fillStyle = '#a78bfa';
+          ctx.beginPath();
+          ctx.arc(center.x + Math.cos(a) * (radius + 5), center.y + Math.sin(a) * (radius + 5), 2.2, 0, Math.PI * 2);
+          ctx.fill();
+        }
+      }
+      ctx.restore();
+    }
+
+    function drawMotor() {
+      const canvas = $('motor-canvas');
+      const { ctx, w, h } = resizeCanvas(canvas);
+      const state = motorState();
+      const compact = w < 720;
+      const center = { x: w * .50, y: h * .38 };
+      const poleW = compact ? 78 : Math.min(142, w * .14);
+      const poleH = compact ? 185 : 225;
+      const poleY = center.y - poleH / 2;
+      const leftPoleX = compact ? 18 : w * .09;
+      const rightPoleX = w - leftPoleX - poleW;
+      const halfHeight = compact ? 63 : 78;
+      const halfWidth = compact ? 54 : 82;
+      const depth = compact ? 18 : 30;
+
+      const background = ctx.createLinearGradient(0, 0, 0, h);
+      background.addColorStop(0, '#f8fafc');
+      background.addColorStop(1, '#e7edf2');
+      ctx.fillStyle = background;
+      ctx.fillRect(0, 0, w, h);
+      ctx.fillStyle = '#dbe3e9';
+      ctx.fillRect(0, h * .86, w, h * .14);
+
+      drawMagnetBlock(ctx, leftPoleX, poleY, poleW, poleH, 'N', '#ef4444', '#991b1b');
+      drawMagnetBlock(ctx, rightPoleX, poleY, poleW, poleH, 'S', '#60a5fa', '#1e3a8a');
+      if ($('motor-show-field').checked) {
+        const lines = compact ? 4 : 6;
+        for (let i = 0; i < lines; i += 1) {
+          const y = center.y - halfHeight + i * (halfHeight * 2) / (lines - 1);
+          drawArrow(ctx, leftPoleX + poleW + 10, y, rightPoleX - 10, y, `rgba(37,99,235,${.35 + state.B * .45})`);
+        }
+        drawSceneLabel(ctx, center.x, poleY - 35, `磁場 B：N → S（${state.B.toFixed(2)} T）`, 'right');
+      }
+
+      const ux = Math.cos(state.angle) * halfWidth;
+      const uy = Math.sin(state.angle) * depth;
+      const topLeft = { x: center.x - ux, y: center.y - halfHeight - uy };
+      const topRight = { x: center.x + ux, y: center.y - halfHeight + uy };
+      const bottomRight = { x: center.x + ux, y: center.y + halfHeight + uy };
+      const bottomLeft = { x: center.x - ux, y: center.y + halfHeight - uy };
+      const loop = [topLeft, topRight, bottomRight, bottomLeft, topLeft];
+      ctx.save();
+      ctx.strokeStyle = '#b45309';
+      ctx.lineWidth = compact ? 7 : 9;
+      ctx.lineJoin = 'round';
+      ctx.shadowColor = 'rgba(180,83,9,.3)';
+      ctx.shadowBlur = 7;
+      ctx.beginPath();
+      ctx.moveTo(loop[0].x, loop[0].y);
+      loop.slice(1).forEach(point => ctx.lineTo(point.x, point.y));
+      ctx.stroke();
+      ctx.restore();
+      ctx.save();
+      ctx.strokeStyle = '#475569';
+      ctx.lineWidth = 8;
+      ctx.beginPath();
+      ctx.moveTo(center.x, center.y - halfHeight - 40);
+      ctx.lineTo(center.x, center.y + halfHeight + 95);
+      ctx.stroke();
+      ctx.fillStyle = '#334155';
+      ctx.beginPath();
+      ctx.ellipse(center.x, center.y, 11, 17, 0, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+
+      const currentReversed = state.halfTurn === 1;
+      const route = currentReversed ? [...loop].reverse() : loop;
+      if ($('motor-show-current').checked) drawPolylineParticles(ctx, route, compact ? 13 : 18, time * .22, '#fb923c', 3.6);
+      if ($('motor-show-electrons').checked) drawPolylineParticles(ctx, route, compact ? 9 : 13, time * .17, '#a78bfa', 2.4, true);
+
+      const leftMid = pointOnSegment(topLeft, bottomLeft, .5);
+      const rightMid = pointOnSegment(topRight, bottomRight, .5);
+      if ($('motor-show-force').checked) {
+        const leftOut = currentReversed ? '⊗' : '⊙';
+        const rightOut = currentReversed ? '⊙' : '⊗';
+        [
+          { p: leftMid, symbol: leftOut, offset: -38 },
+          { p: rightMid, symbol: rightOut, offset: 38 }
+        ].forEach(item => {
+          ctx.save();
+          ctx.fillStyle = 'rgba(255,255,255,.9)';
+          ctx.strokeStyle = '#be123c';
+          ctx.lineWidth = 2.5;
+          ctx.beginPath();
+          ctx.arc(item.p.x, item.p.y, 20, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.stroke();
+          ctx.fillStyle = '#be123c';
+          ctx.font = '800 24px Arial, sans-serif';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(item.symbol, item.p.x, item.p.y + 1);
+          ctx.restore();
+          drawSceneLabel(ctx, item.p.x + item.offset, item.p.y + 27, `${item.symbol} 磁力 F`, item.offset > 0 ? 'left' : 'right');
+        });
+      }
+
+      const commutatorCenter = { x: center.x, y: Math.min(h - 125, center.y + halfHeight + 92) };
+      drawCommutator(ctx, commutatorCenter, compact ? 29 : 36, state.angle, state.halfTurn, $('motor-show-current').checked, $('motor-show-electrons').checked, time);
+      ctx.save();
+      ctx.strokeStyle = '#475569';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(commutatorCenter.x - (compact ? 63 : 77), commutatorCenter.y);
+      ctx.lineTo(commutatorCenter.x - (compact ? 105 : 145), commutatorCenter.y);
+      ctx.lineTo(commutatorCenter.x - (compact ? 105 : 145), h - 35);
+      ctx.moveTo(commutatorCenter.x + (compact ? 63 : 77), commutatorCenter.y);
+      ctx.lineTo(commutatorCenter.x + (compact ? 105 : 145), commutatorCenter.y);
+      ctx.lineTo(commutatorCenter.x + (compact ? 105 : 145), h - 35);
+      ctx.stroke();
+      const batteryX = center.x - 34;
+      const batteryY = h - 48;
+      ctx.fillStyle = '#334155';
+      ctx.fillRect(batteryX, batteryY, 68, 24);
+      ctx.fillStyle = '#f8fafc';
+      ctx.font = '800 14px Arial, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(`+  ${state.voltage.toFixed(1)} V  −`, center.x, batteryY + 17);
+      ctx.restore();
+      drawSceneLabel(ctx, center.x + (compact ? 52 : 68), commutatorCenter.y + 26, `分裂環：每半圈換向`);
+
+      ctx.save();
+      ctx.strokeStyle = state.stalled ? '#94a3b8' : '#0f766e';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.arc(center.x, poleY - 8, compact ? 34 : 45, Math.PI * .15, Math.PI * 1.75);
+      ctx.stroke();
+      ctx.fillStyle = state.stalled ? '#64748b' : '#0f766e';
+      ctx.font = '700 13px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(state.stalled ? '負載過大：無法啟動' : '力矩方向保持一致', center.x, poleY - 17);
+      ctx.restore();
+
+      setText('motor-voltage-out', `${state.voltage.toFixed(1)} V`);
+      setText('motor-field-out', `${state.B.toFixed(2)} T`);
+      setText('motor-turns-out', state.turns.toFixed(0));
+      setText('motor-load-out', `${state.load.toFixed(2)} N·m`);
+      setText('motor-speed-out', `${number('motor-speed').toFixed(2)}x`);
+      $('motor-current').innerHTML = `線圈電流 I = ${state.current.toFixed(2)} A<small>橘色為傳統電流；紫色電子流方向相反</small>`;
+      $('motor-torque').innerHTML = `電磁力矩 τ = ${state.torque.toFixed(2)} N·m<small>τ = NIAB sinθ；目前負載 ${state.load.toFixed(2)} N·m</small>`;
+      $('motor-speed-badge').innerHTML = `轉速 = ${(state.omega * 60 / (Math.PI * 2)).toFixed(0)} rpm<small>${state.stalled ? '啟動力矩小於負載' : `目標約 ${(state.targetOmega * 60 / (Math.PI * 2)).toFixed(0)} rpm`}</small>`;
+      $('motor-commutator').innerHTML = `換向器：${state.halfTurn === 0 ? 'A 接正極' : 'B 接正極'}<small>跨過半圈時交換線圈電流方向</small>`;
+    }
+
     function drawActive() {
       if (activeModule === 'standing') drawStanding();
       else if (activeModule === 'doppler') drawDoppler();
@@ -6425,6 +7611,14 @@
       else if (activeModule === 'double') drawDoubleSlit();
       else if (activeModule === 'single') drawSingleSlit();
       else if (activeModule === 'huygens') drawHuygens();
+      else if (activeModule === 'light') {
+        if (activeLight === 'refraction') drawRefraction();
+        else drawScattering();
+      }
+      else if (activeModule === 'electromagnetism') {
+        if (activeElectromagnetism === 'brake') drawMagneticBrake();
+        else drawMotor();
+      }
       else if (activeModule === 'mechanics') {
         if (activeMechanics === 'circular') drawCircularProjection();
         else if (activeMechanics === 'precession') drawPrecession();
@@ -6469,6 +7663,36 @@
       document.querySelectorAll('.optics-view').forEach(view => {
         view.classList.toggle('active', view.id === `optics-view-${name}`);
       });
+      requestAnimationFrame(drawActive);
+    }
+
+    function setLightMode(name) {
+      activeLight = name;
+      document.querySelectorAll('.light-mode').forEach(btn => {
+        const active = btn.dataset.light === name;
+        btn.classList.toggle('active', active);
+        btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+      });
+      document.querySelectorAll('.light-view').forEach(view => {
+        view.classList.toggle('active', view.id === `light-view-${name}`);
+      });
+      time = 0;
+      last = performance.now();
+      requestAnimationFrame(drawActive);
+    }
+
+    function setElectromagnetismMode(name) {
+      activeElectromagnetism = name;
+      document.querySelectorAll('.em-mode').forEach(btn => {
+        const active = btn.dataset.em === name;
+        btn.classList.toggle('active', active);
+        btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+      });
+      document.querySelectorAll('.em-view').forEach(view => {
+        view.classList.toggle('active', view.id === `em-view-${name}`);
+      });
+      time = 0;
+      last = performance.now();
       requestAnimationFrame(drawActive);
     }
 
@@ -6547,6 +7771,14 @@
       btn.addEventListener('click', () => setOpticsMode(btn.dataset.optics));
     });
 
+    document.querySelectorAll('.light-mode').forEach(btn => {
+      btn.addEventListener('click', () => setLightMode(btn.dataset.light));
+    });
+
+    document.querySelectorAll('.em-mode').forEach(btn => {
+      btn.addEventListener('click', () => setElectromagnetismMode(btn.dataset.em));
+    });
+
     document.querySelectorAll('.topic-mode').forEach(btn => {
       btn.addEventListener('click', () => setMechanicsMode(btn.dataset.mechanics));
     });
@@ -6566,6 +7798,28 @@
     document.querySelectorAll('input, select').forEach(input => {
       input.addEventListener('input', drawActive);
       input.addEventListener('change', drawActive);
+    });
+
+    document.querySelectorAll('.ref-preset').forEach(button => {
+      button.addEventListener('click', () => {
+        $('ref-n1').value = button.dataset.n1;
+        $('ref-n2').value = button.dataset.n2;
+        $('ref-angle').value = button.dataset.angle;
+        time = 0;
+        last = performance.now();
+        drawActive();
+      });
+    });
+
+    document.querySelectorAll('.scatter-preset').forEach(button => {
+      button.addEventListener('click', () => {
+        $('scatter-elevation').value = button.dataset.elevation;
+        $('scatter-density').value = button.dataset.density;
+        $('scatter-type').value = button.dataset.type;
+        time = 0;
+        last = performance.now();
+        drawActive();
+      });
     });
 
     let draggingMirrorRay = false;
