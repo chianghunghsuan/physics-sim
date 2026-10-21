@@ -7491,7 +7491,13 @@
           const y = center.y - halfHeight + i * (halfHeight * 2) / (lines - 1);
           drawArrow(ctx, leftPoleX + poleW + 10, y, rightPoleX - 10, y, `rgba(37,99,235,${.35 + state.B * .45})`);
         }
-        drawSceneLabel(ctx, center.x, poleY - 35, `磁場 B：N → S（${state.B.toFixed(2)} T）`, 'right');
+        drawSceneLabel(
+          ctx,
+          compact ? 10 : center.x,
+          poleY - 35,
+          `磁場 B：N → S（${state.B.toFixed(2)} T）`,
+          compact ? 'left' : 'right'
+        );
       }
 
       const ux = Math.cos(state.angle) * halfWidth;
@@ -7579,7 +7585,13 @@
       ctx.textAlign = 'center';
       ctx.fillText(`+  ${state.voltage.toFixed(1)} V  −`, center.x, batteryY + 17);
       ctx.restore();
-      drawSceneLabel(ctx, center.x + (compact ? 52 : 68), commutatorCenter.y + 26, `分裂環：每半圈換向`);
+      drawSceneLabel(
+        ctx,
+        compact ? w - 10 : center.x + 68,
+        commutatorCenter.y + 26,
+        '分裂環：每半圈換向',
+        compact ? 'right' : 'left'
+      );
 
       ctx.save();
       ctx.strokeStyle = state.stalled ? '#94a3b8' : '#0f766e';
@@ -7637,6 +7649,7 @@
 
     function setTab(name) {
       const enteringRetrograde = name === 'retrograde' && activeModule !== name;
+      const enteringProcessModule = ['light', 'electromagnetism'].includes(name) && activeModule !== name;
       activeModule = name;
       document.querySelectorAll('.tab').forEach(btn => {
         const active = btn.dataset.tab === name;
@@ -7646,7 +7659,7 @@
       document.querySelectorAll('.panel').forEach(panel => {
         panel.classList.toggle('active', panel.id === `panel-${name}`);
       });
-      if (enteringRetrograde) {
+      if (enteringRetrograde || enteringProcessModule) {
         time = 0;
         last = performance.now();
       }
