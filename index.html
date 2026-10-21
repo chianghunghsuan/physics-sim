@@ -7535,7 +7535,7 @@
       ctx.setLineDash([]);
       ctx.fillStyle = '#dbeafe';
       ctx.font = `700 ${compact ? 10 : 12}px "Microsoft JhengHei", Arial, sans-serif`;
-      ctx.fillText('S 後方極靴', patch.x + 13, patch.y + patch.h + 24);
+      if (!compact) ctx.fillText('S 後方極靴', patch.x + 13, patch.y + patch.h + 24);
       ctx.restore();
 
       ctx.save();
@@ -7611,7 +7611,13 @@
       ctx.stroke();
       ctx.fillStyle = '#991b1b';
       ctx.font = `800 ${compact ? 11 : 14}px "Microsoft JhengHei", Arial, sans-serif`;
-      ctx.fillText('N 前方極靴', patch.x - 2, patch.y - 13);
+      if (compact) {
+        ctx.fillStyle = '#fee2e2';
+        ctx.font = '800 9px "Microsoft JhengHei", Arial, sans-serif';
+        ctx.fillText('N 極靴', patch.x + 5, patch.y + 14);
+      } else {
+        ctx.fillText('N 前方極靴', patch.x - 2, patch.y - 13);
+      }
       ctx.restore();
 
       drawArrow(ctx, patch.x + patch.w + 18, patch.y - 20, patch.x + patch.w + 18, patch.y + 38, '#475569');
@@ -7619,7 +7625,7 @@
       ctx.font = `700 ${compact ? 10 : 12}px "Microsoft JhengHei", Arial, sans-serif`;
       ctx.fillText(`v = ${state.surfaceSpeed.toFixed(2)} m/s`, patch.x + patch.w + 23, patch.y + 12);
 
-      const loopRadius = Math.max(18, radius * .23);
+      const loopRadius = compact ? Math.max(11, radius * .14) : Math.max(18, radius * .23);
       const entry = { x: patch.x + patch.w * .30, y: patch.y - 3 };
       const exit = { x: patch.x + patch.w * .70, y: patch.y + patch.h + 3 };
       if (showFlux) {
@@ -7636,14 +7642,21 @@
         drawArrow(ctx, exit.x - loopRadius - 7, patch.y + patch.h - 17, exit.x - loopRadius - 7, patch.y + patch.h - 61, '#be123c');
         ctx.fillStyle = '#be123c';
         ctx.font = `700 ${compact ? 10 : 12}px "Microsoft JhengHei", Arial, sans-serif`;
-        ctx.fillText('F↑', entry.x + loopRadius + 12, patch.y - 23);
-        ctx.fillText('F↑', exit.x - loopRadius - 25, patch.y + patch.h - 63);
+        if (!compact) {
+          ctx.fillText('F↑', entry.x + loopRadius + 12, patch.y - 23);
+          ctx.fillText('F↑', exit.x - loopRadius - 25, patch.y + patch.h - 63);
+        }
       }
 
-      ctx.fillStyle = '#334155';
-      ctx.font = `700 ${compact ? 9 : 11}px "Microsoft JhengHei", Arial, sans-serif`;
-      ctx.fillText('進入：Φ⊗增加', Math.max(scene.x + 8, entry.x - loopRadius), Math.max(scene.y + 18, entry.y - loopRadius - 8));
-      ctx.fillText('離開：Φ⊗減少', Math.max(scene.x + 8, exit.x - loopRadius), Math.min(scene.y + scene.h - 8, exit.y + loopRadius + 15));
+      if (compact) {
+        drawSceneLabel(ctx, patch.x - 11, patch.y - 39, '進入 Φ↑');
+        drawSceneLabel(ctx, patch.x - 11, patch.y + patch.h + 10, '離開 Φ↓');
+      } else {
+        ctx.fillStyle = '#334155';
+        ctx.font = '700 11px "Microsoft JhengHei", Arial, sans-serif';
+        ctx.fillText('進入：Φ⊗增加', Math.max(scene.x + 8, entry.x - loopRadius), Math.max(scene.y + 18, entry.y - loopRadius - 8));
+        ctx.fillText('離開：Φ⊗減少', Math.max(scene.x + 8, exit.x - loopRadius), Math.min(scene.y + scene.h - 8, exit.y + loopRadius + 15));
+      }
 
       if (showForce && state.force > .00001) {
         ctx.save();
@@ -7658,7 +7671,14 @@
         ctx.fill();
         ctx.restore();
       }
-      drawSceneLabel(ctx, scene.x + 10, scene.y + 10, state.force > .00001 ? '兩個局部 F 都反抗圓盤向下運動' : '沒有磁通變化，就沒有磁煞車力');
+      const sceneSummary = activeBrakeLayer === 'flux'
+        ? '先看金屬進出磁區時的 Φ 增減'
+        : activeBrakeLayer === 'current'
+          ? '楞次定律：感應電流反抗 Φ 的改變'
+          : showForce && state.force > .00001
+            ? '兩個局部 F 都反抗圓盤向下運動'
+            : '沒有磁通變化，就沒有磁煞車力';
+      drawSceneLabel(ctx, scene.x + 10, scene.y + 10, sceneSummary);
 
       if ($('brake-show-heat').checked) {
         const barW = Math.min(150, scene.w * .31);
@@ -7791,8 +7811,8 @@
       ctx.restore();
     }
 
-    function drawMotorVectorProof(ctx, x, y, width, leftCurrentUp) {
-      const height = 116;
+    function drawMotorVectorProof(ctx, x, y, width, leftCurrentUp, compact) {
+      const height = compact ? 98 : 116;
       const leftForce = leftCurrentUp ? '⊗' : '⊙';
       const rightForce = leftCurrentUp ? '⊙' : '⊗';
       ctx.save();
@@ -7808,21 +7828,27 @@
       ctx.textAlign = 'left';
       ctx.fillText('右手定則：F = N I ℓ × B', x + 13, y + 22);
       ctx.font = '700 13px "Microsoft JhengHei", Arial, sans-serif';
-      ctx.fillStyle = '#fb923c';
-      ctx.fillText(`左導線  I${leftCurrentUp ? '↑' : '↓'}`, x + 13, y + 50);
-      ctx.fillStyle = '#93c5fd';
-      ctx.fillText('× B→', x + 116, y + 50);
-      ctx.fillStyle = '#fb7185';
-      ctx.fillText(`= F${leftForce}`, x + width - 67, y + 50);
-      ctx.fillStyle = '#fb923c';
-      ctx.fillText(`右導線  I${leftCurrentUp ? '↓' : '↑'}`, x + 13, y + 78);
-      ctx.fillStyle = '#93c5fd';
-      ctx.fillText('× B→', x + 116, y + 78);
-      ctx.fillStyle = '#fb7185';
-      ctx.fillText(`= F${rightForce}`, x + width - 67, y + 78);
+      if (compact) {
+        ctx.fillStyle = '#f8fafc';
+        ctx.fillText(`左：I${leftCurrentUp ? '↑' : '↓'} × B→ = F${leftForce}`, x + 13, y + 46);
+        ctx.fillText(`右：I${leftCurrentUp ? '↓' : '↑'} × B→ = F${rightForce}`, x + 13, y + 68);
+      } else {
+        ctx.fillStyle = '#fb923c';
+        ctx.fillText(`左導線  I${leftCurrentUp ? '↑' : '↓'}`, x + 13, y + 50);
+        ctx.fillStyle = '#93c5fd';
+        ctx.fillText('× B→', x + 116, y + 50);
+        ctx.fillStyle = '#fb7185';
+        ctx.fillText(`= F${leftForce}`, x + width - 67, y + 50);
+        ctx.fillStyle = '#fb923c';
+        ctx.fillText(`右導線  I${leftCurrentUp ? '↓' : '↑'}`, x + 13, y + 78);
+        ctx.fillStyle = '#93c5fd';
+        ctx.fillText('× B→', x + 116, y + 78);
+        ctx.fillStyle = '#fb7185';
+        ctx.fillText(`= F${rightForce}`, x + width - 67, y + 78);
+      }
       ctx.fillStyle = '#cbd5e1';
       ctx.font = '600 10px "Microsoft JhengHei", Arial, sans-serif';
-      ctx.fillText('⊙ 指向紙外　⊗ 指向紙內；兩力形成力偶', x + 13, y + 102);
+      ctx.fillText('⊙ 紙外　⊗ 紙內；兩力形成力偶', x + 13, y + (compact ? 87 : 102));
       ctx.restore();
     }
 
@@ -7984,10 +8010,10 @@
       ctx.restore();
       drawSceneLabel(
         ctx,
-        compact ? w - 10 : center.x + 68,
-        commutatorCenter.y + 26,
+        compact ? center.x + 50 : center.x + 68,
+        compact ? commutatorCenter.y - 20 : commutatorCenter.y + 26,
         '分裂環：每半圈換向',
-        compact ? 'right' : 'left'
+        'left'
       );
 
       if (showTorque) {
@@ -8017,7 +8043,7 @@
 
       if (showVector) {
         const proofWidth = compact ? w - 24 : Math.min(292, w * .28);
-        drawMotorVectorProof(ctx, compact ? 12 : w - proofWidth - 16, h - 174, proofWidth, leftCurrentUp);
+        drawMotorVectorProof(ctx, compact ? 12 : w - proofWidth - 16, compact ? h - 154 : h - 174, proofWidth, leftCurrentUp, compact);
       }
 
       setText('motor-voltage-out', `${state.voltage.toFixed(1)} V`);
