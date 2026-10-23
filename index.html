@@ -283,11 +283,42 @@
     }
     .badge.warning small { color: #9a3412; }
     .plot-wrap {
+      position: relative;
       width: 100%;
       border: 1px solid var(--line);
       border-radius: 8px;
       background: #ffffff;
       overflow: hidden;
+    }
+    .plot-wrap:fullscreen {
+      display: flex;
+      align-items: center;
+      background: #f5f8fb;
+      border: 0;
+      border-radius: 0;
+    }
+    .plot-wrap:fullscreen canvas {
+      height: 100vh !important;
+      min-height: 0 !important;
+    }
+    .stage-expand {
+      position: absolute;
+      z-index: 2;
+      right: 10px;
+      top: 10px;
+      padding: 5px 10px;
+      font-size: 12px;
+      background: rgba(22, 39, 53, .86);
+      opacity: .88;
+    }
+    .stage-expand:hover, .stage-expand:focus-visible { opacity: 1; }
+    .stage-expand:focus-visible, button:focus-visible, select:focus-visible, input:focus-visible {
+      outline: 3px solid #f59e0b;
+      outline-offset: 2px;
+    }
+    .plot-wrap.lab-instrument {
+      border-color: #b9cad0;
+      background: #edf3f4;
     }
     .plot-wrap.wave-lab {
       border-color: #19394d;
@@ -325,6 +356,7 @@
     #scattering-canvas { height: min(76vh, 680px); min-height: 560px; }
     #brake-canvas { height: min(84vh, 780px); min-height: 680px; }
     #motor-canvas { height: min(80vh, 720px); min-height: 620px; }
+    #cyclotron-canvas, #selector-canvas { height: min(76vh, 650px); min-height: 550px; }
     #prism-canvas, #brewster-canvas, #aberration-canvas, #film-canvas {
       height: min(68vh, 590px);
       min-height: 460px;
@@ -450,6 +482,7 @@
       #scattering-canvas { height: 680px; min-height: 620px; }
       #brake-canvas { height: 860px; min-height: 810px; }
       #motor-canvas { height: 720px; min-height: 680px; }
+      #cyclotron-canvas, #selector-canvas { height: 590px; min-height: 550px; }
       #prism-canvas, #brewster-canvas, #aberration-canvas, #film-canvas { height: 540px; min-height: 500px; }
       .tabs { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: thin; }
       .navigation-row { align-items: stretch; flex-direction: column; }
@@ -1618,6 +1651,8 @@
         <div class="phenomenon-switch legacy-topic-switch" role="group" aria-label="電磁現象主題">
           <button type="button" class="em-mode active" data-em="brake" aria-pressed="true">磁煞車</button>
           <button type="button" class="em-mode" data-em="motor" aria-pressed="false">直流馬達</button>
+          <button type="button" class="em-mode" data-em="cyclotron" aria-pressed="false">迴旋加速器</button>
+          <button type="button" class="em-mode" data-em="selector" aria-pressed="false">速度選擇器</button>
         </div>
 
         <div id="em-view-brake" class="em-view active">
@@ -1763,6 +1798,54 @@
             <p><strong>強調：</strong>電能先進入線圈，再由磁力做機械功；電壓、磁場或匝數增加會提高可用力矩，負載太大則無法啟動。</p>
           </section>
         </div>
+
+        <div id="em-view-cyclotron" class="em-view">
+          <div class="module-head">
+            <div>
+              <h2>迴旋加速器</h2>
+              <p class="module-copy">粒子在 D 形電極內只受磁力轉彎；每次穿過間隙，交變電場才改變動能。觀察軌道逐圈擴張，並調整射頻，看看不同步時為何無法持續加速。</p>
+            </div>
+            <div class="legend"><span class="blue"><i class="dot"></i>磁場／電極</span><span class="orange"><i class="dot"></i>間隙電場</span><span class="green"><i class="dot"></i>粒子軌跡</span></div>
+          </div>
+          <div class="values" aria-live="polite">
+            <div class="badge" id="cyc-energy">動能 0.08 MeV<small>只在跨越間隙時改變</small></div>
+            <div class="badge" id="cyc-radius">軌道半徑 0.07 m<small>r = mv / qB</small></div>
+            <div class="badge" id="cyc-frequency">共振頻率 0.00 MHz<small>f = qB / 2πm</small></div>
+            <div class="badge" id="cyc-status">同步加速<small>RF 與粒子轉彎節奏相同</small></div>
+          </div>
+          <div class="plot-wrap lab-instrument"><canvas id="cyclotron-canvas" role="img" aria-label="D 形電極、垂直磁場、間隙電場與逐圈擴張的帶電粒子軌道。"></canvas></div>
+          <div class="controls">
+            <div class="control"><label for="cyc-field">磁場 B：<span id="cyc-field-out">0.60 T</span></label><input id="cyc-field" type="range" min="0.25" max="1.2" step="0.01" value="0.6"></div>
+            <div class="control"><label for="cyc-voltage">間隙電壓：<span id="cyc-voltage-out">120 kV</span></label><input id="cyc-voltage" type="range" min="20" max="250" step="5" value="120"></div>
+            <div class="control"><label for="cyc-detune">射頻偏差：<span id="cyc-detune-out">0%</span></label><input id="cyc-detune" type="range" min="-12" max="12" step="0.5" value="0"></div>
+            <div class="control"><label for="cyc-speed">播放速度：<span id="cyc-speed-out">0.35x</span></label><input id="cyc-speed" type="range" min="0.1" max="1.5" step="0.05" value="0.35"></div>
+          </div>
+          <div class="checks"><label class="check"><input id="cyc-show-trail" type="checkbox" checked>顯示歷程軌跡</label><label class="check"><input id="cyc-show-field" type="checkbox" checked>顯示磁場與電場</label></div>
+        </div>
+
+        <div id="em-view-selector" class="em-view">
+          <div class="module-head">
+            <div>
+              <h2>速度選擇器</h2>
+              <p class="module-copy">帶正電粒子由左進入交叉電磁場。電場力向下、磁場力向上；只有兩力恰好抵銷的速度能穿過右側狹縫。</p>
+            </div>
+            <div class="legend"><span class="orange"><i class="dot"></i>電場力</span><span class="blue"><i class="dot"></i>磁場力</span><span class="green"><i class="dot"></i>通過狹縫</span></div>
+          </div>
+          <div class="values" aria-live="polite">
+            <div class="badge" id="sel-target">通過速度 5.0 km/s<small>v = E / B</small></div>
+            <div class="badge" id="sel-electric">電場力 0.0<small>F_E = qE，方向向下</small></div>
+            <div class="badge" id="sel-magnetic">磁場力 0.0<small>F_B = qvB，方向向上</small></div>
+            <div class="badge" id="sel-status">等速直行<small>選定粒子淨力為 0</small></div>
+          </div>
+          <div class="plot-wrap lab-instrument"><canvas id="selector-canvas" role="img" aria-label="速度不同的帶電粒子在交叉電磁場中彎曲，只有速度等於 E 除以 B 的粒子穿過狹縫。"></canvas></div>
+          <div class="controls">
+            <div class="control"><label for="sel-e">電場 E：<span id="sel-e-out">4.0 kV/m</span></label><input id="sel-e" type="range" min="0" max="8" step="0.1" value="4"></div>
+            <div class="control"><label for="sel-b">磁場 B：<span id="sel-b-out">0.80 T</span></label><input id="sel-b" type="range" min="0.2" max="1.2" step="0.02" value="0.8"></div>
+            <div class="control"><label for="sel-v">追蹤粒子速度：<span id="sel-v-out">5.0 km/s</span></label><input id="sel-v" type="range" min="1" max="10" step="0.1" value="5"></div>
+            <div class="control"><label for="sel-speed">播放速度：<span id="sel-speed-out">0.40x</span></label><input id="sel-speed" type="range" min="0.1" max="1.5" step="0.05" value="0.4"></div>
+          </div>
+          <div class="checks"><label class="check"><input id="sel-show-comparison" type="checkbox" checked>同時顯示其他速度</label><label class="check"><input id="sel-show-force" type="checkbox" checked>顯示粒子受力</label></div>
+        </div>
       </section>
 
       <section id="panel-retrograde" class="panel" role="tabpanel">
@@ -1850,7 +1933,7 @@
       physical: [['double', '雙狹縫干涉'], ['single', '單狹縫繞射'], ['film', '薄膜干涉']],
       imaging: [['mirror', '面鏡成像'], ['lens', '透鏡成像'], ['reflection', '鏡像文字'], ['trifold', '多面鏡'], ['microscope', '顯微鏡'], ['eye', '眼睛成像']],
       mechanics: [['circular', '圓周運動與投影'], ['precession', '角動量與進動'], ['pulley', '滑輪組']],
-      electromagnetism: [['brake', '磁煞車'], ['motor', '直流馬達']],
+      electromagnetism: [['brake', '磁煞車'], ['motor', '直流馬達'], ['cyclotron', '迴旋加速器'], ['selector', '速度選擇器']],
       astronomy: [['retrograde', '行星逆行']]
     };
     const lastLabByCategory = {};
@@ -1931,7 +2014,10 @@
         return activeLight === 'refraction' ? number('ref-play-speed') : number('scatter-speed');
       }
       if (activeModule === 'electromagnetism') {
-        return activeElectromagnetism === 'brake' ? number('brake-speed') : number('motor-speed');
+        if (activeElectromagnetism === 'brake') return number('brake-speed');
+        if (activeElectromagnetism === 'motor') return number('motor-speed');
+        if (activeElectromagnetism === 'cyclotron') return number('cyc-speed');
+        return number('sel-speed');
       }
       if (activeModule === 'mechanics') {
         if (activeMechanics === 'circular') return number('circ-speed');
@@ -9189,6 +9275,344 @@
       $('aberration-status').innerHTML = centralOnly ? '縮小光圈<small>邊緣光被遮住；較接近單一焦點</small>' : '全口徑<small>邊緣光通常較早穿過主軸</small>';
     }
 
+    function instrumentBackdrop(ctx, w, h, title, subtitle) {
+      const fill = ctx.createLinearGradient(0, 0, 0, h);
+      fill.addColorStop(0, '#f6fafb');
+      fill.addColorStop(1, '#e5eff1');
+      ctx.fillStyle = fill;
+      ctx.fillRect(0, 0, w, h);
+      ctx.strokeStyle = 'rgba(87, 119, 128, .09)';
+      ctx.lineWidth = 1;
+      for (let x = 0; x < w; x += 32) {
+        ctx.beginPath(); ctx.moveTo(x + .5, 0); ctx.lineTo(x + .5, h); ctx.stroke();
+      }
+      for (let y = 0; y < h; y += 32) {
+        ctx.beginPath(); ctx.moveTo(0, y + .5); ctx.lineTo(w, y + .5); ctx.stroke();
+      }
+      ctx.fillStyle = '#18343e';
+      ctx.textAlign = 'left';
+      ctx.font = '700 17px "Microsoft JhengHei", sans-serif';
+      ctx.fillText(title, 22, 31);
+      ctx.fillStyle = '#617982';
+      ctx.font = '12px "Microsoft JhengHei", sans-serif';
+      const lines = [];
+      let line = '';
+      for (const character of subtitle) {
+        if (ctx.measureText(line + character).width > w - 44 && line) {
+          lines.push(line);
+          line = character;
+        } else line += character;
+      }
+      if (line) lines.push(line);
+      lines.slice(0, 3).forEach((text, index) => ctx.fillText(text, 22, 51 + index * 15));
+      ctx.strokeStyle = '#c7d8dc';
+      const ruleY = 64 + Math.min(2, lines.length - 1) * 15;
+      ctx.beginPath(); ctx.moveTo(20, ruleY); ctx.lineTo(w - 20, ruleY); ctx.stroke();
+    }
+
+    function instrumentParticle(ctx, x, y, color, radius = 6) {
+      ctx.save();
+      ctx.shadowColor = color;
+      ctx.shadowBlur = 19;
+      ctx.fillStyle = color;
+      ctx.beginPath(); ctx.arc(x, y, radius, 0, Math.PI * 2); ctx.fill();
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = '#fff';
+      ctx.beginPath(); ctx.arc(x - radius * .25, y - radius * .28, Math.max(1.5, radius * .27), 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+    }
+
+    function cyclotronPath(B, voltage, detune) {
+      const q = 1.602176634e-19;
+      const m = 1.67262192369e-27;
+      const maxRadius = .68;
+      const arcs = [];
+      let energy = .08;
+      let y = 0;
+      for (let i = 0; i < 180; i += 1) {
+        const gain = voltage / 1000 * Math.cos(Math.PI * i * detune / 100);
+        energy = Math.max(.012, energy + gain);
+        const speed = Math.sqrt(2 * energy * 1e6 * q / m);
+        const radius = m * speed / (q * B);
+        const direction = i % 2 === 0 ? 1 : -1;
+        arcs.push({ energy, speed, radius, direction, y, gain });
+        y += direction * 2 * radius;
+        if (Math.max(Math.abs(y), Math.hypot(radius, arcs[i].y + direction * radius)) > maxRadius) break;
+      }
+      return arcs;
+    }
+
+    function cyclotronPoint(arc, angle) {
+      return {
+        x: arc.direction * arc.radius * Math.sin(angle),
+        y: arc.y + arc.direction * arc.radius * (1 - Math.cos(angle))
+      };
+    }
+
+    function drawCyclotron() {
+      const B = number('cyc-field');
+      const voltage = number('cyc-voltage');
+      const detune = number('cyc-detune');
+      const arcs = cyclotronPath(B, voltage, detune);
+      const phase = ((time * 5.4) % arcs.length + arcs.length) % arcs.length;
+      const arcIndex = Math.min(arcs.length - 1, Math.floor(phase));
+      const angle = Math.PI * (phase - arcIndex);
+      const arc = arcs[arcIndex];
+      const point = cyclotronPoint(arc, angle);
+      const fc = 1.602176634e-19 * B / (2 * Math.PI * 1.67262192369e-27) / 1e6;
+      setText('cyc-field-out', `${B.toFixed(2)} T`);
+      setText('cyc-voltage-out', `${voltage.toFixed(0)} kV`);
+      setText('cyc-detune-out', `${detune > 0 ? '+' : ''}${detune.toFixed(1)}%`);
+      setText('cyc-speed-out', `${number('cyc-speed').toFixed(2)}x`);
+      $('cyc-energy').innerHTML = `動能 ${arc.energy.toFixed(2)} MeV<small>第 ${arcIndex + 1} 次跨越間隙後</small>`;
+      $('cyc-radius').innerHTML = `軌道半徑 ${arc.radius.toFixed(2)} m<small>v/c ≈ ${(arc.speed / 299792458).toFixed(3)}；r = mv/qB</small>`;
+      $('cyc-frequency').innerHTML = `共振頻率 ${fc.toFixed(2)} MHz<small>目前射頻 ${(fc * (1 + detune / 100)).toFixed(2)} MHz</small>`;
+      const losing = arc.gain < 0;
+      $('cyc-status').classList.toggle('warning', Math.abs(detune) > 1.5);
+      $('cyc-status').innerHTML = losing ? '失相，穿越間隙時減速<small>電場此刻與粒子速度相反</small>'
+        : Math.abs(detune) > 1.5 ? '射頻未同步<small>下一圈跨越間隙時的電場相位會改變</small>'
+        : '同步加速<small>磁力轉彎；間隙電場增加動能</small>';
+
+      const { ctx, w, h } = resizeCanvas($('cyclotron-canvas'));
+      instrumentBackdrop(ctx, w, h, '迴旋加速器 · 俯視', '質子 q = +e；非相對論模型；裝置半徑 0.68 m');
+      const compact = w < 670;
+      const cx = compact ? w / 2 : w * .47;
+      const cy = compact ? h * .48 : h * .51;
+      const outer = compact ? Math.min(w * .43, h * .32) : Math.min(w * .26, h * .38);
+      const scale = outer / .68;
+      const gap = Math.max(13, outer * .105);
+
+      ctx.save();
+      ctx.shadowColor = 'rgba(27, 66, 75, .20)'; ctx.shadowBlur = 26; ctx.shadowOffsetY = 11;
+      ctx.fillStyle = '#b8cbd0';
+      ctx.beginPath(); ctx.arc(cx, cy, outer + 17, 0, Math.PI * 2); ctx.fill();
+      ctx.restore();
+      ctx.fillStyle = '#edf4f5';
+      ctx.beginPath(); ctx.arc(cx, cy, outer + 7, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#758f99'; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.arc(cx, cy, outer + 7, 0, Math.PI * 2); ctx.stroke();
+      ctx.save();
+      ctx.beginPath(); ctx.arc(cx, cy, outer, 0, Math.PI * 2); ctx.clip();
+      const dee = ctx.createLinearGradient(cx - outer, 0, cx + outer, 0);
+      dee.addColorStop(0, '#dce9eb'); dee.addColorStop(.5, '#eef5f5'); dee.addColorStop(1, '#bcd2d6');
+      ctx.fillStyle = dee; ctx.fillRect(cx - outer, cy - outer, 2 * outer, 2 * outer);
+      ctx.fillStyle = '#f9fbfb'; ctx.fillRect(cx - gap / 2, cy - outer, gap, outer * 2);
+      ctx.strokeStyle = '#7597a0'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(cx - gap / 2, cy - outer); ctx.lineTo(cx - gap / 2, cy + outer);
+      ctx.moveTo(cx + gap / 2, cy - outer); ctx.lineTo(cx + gap / 2, cy + outer); ctx.stroke();
+      if ($('cyc-show-field').checked) {
+        for (let yy = cy - outer + 21; yy < cy + outer - 10; yy += compact ? 39 : 38) {
+          for (let xx = cx - outer + 20; xx < cx + outer - 10; xx += compact ? 39 : 38) {
+            if (Math.hypot(xx - cx, yy - cy) > outer - 13 || Math.abs(xx - cx) < gap / 2 + 10) continue;
+            ctx.strokeStyle = 'rgba(48, 100, 115, .30)'; ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.arc(xx, yy, 5, 0, Math.PI * 2); ctx.stroke();
+            ctx.fillStyle = 'rgba(48, 100, 115, .55)';
+            ctx.beginPath(); ctx.arc(xx, yy, 1.6, 0, Math.PI * 2); ctx.fill();
+          }
+        }
+        const fieldSign = Math.cos(Math.PI * (1 + detune / 100) * phase) >= 0 ? 1 : -1;
+        for (let yy = cy - outer * .52; yy <= cy + outer * .52; yy += outer * .30) {
+          drawArrow(ctx, cx - fieldSign * gap * .28, yy, cx + fieldSign * gap * .28, yy, '#db6b2c');
+        }
+        ctx.fillStyle = '#b34d1e'; ctx.font = '700 15px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillText(fieldSign > 0 ? '+    E→    −' : '−    ←E    +', cx, cy - outer - 25);
+      }
+      ctx.restore();
+
+      ctx.save();
+      ctx.beginPath(); ctx.arc(cx, cy, outer - 2, 0, Math.PI * 2); ctx.clip();
+      if ($('cyc-show-trail').checked) {
+        ctx.strokeStyle = 'rgba(35, 139, 127, .44)'; ctx.lineWidth = compact ? 1.7 : 2;
+        ctx.beginPath();
+        let first = true;
+        for (let i = 0; i <= arcIndex; i += 1) {
+          const segment = arcs[i];
+          const limit = i === arcIndex ? angle : Math.PI;
+          for (let step = 0; step <= Math.max(1, Math.ceil(limit / .055)); step += 1) {
+            const p = cyclotronPoint(segment, Math.min(limit, step * .055));
+            const xx = cx + p.x * scale, yy = cy + p.y * scale;
+            if (first) { ctx.moveTo(xx, yy); first = false; }
+            else ctx.lineTo(xx, yy);
+          }
+        }
+        ctx.stroke();
+      }
+      const pTrail = cyclotronPoint(arc, Math.max(0, angle - .28));
+      ctx.strokeStyle = '#0c746b'; ctx.lineWidth = 4; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(cx + pTrail.x * scale, cy + pTrail.y * scale);
+      for (let k = 1; k <= 8; k += 1) {
+        const p = cyclotronPoint(arc, Math.max(0, angle - .28 + k * .035));
+        ctx.lineTo(cx + p.x * scale, cy + p.y * scale);
+      }
+      ctx.stroke();
+      instrumentParticle(ctx, cx + point.x * scale, cy + point.y * scale, '#00a58c', compact ? 5 : 7);
+      ctx.restore();
+      ctx.fillStyle = '#1e4853'; ctx.textAlign = 'center'; ctx.font = '700 13px "Microsoft JhengHei", sans-serif';
+      ctx.fillText('D 電極', cx - outer * .55, cy - outer * .45);
+      ctx.fillText('D 電極', cx + outer * .55, cy - outer * .45);
+      ctx.fillStyle = '#436775'; ctx.font = '12px "Microsoft JhengHei", sans-serif';
+      ctx.fillText('磁場朝向觀察者 ⊙', cx, Math.min(h - 35, cy + outer + 34));
+      const readX = compact ? 20 : w - 245;
+      const readY = compact ? h - 92 : 114;
+      ctx.textAlign = 'left'; ctx.fillStyle = '#254954'; ctx.font = '700 13px "Microsoft JhengHei", sans-serif';
+      ctx.fillText(`跨越間隙：${arcIndex + 1} 次`, readX, readY);
+      ctx.fillText(`目前變化：${arc.gain >= 0 ? '+' : ''}${arc.gain.toFixed(3)} MeV`, readX, readY + 24);
+      ctx.fillText(`速率：${(arc.speed / 1e6).toFixed(1)} × 10⁶ m/s`, readX, readY + 48);
+      ctx.fillStyle = '#728c93'; ctx.fillRect(20, h - 17, w - 40, 4);
+      ctx.fillStyle = '#0f766e'; ctx.fillRect(20, h - 17, (w - 40) * (phase / arcs.length), 4);
+    }
+
+    const selectorPathCache = new Map();
+
+    function selectorPath(E, B, velocity) {
+      const key = `${E.toFixed(2)}:${B.toFixed(2)}:${velocity.toFixed(2)}`;
+      if (selectorPathCache.has(key)) return selectorPathCache.get(key);
+      const chargeToMass = 1.602176634e-19 / (200 * 1.66053906660e-27);
+      const length = .02;
+      const halfGap = .0015;
+      const aperture = .00025;
+      const dt = 8e-9;
+      let x = 0, y = 0, vx = velocity * 1000, vy = 0;
+      const points = [{ x, y, t: 0 }];
+      let result = 'running';
+      for (let i = 1; i <= 1900; i += 1) {
+        const ax = chargeToMass * B * vy;
+        const ay = chargeToMass * (E * 1000 - B * vx);
+        const midVx = vx + ax * dt / 2;
+        const midVy = vy + ay * dt / 2;
+        x += midVx * dt;
+        y += midVy * dt;
+        vx += chargeToMass * B * midVy * dt;
+        vy += chargeToMass * (E * 1000 - B * midVx) * dt;
+        points.push({ x, y, t: i * dt });
+        if (Math.abs(y) >= halfGap) { result = 'plate'; break; }
+        if (x >= length) { result = Math.abs(y) <= aperture ? 'passed' : 'slit'; break; }
+        if (x < -.002 || vx <= 0) { result = 'turned'; break; }
+      }
+      const path = { points, result, duration: points[points.length - 1].t };
+      selectorPathCache.set(key, path);
+      if (selectorPathCache.size > 80) selectorPathCache.delete(selectorPathCache.keys().next().value);
+      return path;
+    }
+
+    function drawVelocitySelector() {
+      const E = number('sel-e');
+      const B = number('sel-b');
+      const velocity = number('sel-v');
+      const target = E / B;
+      const path = selectorPath(E, B, velocity);
+      setText('sel-e-out', `${E.toFixed(1)} kV/m`);
+      setText('sel-b-out', `${B.toFixed(2)} T`);
+      setText('sel-v-out', `${velocity.toFixed(1)} km/s`);
+      setText('sel-speed-out', `${number('sel-speed').toFixed(2)}x`);
+      $('sel-target').innerHTML = `通過速度 ${target.toFixed(2)} km/s<small>v = E / B；只對帶電粒子有效</small>`;
+      $('sel-electric').innerHTML = `電場力 ${(1.602176634 * E).toFixed(2)} × 10⁻¹⁶ N<small>F_E = qE；向下</small>`;
+      $('sel-magnetic').innerHTML = `磁場力 ${(1.602176634 * velocity * B).toFixed(2)} × 10⁻¹⁶ N<small>F_B = qvB；向上</small>`;
+      const statusText = path.result === 'passed' ? '穿過狹縫' : path.result === 'plate' ? '撞上極板' : '被出口狹縫擋住';
+      const direction = velocity > target ? '磁力較大，向上偏' : velocity < target ? '電力較大，向下偏' : '兩力互相抵銷';
+      $('sel-status').classList.toggle('warning', path.result !== 'passed');
+      $('sel-status').innerHTML = `${statusText}<small>${direction}</small>`;
+
+      const { ctx, w, h } = resizeCanvas($('selector-canvas'));
+      instrumentBackdrop(ctx, w, h, '速度選擇器 · 俯視', '200 u 單價正離子；場區長 20 mm；板距 3 mm；橫縱尺度分別放大');
+      const compact = w < 670;
+      const left = compact ? 36 : w * .17;
+      const right = compact ? w - 42 : w * .80;
+      const center = compact ? h * .49 : h * .51;
+      const half = Math.min(h * .26, compact ? 132 : 155);
+      const xMap = x => left + x / .02 * (right - left);
+      const yMap = y => center + y / .0015 * half;
+
+      ctx.save();
+      ctx.shadowColor = 'rgba(27, 65, 80, .18)'; ctx.shadowBlur = 18; ctx.shadowOffsetY = 8;
+      ctx.fillStyle = '#d8e8ea';
+      ctx.fillRect(left, center - half - 12, right - left, 2 * half + 24);
+      ctx.restore();
+      ctx.fillStyle = '#e8f3f4'; ctx.fillRect(left, center - half, right - left, 2 * half);
+      ctx.strokeStyle = '#c9dadd'; ctx.lineWidth = 1;
+      for (let i = 0; i <= 8; i += 1) {
+        const xx = left + (right - left) * i / 8;
+        ctx.beginPath(); ctx.moveTo(xx, center - half); ctx.lineTo(xx, center + half); ctx.stroke();
+      }
+      if ($('sel-show-comparison').checked) {
+        for (let yy = center - half + 25; yy < center + half - 10; yy += 41) {
+          for (let xx = left + 24; xx < right - 10; xx += 46) {
+            ctx.strokeStyle = 'rgba(54, 105, 158, .27)'; ctx.lineWidth = 1.3;
+            ctx.beginPath(); ctx.moveTo(xx - 3, yy - 3); ctx.lineTo(xx + 3, yy + 3);
+            ctx.moveTo(xx + 3, yy - 3); ctx.lineTo(xx - 3, yy + 3); ctx.stroke();
+          }
+        }
+      }
+
+      const reference = Math.max(.8, Math.min(9, target));
+      const comparison = $('sel-show-comparison').checked
+        ? [reference - 1.4, reference - .7, reference + .7, reference + 1.4].filter(v => v >= 1 && v <= 10 && Math.abs(v - velocity) > .12)
+        : [];
+      const simTime = (time * 2e-6) % (Math.max(.02 / Math.max(velocity * 1000, 1000), 3e-6) * 2.5);
+      const drawPath = (testVelocity, selected) => {
+        const track = selected ? path : selectorPath(E, B, testVelocity);
+        const color = selected ? '#087a70' : testVelocity > target ? '#3776b7' : '#d27747';
+        ctx.save();
+        ctx.beginPath(); ctx.rect(left, center - half, right - left, 2 * half); ctx.clip();
+        ctx.strokeStyle = color;
+        ctx.globalAlpha = selected ? .9 : .40;
+        ctx.lineWidth = selected ? 3.2 : 1.7;
+        ctx.beginPath();
+        track.points.forEach((p, index) => {
+          if (index === 0) ctx.moveTo(xMap(p.x), yMap(p.y));
+          else ctx.lineTo(xMap(p.x), yMap(p.y));
+        });
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+        const index = Math.min(track.points.length - 1, Math.floor(simTime / 8e-9));
+        if (simTime <= track.duration && index > 0) {
+          const p = track.points[index];
+          instrumentParticle(ctx, xMap(p.x), yMap(p.y), color, selected ? 7 : 4);
+          if (selected && $('sel-show-force').checked) {
+            const xx = xMap(p.x), yy = yMap(p.y);
+            const delta = velocity * B - E;
+            if (Math.abs(delta) < .05) {
+              drawArrow(ctx, xx - 14, yy - 3, xx - 14, yy - 35, '#3776b7');
+              drawArrow(ctx, xx + 14, yy + 3, xx + 14, yy + 35, '#d27747');
+            } else {
+              drawArrow(ctx, xx + 13, yy, xx + 13, yy + (delta > 0 ? -36 : 36), delta > 0 ? '#3776b7' : '#d27747');
+            }
+          }
+        }
+        ctx.restore();
+      };
+      comparison.forEach(v => drawPath(v, false));
+      drawPath(velocity, true);
+
+      const metal = ctx.createLinearGradient(0, center - half - 11, 0, center - half + 2);
+      metal.addColorStop(0, '#839ba4'); metal.addColorStop(.55, '#d7e4e6'); metal.addColorStop(1, '#4f6c76');
+      ctx.fillStyle = metal;
+      ctx.fillRect(left - 3, center - half - 11, right - left + 6, 11);
+      ctx.fillRect(left - 3, center + half, right - left + 6, 11);
+      ctx.fillStyle = '#bd5337'; ctx.font = '700 19px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText('+', left + 20, center - half - 19);
+      ctx.fillStyle = '#2b698e'; ctx.fillText('−', left + 20, center + half + 29);
+      ctx.fillStyle = '#2c5561';
+      ctx.fillRect(right, center - half, compact ? 9 : 13, half - 12);
+      ctx.fillRect(right, center + 12, compact ? 9 : 13, half - 12);
+      ctx.fillStyle = '#53727b'; ctx.font = '700 12px "Microsoft JhengHei", sans-serif';
+      ctx.fillText('出口狹縫', right - (compact ? 25 : 0), center + half + 39);
+      ctx.fillStyle = '#326778'; ctx.fillRect(left - 10, center - 16, 10, 32);
+      instrumentParticle(ctx, left - 10, center, '#087a70', 4);
+      ctx.fillStyle = '#345460'; ctx.textAlign = 'left'; ctx.font = '700 13px "Microsoft JhengHei", sans-serif';
+      ctx.fillText('E ↓', left + 12, center - half + 26);
+      ctx.fillText('B × 進入畫面', left + 12, center - half + 47);
+      const labelY = Math.min(h - 49, center + half + 55);
+      ctx.fillStyle = '#6f858d'; ctx.font = '12px "Microsoft JhengHei", sans-serif';
+      ctx.fillText('同一裝置 · 不同入射速率', 20, labelY);
+      if (!compact) {
+        ctx.fillStyle = '#d27747'; ctx.fillText('慢：電場力佔優勢', 20, labelY + 23);
+        ctx.fillStyle = '#3776b7'; ctx.fillText('快：磁場力佔優勢', 20, labelY + 44);
+      }
+      ctx.fillStyle = '#728c93'; ctx.fillRect(20, h - 17, w - 40, 4);
+      ctx.fillStyle = '#0f766e'; ctx.fillRect(20, h - 17, (w - 40) * Math.min(1, simTime / Math.max(path.duration, 1e-6)), 4);
+    }
+
     function drawActive() {
       if (activeModule === 'standing') drawStanding();
       else if (activeModule === 'doppler') drawDoppler();
@@ -9206,7 +9630,9 @@
       }
       else if (activeModule === 'electromagnetism') {
         if (activeElectromagnetism === 'brake') drawMagneticBrake();
-        else drawMotor();
+        else if (activeElectromagnetism === 'motor') drawMotor();
+        else if (activeElectromagnetism === 'cyclotron') drawCyclotron();
+        else drawVelocitySelector();
       }
       else if (activeModule === 'mechanics') {
         if (activeMechanics === 'circular') drawCircularProjection();
@@ -9637,10 +10063,29 @@
       drawActive();
     });
 
+    document.querySelectorAll('.plot-wrap').forEach(stage => {
+      const button = document.createElement('button');
+      button.type = 'button';
+      button.className = 'stage-expand';
+      button.textContent = '全螢幕';
+      button.setAttribute('aria-label', '放大目前實驗畫面');
+      button.addEventListener('click', () => {
+        if (document.fullscreenElement === stage) document.exitFullscreen();
+        else stage.requestFullscreen();
+      });
+      stage.appendChild(button);
+    });
+    document.addEventListener('fullscreenchange', () => {
+      document.querySelectorAll('.stage-expand').forEach(button => {
+        button.textContent = button.parentElement === document.fullscreenElement ? '離開全螢幕' : '全螢幕';
+      });
+      requestAnimationFrame(drawActive);
+    });
+
     window.addEventListener('resize', drawActive);
 
     function frame(now) {
-      const elapsed = Math.min(0.05, (now - last) / 1000);
+      const elapsed = Math.max(0, Math.min(0.05, (now - last) / 1000));
       last = now;
       if (running) time += elapsed * playback();
       drawActive();
