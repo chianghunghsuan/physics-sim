@@ -71,14 +71,21 @@
       align-items: center;
     }
     .topbar {
-      justify-content: space-between;
+      align-items: flex-start;
+      flex-direction: column;
       margin-bottom: 14px;
     }
     .tabs {
-      padding-bottom: 16px;
+      width: 100%;
+      gap: 6px;
+      padding-bottom: 10px;
       border-bottom: 1px solid var(--line);
-      margin-bottom: 18px;
     }
+    .navigation-row { display: flex; justify-content: space-between; align-items: end; gap: 14px; width: 100%; }
+    .lab-picker { min-width: min(340px, 100%); }
+    .lab-picker label { margin: 0 0 4px; font-size: 13px; color: var(--muted); }
+    .topbar .actions { flex-shrink: 0; }
+    .legacy-topic-switch { display: none !important; }
     button {
       border: 0;
       border-radius: 8px;
@@ -98,6 +105,7 @@
       background: var(--accent);
       color: #ffffff;
     }
+    button.tab { padding: 8px 13px; white-space: nowrap; }
     .optics-switch, .topic-switch, .phenomenon-switch {
       display: flex;
       flex-wrap: wrap;
@@ -317,6 +325,10 @@
     #scattering-canvas { height: min(76vh, 680px); min-height: 560px; }
     #brake-canvas { height: min(84vh, 780px); min-height: 680px; }
     #motor-canvas { height: min(80vh, 720px); min-height: 620px; }
+    #prism-canvas, #brewster-canvas, #aberration-canvas, #film-canvas {
+      height: min(68vh, 590px);
+      min-height: 460px;
+    }
     .controls {
       margin-top: 16px;
       display: grid;
@@ -438,6 +450,11 @@
       #scattering-canvas { height: 680px; min-height: 620px; }
       #brake-canvas { height: 860px; min-height: 810px; }
       #motor-canvas { height: 720px; min-height: 680px; }
+      #prism-canvas, #brewster-canvas, #aberration-canvas, #film-canvas { height: 540px; min-height: 500px; }
+      .tabs { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: thin; }
+      .navigation-row { align-items: stretch; flex-direction: column; }
+      .lab-picker { min-width: 0; width: 100%; }
+      .topbar .actions { align-self: flex-end; }
       button.optics-mode, button.topic-mode { min-width: 112px; flex: 1 1 112px; }
       button.light-mode, button.em-mode { min-width: 132px; flex: 1 1 132px; }
       #retrograde-canvas { height: 520px; min-height: 480px; }
@@ -453,22 +470,24 @@
 
     <div class="content">
       <div class="topbar">
-        <div class="tabs" role="tablist" aria-label="模擬器頁籤">
-          <button type="button" class="tab active" data-tab="standing" role="tab" aria-selected="true">駐波疊加</button>
-          <button type="button" class="tab" data-tab="doppler" role="tab" aria-selected="false">都卜勒效應</button>
-          <button type="button" class="tab" data-tab="ripple" role="tab" aria-selected="false">水波槽干涉</button>
-          <button type="button" class="tab" data-tab="double" role="tab" aria-selected="false">雙狹縫干涉</button>
-          <button type="button" class="tab" data-tab="single" role="tab" aria-selected="false">單狹縫繞射</button>
-          <button type="button" class="tab" data-tab="huygens" role="tab" aria-selected="false">惠更斯原理</button>
-          <button type="button" class="tab" data-tab="optics" role="tab" aria-selected="false">幾何光學</button>
-          <button type="button" class="tab" data-tab="light" role="tab" aria-selected="false">折射與散射</button>
-          <button type="button" class="tab" data-tab="electromagnetism" role="tab" aria-selected="false">電磁現象</button>
-          <button type="button" class="tab" data-tab="mechanics" role="tab" aria-selected="false">力學現象</button>
-          <button type="button" class="tab" data-tab="retrograde" role="tab" aria-selected="false">行星逆行</button>
+        <div class="tabs" role="tablist" aria-label="物理主題">
+          <button type="button" class="tab active" data-category="wave" role="tab" aria-selected="true">波動</button>
+          <button type="button" class="tab" data-category="refraction" role="tab" aria-selected="false">折射</button>
+          <button type="button" class="tab" data-category="physical" role="tab" aria-selected="false">物理光學</button>
+          <button type="button" class="tab" data-category="imaging" role="tab" aria-selected="false">成像</button>
+          <button type="button" class="tab" data-category="mechanics" role="tab" aria-selected="false">力學</button>
+          <button type="button" class="tab" data-category="electromagnetism" role="tab" aria-selected="false">電磁</button>
+          <button type="button" class="tab" data-category="astronomy" role="tab" aria-selected="false">天文</button>
         </div>
-        <div class="actions">
-          <button type="button" id="global-play">暫停</button>
-          <button type="button" class="secondary" id="global-reset">重設時間</button>
+        <div class="navigation-row">
+          <div class="lab-picker">
+            <label for="lab-select">選擇實驗</label>
+            <select id="lab-select" aria-label="目前分類的實驗"><option value="standing">駐波疊加</option></select>
+          </div>
+          <div class="actions">
+            <button type="button" id="global-play">暫停</button>
+            <button type="button" class="secondary" id="global-reset">重設時間</button>
+          </div>
         </div>
       </div>
 
@@ -851,7 +870,7 @@
       </section>
 
       <section id="panel-optics" class="panel" role="tabpanel">
-        <div class="optics-switch" role="group" aria-label="選擇成像元件">
+        <div class="optics-switch legacy-topic-switch" role="group" aria-label="選擇成像元件">
           <button type="button" class="optics-mode active" data-optics="mirror" aria-pressed="true">面鏡</button>
           <button type="button" class="optics-mode" data-optics="lens" aria-pressed="false">透鏡</button>
           <button type="button" class="optics-mode" data-optics="reflection" aria-pressed="false">鏡像文字</button>
@@ -1204,7 +1223,7 @@
       </section>
 
       <section id="panel-mechanics" class="panel" role="tabpanel">
-        <div class="topic-switch" role="group" aria-label="力學現象選擇">
+        <div class="topic-switch legacy-topic-switch" role="group" aria-label="力學現象選擇">
           <button type="button" class="topic-mode active" data-mechanics="circular" aria-pressed="true">圓周投影</button>
           <button type="button" class="topic-mode" data-mechanics="precession" aria-pressed="false">陀螺進動</button>
           <button type="button" class="topic-mode" data-mechanics="pulley" aria-pressed="false">滑輪組</button>
@@ -1386,7 +1405,7 @@
       </section>
 
       <section id="panel-light" class="panel" role="tabpanel">
-        <div class="phenomenon-switch" role="group" aria-label="光的傳播主題">
+        <div class="phenomenon-switch legacy-topic-switch" role="group" aria-label="光的傳播主題">
           <button type="button" class="light-mode active" data-light="refraction" aria-pressed="true">折射與全反射</button>
           <button type="button" class="light-mode" data-light="scattering" aria-pressed="false">大氣光學</button>
         </div>
@@ -1519,8 +1538,84 @@
         </div>
       </section>
 
+      <section id="panel-prism" class="panel" role="tabpanel">
+        <div class="module-head">
+          <div><h2>稜鏡色散</h2><p class="module-copy">白光在稜鏡的兩個面依序折射。不同波長在玻璃中的折射率不同，紫光通常比紅光偏折得更多。</p></div>
+          <div class="legend"><span class="blue"><i class="dot"></i>入射白光</span><span class="orange"><i class="dot"></i>各色實際光路</span></div>
+        </div>
+        <div class="values" aria-live="polite">
+          <div class="badge" id="prism-index">n(550 nm) = 1.52</div>
+          <div class="badge" id="prism-spread">紅紫偏向角差 = 0.0°</div>
+          <div class="badge" id="prism-angle-badge">稜鏡頂角 = 55°</div>
+          <div class="badge" id="prism-status">兩面折射</div>
+        </div>
+        <div class="plot-wrap"><canvas id="prism-canvas" role="img" aria-label="白光進入三角稜鏡，逐色依史涅耳定律折射，最後落在屏幕不同位置。"></canvas></div>
+        <div class="controls">
+          <div class="control"><label for="prism-apex">稜鏡頂角：<span id="prism-apex-out">55°</span></label><input id="prism-apex" type="range" min="35" max="75" step="1" value="55"></div>
+          <div class="control"><label for="prism-n">綠光折射率：<span id="prism-n-out">1.520</span></label><input id="prism-n" type="range" min="1.35" max="1.75" step="0.005" value="1.52"></div>
+          <div class="control"><label for="prism-dispersion">色散強度：<span id="prism-dispersion-out">0.020</span></label><input id="prism-dispersion" type="range" min="0" max="0.05" step="0.001" value="0.02"></div>
+          <div class="control"><label for="prism-incidence">入射光方向：<span id="prism-incidence-out">0°</span></label><input id="prism-incidence" type="range" min="-12" max="12" step="1" value="0"></div>
+        </div>
+        <div class="checks"><label class="check"><input id="prism-show-normals" type="checkbox" checked>顯示界面法線</label><label class="check"><input id="prism-show-particles" type="checkbox" checked>顯示前進光點</label></div>
+      </section>
+
+      <section id="panel-brewster" class="panel" role="tabpanel">
+        <div class="module-head"><div><h2>布魯斯特角與偏振</h2><p class="module-copy">調整入射角，比較電場垂直入射面（s）與平行入射面（p）的反射率；在布魯斯特角，p 偏振的反射光消失。</p></div></div>
+        <div class="values" aria-live="polite">
+          <div class="badge" id="brewster-angle-badge">布魯斯特角 θB = 56.3°</div>
+          <div class="badge" id="brewster-rs">s 反射率 = 0%</div>
+          <div class="badge" id="brewster-rp">p 反射率 = 0%</div>
+          <div class="badge" id="brewster-status">反射光含兩種偏振</div>
+        </div>
+        <div class="plot-wrap"><canvas id="brewster-canvas" role="img" aria-label="偏振光在兩介質界面反射折射，右側以曲線比較 s 與 p 偏振反射率。"></canvas></div>
+        <div class="controls">
+          <div class="control"><label for="brewster-n1">入射介質 n₁：<span id="brewster-n1-out">1.00</span></label><input id="brewster-n1" type="range" min="1" max="1.8" step="0.01" value="1"></div>
+          <div class="control"><label for="brewster-n2">折射介質 n₂：<span id="brewster-n2-out">1.50</span></label><input id="brewster-n2" type="range" min="1" max="1.8" step="0.01" value="1.5"></div>
+          <div class="control"><label for="brewster-incidence">入射角：<span id="brewster-incidence-out">45.0°</span></label><input id="brewster-incidence" type="range" min="0" max="85" step="0.1" value="45"></div>
+          <div class="control"><label for="brewster-polarization">入射偏振</label><select id="brewster-polarization"><option value="both">自然光：s + p</option><option value="s">只有 s</option><option value="p">只有 p</option></select></div>
+        </div>
+        <div class="presets"><button type="button" class="preset" id="brewster-jump">跳到布魯斯特角</button><button type="button" class="preset" id="brewster-water">空氣 → 水</button><button type="button" class="preset" id="brewster-glass">空氣 → 玻璃</button></div>
+      </section>
+
+      <section id="panel-aberration" class="panel" role="tabpanel">
+        <div class="module-head"><div><h2>球面像差</h2><p class="module-copy">平行光進入單面球形、另一面平坦的透鏡；每條光線在兩個界面依照局部法線折射，邊緣光與近軸光因此交於不同位置。</p></div></div>
+        <div class="values" aria-live="polite">
+          <div class="badge" id="aberration-near">近軸焦點 = 0.0 cm</div>
+          <div class="badge" id="aberration-edge">邊緣焦點 = 0.0 cm</div>
+          <div class="badge" id="aberration-difference">縱向球差 = 0.0 cm</div>
+          <div class="badge" id="aberration-status">近軸與邊緣光焦點分離</div>
+        </div>
+        <div class="plot-wrap"><canvas id="aberration-canvas" role="img" aria-label="平行光穿過球面平凸透鏡，顯示不同高度光線的實際折射與焦點分離。"></canvas></div>
+        <div class="controls">
+          <div class="control"><label for="aberration-radius">球面曲率半徑：<span id="aberration-radius-out">16 cm</span></label><input id="aberration-radius" type="range" min="10" max="30" step="0.5" value="16"></div>
+          <div class="control"><label for="aberration-aperture">透鏡半口徑：<span id="aberration-aperture-out">8.0 cm</span></label><input id="aberration-aperture" type="range" min="2" max="9" step="0.1" value="8"></div>
+          <div class="control"><label for="aberration-n">透鏡折射率：<span id="aberration-n-out">1.50</span></label><input id="aberration-n" type="range" min="1.35" max="1.8" step="0.01" value="1.5"></div>
+          <div class="control"><label for="aberration-stop">光圈</label><select id="aberration-stop"><option value="all">全口徑</option><option value="central">遮住邊緣光</option></select></div>
+        </div>
+        <div class="checks"><label class="check"><input id="aberration-show-normals" type="checkbox" checked>顯示局部法線</label><label class="check"><input id="aberration-show-zoom" type="checkbox" checked>顯示焦點放大</label></div>
+      </section>
+
+      <section id="panel-film" class="panel" role="tabpanel">
+        <div class="module-head"><div><h2>薄膜干涉</h2><p class="module-copy">最先返回的兩束光分別由薄膜上、下表面反射。光程差與反射相位決定增強或減弱；反射率計算也包含膜內更高次的反射。</p></div></div>
+        <div class="values" aria-live="polite">
+          <div class="badge" id="film-path">往返光程 = 0 nm</div>
+          <div class="badge" id="film-phase">相位差 = 0π</div>
+          <div class="badge" id="film-reflectance">選定波長反射率 = 0%</div>
+          <div class="badge" id="film-status">上下兩束反射光疊加</div>
+        </div>
+        <div class="plot-wrap"><canvas id="film-canvas" role="img" aria-label="薄膜兩表面的反射路徑、相位關係，以及可見光反射光譜。"></canvas></div>
+        <div class="controls">
+          <div class="control"><label for="film-thickness">膜厚 t：<span id="film-thickness-out">100 nm</span></label><input id="film-thickness" type="range" min="0" max="900" step="1" value="100"></div>
+          <div class="control"><label for="film-n">薄膜折射率：<span id="film-n-out">1.38</span></label><input id="film-n" type="range" min="1.1" max="2.1" step="0.01" value="1.38"></div>
+          <div class="control"><label for="film-substrate">基底折射率：<span id="film-substrate-out">1.52</span></label><input id="film-substrate" type="range" min="1" max="2.2" step="0.01" value="1.52"></div>
+          <div class="control"><label for="film-wavelength">單色光波長：<span id="film-wavelength-out">550 nm</span></label><input id="film-wavelength" type="range" min="400" max="700" step="5" value="550"></div>
+          <div class="control"><label for="film-angle">入射角：<span id="film-angle-out">25°</span></label><input id="film-angle" type="range" min="0" max="60" step="1" value="25"></div>
+        </div>
+        <div class="presets"><button type="button" class="preset" id="film-coating">抗反射鍍膜</button><button type="button" class="preset" id="film-bubble">肥皂膜</button></div>
+      </section>
+
       <section id="panel-electromagnetism" class="panel" role="tabpanel">
-        <div class="phenomenon-switch" role="group" aria-label="電磁現象主題">
+        <div class="phenomenon-switch legacy-topic-switch" role="group" aria-label="電磁現象主題">
           <button type="button" class="em-mode active" data-em="brake" aria-pressed="true">磁煞車</button>
           <button type="button" class="em-mode" data-em="motor" aria-pressed="false">直流馬達</button>
         </div>
@@ -1538,7 +1633,7 @@
             </div>
           </div>
           <div class="values" aria-live="polite">
-            <div class="badge" id="brake-omega">角速度 ω = 12.0 rad/s<small>磁鐵接近後逐漸下降</small></div>
+            <div class="badge" id="brake-omega">角速度 ω = 12.0 rad/s<small>與無磁場參考直接比較</small></div>
             <div class="badge" id="brake-current">|dΦ/dt| = 0.0 mWb/s<small>磁通量變化才會產生感應電流</small></div>
             <div class="badge" id="brake-torque">磁力 F = 0.000 N<small>F = IℓB，方向由 I × B 決定</small></div>
             <div class="badge" id="brake-heat">轉為熱 = 0%<small>沒有接觸摩擦，但仍耗散能量</small></div>
@@ -1568,8 +1663,8 @@
               </select>
             </div>
             <div class="control">
-              <label for="brake-field">磁場 B：<span id="brake-field-out">0.70 T</span></label>
-              <input id="brake-field" type="range" min="0" max="1.2" step="0.02" value="0.7">
+              <label for="brake-field">磁場 B：<span id="brake-field-out">1.00 T</span></label>
+              <input id="brake-field" type="range" min="0" max="1.2" step="0.02" value="1">
             </div>
             <div class="control">
               <label for="brake-start">初始角速度：<span id="brake-start-out">12.0 rad/s</span></label>
@@ -1583,8 +1678,8 @@
               </select>
             </div>
             <div class="control">
-              <label for="brake-speed">播放速度：<span id="brake-speed-out">0.40x</span></label>
-              <input id="brake-speed" type="range" min="0.1" max="1.5" step="0.05" value="0.4">
+              <label for="brake-speed">播放速度：<span id="brake-speed-out">0.50x</span></label>
+              <input id="brake-speed" type="range" min="0.1" max="1.5" step="0.05" value="0.5">
             </div>
           </div>
           <div class="checks">
@@ -1749,6 +1844,17 @@
     let activeElectromagnetism = 'brake';
     let activeBrakeLayer = 'all';
     let activeMotorLayer = 'all';
+    const categoryLabs = {
+      wave: [['standing', '駐波疊加'], ['doppler', '都卜勒效應'], ['ripple', '水波槽干涉'], ['huygens', '惠更斯原理']],
+      refraction: [['refraction', '折射與全反射'], ['prism', '稜鏡色散'], ['brewster', '布魯斯特角'], ['aberration', '球面像差'], ['atmosphere', '大氣散射與星光閃爍']],
+      physical: [['double', '雙狹縫干涉'], ['single', '單狹縫繞射'], ['film', '薄膜干涉']],
+      imaging: [['mirror', '面鏡成像'], ['lens', '透鏡成像'], ['reflection', '鏡像文字'], ['trifold', '多面鏡'], ['microscope', '顯微鏡'], ['eye', '眼睛成像']],
+      mechanics: [['circular', '圓周運動與投影'], ['precession', '角動量與進動'], ['pulley', '滑輪組']],
+      electromagnetism: [['brake', '磁煞車'], ['motor', '直流馬達']],
+      astronomy: [['retrograde', '行星逆行']]
+    };
+    const lastLabByCategory = {};
+    let activeCategory = 'wave';
     let mirrorLesson = 'image';
     let mirrorParallelMode = 'single';
     let running = true;
@@ -1820,6 +1926,7 @@
       if (activeModule === 'double') return number('dbl-speed');
       if (activeModule === 'single') return number('sgl-speed');
       if (activeModule === 'huygens') return number('huy-speed');
+      if (activeModule === 'prism' || activeModule === 'film' || activeModule === 'brewster' || activeModule === 'aberration') return .42;
       if (activeModule === 'light') {
         return activeLight === 'refraction' ? number('ref-play-speed') : number('scatter-speed');
       }
@@ -8047,42 +8154,41 @@
       const poleBoxFront = { x: .62, y: -.72, z: -1.30, w: .92, h: 1.44, d: .78 };
 
       drawIsoCuboid(ctx, origin, poleBoxBack, scale, { front: '#2563eb', side: '#1e3a8a', top: '#60a5fa' }, 'S');
-      drawIsoDisk(ctx, origin, radius, scale, state);
+      drawIsoDisk(ctx, origin, radius, scale, { ...state, angle: -state.angle });
 
       if ($('brake-show-field').checked && state.B > .001) {
         [-.45, 0, .45].forEach(y => {
           [.83, 1.22].forEach(x => drawIsoArrow(ctx, origin, { x, y, z: -.48 }, { x, y, z: .48 }, scale, '#2563eb', ''));
         });
-        const bLabel = isoPoint(origin, 1.58, .78, 0, scale);
-        drawSceneLabel(ctx, bLabel.x, bLabel.y, 'B：N → S，穿過圓盤');
+        drawSceneLabel(ctx, scene.x + scene.w - 12, scene.y + 47, '藍色 B：N → S', 'right');
       }
 
       const strength = clampValue(state.current / 2.5, .12, 1);
+      ctx.save();
+      ctx.globalAlpha = .53;
+      drawIsoCuboid(ctx, origin, poleBoxFront, scale, { front: '#dc2626', side: '#991b1b', top: '#f87171' }, 'N');
+      ctx.restore();
       if (showFlux) {
-        const enterFlux = isoPoint(origin, 1.02, -.63, -.08, scale);
-        const exitFlux = isoPoint(origin, 1.02, .63, -.08, scale);
+        const enterFlux = isoPoint(origin, 1.02, .63, -.08, scale);
+        const exitFlux = isoPoint(origin, 1.02, -.63, -.08, scale);
         drawFluxSymbol(ctx, enterFlux.x, enterFlux.y, false, '#16a34a', 7, .95);
         drawFluxSymbol(ctx, exitFlux.x, exitFlux.y, true, '#ea580c', 7, .95);
       }
       if (showCurrent && state.current > .0005) {
-        drawIsoCurrentLoop(ctx, origin, { x: 1.02, y: -.58 }, .38, .33, -.12, scale, -1, strength, time, '#16a34a');
-        drawIsoCurrentLoop(ctx, origin, { x: 1.02, y: .58 }, .38, .33, -.12, scale, 1, strength, time, '#f97316');
+        drawIsoCurrentLoop(ctx, origin, { x: 1.02, y: .58 }, .38, .33, -.12, scale, 1, strength, time, '#16a34a');
+        drawIsoCurrentLoop(ctx, origin, { x: 1.02, y: -.58 }, .38, .33, -.12, scale, -1, strength, time, '#f97316');
       }
-
-      ctx.save();
-      ctx.globalAlpha = .92;
-      drawIsoCuboid(ctx, origin, poleBoxFront, scale, { front: '#dc2626', side: '#991b1b', top: '#f87171' }, 'N');
-      ctx.restore();
-
-      const velocityStart = { x: 1.64, y: -.28, z: -.12 };
-      const velocityEnd = { x: 1.64, y: .42, z: -.12 };
-      drawIsoArrow(ctx, origin, velocityStart, velocityEnd, scale, '#334155', `v=${state.surfaceSpeed.toFixed(2)} m/s`);
+      const velocityStart = { x: 1.64, y: .42, z: -.12 };
+      const velocityEnd = { x: 1.64, y: -.28, z: -.12 };
+      drawIsoArrow(ctx, origin, velocityStart, velocityEnd, scale, '#334155', '');
       if (showForce && state.force > .00001) {
-        drawIsoArrow(ctx, origin, { x: 1.76, y: .38, z: -.16 }, { x: 1.76, y: -.36, z: -.16 }, scale, '#be123c', 'F 反向');
+        drawIsoArrow(ctx, origin, { x: 1.85, y: -.36, z: -.16 }, { x: 1.85, y: .38, z: -.16 }, scale, '#be123c', '');
       }
+      drawSceneLabel(ctx, scene.x + scene.w - 12, scene.y + 71, `灰色 v ↓ ${state.surfaceSpeed.toFixed(2)} m/s`, 'right');
+      if (showForce && state.force > .00001) drawSceneLabel(ctx, scene.x + scene.w - 12, scene.y + 95, '紅色 F ↑ 反抗運動', 'right');
 
-      const actualMarker = isoPoint(origin, Math.cos(state.angle) * radius, Math.sin(state.angle) * radius, -.18, scale);
-      const referenceAngle = state.omega0 * time;
+      const actualMarker = isoPoint(origin, Math.cos(-state.angle) * radius, Math.sin(-state.angle) * radius, -.18, scale);
+      const referenceAngle = -state.omega0 * time;
       const referenceMarker = isoPoint(origin, Math.cos(referenceAngle) * radius, Math.sin(referenceAngle) * radius, -.20, scale);
       const centerPoint = isoPoint(origin, 0, 0, -.18, scale);
       ctx.save();
@@ -8487,10 +8593,8 @@
         ctx.lineTo(arrowX - 4, arrowY + 8);
         ctx.closePath();
         ctx.fill();
-        ctx.font = '700 13px "Microsoft JhengHei", Arial, sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText(state.stalled ? '負載過大：無法啟動' : '兩側 F 形成繞軸力矩', torqueCenter.x, torqueCenter.y - 30);
         ctx.restore();
+        drawSceneLabel(ctx, w * .5, compact ? 65 : 22, state.stalled ? '負載過大：無法啟動' : '兩側 F 形成繞軸力矩', 'center');
       }
 
       if (showVector) {
@@ -8513,6 +8617,578 @@
       setText('motor-proof-torque', `兩力形成力偶；τ = ${state.torque.toFixed(3)} N·m`);
     }
 
+    function spectralColor(wavelength, lightness = 52) {
+      return `hsl(${Math.round((700 - wavelength) * .9)} 94% ${lightness}%)`;
+    }
+
+    function raySegmentHit(point, direction, a, b) {
+      const sx = b.x - a.x;
+      const sy = b.y - a.y;
+      const cross = direction.x * sy - direction.y * sx;
+      if (Math.abs(cross) < 1e-9) return null;
+      const dx = a.x - point.x;
+      const dy = a.y - point.y;
+      const distance = (dx * sy - dy * sx) / cross;
+      const portion = (dx * direction.y - dy * direction.x) / cross;
+      if (distance < 0 || portion < 0 || portion > 1) return null;
+      return { x: point.x + direction.x * distance, y: point.y + direction.y * distance };
+    }
+
+    function refractVector(direction, normal, nBefore, nAfter) {
+      const projection = direction.x * normal.x + direction.y * normal.y;
+      const ratio = nBefore / nAfter;
+      const tx = ratio * (direction.x - projection * normal.x);
+      const ty = ratio * (direction.y - projection * normal.y);
+      const remaining = 1 - tx * tx - ty * ty;
+      if (remaining < 0) return null;
+      const along = Math.sqrt(remaining);
+      return { x: tx + along * normal.x, y: ty + along * normal.y };
+    }
+
+    function drawBeam(ctx, a, b, color, width = 3, alpha = 1) {
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.strokeStyle = color;
+      ctx.lineWidth = width;
+      ctx.lineCap = 'round';
+      ctx.shadowColor = color;
+      ctx.shadowBlur = width > 2 ? 9 : 0;
+      ctx.beginPath();
+      ctx.moveTo(a.x, a.y);
+      ctx.lineTo(b.x, b.y);
+      ctx.stroke();
+      ctx.restore();
+    }
+
+    function drawMovingRayDot(ctx, path, color, phase, radius = 4) {
+      const lengths = path.slice(1).map((point, i) => Math.hypot(point.x - path[i].x, point.y - path[i].y));
+      const total = lengths.reduce((sum, value) => sum + value, 0);
+      if (total < 1) return;
+      let target = ((phase % 1) + 1) % 1 * total;
+      for (let i = 0; i < lengths.length; i += 1) {
+        if (target <= lengths[i]) {
+          const fraction = target / lengths[i];
+          const x = path[i].x + (path[i + 1].x - path[i].x) * fraction;
+          const y = path[i].y + (path[i + 1].y - path[i].y) * fraction;
+          ctx.save();
+          ctx.fillStyle = color;
+          ctx.shadowColor = color;
+          ctx.shadowBlur = 12;
+          ctx.beginPath();
+          ctx.arc(x, y, radius, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.restore();
+          return;
+        }
+        target -= lengths[i];
+      }
+    }
+
+    function drawPrism() {
+      const { ctx, w, h } = resizeCanvas($('prism-canvas'));
+      const apexAngle = number('prism-apex') * Math.PI / 180;
+      const nGreen = number('prism-n');
+      const dispersion = number('prism-dispersion');
+      const beamAngle = number('prism-incidence') * Math.PI / 180;
+      const compact = w < 650;
+      const prismHeight = compact ? h * .34 : h * .52;
+      const top = { x: w * (compact ? .51 : .60), y: h * .12 };
+      const baseY = top.y + prismHeight;
+      const halfBase = prismHeight * Math.tan(apexAngle / 2);
+      const left = { x: top.x - halfBase, y: baseY };
+      const right = { x: top.x + halfBase, y: baseY };
+      const screenX = compact ? w - 23 : w * .90;
+      const entry = { x: top.x * .55 + left.x * .45, y: top.y * .55 + baseY * .45 };
+      const incoming = { x: Math.cos(beamAngle), y: Math.sin(beamAngle) };
+      const source = { x: Math.max(14, entry.x - (compact ? w * .35 : w * .36)), y: 0 };
+      source.y = entry.y - (entry.x - source.x) * incoming.y / incoming.x;
+      const normalIn = { x: Math.cos(apexAngle / 2), y: Math.sin(apexAngle / 2) };
+      const normalOut = { x: Math.cos(apexAngle / 2), y: -Math.sin(apexAngle / 2) };
+      const rays = [400, 440, 480, 520, 550, 580, 620, 660, 700].map(lambda => {
+        const n = nGreen + dispersion * ((550 / lambda) ** 2 - 1);
+        const inside = refractVector(incoming, normalIn, 1, n);
+        const exit = inside ? raySegmentHit({ x: entry.x + inside.x * .01, y: entry.y + inside.y * .01 }, inside, top, right) : null;
+        const outgoing = exit ? refractVector(inside, normalOut, n, 1) : null;
+        const end = outgoing && outgoing.x > .01 ? { x: screenX, y: exit.y + (screenX - exit.x) * outgoing.y / outgoing.x } : null;
+        const dot = inside ? inside.x * normalOut.x + inside.y * normalOut.y : 0;
+        const reflected = exit && !outgoing ? { x: inside.x - 2 * dot * normalOut.x, y: inside.y - 2 * dot * normalOut.y } : null;
+        const baseHit = reflected ? raySegmentHit(
+          { x: exit.x + reflected.x * .01, y: exit.y + reflected.y * .01 }, reflected, left, right
+        ) : null;
+        return { lambda, n, inside, exit, outgoing, end, baseHit };
+      });
+      const rayRed = rays[rays.length - 1];
+      const rayViolet = rays[0];
+      const spread = rayRed.outgoing && rayViolet.outgoing
+        ? Math.abs(Math.atan2(rayRed.outgoing.y, rayRed.outgoing.x) - Math.atan2(rayViolet.outgoing.y, rayViolet.outgoing.x)) * 180 / Math.PI : 0;
+      const reflectedCount = rays.filter(ray => ray.baseHit).length;
+
+      const sky = ctx.createLinearGradient(0, 0, 0, h);
+      sky.addColorStop(0, '#e8f3fb');
+      sky.addColorStop(1, '#f7fafc');
+      ctx.fillStyle = sky;
+      ctx.fillRect(0, 0, w, h);
+      ctx.fillStyle = '#dbeafe';
+      ctx.fillRect(screenX, h * .08, compact ? 12 : 17, h * .82);
+      ctx.strokeStyle = '#64748b';
+      ctx.strokeRect(screenX, h * .08, compact ? 12 : 17, h * .82);
+      ctx.save();
+      ctx.fillStyle = 'rgba(81,168,218,.38)';
+      ctx.strokeStyle = '#27638a';
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(top.x, top.y);
+      ctx.lineTo(left.x, left.y);
+      ctx.lineTo(right.x, right.y);
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      ctx.restore();
+      drawBeam(ctx, source, entry, '#ffffff', compact ? 5 : 8);
+      drawBeam(ctx, source, entry, '#2563eb', 1.4, .65);
+      rays.forEach((ray, index) => {
+        if (!ray.exit) return;
+        const color = spectralColor(ray.lambda);
+        drawBeam(ctx, entry, ray.exit, color, compact ? 1.5 : 2.5, .62);
+        if (ray.end) {
+          drawBeam(ctx, ray.exit, ray.end, color, compact ? 2.2 : 3.4, .85);
+          ctx.save();
+          ctx.fillStyle = color;
+          ctx.shadowColor = color;
+          ctx.shadowBlur = compact ? 6 : 13;
+          ctx.fillRect(screenX + 1, ray.end.y - (compact ? 4 : 7), compact ? 10 : 14, compact ? 8 : 14);
+          ctx.restore();
+        } else if (ray.baseHit) {
+          drawBeam(ctx, ray.exit, ray.baseHit, color, compact ? 1.5 : 2.3, .72);
+        }
+        if ($('prism-show-particles').checked && index % 2 === 0) {
+          drawMovingRayDot(ctx, [source, entry, ray.exit, ray.end || ray.baseHit || ray.exit], color, time * .15 + index * .17, compact ? 2.5 : 4);
+        }
+      });
+      if ($('prism-show-normals').checked) {
+        [entry, rayRed.exit].forEach((point, index) => {
+          if (!point) return;
+          const normal = index ? normalOut : normalIn;
+          ctx.save();
+          ctx.setLineDash([5, 5]);
+          ctx.strokeStyle = '#475569';
+          ctx.beginPath();
+          ctx.moveTo(point.x - normal.x * 48, point.y - normal.y * 48);
+          ctx.lineTo(point.x + normal.x * 48, point.y + normal.y * 48);
+          ctx.stroke();
+          ctx.restore();
+        });
+      }
+      drawSceneLabel(ctx, 18, 18, '入射白光');
+      drawSceneLabel(ctx, screenX - 4, h * .92, '屏幕', 'right');
+      if (!compact) {
+        drawSceneLabel(ctx, top.x, top.y - 20, `頂角 ${number('prism-apex')}°`, 'center');
+        if (reflectedCount) drawSceneLabel(ctx, top.x + 22, baseY + 20, `${reflectedCount} 色光在右面全反射`);
+        if (rayRed.end && rayViolet.end) {
+          drawSceneLabel(ctx, screenX - 12, rayRed.end.y - 16, '700 nm 紅', 'right');
+          drawSceneLabel(ctx, screenX - 12, rayViolet.end.y + 18, '400 nm 紫', 'right');
+        }
+      } else if (rayRed.end && rayViolet.end) {
+        const zoom = { x: 18, y: h * .69, w: w - 36, h: h * .21 };
+        ctx.fillStyle = '#132334';
+        ctx.fillRect(zoom.x, zoom.y, zoom.w, zoom.h);
+        drawSceneLabel(ctx, zoom.x + 9, zoom.y + 8, '屏幕局部放大 ×4');
+        const middle = (rayRed.end.y + rayViolet.end.y) / 2;
+        ctx.save();
+        ctx.beginPath();
+        ctx.rect(zoom.x, zoom.y, zoom.w, zoom.h);
+        ctx.clip();
+        rays.forEach(ray => {
+          if (!ray.end) return;
+          const y = zoom.y + zoom.h * .58 + (ray.end.y - middle) * 4;
+          ctx.strokeStyle = spectralColor(ray.lambda);
+          ctx.lineWidth = 3;
+          ctx.shadowColor = ctx.strokeStyle;
+          ctx.shadowBlur = 8;
+          ctx.beginPath();
+          ctx.moveTo(zoom.x + 18, y);
+          ctx.lineTo(zoom.x + zoom.w - 18, y);
+          ctx.stroke();
+        });
+        ctx.restore();
+        drawSceneLabel(ctx, zoom.x + zoom.w - 8, zoom.y + zoom.h - 24, '紅 → 紫', 'right');
+      }
+      setText('prism-apex-out', `${number('prism-apex')}°`);
+      setText('prism-n-out', nGreen.toFixed(3));
+      setText('prism-dispersion-out', dispersion.toFixed(3));
+      setText('prism-incidence-out', `${number('prism-incidence')}°`);
+      $('prism-index').innerHTML = `n(550 nm) = ${nGreen.toFixed(3)}<small>n(400 nm) = ${rayViolet.n.toFixed(3)}；n(700 nm) = ${rayRed.n.toFixed(3)}</small>`;
+      $('prism-spread').innerHTML = rayRed.end && rayViolet.end
+        ? `紅紫出射角差 = ${spread.toFixed(2)}°<small>兩個斜面各做一次折射</small>`
+        : '紅紫出射角差 = --<small>有色光在第二面全反射，無出射角</small>';
+      $('prism-angle-badge').innerHTML = `稜鏡頂角 = ${number('prism-apex')}°<small>入射光方向 ${number('prism-incidence')}°</small>`;
+      $('prism-status').innerHTML = reflectedCount
+        ? `${reflectedCount} 種色光全反射<small>${reflectedCount === rays.length ? '全部在第二面轉向稜鏡底邊' : '在第二面轉向稜鏡底邊；其餘色光出射'}</small>`
+        : '分色光到達屏幕<small>紫光通常比紅光更偏向稜鏡底邊</small>';
+    }
+
+    function fresnelPolarized(n1, n2, angle) {
+      const sinT = n1 * Math.sin(angle) / n2;
+      if (sinT >= 1) return { rs: 1, rp: 1, transmitted: null };
+      const cosI = Math.cos(angle);
+      const cosT = Math.sqrt(1 - sinT * sinT);
+      const rs = ((n1 * cosI - n2 * cosT) / (n1 * cosI + n2 * cosT)) ** 2;
+      const rp = ((n2 * cosI - n1 * cosT) / (n2 * cosI + n1 * cosT)) ** 2;
+      return { rs, rp, transmitted: Math.asin(sinT) };
+    }
+
+    function drawBrewster() {
+      const { ctx, w, h } = resizeCanvas($('brewster-canvas'));
+      const compact = w < 650;
+      const n1 = number('brewster-n1');
+      const n2 = number('brewster-n2');
+      const incidence = number('brewster-incidence') * Math.PI / 180;
+      const brewster = Math.atan(n2 / n1);
+      const { rs, rp, transmitted } = fresnelPolarized(n1, n2, incidence);
+      const mode = $('brewster-polarization').value;
+      const scene = compact ? { x: 0, y: 0, w, h: h * .59 } : { x: 0, y: 0, w: w * .62, h };
+      const hit = { x: scene.x + scene.w * .48, y: scene.y + scene.h * .52 };
+      const extent = Math.min(scene.w * .42, scene.h * .42);
+      const start = { x: hit.x - extent * Math.sin(incidence), y: hit.y - extent * Math.cos(incidence) };
+      const reflect = { x: hit.x + extent * Math.sin(incidence), y: hit.y - extent * Math.cos(incidence) };
+      const transmit = transmitted === null ? null : {
+        x: hit.x + extent * Math.sin(transmitted), y: hit.y + extent * Math.cos(transmitted)
+      };
+      ctx.fillStyle = '#f4f8fb';
+      ctx.fillRect(0, 0, w, h);
+      ctx.fillStyle = '#e2f0f0';
+      ctx.fillRect(scene.x, hit.y, scene.w, scene.h - (hit.y - scene.y));
+      ctx.strokeStyle = '#64748b';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(scene.x + 16, hit.y);
+      ctx.lineTo(scene.x + scene.w - 16, hit.y);
+      ctx.stroke();
+      ctx.save();
+      ctx.setLineDash([5, 5]);
+      ctx.strokeStyle = '#64748b';
+      ctx.beginPath();
+      ctx.moveTo(hit.x, scene.y + 24);
+      ctx.lineTo(hit.x, scene.y + scene.h - 24);
+      ctx.stroke();
+      ctx.restore();
+      drawBeam(ctx, start, hit, '#2563eb', 5);
+      const reflectedS = mode !== 'p' ? rs * (mode === 'both' ? .5 : 1) : 0;
+      const reflectedP = mode !== 's' ? rp * (mode === 'both' ? .5 : 1) : 0;
+      if (reflectedS > .00001) drawBeam(ctx, hit, reflect, '#2563eb', 2 + Math.sqrt(reflectedS) * 10, Math.max(.2, Math.sqrt(reflectedS)));
+      if (reflectedP > .00001) drawBeam(ctx, hit, reflect, '#ea580c', 1.5 + Math.sqrt(reflectedP) * 7, Math.max(.18, Math.sqrt(reflectedP)));
+      if (transmit) drawBeam(ctx, hit, transmit, '#0f766e', 3.5, .8);
+      drawMovingRayDot(ctx, [start, hit, transmit || reflect], '#f8fafc', time * .25, compact ? 3 : 5);
+      drawSceneLabel(ctx, scene.x + 15, scene.y + 16, `n₁ = ${n1.toFixed(2)}`);
+      drawSceneLabel(ctx, scene.x + 15, scene.y + scene.h - 34, `n₂ = ${n2.toFixed(2)}`);
+      if (!compact) {
+        drawSceneLabel(ctx, start.x + 12, start.y - 15, '入射光');
+        drawSceneLabel(ctx, reflect.x + 8, reflect.y - 14, '反射光');
+        if (transmit) drawSceneLabel(ctx, transmit.x + 7, transmit.y + 10, '折射光');
+      }
+
+      const chart = compact ? { x: 34, y: h * .65, w: w - 58, h: h * .24 } : { x: w * .66, y: h * .18, w: w * .29, h: h * .57 };
+      const chartMax = .55;
+      ctx.strokeStyle = '#64748b';
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.moveTo(chart.x, chart.y);
+      ctx.lineTo(chart.x, chart.y + chart.h);
+      ctx.lineTo(chart.x + chart.w, chart.y + chart.h);
+      ctx.stroke();
+      [['s', '#2563eb'], ['p', '#ea580c']].forEach(([polarization, color]) => {
+        ctx.strokeStyle = color;
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        for (let step = 0; step <= 120; step += 1) {
+          const angle = step / 120 * 85 * Math.PI / 180;
+          const value = fresnelPolarized(n1, n2, angle)[`r${polarization}`];
+          const x = chart.x + step / 120 * chart.w;
+          const y = chart.y + chart.h * (1 - Math.min(value / chartMax, 1));
+          if (step === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+      });
+      const markerX = chart.x + number('brewster-incidence') / 85 * chart.w;
+      const brewsterX = chart.x + brewster * 180 / Math.PI / 85 * chart.w;
+      ctx.save();
+      ctx.strokeStyle = '#7c3aed';
+      ctx.setLineDash([4, 4]);
+      ctx.beginPath();
+      ctx.moveTo(brewsterX, chart.y);
+      ctx.lineTo(brewsterX, chart.y + chart.h);
+      ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.strokeStyle = '#334155';
+      ctx.beginPath();
+      ctx.moveTo(markerX, chart.y);
+      ctx.lineTo(markerX, chart.y + chart.h);
+      ctx.stroke();
+      ctx.restore();
+      drawSceneLabel(ctx, chart.x, chart.y - 28, '反射率 R：藍 s ／橘 p');
+      drawSceneLabel(ctx, chart.x + chart.w, chart.y + chart.h + 7, '85°', 'right');
+      if (!compact) drawSceneLabel(ctx, brewsterX + 3, chart.y + 3, 'θB');
+      setText('brewster-n1-out', n1.toFixed(2));
+      setText('brewster-n2-out', n2.toFixed(2));
+      setText('brewster-incidence-out', `${number('brewster-incidence').toFixed(1)}°`);
+      $('brewster-angle-badge').innerHTML = `布魯斯特角 θB = ${(brewster * 180 / Math.PI).toFixed(1)}°<small>tan θB = n₂ / n₁</small>`;
+      $('brewster-rs').innerHTML = `s 反射率 = ${(rs * 100).toFixed(1)}%<small>電場垂直入射面</small>`;
+      $('brewster-rp').innerHTML = `p 反射率 = ${(rp * 100).toFixed(2)}%<small>電場平行入射面</small>`;
+      $('brewster-status').innerHTML = transmitted === null ? '全反射<small>兩種偏振的反射率皆為 100%</small>'
+        : Math.abs(incidence - brewster) < .003 ? 'p 反射光消失<small>反射光只剩 s 偏振；反射與折射方向垂直</small>'
+          : '未達布魯斯特角<small>調整角度，觀察橘色 p 曲線降為零</small>';
+    }
+
+    function thinFilmResult(wavelength, nFilm, nSubstrate, incidence) {
+      const sinFilm = Math.sin(incidence) / nFilm;
+      const sinSubstrate = Math.sin(incidence) / nSubstrate;
+      const cos0 = Math.cos(incidence);
+      const cosFilm = Math.sqrt(1 - sinFilm * sinFilm);
+      const cosSubstrate = Math.sqrt(1 - sinSubstrate * sinSubstrate);
+      const r01 = (cos0 - nFilm * cosFilm) / (cos0 + nFilm * cosFilm);
+      const r12 = (nFilm * cosFilm - nSubstrate * cosSubstrate) / (nFilm * cosFilm + nSubstrate * cosSubstrate);
+      const delta = 4 * Math.PI * nFilm * number('film-thickness') * cosFilm / wavelength;
+      const cosine = Math.cos(delta);
+      const numerator = r01 * r01 + r12 * r12 + 2 * r01 * r12 * cosine;
+      const denominator = 1 + (r01 * r12) ** 2 + 2 * r01 * r12 * cosine;
+      const reflectance = clampValue(numerator / denominator, 0, 1);
+      const phase = delta + (r12 < 0 ? Math.PI : 0) - (r01 < 0 ? Math.PI : 0);
+      return { r01, r12, delta, phase, reflectance, cosFilm, thetaFilm: Math.asin(sinFilm) };
+    }
+
+    function drawThinFilm() {
+      const { ctx, w, h } = resizeCanvas($('film-canvas'));
+      const compact = w < 650;
+      const nFilm = number('film-n');
+      const nSubstrate = number('film-substrate');
+      const lambda = number('film-wavelength');
+      const theta = number('film-angle') * Math.PI / 180;
+      const result = thinFilmResult(lambda, nFilm, nSubstrate, theta);
+      const top = h * (compact ? .24 : .28);
+      const bottom = h * (compact ? .48 : .51);
+      const entry = { x: w * (compact ? .32 : .29), y: top };
+      const depth = bottom - top;
+      const sourceLength = Math.min(top * .85, compact ? 90 : 140);
+      const source = { x: entry.x - sourceLength * Math.sin(theta), y: top - sourceLength * Math.cos(theta) };
+      const bounce = { x: entry.x + depth * Math.tan(result.thetaFilm), y: bottom };
+      const emerge = { x: bounce.x + depth * Math.tan(result.thetaFilm), y: top };
+      const reflected1 = { x: entry.x + sourceLength * Math.sin(theta), y: source.y };
+      const reflected2 = { x: emerge.x + sourceLength * Math.sin(theta), y: source.y };
+      const color = spectralColor(lambda);
+      ctx.fillStyle = '#f4f9fc';
+      ctx.fillRect(0, 0, w, h);
+      ctx.fillStyle = '#cce9ee';
+      ctx.fillRect(0, top, w, depth);
+      ctx.fillStyle = '#d3dce9';
+      ctx.fillRect(0, bottom, w, h - bottom);
+      ctx.strokeStyle = '#1f6c82';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(0, top);
+      ctx.lineTo(w, top);
+      ctx.moveTo(0, bottom);
+      ctx.lineTo(w, bottom);
+      ctx.stroke();
+      drawBeam(ctx, source, entry, color, compact ? 3 : 5);
+      drawBeam(ctx, entry, reflected1, '#2563eb', 2.5, .9);
+      drawBeam(ctx, entry, bounce, color, 3.2, .8);
+      drawBeam(ctx, bounce, emerge, color, 3.2, .8);
+      drawBeam(ctx, emerge, reflected2, '#ea580c', 2.5, .9);
+      drawMovingRayDot(ctx, [source, entry, reflected1], '#2563eb', time * .2, 3.5);
+      drawMovingRayDot(ctx, [entry, bounce, emerge, reflected2], '#ea580c', time * .2 - .35, 3.5);
+      drawSceneLabel(ctx, 14, 13, '空氣 n = 1.00');
+      drawSceneLabel(ctx, 14, top + 15, `薄膜 n = ${nFilm.toFixed(2)}`);
+      drawSceneLabel(ctx, 14, bottom + 13, `基底 n = ${nSubstrate.toFixed(2)}`);
+      if (!compact) {
+        drawSceneLabel(ctx, reflected1.x - 8, reflected1.y - 12, '上表面反射 r₁', 'right');
+        drawSceneLabel(ctx, reflected2.x + 8, reflected2.y - 12, '下表面反射 r₂');
+      }
+      const chartTop = h * .69;
+      const chartBottom = h * .84;
+      const chartLeft = compact ? 18 : 34;
+      const chartRight = w - (compact ? 18 : 34);
+      const ampScale = Math.max(Math.abs(result.r01), Math.abs(result.r12), .04);
+      ctx.strokeStyle = '#94a3b8';
+      ctx.beginPath();
+      ctx.moveTo(chartLeft, (chartTop + chartBottom) / 2);
+      ctx.lineTo(chartRight, (chartTop + chartBottom) / 2);
+      ctx.stroke();
+      [['上表面', '#2563eb', phase => result.r01 * Math.cos(phase)],
+        ['下表面', '#ea580c', phase => result.r12 * Math.cos(phase + result.delta)],
+        ['合成', '#15803d', phase => result.r01 * Math.cos(phase) + result.r12 * Math.cos(phase + result.delta)]
+      ].forEach(([, stroke, sample]) => {
+        ctx.strokeStyle = stroke;
+        ctx.lineWidth = stroke === '#15803d' ? 3 : 1.8;
+        ctx.beginPath();
+        for (let i = 0; i <= 180; i += 1) {
+          const phase = i / 180 * 5 * Math.PI + time * 2;
+          const y = (chartTop + chartBottom) / 2 - sample(phase) / (ampScale * 2.1) * (chartBottom - chartTop) * .43;
+          const x = chartLeft + i / 180 * (chartRight - chartLeft);
+          if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        }
+        ctx.stroke();
+      });
+      drawSceneLabel(ctx, chartLeft, chartTop - 28, '前兩束反射電場：藍 r₁　橘 r₂　綠 合成');
+      const stripY = h * .92;
+      const stripH = compact ? 19 : 23;
+      for (let x = Math.round(chartLeft); x < chartRight; x += 2) {
+        const wave = 400 + (x - chartLeft) / (chartRight - chartLeft) * 300;
+        const intensity = thinFilmResult(wave, nFilm, nSubstrate, theta).reflectance;
+        ctx.fillStyle = spectralColor(wave, Math.round(10 + 57 * Math.sqrt(Math.min(intensity / .12, 1))));
+        ctx.fillRect(x, stripY, 2.5, stripH);
+      }
+      const markerX = chartLeft + (lambda - 400) / 300 * (chartRight - chartLeft);
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 2;
+      ctx.strokeRect(markerX - 2, stripY - 3, 5, stripH + 6);
+      drawSceneLabel(ctx, chartLeft, stripY - 24, '400 nm');
+      drawSceneLabel(ctx, chartRight, stripY - 24, '700 nm', 'right');
+      setText('film-thickness-out', `${number('film-thickness')} nm`);
+      setText('film-n-out', nFilm.toFixed(2));
+      setText('film-substrate-out', nSubstrate.toFixed(2));
+      setText('film-wavelength-out', `${lambda} nm`);
+      setText('film-angle-out', `${number('film-angle')}°`);
+      $('film-path').innerHTML = `往返光程 = ${(2 * nFilm * number('film-thickness') * result.cosFilm).toFixed(0)} nm<small>2nₘt cosθₘ</small>`;
+      $('film-phase').innerHTML = `總相位差 = ${(result.phase / Math.PI).toFixed(2)}π<small>包含上下界面反射時的相位反轉</small>`;
+      $('film-reflectance').innerHTML = `${lambda} nm 反射率 = ${(result.reflectance * 100).toFixed(2)}%<small>包含薄膜內的多次反射</small>`;
+      $('film-status').innerHTML = result.reflectance < .01 ? '選定波長反射很弱<small>兩束反射光幾乎抵銷</small>' : '選定波長仍有反射<small>改變膜厚觀察相長與相消交替</small>';
+    }
+
+    function tracePlanoConvexRay(height, radius, aperture, index) {
+      const flat = radius - Math.sqrt(radius * radius - aperture * aperture) + 2.7;
+      const front = radius - Math.sqrt(radius * radius - height * height);
+      const normal = { x: Math.sqrt(radius * radius - height * height) / radius, y: -height / radius };
+      const inside = refractVector({ x: 1, y: 0 }, normal, 1, index);
+      if (!inside || inside.x <= 0) return null;
+      const exitHeight = height + (flat - front) * inside.y / inside.x;
+      const outgoing = refractVector(inside, { x: 1, y: 0 }, index, 1);
+      if (!outgoing || Math.abs(outgoing.y) < 1e-8) return null;
+      return { front, flat, exitHeight, inside, outgoing, focus: flat - exitHeight * outgoing.x / outgoing.y };
+    }
+
+    function drawAberration() {
+      const { ctx, w, h } = resizeCanvas($('aberration-canvas'));
+      const compact = w < 650;
+      const radius = number('aberration-radius');
+      const aperture = Math.min(number('aberration-aperture'), radius * .88);
+      const index = number('aberration-n');
+      const near = tracePlanoConvexRay(Math.min(.3, aperture * .1), radius, aperture, index);
+      const edge = tracePlanoConvexRay(aperture * .96, radius, aperture, index);
+      if (!near || !edge) return;
+      const difference = near.focus - edge.focus;
+      const xLimit = Math.max(near.focus, edge.focus, 28) + 13;
+      const scale = Math.min((w - 40) / (xLimit + 18), h * .26 / aperture);
+      const axisY = h * (compact ? .36 : .42);
+      const px = x => 20 + (x + 17) * scale;
+      const py = y => axisY - y * scale;
+      ctx.fillStyle = '#f8fafc';
+      ctx.fillRect(0, 0, w, h);
+      ctx.strokeStyle = '#94a3b8';
+      ctx.lineWidth = 1.2;
+      ctx.beginPath();
+      ctx.moveTo(10, axisY);
+      ctx.lineTo(w - 10, axisY);
+      ctx.stroke();
+      ctx.fillStyle = 'rgba(56,189,248,.34)';
+      ctx.strokeStyle = '#155e75';
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(px(near.flat), py(-aperture));
+      for (let i = 0; i <= 90; i += 1) {
+        const y = -aperture + i / 90 * aperture * 2;
+        const x = radius - Math.sqrt(radius * radius - y * y);
+        ctx.lineTo(px(x), py(y));
+      }
+      ctx.lineTo(px(near.flat), py(aperture));
+      ctx.closePath();
+      ctx.fill();
+      ctx.stroke();
+      const centralOnly = $('aberration-stop').value === 'central';
+      if (centralOnly) {
+        ctx.fillStyle = 'rgba(51,65,85,.86)';
+        const opening = aperture * .35;
+        ctx.fillRect(px(-1), py(aperture), 6, (aperture - opening) * scale);
+        ctx.fillRect(px(-1), py(-opening), 6, (aperture - opening) * scale);
+      }
+      const maxFraction = centralOnly ? .33 : .96;
+      [-1, 1].forEach(sign => {
+        [.09, .26, .46, .7, .96].forEach(fraction => {
+          if (fraction > maxFraction) return;
+          const y = sign * aperture * fraction;
+          const ray = tracePlanoConvexRay(y, radius, aperture, index);
+          if (!ray) return;
+          const color = fraction > .7 ? '#ea580c' : fraction < .3 ? '#2563eb' : '#0891b2';
+          const begin = { x: px(-15), y: py(y) };
+          const face = { x: px(ray.front), y: py(y) };
+          const back = { x: px(ray.flat), y: py(ray.exitHeight) };
+          const endX = Math.min(xLimit - 3, ray.focus + 11);
+          const end = { x: px(endX), y: py(ray.exitHeight + (endX - ray.flat) * ray.outgoing.y / ray.outgoing.x) };
+          drawBeam(ctx, begin, face, color, fraction > .7 ? 2.4 : 1.9, .8);
+          drawBeam(ctx, face, back, color, 1.8, .8);
+          drawBeam(ctx, back, end, color, fraction > .7 ? 2.4 : 1.9, .8);
+          if ($('aberration-show-normals').checked && fraction === .96 && sign === 1) {
+            const normal = { x: Math.sqrt(radius * radius - y * y) / radius, y: -y / radius };
+            ctx.save();
+            ctx.strokeStyle = '#475569';
+            ctx.setLineDash([4, 4]);
+            ctx.beginPath();
+            ctx.moveTo(face.x - normal.x * 35, face.y + normal.y * 35);
+            ctx.lineTo(face.x + normal.x * 35, face.y - normal.y * 35);
+            ctx.stroke();
+            ctx.restore();
+          }
+        });
+      });
+      [
+        { focus: near.focus, color: '#2563eb', label: '近軸 F' },
+        { focus: edge.focus, color: '#ea580c', label: '邊緣 F' }
+      ].forEach(marker => {
+        ctx.save();
+        ctx.strokeStyle = marker.color;
+        ctx.setLineDash([4, 4]);
+        ctx.beginPath();
+        ctx.moveTo(px(marker.focus), axisY - (compact ? 45 : 80));
+        ctx.lineTo(px(marker.focus), axisY + 50);
+        ctx.stroke();
+        ctx.restore();
+        drawSceneLabel(ctx, px(marker.focus), axisY + (marker.color === '#2563eb' ? 30 : 10), marker.label, 'center');
+      });
+      drawSceneLabel(ctx, px(near.flat), axisY + aperture * scale + 10, '球面平凸透鏡', 'center');
+      drawSceneLabel(ctx, 15, 15, centralOnly ? '光圈縮小：邊緣光被遮住' : '全口徑：邊緣光與近軸光焦點不同');
+      if ($('aberration-show-zoom').checked) {
+        const inset = { x: 16, y: h * .77, w: w - 32, h: h * .18 };
+        ctx.fillStyle = '#ffffff';
+        ctx.strokeStyle = '#cbd5e1';
+        ctx.fillRect(inset.x, inset.y, inset.w, inset.h);
+        ctx.strokeRect(inset.x, inset.y, inset.w, inset.h);
+        const leftFocus = Math.min(near.focus, edge.focus) - Math.max(2, difference * .25);
+        const rightFocus = Math.max(near.focus, edge.focus) + Math.max(2, difference * .25);
+        const focusX = focus => inset.x + 26 + (focus - leftFocus) / (rightFocus - leftFocus) * (inset.w - 52);
+        ctx.strokeStyle = '#94a3b8';
+        ctx.beginPath();
+        ctx.moveTo(inset.x + 15, inset.y + inset.h * .55);
+        ctx.lineTo(inset.x + inset.w - 15, inset.y + inset.h * .55);
+        ctx.stroke();
+        [['邊緣 F', edge.focus, '#ea580c'], ['近軸 F', near.focus, '#2563eb']].forEach(([label, focus, color], i) => {
+          const x = focusX(focus);
+          ctx.strokeStyle = color;
+          ctx.lineWidth = 3;
+          ctx.beginPath();
+          ctx.moveTo(x, inset.y + 15);
+          ctx.lineTo(x, inset.y + inset.h - 12);
+          ctx.stroke();
+          drawSceneLabel(ctx, x, inset.y + (i ? inset.h - 26 : 6), label, 'center');
+        });
+      }
+      setText('aberration-radius-out', `${radius.toFixed(1)} cm`);
+      setText('aberration-aperture-out', `${aperture.toFixed(1)} cm`);
+      setText('aberration-n-out', index.toFixed(2));
+      $('aberration-near').innerHTML = `近軸焦點 = ${near.focus.toFixed(1)} cm<small>從球面頂點量起</small>`;
+      $('aberration-edge').innerHTML = `邊緣焦點 = ${edge.focus.toFixed(1)} cm<small>球面邊緣實際折射光線</small>`;
+      $('aberration-difference').innerHTML = `縱向球差 = ${Math.abs(difference).toFixed(2)} cm<small>兩焦點沿主軸的距離</small>`;
+      $('aberration-status').innerHTML = centralOnly ? '縮小光圈<small>邊緣光被遮住；較接近單一焦點</small>' : '全口徑<small>邊緣光通常較早穿過主軸</small>';
+    }
+
     function drawActive() {
       if (activeModule === 'standing') drawStanding();
       else if (activeModule === 'doppler') drawDoppler();
@@ -8520,6 +9196,10 @@
       else if (activeModule === 'double') drawDoubleSlit();
       else if (activeModule === 'single') drawSingleSlit();
       else if (activeModule === 'huygens') drawHuygens();
+      else if (activeModule === 'prism') drawPrism();
+      else if (activeModule === 'brewster') drawBrewster();
+      else if (activeModule === 'aberration') drawAberration();
+      else if (activeModule === 'film') drawThinFilm();
       else if (activeModule === 'light') {
         if (activeLight === 'refraction') drawRefraction();
         else drawScattering();
@@ -8548,11 +9228,6 @@
       const enteringRetrograde = name === 'retrograde' && activeModule !== name;
       const enteringProcessModule = ['light', 'electromagnetism'].includes(name) && activeModule !== name;
       activeModule = name;
-      document.querySelectorAll('.tab').forEach(btn => {
-        const active = btn.dataset.tab === name;
-        btn.classList.toggle('active', active);
-        btn.setAttribute('aria-selected', active ? 'true' : 'false');
-      });
       document.querySelectorAll('.panel').forEach(panel => {
         panel.classList.toggle('active', panel.id === `panel-${name}`);
       });
@@ -8561,6 +9236,32 @@
         last = performance.now();
       }
       requestAnimationFrame(drawActive);
+    }
+
+    function navigateLab(lab, updateUrl = true) {
+      const category = Object.keys(categoryLabs).find(key => categoryLabs[key].some(([id]) => id === lab));
+      if (!category) return;
+      activeCategory = category;
+      lastLabByCategory[category] = lab;
+      document.querySelectorAll('.tab').forEach(button => {
+        const active = button.dataset.category === category;
+        button.classList.toggle('active', active);
+        button.setAttribute('aria-selected', active ? 'true' : 'false');
+      });
+      const select = $('lab-select');
+      select.replaceChildren(...categoryLabs[category].map(([id, label]) => {
+        const option = document.createElement('option');
+        option.value = id;
+        option.textContent = label;
+        return option;
+      }));
+      select.value = lab;
+      if (category === 'imaging') { setTab('optics'); setOpticsMode(lab); }
+      else if (category === 'mechanics') { setTab('mechanics'); setMechanicsMode(lab); }
+      else if (category === 'electromagnetism') { setTab('electromagnetism'); setElectromagnetismMode(lab); }
+      else if (lab === 'refraction' || lab === 'atmosphere') { setTab('light'); setLightMode(lab === 'refraction' ? 'refraction' : 'scattering'); }
+      else setTab(lab);
+      if (updateUrl) history.replaceState(null, '', `${location.pathname}${location.search}#lab=${lab}`);
     }
 
     function setOpticsMode(name) {
@@ -8592,6 +9293,7 @@
     }
 
     function setScatterScene(name) {
+      const enteringStarScene = name === 'star' && activeScatterScene !== 'star';
       activeScatterScene = name;
       document.querySelectorAll('.scatter-scene').forEach(button => {
         const active = button.dataset.scatterScene === name;
@@ -8601,6 +9303,10 @@
       const starMode = name === 'star';
       $('scatter-type').disabled = starMode;
       $('scatter-type-control').classList.toggle('is-muted', starMode);
+      if (enteringStarScene && number('scatter-elevation') > 25) {
+        $('scatter-elevation').value = '12';
+        $('scatter-turbulence').value = '1.2';
+      }
       time = 0;
       last = performance.now();
       requestAnimationFrame(drawActive);
@@ -8709,8 +9415,13 @@
     }
 
     document.querySelectorAll('.tab').forEach(btn => {
-      btn.addEventListener('click', () => setTab(btn.dataset.tab));
+      btn.addEventListener('click', () => {
+        const category = btn.dataset.category;
+        navigateLab(lastLabByCategory[category] || categoryLabs[category][0][0]);
+      });
     });
+    $('lab-select').addEventListener('change', event => navigateLab(event.target.value));
+    window.addEventListener('hashchange', () => navigateLab(location.hash.replace(/^#lab=/, ''), false));
 
     document.querySelectorAll('.optics-mode').forEach(btn => {
       btn.addEventListener('click', () => setOpticsMode(btn.dataset.optics));
@@ -8779,6 +9490,35 @@
         last = performance.now();
         drawActive();
       });
+    });
+
+    $('brewster-jump').addEventListener('click', () => {
+      $('brewster-incidence').value = (Math.atan(number('brewster-n2') / number('brewster-n1')) * 180 / Math.PI).toFixed(1);
+      drawActive();
+    });
+    [['brewster-water', 1.33], ['brewster-glass', 1.5]].forEach(([id, n]) => {
+      $(id).addEventListener('click', () => {
+        $('brewster-n1').value = '1';
+        $('brewster-n2').value = String(n);
+        $('brewster-incidence').value = (Math.atan(n) * 180 / Math.PI).toFixed(1);
+        drawActive();
+      });
+    });
+    $('film-coating').addEventListener('click', () => {
+      $('film-n').value = '1.23';
+      $('film-substrate').value = '1.52';
+      $('film-thickness').value = '112';
+      $('film-wavelength').value = '550';
+      $('film-angle').value = '0';
+      drawActive();
+    });
+    $('film-bubble').addEventListener('click', () => {
+      $('film-n').value = '1.33';
+      $('film-substrate').value = '1';
+      $('film-thickness').value = '300';
+      $('film-wavelength').value = '550';
+      $('film-angle').value = '25';
+      drawActive();
     });
 
     let draggingMirrorRay = false;
@@ -8907,6 +9647,7 @@
       requestAnimationFrame(frame);
     }
 
+    navigateLab(location.hash.replace(/^#lab=/, '') || 'standing', false);
     drawActive();
     requestAnimationFrame(frame);
   </script>
