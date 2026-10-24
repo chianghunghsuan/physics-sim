@@ -453,7 +453,7 @@
       accent-color: var(--accent);
     }
     .check[hidden], .control[hidden] { display: none !important; }
-    .mirage-layer-only[hidden] { display: none !important; }
+    .mirage-layer-only[hidden], .mirage-tree-only[hidden], .mirage-sea-only[hidden] { display: none !important; }
     .teacher-note {
       margin-top: 18px;
       padding: 14px 16px;
@@ -1599,14 +1599,15 @@
       </section>
 
       <section id="panel-mirage" class="panel" role="tabpanel">
-        <div class="module-head"><div><h2>海市蜃樓：熱路面如何折彎光線</h2><p class="module-copy">逐層計算折射與轉向；樹上各點的光束若在眼前交會，會形成一條傾斜的實像焦線。光線交會後繼續進眼，眼睛仍能看見倒立影像。折射率差與圖上距離均為教學放大示意。</p></div></div>
-        <div class="lesson-steps" role="group" aria-label="海市蜃樓視圖"><button class="mirage-scene active" type="button" data-mirage-scene="layers" aria-pressed="true">逐層折射與轉向</button><button class="mirage-scene" type="button" data-mirage-scene="tree" aria-pressed="false">樹與倒像</button></div>
+        <div class="module-head"><div><h2>海市蜃樓：熱路面與冷海面</h2><p class="module-copy" id="mirage-intro">逐層計算折射與轉向；樹上各點的光束若在眼前交會，會形成一條傾斜的實像焦線。光線交會後繼續進眼，眼睛仍能看見倒立影像。折射率差與圖上距離均為教學放大示意。</p></div></div>
+        <div class="lesson-steps" role="group" aria-label="海市蜃樓視圖"><button class="mirage-scene active" type="button" data-mirage-scene="layers" aria-pressed="true">熱路面：逐層折射</button><button class="mirage-scene" type="button" data-mirage-scene="tree" aria-pressed="false">熱路面：樹與倒像</button><button class="mirage-scene" type="button" data-mirage-scene="sea" aria-pressed="false">冷海面：上蜃景</button></div>
         <div class="values"><div class="badge" id="mirage-index">上層與近地折射率差</div><div class="badge" id="mirage-turn">最低光線高度</div><div class="badge" id="mirage-status">下蜃景</div></div>
         <div class="plot-wrap"><canvas id="mirage-canvas" role="img" aria-label="同一樹點的小光束在眼前聚焦後發散進入眼睛，五個物點形成斜的實像焦線；角度視野顯示完整倒立樹像。"></canvas></div>
         <div id="mirage-detail-wrap" class="mirage-detail"><canvas id="mirage-detail-canvas" role="img" aria-label="選定空氣層界面之法線、入射角、折射角與臨界角放大圖。"></canvas></div>
-        <div class="controls"><div class="control"><label for="mirage-heat">近地熱層強度：<span id="mirage-heat-out">1.0x</span></label><input id="mirage-heat" type="range" min="0" max="2" step="0.05" value="1"></div><div class="control mirage-tree-only" hidden><label for="mirage-depth">熱層厚度：<span id="mirage-depth-out">3%</span></label><input id="mirage-depth" type="range" min="2" max="30" step="1" value="3"></div><div class="control mirage-layer-only"><label for="mirage-angle">起始光線對水平角：<span id="mirage-angle-out">30°</span></label><input id="mirage-angle" type="range" min="5" max="45" step="1" value="30"></div><div class="control mirage-layer-only"><label for="mirage-count">空氣層數：<span id="mirage-count-out">18</span></label><input id="mirage-count" type="range" min="6" max="40" step="1" value="18"></div><div class="control mirage-layer-only"><label for="mirage-interface">檢視界面：<span id="mirage-interface-out">第 1 層</span></label><input id="mirage-interface" type="range" min="1" max="18" step="1" value="1"></div><div class="control"><label for="mirage-speed">播放速度：<span id="mirage-speed-out">0.35x</span></label><input id="mirage-speed" type="range" min="0.1" max="1.5" step="0.05" value="0.35"></div></div>
-        <div class="checks"><label class="check mirage-layer-only"><input id="mirage-show-layers" type="checkbox" checked>顯示空氣層</label><button id="mirage-jump-critical" class="mirage-layer-only" type="button">顯示臨界層</button><label class="check mirage-tree-only" hidden><input id="mirage-show-bundles" type="checkbox" checked>顯示同一物點的光束</label><label class="check mirage-tree-only" hidden><input id="mirage-show-direct" type="checkbox">對照直達光</label></div>
+        <div class="controls"><div class="control"><label for="mirage-heat"><span id="mirage-heat-label">近地熱層強度</span>：<span id="mirage-heat-out">1.0x</span></label><input id="mirage-heat" type="range" min="0" max="2" step="0.05" value="1"></div><div class="control mirage-tree-only" hidden><label for="mirage-depth">熱層厚度：<span id="mirage-depth-out">3%</span></label><input id="mirage-depth" type="range" min="2" max="30" step="1" value="3"></div><div class="control mirage-sea-only" hidden><label for="mirage-sea-height">逆溫層高度：<span id="mirage-sea-height-out">24%</span></label><input id="mirage-sea-height" type="range" min="12" max="38" step="1" value="24"></div><div class="control mirage-layer-only"><label for="mirage-angle">起始光線對水平角：<span id="mirage-angle-out">30°</span></label><input id="mirage-angle" type="range" min="5" max="45" step="1" value="30"></div><div class="control mirage-layer-only"><label for="mirage-count">空氣層數：<span id="mirage-count-out">18</span></label><input id="mirage-count" type="range" min="6" max="40" step="1" value="18"></div><div class="control mirage-layer-only"><label for="mirage-interface">檢視界面：<span id="mirage-interface-out">第 1 層</span></label><input id="mirage-interface" type="range" min="1" max="18" step="1" value="1"></div><div class="control"><label for="mirage-speed">播放速度：<span id="mirage-speed-out">0.35x</span></label><input id="mirage-speed" type="range" min="0.1" max="1.5" step="0.05" value="0.35"></div></div>
+        <div class="checks"><label class="check mirage-layer-only"><input id="mirage-show-layers" type="checkbox" checked>顯示空氣層</label><button id="mirage-jump-critical" class="mirage-layer-only" type="button">顯示臨界層</button><label class="check mirage-tree-only" hidden><input id="mirage-show-bundles" type="checkbox" checked>顯示同一物點的光束</label><label class="check mirage-tree-only" hidden><input id="mirage-show-direct" type="checkbox">對照直達光</label><button id="mirage-sea-loft" class="mirage-sea-only" type="button" hidden>一般抬升</button><button id="mirage-sea-invert" class="mirage-sea-only" type="button" hidden>顯示上方倒像</button></div>
         <p class="module-copy mirage-tree-only" hidden>圖中的實像焦線由同一物點的實際光束交會算出；交會後光線仍繼續前進，眼睛可以把它再次聚焦到視網膜。焦線傾斜表示不同高度的樹點在不同位置聚焦，不代表樹本身斜了。畫面中的完整樹像只表示每段樹身的光都能進眼；真實下蜃景常只有近地平線的一小段，未必看見完整物體。沿進眼方向直線回推的表觀位置，也不能與實際焦點混為一談。<a href="https://aty.sdsu.edu/mirages/mirintro.html" target="_blank" rel="noopener noreferrer">大氣光學圖解</a> · <a href="https://sciencedemonstrations.fas.harvard.edu/presentations/hot-road-mirage" target="_blank" rel="noopener noreferrer">實驗照片</a></p>
+        <p class="module-copy mirage-sea-only" hidden>冷海面使下層空氣較冷、較密，暖空氣在上方形成逆溫層；光線往高折射率的冷空氣彎曲。圖中光路按連續折射率分布逐步計算，虛線只是眼睛把進眼光線直線回推的位置，並非另一束光。物體抬升不必然有倒像；只有不同光路使影像次序翻轉時才出現倒像。此圖將微小的大氣折射率差與遠距離壓縮成可見的教學尺度。<a href="https://aty.sdsu.edu/mirages/mirsims/sup-mir/supintro.html" target="_blank" rel="noopener noreferrer">上蜃景光路與照片</a></p>
       </section>
 
       <section id="panel-rainbow" class="panel" role="tabpanel">
@@ -1980,6 +1981,7 @@
     let activeScatterScene = 'daylight';
     let activeMirageScene = 'layers';
     let mirageTreeCache = { key: '', top: [], base: [] };
+    let mirageSeaCache = { key: '', rays: [] };
     let mirageLayerTargets = [];
     let mirageCriticalLayer = 0;
     let activeElectromagnetism = 'brake';
@@ -9785,6 +9787,151 @@
       if (!compact) ctx.fillText('虛線是未偏折參考；青／紅線是目前光路', 12, h - 20);
     }
 
+    function drawSeaMirage(ctx, w, h, heat) {
+      const compact = w < 620;
+      const seaY = h * .78;
+      const shipX = w * .14;
+      const eye = { x: w * .87, y: seaY - h * .20 };
+      const inversionY = seaY - h * number('mirage-sea-height') / 100;
+      const transition = h * .035;
+      const delta = .065 * heat;
+      const sigmoid = y => 1 / (1 + Math.exp(-Math.max(-30, Math.min(30, (y - inversionY) / transition))));
+      const indexAt = y => 1 + delta * sigmoid(y);
+      const gradientAt = y => delta * sigmoid(y) * (1 - sigmoid(y)) / transition;
+      const hullY = seaY - h * .075;
+      const topY = seaY - h * .23;
+      const sourceHeights = [hullY, seaY - h * .15, topY];
+      const horizontalScale = (w / h) / 2.5;
+      const trace = angle => {
+        let x = eye.x, y = eye.y, vx = -Math.cos(angle), vy = Math.sin(angle);
+        const points = [{ x, y }];
+        for (let i = 0; i < h * 3.2 && x > shipX && y > 8 && y < seaY - 3; i += 1) {
+          const curvature = gradientAt(y) / indexAt(y);
+          vx -= curvature * vx * vy;
+          vy += curvature * (1 - vy * vy);
+          const norm = Math.hypot(vx, vy); vx /= norm; vy /= norm;
+          const nextX = x + vx * horizontalScale;
+          const nextY = y + vy;
+          if (nextX <= shipX) {
+            const fraction = (x - shipX) / (x - nextX);
+            y += (nextY - y) * fraction;
+            x = shipX;
+          } else { x = nextX; y = nextY; }
+          points.push({ x, y });
+        }
+        return { y: x <= shipX ? y : NaN, points };
+      };
+      const solve = targetY => {
+        const angles = [];
+        let previousA = -.55, previous = trace(previousA).y - targetY;
+        for (let a = -.545; a <= .55; a += .005) {
+          const current = trace(a).y - targetY;
+          if (Number.isFinite(previous) && Number.isFinite(current) && previous * current < 0) {
+            let lo = previousA, hi = a;
+            for (let j = 0; j < 11; j += 1) {
+              const mid = (lo + hi) / 2;
+              if ((trace(mid).y - targetY) * (trace(lo).y - targetY) <= 0) hi = mid;
+              else lo = mid;
+            }
+            const angle = (lo + hi) / 2;
+            angles.push({ angle, ...trace(angle) });
+          }
+          previousA = a; previous = current;
+        }
+        return angles;
+      };
+      const cacheKey = [w, h, heat, number('mirage-sea-height')].join(':');
+      if (mirageSeaCache.key !== cacheKey) {
+        mirageSeaCache = { key: cacheKey, rays: sourceHeights.map(solve) };
+      }
+      const rays = mirageSeaCache.rays;
+      const sky = ctx.createLinearGradient(0, 0, 0, seaY);
+      sky.addColorStop(0, '#83b8d3'); sky.addColorStop(.65, '#d7eaf0'); sky.addColorStop(1, '#f2f5e9');
+      ctx.fillStyle = sky; ctx.fillRect(0, 0, w, seaY);
+      const water = ctx.createLinearGradient(0, seaY, 0, h);
+      water.addColorStop(0, '#4c879d'); water.addColorStop(1, '#183f59');
+      ctx.fillStyle = water; ctx.fillRect(0, seaY, w, h - seaY);
+      ctx.fillStyle = 'rgba(255,255,255,.12)';
+      for (let i = 0; i < 15; i += 1) {
+        const x = (i * 149) % w, y = seaY + 13 + (i * 31) % Math.max(15, h - seaY - 16);
+        ctx.fillRect(x, y, Math.min(w - x, 18 + i % 4 * 17), 1);
+      }
+      const band = ctx.createLinearGradient(0, inversionY - transition * 2, 0, inversionY + transition * 2);
+      band.addColorStop(0, 'rgba(255,255,255,0)'); band.addColorStop(.5, 'rgba(245,248,219,.30)'); band.addColorStop(1, 'rgba(255,255,255,0)');
+      ctx.fillStyle = band; ctx.fillRect(0, inversionY - transition * 2, w, transition * 4);
+      ctx.strokeStyle = 'rgba(27,89,111,.30)'; ctx.setLineDash([5, 6]);
+      ctx.beginPath(); ctx.moveTo(0, inversionY); ctx.lineTo(w, inversionY); ctx.stroke(); ctx.setLineDash([]);
+      const drawPath = (points, color, width = 2, dashed = false) => {
+        if (points.length < 2) return;
+        ctx.save(); ctx.strokeStyle = color; ctx.lineWidth = width; ctx.lineJoin = 'round';
+        if (dashed) ctx.setLineDash([6, 6]);
+        ctx.beginPath(); points.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)); ctx.stroke(); ctx.restore();
+      };
+      const drawShip = (x, hull, tip, alpha = 1) => {
+        ctx.save(); ctx.globalAlpha = alpha;
+        const direction = Math.sign(hull - tip) || 1;
+        ctx.fillStyle = '#27445a'; ctx.beginPath(); ctx.moveTo(x - 27, hull - 8 * direction); ctx.lineTo(x + 28, hull - 8 * direction);
+        ctx.lineTo(x + 18, hull + 5 * direction); ctx.lineTo(x - 18, hull + 5 * direction); ctx.closePath(); ctx.fill();
+        ctx.strokeStyle = '#344a50'; ctx.lineWidth = 3; ctx.beginPath(); ctx.moveTo(x, hull - 8 * direction); ctx.lineTo(x, tip); ctx.stroke();
+        ctx.fillStyle = '#d8e9df'; ctx.beginPath(); ctx.moveTo(x + 2, tip + 5 * direction); ctx.lineTo(x + 2, hull - 17 * direction);
+        ctx.lineTo(x + 18, hull - 17 * direction); ctx.closePath(); ctx.fill(); ctx.restore();
+      };
+      drawShip(shipX, hullY, topY);
+      const colors = ['#087f92', '#b97942', '#b74e55'];
+      rays.forEach((paths, sourceIndex) => paths.forEach((ray, branch) => {
+        const color = colors[sourceIndex];
+        drawPath(ray.points, color, branch === 0 ? 2.7 : 2.1);
+        const progress = positiveModulo(time * .13 + sourceIndex * .29 + branch * .15, 1);
+        const point = ray.points[Math.floor(progress * (ray.points.length - 1))];
+        instrumentParticle(ctx, point.x, point.y, color, compact ? 3.5 : 4.5);
+      }));
+      const direct = rays.map(paths => paths.at(-1));
+      const anyExtra = rays.some(paths => paths.length > 1);
+      const view = { x: w * (compact ? .54 : .73), y: h * .085, w: w * (compact ? .42 : .22), h: h * (compact ? .26 : .31) };
+      const viewY = ray => view.y + view.h * (.52 + Math.tan(ray.angle) * .32);
+      ctx.fillStyle = 'rgba(246,251,252,.95)'; ctx.strokeStyle = '#86aebe'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.roundRect(view.x, view.y, view.w, view.h, 6); ctx.fill(); ctx.stroke();
+      ctx.save(); ctx.beginPath(); ctx.rect(view.x + 2, view.y + 30, view.w - 4, view.h - 32); ctx.clip();
+      ctx.strokeStyle = '#9dbbc5'; ctx.lineWidth = 1;
+      const horizon = view.y + view.h * .67;
+      ctx.beginPath(); ctx.moveTo(view.x + 10, horizon); ctx.lineTo(view.x + view.w - 10, horizon); ctx.stroke();
+      const directX = view.x + view.w * (rays.every(paths => paths.length > 1) ? .32 : .50);
+      const extraX = view.x + view.w * .70;
+      if (direct.every(Boolean)) drawShip(directX, viewY(direct[0]), viewY(direct[2]), .95);
+      const secondary = rays.map(paths => paths.length > 1 ? paths[1] : null);
+      if (secondary.every(Boolean)) drawShip(extraX, viewY(secondary[0]), viewY(secondary[2]), .72);
+      else if (anyExtra) rays.forEach((paths, source) => paths.slice(0, -1).forEach(ray => {
+        ctx.fillStyle = colors[source]; ctx.beginPath(); ctx.arc(extraX, viewY(ray), 4, 0, Math.PI * 2); ctx.fill();
+      }));
+      ctx.restore();
+      ctx.fillStyle = '#315463'; ctx.font = `700 ${compact ? 10 : 12}px "Microsoft JhengHei", sans-serif`;
+      ctx.fillText('眼中視野', view.x + 10, view.y + 19);
+      const apparentY = ray => eye.y + (eye.x - shipX) * Math.tan(ray.angle);
+      [direct[0], direct[2]].filter(Boolean).forEach(ray => {
+        const x = eye.x - w * .38;
+        drawPath([{ x: eye.x, y: eye.y }, { x, y: eye.y + (apparentY(ray) - eye.y) * (eye.x - x) / (eye.x - shipX) }], 'rgba(92,68,126,.68)', 1.5, true);
+      });
+      ctx.fillStyle = '#f9fdff'; ctx.strokeStyle = '#173d58'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.ellipse(eye.x, eye.y, 13, 8, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#173d58'; ctx.beginPath(); ctx.arc(eye.x, eye.y, 4.5, 0, Math.PI * 2); ctx.fill();
+      drawSceneLabel(ctx, compact ? 8 : 16, 15, '暖上層 n 較小　冷海面 n 較大');
+      if (!compact) {
+        drawSceneLabel(ctx, shipX + 34, hullY - 12, '真實船隻');
+        drawSceneLabel(ctx, eye.x - 10, eye.y + 21, '觀察者');
+        drawSceneLabel(ctx, Math.max(12, shipX + 18), inversionY - 49, '逆溫層：光線往冷海面方向彎');
+      }
+      $('mirage-index').innerHTML = `n(海面附近) ${indexAt(seaY - 5).toFixed(3)}<small>n(暖上層) ${indexAt(inversionY - transition * 3).toFixed(3)}</small>`;
+      $('mirage-turn').innerHTML = `${rays[2].length} 條船頂→眼睛光路<small>實線為折射光路；紫虛線是視線回推</small>`;
+      const inverted = secondary[0] && secondary[2] && viewY(secondary[2]) > viewY(secondary[0]);
+      $('mirage-status').innerHTML = heat === 0
+        ? '沒有海市蜃樓<small>折射率無高度差，光線沿直線傳播</small>'
+        : inverted
+        ? '出現上方倒像<small>不同高度的視角次序翻轉，並非海面反射</small>'
+        : anyExtra ? '局部多重影像<small>有些船身位置有多條光路；未必整艘船倒立</small>'
+          : direct.every(Boolean) ? '船影抬升／變形<small>目前未產生可辨識的上方倒像</small>'
+            : '無可見船影<small>光線未能從船頂進入觀察者眼睛</small>';
+    }
+
     function drawMirage() {
       const { ctx, w, h } = resizeCanvas($('mirage-canvas'));
       clearCanvas(ctx, w, h);
@@ -9803,6 +9950,11 @@
       setText('mirage-angle-out', `${number('mirage-angle')}°`);
       setText('mirage-count-out', String(number('mirage-count')));
       setText('mirage-speed-out', `${number('mirage-speed').toFixed(2)}x`);
+      if (activeMirageScene === 'sea') {
+        setText('mirage-sea-height-out', `${number('mirage-sea-height')}%`);
+        drawSeaMirage(ctx, w, h, heat);
+        return;
+      }
       const sky = ctx.createLinearGradient(0, 0, 0, ground);
       sky.addColorStop(0, '#a3cfdf'); sky.addColorStop(.66, '#e6f2ee'); sky.addColorStop(1, '#f2d1af');
       ctx.fillStyle = sky; ctx.fillRect(0, 0, w, ground);
@@ -10501,6 +10653,14 @@
         $('mirage-detail-wrap').hidden = activeMirageScene !== 'layers';
         document.querySelectorAll('.mirage-layer-only').forEach(element => { element.hidden = activeMirageScene !== 'layers'; });
         document.querySelectorAll('.mirage-tree-only').forEach(element => { element.hidden = activeMirageScene !== 'tree'; });
+        document.querySelectorAll('.mirage-sea-only').forEach(element => { element.hidden = activeMirageScene !== 'sea'; });
+        setText('mirage-heat-label', activeMirageScene === 'sea' ? '冷海面逆溫強度' : '近地熱層強度');
+        setText('mirage-intro', activeMirageScene === 'sea'
+          ? '冷海面使下層空氣較冷，暖空氣留在上方；調整逆溫強度，觀察實際光路如何彎向海面，以及船隻何時抬升或形成上方倒像。'
+          : '逐層計算折射與轉向；樹上各點的光束若在眼前交會，會形成一條傾斜的實像焦線。光線交會後繼續進眼，眼睛仍能看見倒立影像。折射率差與圖上距離均為教學放大示意。');
+        $('mirage-canvas').setAttribute('aria-label', activeMirageScene === 'sea'
+          ? '冷海面上方逆溫層中的船隻光線依折射率梯度彎曲，實線為實際光路，紫虛線為視線直線回推。'
+          : '熱路面上方的折射光路與樹的下蜃景。');
         time = 0;
         requestAnimationFrame(drawActive);
       });
@@ -10508,6 +10668,16 @@
 
     $('mirage-jump-critical').addEventListener('click', () => {
       if (mirageCriticalLayer) $('mirage-interface').value = String(mirageCriticalLayer);
+      requestAnimationFrame(drawActive);
+    });
+    $('mirage-sea-loft').addEventListener('click', () => {
+      $('mirage-heat').value = '1';
+      $('mirage-sea-height').value = '24';
+      requestAnimationFrame(drawActive);
+    });
+    $('mirage-sea-invert').addEventListener('click', () => {
+      $('mirage-heat').value = '2';
+      $('mirage-sea-height').value = '38';
       requestAnimationFrame(drawActive);
     });
 
