@@ -182,12 +182,12 @@
       gap: 6px;
       margin: 0 0 14px;
     }
-    button.brake-layer, button.motor-layer, button.scatter-scene {
+    button.brake-layer, button.motor-layer, button.scatter-scene, button.mirage-scene {
       background: #e2e8f0;
       color: var(--ink);
       padding: 8px 12px;
     }
-    button.brake-layer.active, button.motor-layer.active, button.scatter-scene.active {
+    button.brake-layer.active, button.motor-layer.active, button.scatter-scene.active, button.mirage-scene.active {
       background: #334155;
       color: #ffffff;
     }
@@ -331,6 +331,7 @@
       min-height: 320px;
       display: block;
     }
+    #mirage-canvas { height: min(68vh, 560px); min-height: 490px; }
     #retrograde-canvas { height: min(72vh, 620px); min-height: 500px; }
     #mirror-canvas.parallel-expanded {
       height: min(66vh, 560px);
@@ -476,6 +477,7 @@
       .mode-presets-head span { display: block; margin-top: 2px; }
       .mode-buttons { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       canvas { height: 330px; min-height: 280px; }
+      #mirage-canvas { height: 430px; min-height: 400px; }
       #mirror-canvas.parallel-expanded { height: 410px; min-height: 380px; }
       #microscope-canvas, #eye-canvas, #circular-canvas, #precession-canvas { height: 470px; min-height: 430px; }
       #refraction-canvas { height: 500px; min-height: 440px; }
@@ -1584,10 +1586,11 @@
       </section>
 
       <section id="panel-mirage" class="panel" role="tabpanel">
-        <div class="module-head"><div><h2>海市蜃樓：熱路面如何折彎光線</h2><p class="module-copy">路面附近的熱空氣折射率較小。光線穿過垂直折射率梯度時逐步彎曲，眼睛沿著收到光線的切線反向延長，便可能把天空看成路面的倒影。</p></div></div>
+        <div class="module-head"><div><h2>海市蜃樓：熱路面如何折彎光線</h2><p class="module-copy">先把連續變化的空氣切成薄層，逐層追蹤折射角；再看同一種折射率梯度如何使樹的光線從下方進入眼睛，形成倒像。圖中折射率差為教學放大值。</p></div></div>
+        <div class="lesson-steps" role="group" aria-label="海市蜃樓視圖"><button class="mirage-scene active" type="button" data-mirage-scene="layers" aria-pressed="true">逐層折射與轉向</button><button class="mirage-scene" type="button" data-mirage-scene="tree" aria-pressed="false">樹與倒像</button></div>
         <div class="values"><div class="badge" id="mirage-index">上層與近地折射率差</div><div class="badge" id="mirage-turn">最低光線高度</div><div class="badge" id="mirage-status">下蜃景</div></div>
-        <div class="plot-wrap"><canvas id="mirage-canvas" role="img" aria-label="真實光線在熱空氣折射率梯度中逐步彎向上方，並顯示視線的反向虛線延長。"></canvas></div>
-        <div class="controls"><div class="control"><label for="mirage-heat">近地熱層強度：<span id="mirage-heat-out">1.0x</span></label><input id="mirage-heat" type="range" min="0" max="2" step="0.05" value="1"></div><div class="control"><label for="mirage-depth">熱層厚度：<span id="mirage-depth-out">30%</span></label><input id="mirage-depth" type="range" min="10" max="55" step="1" value="30"></div><div class="control"><label for="mirage-speed">播放速度：<span id="mirage-speed-out">0.35x</span></label><input id="mirage-speed" type="range" min="0.1" max="1.5" step="0.05" value="0.35"></div></div>
+        <div class="plot-wrap"><canvas id="mirage-canvas" role="img" aria-label="逐層折射光線與樹的下蜃景倒像；可調熱層、入射角與空氣層數。"></canvas></div>
+        <div class="controls"><div class="control"><label for="mirage-heat">近地熱層強度：<span id="mirage-heat-out">1.0x</span></label><input id="mirage-heat" type="range" min="0" max="2" step="0.05" value="1"></div><div class="control"><label for="mirage-depth">熱層厚度：<span id="mirage-depth-out">3%</span></label><input id="mirage-depth" type="range" min="2" max="30" step="1" value="3"></div><div class="control"><label for="mirage-angle">向下入射角：<span id="mirage-angle-out">10°</span></label><input id="mirage-angle" type="range" min="2" max="24" step="1" value="10"></div><div class="control"><label for="mirage-count">空氣層數：<span id="mirage-count-out">18</span></label><input id="mirage-count" type="range" min="6" max="40" step="1" value="18"></div><div class="control"><label for="mirage-speed">播放速度：<span id="mirage-speed-out">0.35x</span></label><input id="mirage-speed" type="range" min="0.1" max="1.5" step="0.05" value="0.35"></div></div>
         <div class="checks"><label class="check"><input id="mirage-show-layers" type="checkbox" checked>顯示空氣層</label><label class="check"><input id="mirage-show-virtual" type="checkbox" checked>顯示視線反向延長</label></div>
       </section>
 
@@ -1960,6 +1963,8 @@
     let activeAngular = 'gyro';
     let activeLight = 'refraction';
     let activeScatterScene = 'daylight';
+    let activeMirageScene = 'layers';
+    let mirageTreeCache = { key: '', top: [], base: [] };
     let activeElectromagnetism = 'brake';
     let activeBrakeLayer = 'all';
     let activeMotorLayer = 'all';
@@ -9805,64 +9810,181 @@
       clearCanvas(ctx, w, h);
       const heat = number('mirage-heat');
       const layer = h * number('mirage-depth') / 100;
-      const ground = h * .80;
-      const eye = { x: w * .86, y: ground - h * .12 };
+      const ground = h * .74;
       const contrast = .075 * heat;
       const nAt = y => 1 + contrast * (1 - Math.exp(-Math.max(0, ground - y) / layer));
       const dnDy = y => -contrast / layer * Math.exp(-Math.max(0, ground - y) / layer);
+      const compact = w < 620;
+      const showLayers = $('mirage-show-layers').checked;
+      const showVirtual = $('mirage-show-virtual').checked;
       setText('mirage-heat-out', `${heat.toFixed(2)}x`);
       setText('mirage-depth-out', `${number('mirage-depth')}%`);
+      setText('mirage-angle-out', `${number('mirage-angle')}°`);
+      setText('mirage-count-out', String(number('mirage-count')));
       setText('mirage-speed-out', `${number('mirage-speed').toFixed(2)}x`);
-      $('mirage-index').innerHTML = `示意折射率差 ${contrast.toFixed(3)}<small>實際空氣差遠小於圖中；曲率放大以看清</small>`;
-      $('mirage-status').innerHTML = heat < .08 ? '熱層消失<small>光線近似直行</small>' : '下蜃景<small>近地 n 較小，光線朝上方較大 n 區彎曲</small>';
       const sky = ctx.createLinearGradient(0, 0, 0, ground);
-      sky.addColorStop(0, '#a8d6ec'); sky.addColorStop(.68, '#e7f4f7'); sky.addColorStop(1, '#ebc5a7');
+      sky.addColorStop(0, '#a3cfdf'); sky.addColorStop(.66, '#e6f2ee'); sky.addColorStop(1, '#f2d1af');
       ctx.fillStyle = sky; ctx.fillRect(0, 0, w, ground);
-      ctx.fillStyle = '#6c7376'; ctx.fillRect(0, ground, w, h - ground);
-      ctx.strokeStyle = '#f7df92'; ctx.lineWidth = 2; ctx.setLineDash([18, 20]);
-      ctx.beginPath(); ctx.moveTo(0, ground + (h - ground) * .55); ctx.lineTo(w, ground + (h - ground) * .55); ctx.stroke(); ctx.setLineDash([]);
-      if ($('mirage-show-layers').checked) {
-        for (let i = 1; i <= 5; i += 1) {
-          const y = ground - layer * i / 5;
-          ctx.strokeStyle = `rgba(176,93,58,${.20 + i * .035})`; ctx.lineWidth = 1;
-          ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
-        }
-      }
-      const trace = angle => {
-        let x = eye.x, y = eye.y, vx = -Math.cos(angle), vy = Math.sin(angle);
-        const points = [{ x, y }];
-        for (let i = 0; i < 1400 && x > 12 && y > 8 && y < ground - 3; i += 1) {
-          const curvature = dnDy(y) / nAt(y);
-          vx += -curvature * vx * vy * 1.4;
-          vy += curvature * (1 - vy * vy) * 1.4;
-          const norm = Math.hypot(vx, vy); vx /= norm; vy /= norm;
-          x += vx * 1.4; y += vy * 1.4;
-          if (i % 3 === 0) points.push({ x, y });
-        }
-        return points;
+      ctx.fillStyle = '#657478'; ctx.fillRect(0, ground, w, h - ground);
+      ctx.fillStyle = '#89999b'; ctx.fillRect(0, ground, w, 4);
+      const drawLine = (points, color, width = 2, dashed = false) => {
+        if (points.length < 2) return;
+        ctx.save(); ctx.strokeStyle = color; ctx.lineWidth = width; ctx.lineJoin = 'round';
+        if (dashed) ctx.setLineDash([7, 6]);
+        ctx.beginPath(); points.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)); ctx.stroke(); ctx.restore();
       };
-      let focusPath = [];
-      [0.025, .045, .065, .085].forEach((angle, index) => {
-        const points = trace(angle);
-        if (index === 2) focusPath = points;
-        ctx.strokeStyle = index === 2 ? '#0c6e92' : 'rgba(12,110,146,.46)'; ctx.lineWidth = index === 2 ? 4 : 2;
-        ctx.beginPath(); points.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)); ctx.stroke();
-        if (points.length > 4) {
-          const point = points[Math.floor((1 - positiveModulo(time * .11 + index * .18, 1)) * (points.length - 1))];
-          instrumentParticle(ctx, point.x, point.y, '#fff7bc', 4);
+      const particle = (points, offset = 0) => {
+        if (points.length < 2) return;
+        const lengths = [0];
+        for (let i = 1; i < points.length; i += 1) lengths.push(lengths[i - 1] + Math.hypot(points[i].x - points[i - 1].x, points[i].y - points[i - 1].y));
+        const distance = positiveModulo(time * .15 + offset, 1) * lengths.at(-1);
+        const i = Math.max(1, lengths.findIndex(value => value >= distance));
+        const fraction = (distance - lengths[i - 1]) / Math.max(.001, lengths[i] - lengths[i - 1]);
+        instrumentParticle(ctx, points[i - 1].x + (points[i].x - points[i - 1].x) * fraction, points[i - 1].y + (points[i].y - points[i - 1].y) * fraction, '#fff6da', compact ? 4 : 5);
+      };
+      const count = number('mirage-count');
+      const layerZoom = activeMirageScene === 'layers' ? 3 : 1;
+      const top = ground - Math.min(h * .65, layer * 4 * layerZoom);
+      if (showLayers) {
+        for (let i = 1; i < count; i += 1) {
+          const y = top + (ground - top) * i / count;
+          drawLine([{ x: 0, y }, { x: w, y }], activeMirageScene === 'tree' ? 'rgba(91,120,138,.09)' : 'rgba(91,120,138,.18)', 1);
         }
-      });
-      $('mirage-turn').innerHTML = `追蹤光線最低處距路面 ${Math.max(0, (ground - Math.max(...focusPath.map(p => p.y))) / h * 100).toFixed(1)}% 畫面高度<small>向左回溯時先降後升，光路可逆</small>`;
-      if ($('mirage-show-virtual').checked && focusPath.length > 5) {
-        ctx.save(); ctx.setLineDash([7, 6]); ctx.strokeStyle = '#c35065'; ctx.lineWidth = 2;
-        const slope = .065;
-        ctx.beginPath(); ctx.moveTo(eye.x, eye.y); ctx.lineTo(Math.max(0, eye.x - (ground + 24 - eye.y) / slope), ground + 24); ctx.stroke(); ctx.restore();
-        drawSceneLabel(ctx, w - 12, ground + 13, w < 500 ? '虛線：誤認的直線方向' : '虛線：眼睛把入射切線誤認為直線來源', 'right');
       }
-      ctx.fillStyle = '#193c54'; ctx.beginPath(); ctx.arc(eye.x, eye.y, 11, 0, 2 * Math.PI); ctx.fill();
-      drawSceneLabel(ctx, w - 12, eye.y - 44, '觀察者', 'right');
-      drawSceneLabel(ctx, 18, 20, '天空的光沿彎曲路徑到達眼睛');
-      drawSceneLabel(ctx, 18, ground - 20, '熱路面：較低折射率');
+      if (activeMirageScene === 'layers') {
+        const nLayer = y => nAt(ground - (ground - y) / layerZoom);
+        const dy = (ground - top) / count;
+        const start = { x: w * .07, y: top + dy * .5 };
+        const alpha0 = number('mirage-angle') * Math.PI / 180;
+        const n0 = nLayer(start.y);
+        const p = n0 * Math.cos(alpha0);
+        const points = [start];
+        let x = start.x, y = start.y, direction = 1, index = 0, turn = null;
+        for (let step = 0; step < count * 2 + 2 && x < w * .94; step += 1) {
+          const n = nLayer(top + (index + .5) * dy);
+          const ratio = Math.min(1, p / n);
+          const alpha = Math.acos(ratio);
+          const boundary = top + (index + (direction > 0 ? 1 : 0)) * dy;
+          const nextX = x + Math.abs(boundary - y) / Math.max(.01, Math.tan(alpha)) * .36 * (w / h) / 2.2;
+          if (nextX >= w * .94) {
+            const fraction = (w * .94 - x) / (nextX - x);
+            points.push({ x: w * .94, y: y + (boundary - y) * fraction });
+            x = w * .94; break;
+          }
+          x = nextX; y = boundary; points.push({ x, y });
+          const nextIndex = index + direction;
+          const nNext = nextIndex < count ? nLayer(top + (nextIndex + .5) * dy) : 1;
+          if (direction > 0 && p > nNext) {
+            turn = { x, y, layerNumber: index + 1, nBefore: n, nAfter: nNext, alpha };
+            direction = -1;
+          } else if (nextIndex < 0 || nextIndex >= count) break;
+          else index = nextIndex;
+        }
+        drawLine(points, '#087a85', 4);
+        particle(points);
+        if (turn) {
+          instrumentParticle(ctx, turn.x, turn.y, '#ef8d4a', 6);
+          drawLine([{ x: turn.x, y: turn.y - 32 }, { x: turn.x, y: turn.y + 25 }], '#677a88', 1, true);
+          drawSceneLabel(ctx, compact ? Math.max(8, turn.x - 48) : Math.min(w - 230, turn.x + 15), turn.y - 50, compact ? '全反射' : '臨界層：下一層無折射解');
+          const theta = 90 - turn.alpha * 180 / Math.PI;
+          const critical = Math.asin(Math.min(1, turn.nAfter / turn.nBefore)) * 180 / Math.PI;
+          $('mirage-turn').innerHTML = `第 ${turn.layerNumber} 層轉向<small>入射 ${theta.toFixed(1)}° &gt; 臨界 ${critical.toFixed(1)}°</small>`;
+          $('mirage-status').innerHTML = '離散層：全反射<small>層數增加時，轉向漸近連續彎曲</small>';
+        } else {
+          $('mirage-turn').innerHTML = '尚未轉向<small>提高熱層強度或減小入射角</small>';
+          $('mirage-status').innerHTML = '未達臨界條件<small>此角度下還沒有遇到足夠小的 n</small>';
+        }
+        $('mirage-index').innerHTML = `n₁sinθ₁ = ${p.toFixed(3)}<small>θ 是相對鉛直法線的角；逐層守恆</small>`;
+        drawSceneLabel(ctx, 16, 16, compact ? '冷空氣：n 較大' : '冷空氣：n 較大；向下逐層變小');
+        drawSceneLabel(ctx, 16, ground - 22, '熱空氣：n 較小');
+        if (!compact) drawSceneLabel(ctx, 16, ground + 20, '近地高度放大 3 倍；水平距離壓縮；折射率差示意放大');
+      } else {
+        const eye = { x: w * .88, y: ground - h * .13 };
+        const treeX = w * .13;
+        const baseY = ground - h * .17;
+        const tipY = ground - h * .29;
+        const horizontalScale = (w / h) / 2;
+        const trace = angle => {
+          let x = eye.x, y = eye.y, vx = -Math.cos(angle), vy = Math.sin(angle);
+          const points = [{ x, y }];
+          for (let i = 0; i < 2000 && x > treeX && y > 4 && y < ground - 2; i += 1) {
+            const curvature = dnDy(y) / nAt(y);
+            vx += -curvature * vx * vy;
+            vy += curvature * (1 - vy * vy);
+            const norm = Math.hypot(vx, vy); vx /= norm; vy /= norm;
+            x += vx * horizontalScale; y += vy;
+            if (i % 3 === 0) points.push({ x, y });
+          }
+          return { points, y: x <= treeX ? y : NaN };
+        };
+        const roots = target => {
+          const found = [];
+          let priorAngle = -.55, prior = trace(priorAngle).y - target;
+          for (let a = -.545; a <= .75; a += .005) {
+            const current = trace(a).y - target;
+            if (Number.isFinite(prior) && Number.isFinite(current) && prior * current < 0) {
+              let lo = priorAngle, hi = a;
+              for (let j = 0; j < 15; j += 1) {
+                const mid = (lo + hi) / 2;
+                if ((trace(mid).y - target) * (trace(lo).y - target) <= 0) hi = mid;
+                else lo = mid;
+              }
+              found.push((lo + hi) / 2);
+            }
+            prior = current; priorAngle = a;
+          }
+          return found;
+        };
+        const cacheKey = [w, h, heat, layer].join(':');
+        if (mirageTreeCache.key !== cacheKey) {
+          mirageTreeCache = { key: cacheKey, top: roots(tipY), base: roots(baseY) };
+        }
+        const topRoots = mirageTreeCache.top;
+        const baseRoots = mirageTreeCache.base;
+        const reflected = topRoots.filter(a => a > .005);
+        const direct = topRoots.filter(a => a < .005);
+        const tree = (x, yBase, height, inverted, opacity = 1) => {
+          ctx.save(); ctx.globalAlpha = opacity;
+          ctx.fillStyle = '#695247'; ctx.fillRect(x - 4, inverted ? yBase : yBase - height * .46, 8, height * .46);
+          ctx.fillStyle = '#287655';
+          for (let k = 0; k < 3; k += 1) {
+            const cy = inverted ? yBase + height * (.35 + k * .18) : yBase - height * (.55 + k * .18);
+            ctx.beginPath(); ctx.ellipse(x, cy, height * (.23 - k * .035), height * .24, 0, 0, 2 * Math.PI); ctx.fill();
+          }
+          ctx.restore();
+        };
+        ctx.fillStyle = '#95a8a5'; ctx.beginPath(); ctx.ellipse(treeX, baseY + 8, compact ? 40 : 64, 12, 0, Math.PI, 2 * Math.PI); ctx.fill();
+        tree(treeX, baseY, baseY - tipY, false);
+        drawSceneLabel(ctx, treeX + 12, tipY - 25, '實際的樹');
+        const rayAngles = [direct[0], reflected[0], baseRoots.find(a => a > .005)].filter(a => a !== undefined);
+        rayAngles.forEach((a, i) => {
+          const path = trace(a).points;
+          drawLine(path, i === 0 ? '#0a6688' : '#d4673b', i === 0 ? 2.5 : 3.5);
+          particle(path, i * .27);
+          if (showVirtual && i === 1) {
+            const end = { x: eye.x - (ground + 14 - eye.y) / Math.tan(a), y: ground + 14 };
+            drawLine([eye, end], '#ad4a68', 2, true);
+          }
+        });
+        if (reflected.length && baseRoots.some(a => a > .005)) {
+          const imageX = Math.max(w * .38, Math.min(w * .76, eye.x - (ground - eye.y) / Math.tan(reflected[0])));
+          const sheen = ctx.createRadialGradient(imageX, ground + 31, 4, imageX, ground + 31, compact ? 49 : 73);
+          sheen.addColorStop(0, 'rgba(189,229,218,.68)'); sheen.addColorStop(1, 'rgba(189,229,218,0)');
+          ctx.fillStyle = sheen; ctx.beginPath(); ctx.ellipse(imageX, ground + 39, compact ? 48 : 74, Math.min(67, h - ground - 7), 0, 0, 2 * Math.PI); ctx.fill();
+          tree(imageX, ground + 12, Math.min(h - ground - 30, baseY - tipY), true, .78);
+          drawSceneLabel(ctx, imageX + 17, ground + (compact ? 42 : 51), compact ? '倒像' : '眼中倒像（位置示意）');
+          $('mirage-status').innerHTML = '正像與倒像<small>上方直達光、下方折彎光同時入眼</small>';
+        } else {
+          $('mirage-status').innerHTML = '倒像尚未形成<small>增強熱層或調整厚度後再觀察</small>';
+        }
+        $('mirage-index').innerHTML = `n(高處) ${nAt(tipY).toFixed(3)}<small>n(近地) ${nAt(ground - 4).toFixed(3)}；近地較小</small>`;
+        $('mirage-turn').innerHTML = `${reflected.length ? '折彎光線抵達眼睛' : '沒有第二條可見光路'}<small>眼睛會沿入射切線反向定位</small>`;
+        ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.ellipse(eye.x, eye.y, 14, 8, 0, 0, 2 * Math.PI); ctx.fill();
+        ctx.strokeStyle = '#193c54'; ctx.lineWidth = 2; ctx.stroke();
+        ctx.fillStyle = '#193c54'; ctx.beginPath(); ctx.arc(eye.x, eye.y, 5, 0, 2 * Math.PI); ctx.fill();
+        drawSceneLabel(ctx, eye.x - 6, eye.y - 36, '眼睛', 'right');
+        if (!compact) drawSceneLabel(ctx, 16, 18, '藍：直達光　橘：近地折彎光　紅虛線：視線延長');
+      }
     }
 
     function rainbowAngle(index) {
@@ -10281,6 +10403,19 @@
 
     document.querySelectorAll('.scatter-scene').forEach(button => {
       button.addEventListener('click', () => setScatterScene(button.dataset.scatterScene));
+    });
+
+    document.querySelectorAll('.mirage-scene').forEach(button => {
+      button.addEventListener('click', () => {
+        activeMirageScene = button.dataset.mirageScene;
+        document.querySelectorAll('.mirage-scene').forEach(choice => {
+          const active = choice === button;
+          choice.classList.toggle('active', active);
+          choice.setAttribute('aria-pressed', String(active));
+        });
+        time = 0;
+        requestAnimationFrame(drawActive);
+      });
     });
 
     document.querySelectorAll('.em-mode').forEach(btn => {
