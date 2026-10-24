@@ -333,7 +333,7 @@
     }
     #mirage-canvas { height: min(68vh, 560px); min-height: 490px; }
     .mirage-detail { margin-top: 10px; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
-    #mirage-detail-canvas { height: 210px; min-height: 210px; }
+    #mirage-detail-canvas { height: 280px; min-height: 280px; }
     #huygens-canvas { height: min(62vh, 520px); min-height: 440px; }
     #retrograde-canvas { height: min(72vh, 620px); min-height: 500px; }
     #mirror-canvas.parallel-expanded {
@@ -482,7 +482,7 @@
       .mode-buttons { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       canvas { height: 330px; min-height: 280px; }
       #mirage-canvas { height: 430px; min-height: 400px; }
-      #mirage-detail-canvas { height: 240px; min-height: 240px; }
+      #mirage-detail-canvas { height: 340px; min-height: 340px; }
       #huygens-canvas { height: 430px; min-height: 400px; }
       #mirror-canvas.parallel-expanded { height: 410px; min-height: 380px; }
       #microscope-canvas, #eye-canvas, #circular-canvas, #precession-canvas { height: 470px; min-height: 430px; }
@@ -1599,13 +1599,14 @@
       </section>
 
       <section id="panel-mirage" class="panel" role="tabpanel">
-        <div class="module-head"><div><h2>海市蜃樓：熱路面如何折彎光線</h2><p class="module-copy">先在每個空氣層界面逐次套用折射定律，再追蹤同一棵樹的光線，確認倒像究竟在哪裡形成。折射率差與圖上距離均為教學放大示意。</p></div></div>
+        <div class="module-head"><div><h2>海市蜃樓：熱路面如何折彎光線</h2><p class="module-copy">逐層計算折射與轉向；樹上各點的光束若在眼前交會，會形成一條傾斜的實像焦線。光線交會後繼續進眼，眼睛仍能看見倒立影像。折射率差與圖上距離均為教學放大示意。</p></div></div>
         <div class="lesson-steps" role="group" aria-label="海市蜃樓視圖"><button class="mirage-scene active" type="button" data-mirage-scene="layers" aria-pressed="true">逐層折射與轉向</button><button class="mirage-scene" type="button" data-mirage-scene="tree" aria-pressed="false">樹與倒像</button></div>
         <div class="values"><div class="badge" id="mirage-index">上層與近地折射率差</div><div class="badge" id="mirage-turn">最低光線高度</div><div class="badge" id="mirage-status">下蜃景</div></div>
-        <div class="plot-wrap"><canvas id="mirage-canvas" role="img" aria-label="逐層折射光線與樹的下蜃景倒像；可調熱層、入射角與空氣層數。"></canvas></div>
+        <div class="plot-wrap"><canvas id="mirage-canvas" role="img" aria-label="同一樹點的小光束在眼前聚焦後發散進入眼睛，五個物點形成斜的實像焦線；角度視野顯示完整倒立樹像。"></canvas></div>
         <div id="mirage-detail-wrap" class="mirage-detail"><canvas id="mirage-detail-canvas" role="img" aria-label="選定空氣層界面之法線、入射角、折射角與臨界角放大圖。"></canvas></div>
         <div class="controls"><div class="control"><label for="mirage-heat">近地熱層強度：<span id="mirage-heat-out">1.0x</span></label><input id="mirage-heat" type="range" min="0" max="2" step="0.05" value="1"></div><div class="control mirage-tree-only" hidden><label for="mirage-depth">熱層厚度：<span id="mirage-depth-out">3%</span></label><input id="mirage-depth" type="range" min="2" max="30" step="1" value="3"></div><div class="control mirage-layer-only"><label for="mirage-angle">起始光線對水平角：<span id="mirage-angle-out">30°</span></label><input id="mirage-angle" type="range" min="5" max="45" step="1" value="30"></div><div class="control mirage-layer-only"><label for="mirage-count">空氣層數：<span id="mirage-count-out">18</span></label><input id="mirage-count" type="range" min="6" max="40" step="1" value="18"></div><div class="control mirage-layer-only"><label for="mirage-interface">檢視界面：<span id="mirage-interface-out">第 1 層</span></label><input id="mirage-interface" type="range" min="1" max="18" step="1" value="1"></div><div class="control"><label for="mirage-speed">播放速度：<span id="mirage-speed-out">0.35x</span></label><input id="mirage-speed" type="range" min="0.1" max="1.5" step="0.05" value="0.35"></div></div>
-        <div class="checks"><label class="check mirage-layer-only"><input id="mirage-show-layers" type="checkbox" checked>顯示空氣層</label><button id="mirage-jump-critical" class="mirage-layer-only" type="button">顯示臨界層</button><label class="check mirage-tree-only" hidden><input id="mirage-show-bundles" type="checkbox" checked>顯示成像光束</label><label class="check mirage-tree-only" hidden><input id="mirage-show-direct" type="checkbox">對照直達光</label></div>
+        <div class="checks"><label class="check mirage-layer-only"><input id="mirage-show-layers" type="checkbox" checked>顯示空氣層</label><button id="mirage-jump-critical" class="mirage-layer-only" type="button">顯示臨界層</button><label class="check mirage-tree-only" hidden><input id="mirage-show-bundles" type="checkbox" checked>顯示同一物點的光束</label><label class="check mirage-tree-only" hidden><input id="mirage-show-direct" type="checkbox">對照直達光</label></div>
+        <p class="module-copy mirage-tree-only" hidden>圖中的實像焦線由同一物點的實際光束交會算出；交會後光線仍繼續前進，眼睛可以把它再次聚焦到視網膜。焦線傾斜表示不同高度的樹點在不同位置聚焦，不代表樹本身斜了。畫面中的完整樹像只表示每段樹身的光都能進眼；真實下蜃景常只有近地平線的一小段，未必看見完整物體。沿進眼方向直線回推的表觀位置，也不能與實際焦點混為一談。<a href="https://aty.sdsu.edu/mirages/mirintro.html" target="_blank" rel="noopener noreferrer">大氣光學圖解</a> · <a href="https://sciencedemonstrations.fas.harvard.edu/presentations/hot-road-mirage" target="_blank" rel="noopener noreferrer">實驗照片</a></p>
       </section>
 
       <section id="panel-rainbow" class="panel" role="tabpanel">
@@ -9720,43 +9721,68 @@
       clearCanvas(ctx, w, h);
       if (!interfaceData) return;
       const compact = w < 620;
-      const cx = w * (compact ? .39 : .42);
-      const cy = h * .53;
-      const length = Math.min(compact ? 76 : 105, h * .43);
-      ctx.fillStyle = '#e3f1f5'; ctx.fillRect(0, 0, w, cy);
-      ctx.fillStyle = '#f4e5d6'; ctx.fillRect(0, cy, w, h - cy);
-      ctx.strokeStyle = '#647984'; ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(w, cy); ctx.stroke();
-      ctx.save(); ctx.setLineDash([6, 5]); ctx.strokeStyle = '#748892'; ctx.lineWidth = 1.5;
-      ctx.beginPath(); ctx.moveTo(cx, 10); ctx.lineTo(cx, h - 12); ctx.stroke(); ctx.restore();
       const thetaI = interfaceData.thetaI;
-      const incoming = { x: cx - Math.sin(thetaI) * length, y: cy - Math.cos(thetaI) * length };
-      ctx.save(); ctx.setLineDash([5, 5]); ctx.strokeStyle = '#9a5d99'; ctx.lineWidth = 1.8;
-      ctx.beginPath();
-      ctx.moveTo(cx - Math.sin(interfaceData.critical) * length, cy - Math.cos(interfaceData.critical) * length);
-      ctx.lineTo(cx, cy); ctx.lineTo(cx + length, cy - 2); ctx.stroke(); ctx.restore();
-      drawArrow(ctx, incoming.x, incoming.y, cx, cy, '#087a85');
-      if (interfaceData.total) {
-        const reflected = { x: cx + Math.sin(thetaI) * length, y: cy - Math.cos(thetaI) * length };
-        drawArrow(ctx, cx, cy, reflected.x, reflected.y, '#c45a49');
-      } else {
-        const outgoing = { x: cx + Math.sin(interfaceData.thetaT) * length, y: cy + Math.cos(interfaceData.thetaT) * length };
-        drawArrow(ctx, cx, cy, outgoing.x, outgoing.y, '#087a85');
+      const thetaT = interfaceData.thetaT;
+      const cx = w * (compact ? .38 : .29);
+      const cy = h * (compact ? .37 : .52);
+      const diagramBottom = compact ? h * .65 : h - 15;
+      const runIn = Math.min(w * (compact ? .26 : .20), (cy - 26) * Math.tan(thetaI));
+      const runOut = Math.min(w * (compact ? .40 : .29),
+        ((interfaceData.total ? cy : diagramBottom - cy) - 28) * Math.tan(thetaI));
+      const inX = cx - runIn, inY = cy - runIn / Math.tan(thetaI);
+      const endX = cx + runOut;
+      const straightY = cy + runOut / Math.tan(thetaI);
+      const shownTheta = thetaT === null ? null
+        : Math.min(Math.PI / 2 - .015, thetaI + 8 * (thetaT - thetaI));
+      const endY = interfaceData.total ? cy - runOut / Math.tan(thetaI)
+        : cy + runOut / Math.tan(shownTheta);
+      ctx.fillStyle = '#ecf5f7'; ctx.fillRect(0, 0, w, cy);
+      ctx.fillStyle = '#f5e9dc'; ctx.fillRect(0, cy, w, h - cy);
+      if (compact) {
+        ctx.fillStyle = 'rgba(255,255,255,.82)';
+        ctx.fillRect(0, diagramBottom, w, h - diagramBottom);
       }
-      ctx.strokeStyle = '#d16c3f'; ctx.lineWidth = 2;
-      ctx.beginPath(); ctx.arc(cx, cy, 30, -Math.PI / 2 - thetaI, -Math.PI / 2); ctx.stroke();
+      ctx.strokeStyle = '#637d86'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(w, cy); ctx.stroke();
+      ctx.save(); ctx.strokeStyle = '#849ba3'; ctx.lineWidth = 1.5; ctx.setLineDash([6, 5]);
+      ctx.beginPath(); ctx.moveTo(cx, 18); ctx.lineTo(cx, diagramBottom - 10); ctx.stroke();
+      ctx.restore();
       if (!interfaceData.total) {
-        ctx.beginPath(); ctx.arc(cx, cy, 34, Math.PI / 2 - interfaceData.thetaT, Math.PI / 2); ctx.stroke();
+        ctx.fillStyle = 'rgba(12,116,111,.10)';
+        ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(endX, straightY);
+        ctx.lineTo(endX, endY); ctx.closePath(); ctx.fill();
       }
-      const degrees = angle => (angle * 180 / Math.PI).toFixed(1);
-      const textX = compact ? w * .65 : w * .67;
-      ctx.fillStyle = '#244253'; ctx.font = `${compact ? 11 : 15}px "Microsoft JhengHei", sans-serif`;
-      const lines = compact
-        ? [`n₁ ${interfaceData.n1.toFixed(3)}`, `n₂ ${interfaceData.n2.toFixed(3)}`, `入射 ${degrees(thetaI)}°`, interfaceData.total ? '全反射' : `折射 ${degrees(interfaceData.thetaT)}°`, `臨界 ${degrees(interfaceData.critical)}°`]
-        : [`上層 n₁ = ${interfaceData.n1.toFixed(3)}`, `下層 n₂ = ${interfaceData.n2.toFixed(3)}`, `入射角 θ₁ = ${degrees(thetaI)}°`, interfaceData.total ? '無折射角：全反射' : `折射角 θ₂ = ${degrees(interfaceData.thetaT)}°`, `臨界角 θc = ${degrees(interfaceData.critical)}°`];
-      lines.forEach((line, i) => ctx.fillText(line, textX, 34 + i * (compact ? 34 : 35)));
-      drawSceneLabel(ctx, 8, 7, compact ? `界面 ${interfaceData.index}` : interfaceData.total ? `第 ${interfaceData.index} 道界面：n₁sinθ₁ > n₂` : `第 ${interfaceData.index} 道界面：n₁sinθ₁ = n₂sinθ₂`);
-      drawSceneLabel(ctx, 8, h - 35, compact ? '紫虛線：臨界' : '紫虛線：臨界入射後沿界面傳播');
+      ctx.save(); ctx.strokeStyle = '#657780'; ctx.lineWidth = 2;
+      ctx.setLineDash([7, 6]); ctx.beginPath(); ctx.moveTo(cx, cy);
+      ctx.lineTo(endX, straightY); ctx.stroke(); ctx.restore();
+      drawArrow(ctx, inX, inY, cx, cy, '#087a85');
+      drawArrow(ctx, cx, cy, endX, endY, interfaceData.total ? '#cc5c4b' : '#087a85');
+      ctx.fillStyle = '#294b59';
+      ctx.font = '700 ' + (compact ? 11 : 13) + 'px "Microsoft JhengHei", sans-serif';
+      ctx.fillText('原方向', Math.min(w - 52, endX + 5), Math.min(diagramBottom - 8, straightY + 4));
+      ctx.fillStyle = interfaceData.total ? '#a4493b' : '#086f73';
+      ctx.fillText(interfaceData.total ? '反射' : '折射', Math.min(w - 42, endX + 5), endY - 7);
+      const deg = value => (value * 180 / Math.PI).toFixed(1);
+      const shift = thetaT === null ? '' : Math.abs(thetaT - thetaI) < 1e-8 ? '折射率相同：沒有偏折'
+        : '角差 ' + deg(thetaT - thetaI) + '°（圖上 ×'
+          + ((shownTheta - thetaI) / (thetaT - thetaI)).toFixed(1) + '）';
+      const lines = [
+        '上層 n₁ ' + interfaceData.n1.toFixed(3) + ' → 下層 n₂ ' + interfaceData.n2.toFixed(3),
+        '入射角 ' + deg(thetaI) + '°  ·  臨界角 ' + deg(interfaceData.critical) + '°',
+        interfaceData.total ? '全反射：沒有進入下層的折射線' : '實際折射角 ' + deg(thetaT) + '°',
+        interfaceData.total ? '紅線向上；虛線是假設未折射' : shift
+      ];
+      ctx.fillStyle = '#254855';
+      ctx.font = '700 ' + (compact ? 11 : 14) + 'px "Microsoft JhengHei", sans-serif';
+      if (compact) {
+        lines.forEach((line, i) => ctx.fillText(line, 12, diagramBottom + 25 + i * 25));
+      } else {
+        lines.forEach((line, i) => ctx.fillText(line, w * .70, 53 + i * 43));
+      }
+      ctx.fillStyle = '#4f6b78';
+      ctx.font = '700 ' + (compact ? 11 : 13) + 'px "Microsoft JhengHei", sans-serif';
+      ctx.fillText('第 ' + interfaceData.index + ' 道界面', 12, 24);
+      if (!compact) ctx.fillText('虛線是未偏折參考；青／紅線是目前光路', 12, h - 20);
     }
 
     function drawMirage() {
@@ -9961,7 +9987,8 @@
         }
         const samples = mirageTreeCache.samples;
         const base = samples[0], tip = samples.at(-1);
-        const image = samples.every(sample => sample.focus) && tip.focus.y > base.focus.y;
+        const image = samples.every(sample => sample.focus && sample.center)
+          && tip.center.angle > base.center.angle;
         const drawTree = (pointAt, width, opacity = 1) => {
           ctx.save(); ctx.globalAlpha = opacity;
           ctx.strokeStyle = '#624c41'; ctx.lineWidth = Math.max(3, width * .32); ctx.lineCap = 'round';
@@ -9983,48 +10010,65 @@
         drawSceneLabel(ctx, treeX + 12, tipY - 25, '實際的樹');
         [base, tip].forEach((sample, index) => {
           const color = index ? '#d45c42' : '#07829a';
-          if (showBundles) [sample.upper, sample.lower].forEach(ray => { if (ray) drawLine(ray.points, color, 1.8); });
+          if (showBundles) [sample.upper, sample.lower].forEach(ray => { if (ray) drawLine(ray.points, color, 1.3); });
           if (sample.center) {
             drawLine(sample.center.points, color, 3.5);
             particle([...sample.center.points].reverse(), index * .35);
           }
           instrumentParticle(ctx, treeX, sample.sourceY, color, 5);
-          if (sample.focus) instrumentParticle(ctx, sample.focus.x, sample.focus.y, color, 5);
         });
         if (showDirect) mirageTreeCache.direct.forEach(path => { if (path) drawLine(path, '#5376af', 2); });
         if (image) {
-          drawLine(samples.map(sample => sample.focus), '#5c4b69', 2.5);
-          const focusX = (base.focus.x + tip.focus.x) / 2;
-          drawSceneLabel(ctx, Math.min(w - (compact ? 68 : 118), focusX + 12), Math.min(ground - 32, base.focus.y - 35), compact ? '倒像' : '光束交會形成倒像');
-          const meanX = samples.reduce((sum, sample) => sum + sample.focus.x, 0) / samples.length;
-          const meanY = samples.reduce((sum, sample) => sum + sample.focus.y, 0) / samples.length;
-          const insetX = w * (compact ? .58 : .65);
-          const insetY = ground + (h - ground) * .57;
-          const magnify = Math.min(4, (h - ground - 45) / Math.max(1, tip.focus.y - base.focus.y));
-          const focusPoint = fraction => {
-            const position = Math.min(3.999, fraction * 4);
-            const lower = samples[Math.floor(position)].focus;
-            const upper = samples[Math.floor(position) + 1].focus;
-            const f = position - Math.floor(position);
-            return { x: insetX + ((lower.x + (upper.x - lower.x) * f) - meanX) * .34, y: insetY + ((lower.y + (upper.y - lower.y) * f) - meanY) * magnify };
-          };
-          ctx.save(); ctx.strokeStyle = 'rgba(207,230,226,.45)'; ctx.lineWidth = 1;
-          ctx.beginPath(); ctx.moveTo(insetX - 56, ground + 14); ctx.lineTo(insetX + 56, ground + 14); ctx.stroke(); ctx.restore();
-          drawTree(focusPoint, compact ? 10 : 13, .92);
-          drawSceneLabel(ctx, Math.min(w - (compact ? 62 : 110), insetX + 18), ground + 24, compact ? '交會放大' : '交會區放大');
-          $('mirage-status').innerHTML = '倒像成立<small>樹頂的像點低於樹底；位置由光束交會算出</small>';
+          drawLine(samples.map(sample => sample.focus), 'rgba(104,70,116,.65)', 2);
+          ctx.fillStyle = '#795484';
+          samples.slice(1, -1).forEach(sample => {
+            ctx.beginPath(); ctx.arc(sample.focus.x, sample.focus.y, 3, 0, 2 * Math.PI); ctx.fill();
+          });
+          [base, tip].forEach((sample, index) => instrumentParticle(ctx, sample.focus.x, sample.focus.y, index ? '#d45c42' : '#07829a', 4));
+          const view = { x: w * (compact ? .58 : .73), y: compact ? 53 : 54,
+            w: w * (compact ? .38 : .23), h: compact ? 140 : 180 };
+          ctx.fillStyle = 'rgba(246,251,250,.94)'; ctx.strokeStyle = '#87aeb4'; ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.roundRect(view.x, view.y, view.w, view.h, 6); ctx.fill(); ctx.stroke();
+          const viewX = view.x + view.w * .50;
+          const horizonY = view.y + view.h * .48;
+          ctx.strokeStyle = '#a3b9ba'; ctx.beginPath();
+          ctx.moveTo(view.x + 8, horizonY); ctx.lineTo(view.x + view.w - 8, horizonY); ctx.stroke();
+          const angularHeight = clampValue((tip.center.angle - base.center.angle) * view.h * 2.7, 33, view.h * .48);
+          drawTree(fraction => ({ x: viewX, y: horizonY + 3 + angularHeight * fraction }), compact ? 8 : 12);
+          if (showDirect && mirageTreeCache.direct.every(Boolean)) {
+            drawTree(fraction => ({ x: viewX, y: horizonY - 3 - angularHeight * fraction }), compact ? 8 : 12, .65);
+          }
+          ctx.fillStyle = '#315463'; ctx.font = `700 ${compact ? 10 : 12}px "Microsoft JhengHei", sans-serif`;
+          ctx.fillText('眼中視野', view.x + 10, view.y + 18);
+          $('mirage-status').innerHTML = '倒立的實像<small>同一物點的小光束在眼前會聚；眼睛接收會聚後的光</small>';
         } else {
-          $('mirage-status').innerHTML = '倒像未形成<small>沒有兩組可交會的折彎光束</small>';
+          $('mirage-status').innerHTML = '目前沒有完整倒像<small>可調整熱層強度或厚度</small>';
         }
         $('mirage-index').innerHTML = `n(高處) ${nAt(tipY).toFixed(3)}<small>n(近地) ${nAt(ground - 4).toFixed(3)}；近地較小</small>`;
         $('mirage-turn').innerHTML = image
-          ? `樹底與樹頂各有交會像點<small>同一物點的兩條光線，分別進入眼睛上下緣</small>`
-          : '尚無完整成像光束<small>可調整近地熱層強度與厚度</small>';
+          ? '實像焦線不是一個平面<small>各物點聚焦位置不同；交會後發散的光仍會進眼</small>'
+          : '沒有可辨識的完整倒像<small>可調整近地熱層強度與厚度</small>';
         ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.ellipse(eye.x, eye.y, 14, 8, 0, 0, 2 * Math.PI); ctx.fill();
         ctx.strokeStyle = '#193c54'; ctx.lineWidth = 2; ctx.stroke();
         ctx.fillStyle = '#193c54'; ctx.beginPath(); ctx.arc(eye.x, eye.y, 5, 0, 2 * Math.PI); ctx.fill();
         drawSceneLabel(ctx, eye.x - 6, eye.y - 36, '眼睛', 'right');
-        if (!compact) drawSceneLabel(ctx, 16, 18, '青：樹底　橘：樹頂；同色兩條光線交會成一個像點');
+        if (!compact) {
+          ctx.strokeStyle = '#59899a'; ctx.lineWidth = 1.7;
+          ctx.beginPath(); ctx.ellipse(eye.x + 35, eye.y, 27, 19, 0, -.9, .9); ctx.stroke();
+          ctx.strokeStyle = '#bb7154';
+          ctx.beginPath();
+          ctx.moveTo(eye.x + 4, eye.y - pupil); ctx.lineTo(eye.x + 54, eye.y);
+          ctx.moveTo(eye.x + 4, eye.y + pupil); ctx.lineTo(eye.x + 54, eye.y); ctx.stroke();
+          ctx.fillStyle = '#315463'; ctx.font = '700 11px "Microsoft JhengHei", sans-serif';
+          ctx.fillText('視網膜', eye.x + 36, eye.y + 37);
+        }
+        ctx.fillStyle = '#264b57'; ctx.font = `700 ${compact ? 11 : 13}px "Microsoft JhengHei", sans-serif`;
+        ctx.fillText(compact ? '青：樹底　橘：樹頂' : '青：樹底　橘：樹頂　同色細線會聚後仍進眼', 16, 24);
+        if (image) {
+          ctx.fillStyle = '#e8f3f0';
+          ctx.fillText(compact ? '同一物點光束聚焦' : '樹上各點的實際焦點連成斜焦線', 16, ground + 28);
+          ctx.fillText(compact ? '發散後仍進眼' : '交會後光線繼續傳播；眼睛仍可重新聚焦', 16, ground + 48);
+        }
       }
     }
 
