@@ -182,12 +182,12 @@
       gap: 6px;
       margin: 0 0 14px;
     }
-    button.brake-layer, button.motor-layer, button.scatter-scene, button.mirage-scene {
+    button.brake-layer, button.motor-layer, button.scatter-scene, button.mirage-scene, button.huy-step {
       background: #e2e8f0;
       color: var(--ink);
       padding: 8px 12px;
     }
-    button.brake-layer.active, button.motor-layer.active, button.scatter-scene.active, button.mirage-scene.active {
+    button.brake-layer.active, button.motor-layer.active, button.scatter-scene.active, button.mirage-scene.active, button.huy-step.active {
       background: #334155;
       color: #ffffff;
     }
@@ -332,6 +332,7 @@
       display: block;
     }
     #mirage-canvas { height: min(68vh, 560px); min-height: 490px; }
+    #huygens-canvas { height: min(62vh, 520px); min-height: 440px; }
     #retrograde-canvas { height: min(72vh, 620px); min-height: 500px; }
     #mirror-canvas.parallel-expanded {
       height: min(66vh, 560px);
@@ -478,6 +479,7 @@
       .mode-buttons { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       canvas { height: 330px; min-height: 280px; }
       #mirage-canvas { height: 430px; min-height: 400px; }
+      #huygens-canvas { height: 430px; min-height: 400px; }
       #mirror-canvas.parallel-expanded { height: 410px; min-height: 380px; }
       #microscope-canvas, #eye-canvas, #circular-canvas, #precession-canvas { height: 470px; min-height: 430px; }
       #refraction-canvas { height: 500px; min-height: 440px; }
@@ -850,7 +852,7 @@
         <div class="module-head">
           <div>
             <h2>惠更斯原理</h2>
-            <p class="module-copy">把每個波前上的點都視為次波源。切換平面波、狹縫與障礙邊緣，觀察許多小圓波如何共同形成下一個波前。</p>
+            <p class="module-copy">入射波前到達後，波前上的每個未被擋住的點都發出次波；同一段時間後，這些次波的前緣外包絡就是新的波前。</p>
           </div>
           <div class="legend" aria-label="惠更斯圖例">
             <span class="blue"><i class="dot"></i>入射波前</span>
@@ -859,8 +861,9 @@
             <span class="red"><i class="dot"></i>障礙物</span>
           </div>
         </div>
+        <div class="lesson-steps" role="group" aria-label="惠更斯原理觀察步驟"><button class="huy-step" type="button" data-huy-progress="12" aria-pressed="false">1 波前抵達</button><button class="huy-step" type="button" data-huy-progress="56" aria-pressed="false">2 次波展開</button><button class="huy-step" type="button" data-huy-progress="88" aria-pressed="false">3 外包絡形成</button></div>
         <div class="values" aria-live="polite">
-          <div class="badge" id="huy-lambda">λ = 46 px<small>次波半徑隨時間增加</small></div>
+          <div class="badge" id="huy-lambda">次波半徑 r = 0 px<small>相同時間內 r = vΔt</small></div>
           <div class="badge" id="huy-aperture">開口 = 150 px<small>開口越窄，繞射越明顯</small></div>
           <div class="badge" id="huy-points">次波源 = 13 個<small>點越多，包絡越平滑</small></div>
           <div class="badge" id="huy-status">狹縫繞射<small>通過開口的點成為次波源</small></div>
@@ -893,14 +896,19 @@
             <label for="huy-speed">播放速度：<span id="huy-speed-out">0.35x</span></label>
             <input id="huy-speed" type="range" min="0.1" max="1.5" step="0.05" value="0.35">
           </div>
+          <div class="control">
+            <label for="huy-progress">形成過程：<span id="huy-progress-out">0%</span></label>
+            <input id="huy-progress" type="range" min="0" max="100" step="1" value="0">
+          </div>
         </div>
         <div class="checks">
+          <label class="check"><input type="checkbox" id="huy-auto" checked>自動播放</label>
           <label class="check"><input type="checkbox" id="huy-show-wavelets" checked>顯示次波</label>
           <label class="check"><input type="checkbox" id="huy-show-envelope" checked>顯示包絡</label>
         </div>
         <section class="teacher-note">
-          <p><strong>講法：</strong>先用平面波模式，讓學生看到很多圓形次波的外切線仍然是平面；再切到狹縫，說明只剩開口上的點能繼續發出次波，所以波前自然向外彎。</p>
-          <p><strong>強調：</strong>惠更斯原理不是另一個公式，而是一個建構波前的方法；反射、折射、繞射都可以用「每點都是次波源」來理解。</p>
+          <p><strong>講法：</strong>依序停在三個步驟：同一波前上的點同時受擾動；經過相同 Δt，各點的次波有相同半徑 vΔt；沿著最前方相切的位置連線，就是下一時刻的波前。</p>
+          <p><strong>辨別：</strong>這張圖只建構波前，並未計算亮暗干涉條紋。狹縫後的強度分布還需要把各點波動的相位與振幅相加。</p>
         </section>
       </section>
 
@@ -3344,93 +3352,119 @@
       const lambda = number('huy-lambda-in');
       const aperture = number('huy-aperture-in');
       const count = number('huy-count');
-      const barrierX = w * 0.38;
+      const barrierX = w * .39;
       const centerY = h / 2;
-      const radius = 25 + (time * 145) % (lambda * 2);
+      const compact = w < 620;
+      const auto = $('huy-auto').checked;
+      const phase = auto ? positiveModulo(time * .18, 1) : number('huy-progress') / 100;
+      const progress = Math.round(phase * 100);
+      const radius = Math.min(w * .38, h * .38) * Math.max(0, Math.min(1, (phase - .2) / .53));
+      const envelopeAlpha = Math.max(0, Math.min(1, (phase - .71) / .12));
+      const sourceActive = phase >= .2;
+      const stage = phase < .2 ? 1 : phase < .71 ? 2 : 3;
+      if (auto) $('huy-progress').value = progress;
       setText('huy-lambda-out', `${lambda.toFixed(0)} px`);
       setText('huy-aperture-out', `${aperture.toFixed(0)} px`);
       setText('huy-count-out', `${count.toFixed(0)} 個`);
       setText('huy-speed-out', `${number('huy-speed').toFixed(2)}x`);
-      $('huy-lambda').innerHTML = `λ = ${lambda.toFixed(0)} px<small>次波半徑隨時間增加</small>`;
-      $('huy-aperture').innerHTML = `開口 = ${aperture.toFixed(0)} px<small>開口越窄，繞射越明顯</small>`;
+      setText('huy-progress-out', `${progress}%`);
+      $('huy-lambda').innerHTML = `r = ${radius.toFixed(0)} px<small>相同 Δt 的次波半徑相同：r = vΔt</small>`;
+      $('huy-aperture').innerHTML = mode === 'plane' ? '完整波前<small>沒有遮擋；新波前仍是直線</small>' : `開口 = ${aperture.toFixed(0)} px<small>${mode === 'slit' ? '開口以外的波前被擋住' : '上半部被擋住'}</small>`;
       $('huy-points').innerHTML = `次波源 = ${count.toFixed(0)} 個<small>點越多，包絡越平滑</small>`;
-      const modeText = mode === 'plane' ? '平面波推進' : (mode === 'slit' ? '狹縫繞射' : '障礙邊緣繞射');
-      $('huy-status').innerHTML = `${modeText}<small>${mode === 'plane' ? '外切線仍然形成平面波前' : '通過邊界的點成為次波源'}</small>`;
-
-      ctx.save();
-      ctx.strokeStyle = 'rgba(37, 99, 235, 0.35)';
-      ctx.lineWidth = 2;
-      const offset = (time * 58) % lambda;
-      for (let x = barrierX - 260 + offset; x < barrierX; x += lambda) {
-        ctx.beginPath();
-        ctx.moveTo(x, 34);
-        ctx.lineTo(x, h - 34);
-        ctx.stroke();
+      $('huy-status').innerHTML = stage === 1 ? '波前抵達<small>同一波前上的點同時開始受擾動</small>' : stage === 2 ? '次波展開<small>每個點以相同速度向前傳播</small>' : '新波前形成<small>取所有次波前緣的外包絡</small>';
+      $('huy-aperture-in').disabled = mode === 'plane';
+      $('huy-aperture-in').closest('.control').classList.toggle('is-muted', mode === 'plane');
+      document.querySelectorAll('.huy-step').forEach(button => {
+        const active = !auto && Math.abs(number('huy-progress') - Number(button.dataset.huyProgress)) <= 1;
+        button.classList.toggle('active', active);
+        button.setAttribute('aria-pressed', String(active));
+      });
+      ctx.fillStyle = '#f3f8fa'; ctx.fillRect(0, 0, w, h);
+      ctx.fillStyle = 'rgba(38,112,166,.045)'; ctx.fillRect(0, 0, barrierX, h);
+      ctx.fillStyle = 'rgba(18,133,109,.035)'; ctx.fillRect(barrierX, 0, w - barrierX, h);
+      if (mode !== 'plane') {
+        ctx.fillStyle = 'rgba(165,76,83,.09)';
+        ctx.fillRect(barrierX, 0, w - barrierX, mode === 'slit' ? centerY - aperture / 2 : centerY);
+        if (mode === 'slit') ctx.fillRect(barrierX, centerY + aperture / 2, w - barrierX, h - centerY - aperture / 2);
+        ctx.save(); ctx.strokeStyle = 'rgba(165,76,83,.4)'; ctx.setLineDash([5, 6]); ctx.lineWidth = 1;
+        const limits = mode === 'slit' ? [centerY - aperture / 2, centerY + aperture / 2] : [centerY];
+        limits.forEach(y => { ctx.beginPath(); ctx.moveTo(barrierX, y); ctx.lineTo(w, y); ctx.stroke(); });
+        ctx.restore();
       }
-      ctx.restore();
-
+      const frontX = barrierX - Math.max(0, (.2 - phase) / .2) * Math.min(95, w * .23);
+      for (let x = frontX; x > 4; x -= lambda) {
+        ctx.strokeStyle = x === frontX ? '#2870b8' : 'rgba(40,112,184,.32)';
+        ctx.lineWidth = x === frontX ? 3 : 1.5;
+        ctx.beginPath(); ctx.moveTo(x, 35); ctx.lineTo(x, h - 35); ctx.stroke();
+      }
+      if (!compact) drawArrow(ctx, 18, 69, barrierX - 28, 69, '#2870b8');
       if (mode !== 'plane') {
         ctx.save();
-        ctx.strokeStyle = css('--red');
-        ctx.lineWidth = 7;
+        ctx.strokeStyle = '#a54c53';
+        ctx.lineWidth = compact ? 8 : 11;
+        ctx.lineCap = 'round';
         if (mode === 'slit') {
           ctx.beginPath();
-          ctx.moveTo(barrierX, 32);
+          ctx.moveTo(barrierX, 28);
           ctx.lineTo(barrierX, centerY - aperture / 2);
           ctx.moveTo(barrierX, centerY + aperture / 2);
-          ctx.lineTo(barrierX, h - 32);
+          ctx.lineTo(barrierX, h - 28);
           ctx.stroke();
         } else {
           ctx.beginPath();
-          ctx.moveTo(barrierX, 32);
+          ctx.moveTo(barrierX, 28);
           ctx.lineTo(barrierX, centerY);
           ctx.stroke();
         }
         ctx.restore();
       }
-
       const points = huygensPoints(mode, count, aperture, w, h, barrierX);
-      const frontRadius = radius;
-      if ($('huy-show-wavelets').checked) {
+      if (sourceActive && radius > 1 && $('huy-show-wavelets').checked) {
         ctx.save();
-        ctx.strokeStyle = 'rgba(234, 88, 12, 0.43)';
-        ctx.lineWidth = 1.6;
-        const step = Math.max(1, Math.ceil(points.length / 9));
         points.forEach(([x, y], index) => {
-          if (index % step && index !== points.length - 1) return;
+          const emphasis = index === 0 || index === Math.floor((points.length - 1) / 2) || index === points.length - 1;
+          ctx.strokeStyle = emphasis ? 'rgba(214,103,48,.73)' : 'rgba(214,103,48,.22)';
+          ctx.lineWidth = emphasis ? 2.2 : 1.2;
           ctx.beginPath();
-          ctx.arc(x, y, frontRadius, -Math.PI / 2, Math.PI / 2);
+          ctx.arc(x, y, radius, -Math.PI / 2, Math.PI / 2);
           ctx.stroke();
         });
         ctx.restore();
       }
-      ctx.fillStyle = css('--orange');
-      points.forEach(([x, y]) => {
-        ctx.beginPath();
-        ctx.arc(x, y, 4, 0, Math.PI * 2);
-        ctx.fill();
-      });
-      if ($('huy-show-envelope').checked) {
+      if (sourceActive) {
+        points.forEach(([x, y], index) => {
+          const emphasis = index === 0 || index === Math.floor((points.length - 1) / 2) || index === points.length - 1;
+          ctx.fillStyle = emphasis ? '#c96832' : '#dc9d72';
+          ctx.beginPath(); ctx.arc(x, y, emphasis ? 5 : 3, 0, 2 * Math.PI); ctx.fill();
+        });
+      }
+      if (envelopeAlpha > 0 && $('huy-show-envelope').checked) {
         ctx.save();
-        ctx.strokeStyle = css('--green');
-        ctx.lineWidth = 4;
-        ctx.globalAlpha = 0.85;
+        ctx.strokeStyle = '#11856e';
+        ctx.lineWidth = compact ? 4 : 5;
+        ctx.globalAlpha = envelopeAlpha;
         ctx.lineCap = 'round';
         const firstY = points[0][1];
         const lastY = points[points.length - 1][1];
         ctx.beginPath();
-        for (let y = Math.max(34, firstY - frontRadius); y <= Math.min(h - 34, lastY + frontRadius); y += 2) {
-          const gap = y < firstY ? firstY - y : y > lastY ? y - lastY : 0;
-          const x = barrierX + Math.sqrt(Math.max(0, frontRadius * frontRadius - gap * gap));
-          if (y === Math.max(34, firstY - frontRadius)) ctx.moveTo(x, y);
-          else ctx.lineTo(x, y);
+        const yStart = mode === 'plane' ? 35 : Math.max(35, firstY - radius);
+        const yEnd = mode === 'slit' ? Math.min(h - 35, lastY + radius) : h - 35;
+        for (let y = yStart; y <= yEnd; y += 2) {
+          const gap = (mode === 'plane' && (y < firstY || y > lastY)) || (mode === 'edge' && y > lastY)
+            ? 0 : Math.min(...points.map(point => Math.abs(y - point[1])));
+          const x = barrierX + Math.sqrt(Math.max(0, radius * radius - gap * gap));
+          if (y === yStart) ctx.moveTo(x, y); else ctx.lineTo(x, y);
         }
         ctx.stroke();
+        const midY = points[Math.floor((points.length - 1) / 2)][1];
+        ctx.strokeStyle = '#137f72'; ctx.lineWidth = 1.5; ctx.setLineDash([5, 5]);
+        ctx.beginPath(); ctx.moveTo(barrierX, midY); ctx.lineTo(barrierX + radius, midY); ctx.stroke();
+        ctx.setLineDash([]); ctx.fillStyle = '#11856e'; ctx.beginPath(); ctx.arc(barrierX + radius, midY, 5, 0, 2 * Math.PI); ctx.fill();
         ctx.restore();
       }
-      drawSceneLabel(ctx, barrierX + 18, 18, mode === 'plane' ? '新波前是所有次波的外包絡：仍為直線' : '新波前是橘色次波的外包絡，會伸進陰影區');
-      drawCenteredText(ctx, '入射波前', barrierX - 150, h - 18, css('--blue'));
-      drawCenteredText(ctx, '次波源與新波前', barrierX + 170, h - 18, css('--green'));
+      drawSceneLabel(ctx, 12, 12, compact ? '入射波前' : '入射波前 →');
+      if (sourceActive) drawSceneLabel(ctx, Math.min(w - (compact ? 92 : 155), barrierX + 12), 12, stage === 3 ? '新波前' : '次波源');
+      if (stage === 3 && mode !== 'plane') drawSceneLabel(ctx, Math.min(w - (compact ? 92 : 180), barrierX + radius + 10), h - 46, compact ? '繞進陰影' : '波前伸進幾何陰影區');
     }
 
     function opticalImageDistance(f, objectDistance) {
@@ -10416,6 +10450,22 @@
         time = 0;
         requestAnimationFrame(drawActive);
       });
+    });
+
+    document.querySelectorAll('.huy-step').forEach(button => {
+      button.addEventListener('click', () => {
+        $('huy-auto').checked = false;
+        $('huy-progress').value = button.dataset.huyProgress;
+        requestAnimationFrame(drawActive);
+      });
+    });
+
+    $('huy-progress').addEventListener('input', () => {
+      $('huy-auto').checked = false;
+    });
+
+    $('huy-auto').addEventListener('change', () => {
+      if ($('huy-auto').checked) time = 0;
     });
 
     document.querySelectorAll('.em-mode').forEach(btn => {
