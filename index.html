@@ -1258,6 +1258,7 @@
       <section id="panel-mechanics" class="panel" role="tabpanel">
         <div class="topic-switch legacy-topic-switch" role="group" aria-label="力學現象選擇">
           <button type="button" class="topic-mode active" data-mechanics="circular" aria-pressed="true">圓周投影</button>
+          <button type="button" class="topic-mode" data-mechanics="skater" aria-pressed="false">滑冰者</button>
           <button type="button" class="topic-mode" data-mechanics="precession" aria-pressed="false">陀螺進動</button>
           <button type="button" class="topic-mode" data-mechanics="pulley" aria-pressed="false">滑輪組</button>
         </div>
@@ -1312,6 +1313,14 @@
             <p><strong>講法：</strong>先不要開歷程圖。盯住藍點，沿鉛直虛線往下就是水平投影 x；沿水平虛線往右就是鉛直投影 y。三點的座標逐像素對齊，不是另外畫出的近似動畫。</p>
             <p><strong>第二階段：</strong>學生確認兩個影子的位置後，再打開位移－時間曲線；此時只把相位攤開成時間，不再拿曲線端點冒充投影質點。</p>
           </section>
+        </div>
+
+        <div id="mechanics-view-skater" class="topic-view">
+          <div class="module-head"><div><h2>滑冰者收手，為何轉得更快？</h2><p class="module-copy">外力矩很小時，手臂靠近轉軸使轉動慣量 I 減小；同一個角動量 L = Iω 對應更大的角速度。追蹤衣服上的亮點，比較每一秒轉過的角度。</p></div></div>
+          <div class="values"><div class="badge" id="skater-inertia">轉動慣量 I = 0.0 kg·m²</div><div class="badge" id="skater-omega">角速度 ω = 0.0 rad/s</div><div class="badge" id="skater-angular">角動量 L = 0.0 kg·m²/s</div><div class="badge" id="skater-period">轉一圈需 0.0 s</div></div>
+          <div class="plot-wrap"><canvas id="skater-canvas" role="img" aria-label="滑冰者手臂由伸展收回，身體與亮點明顯加速旋轉，旁邊比較同一秒轉過的角度。"></canvas></div>
+          <div class="controls"><div class="control"><label for="skater-arms">手臂伸展程度：<span id="skater-arms-out">100%</span></label><input id="skater-arms" type="range" min="0" max="100" step="1" value="100"></div><div class="control"><label for="skater-speed">播放速度：<span id="skater-speed-out">0.50x</span></label><input id="skater-speed" type="range" min="0.1" max="1.5" step="0.05" value="0.5"></div></div>
+          <div class="presets"><button type="button" class="preset" id="skater-out">雙臂張開</button><button type="button" class="preset" id="skater-in">雙臂收回</button></div>
         </div>
 
         <div id="mechanics-view-precession" class="topic-view">
@@ -1427,11 +1436,11 @@
           </div>
           <div class="checks">
             <label class="check"><input type="checkbox" id="pulley-show-force" checked>顯示拉力與重量</label>
-            <label class="check"><input type="checkbox" id="pulley-show-rulers" checked>顯示自由端／負載位移尺</label>
-            <label class="check"><input type="checkbox" id="pulley-show-segments" checked>標示每股繩長如何縮短</label>
+            <label class="check"><input type="checkbox" id="pulley-show-rulers" checked>顯示鉛直位移尺</label>
+            <label class="check"><input type="checkbox" id="pulley-show-segments">顯示支撐繩股數</label>
           </div>
           <section class="teacher-note">
-            <p><strong>講法：</strong>保持拉繩速度不變，只切換 n=1、2、4、6。學生會直接看到負載越省力，上升得越慢；右側繩長表則顯示自由端走了負載的 n 倍距離。</p>
+            <p><strong>講法：</strong>保持拉繩速度不變，只切換 n=1、2、4、6。觀察自由端與負載旁的鉛直位移尺：自由端走了負載的 n 倍距離，負載越省力也越慢。</p>
             <p><strong>強調：</strong>理想滑輪沒有省功：Fs = mgh。省下多少力，就要多拉相同比例的距離與時間。</p>
           </section>
         </div>
@@ -1522,6 +1531,7 @@
           <div class="lesson-steps" role="group" aria-label="大氣光學觀察場景">
             <button type="button" class="scatter-scene active" data-scatter-scene="daylight" aria-pressed="true">日光散射</button>
             <button type="button" class="scatter-scene" data-scatter-scene="star" aria-pressed="false">星光折射與閃爍</button>
+            <button type="button" class="scatter-scene" data-scatter-scene="storm" aria-pressed="false">暴風雲色</button>
           </div>
           <div class="plot-wrap">
             <canvas id="scattering-canvas" role="img" aria-label="日光散射，以及星光穿過分層與擾動大氣後產生視位置偏移與閃爍的動態示意。"></canvas>
@@ -1557,6 +1567,7 @@
             <button type="button" class="preset scatter-preset" data-scene="daylight" data-elevation="25" data-density="1.5" data-turbulence="0.8" data-type="mie">霧霾白光</button>
             <button type="button" class="preset scatter-preset" data-scene="star" data-elevation="8" data-density="1" data-turbulence="1.5" data-type="rayleigh">低空星光</button>
             <button type="button" class="preset scatter-preset" data-scene="star" data-elevation="70" data-density="1" data-turbulence="0.5" data-type="rayleigh">高空星光</button>
+            <button type="button" class="preset scatter-preset" data-scene="storm" data-elevation="8" data-density="1.8" data-turbulence="1" data-type="mie">傍晚暴風雲</button>
           </div>
           <div class="checks">
             <label class="check"><input type="checkbox" id="scatter-show-packets" checked>顯示紅綠藍光包</label>
@@ -1565,10 +1576,27 @@
             <label class="check"><input type="checkbox" id="scatter-show-layers" checked>顯示大氣分層與擾動</label>
           </div>
           <section class="teacher-note">
-            <p><strong>講法：</strong>日光模式先比較紅、綠、藍光離開直射光束的比例。星光模式先關閉擾動，只看大氣使星星的平均視位置升高；再增加擾動，觀察星點位置與進入望遠鏡的光量同時快速改變。</p>
+            <p><strong>講法：</strong>日光模式先比較紅、綠、藍光離開直射光束的比例。藍光較容易從側面散入眼睛；紅、綠光並非消失，較多繼續沿原方向傳播，也可向其他方向散射。低角度的長路徑使直達夕陽偏紅。星光模式先關閉擾動看平均折射，再增加擾動觀察亮度閃爍。</p>
             <p><strong>限制：</strong>實際折射偏移只有角分量級、閃爍只有角秒量級；畫面將角度放大供課堂觀察，數值欄仍顯示未放大的物理量。</p>
+            <p><strong>暴風雲色：</strong>厚雲遮蔽、太陽高度、雲滴與冰晶、周圍天空的照明共同影響所見顏色；綠色或紫色天空不是龍捲風的專屬或可靠判據。此情境是光色混合的定性示意，不是由單一公式預報天色。</p>
           </section>
         </div>
+      </section>
+
+      <section id="panel-mirage" class="panel" role="tabpanel">
+        <div class="module-head"><div><h2>海市蜃樓：熱路面如何折彎光線</h2><p class="module-copy">路面附近的熱空氣折射率較小。光線穿過垂直折射率梯度時逐步彎曲，眼睛沿著收到光線的切線反向延長，便可能把天空看成路面的倒影。</p></div></div>
+        <div class="values"><div class="badge" id="mirage-index">上層與近地折射率差</div><div class="badge" id="mirage-turn">最低光線高度</div><div class="badge" id="mirage-status">下蜃景</div></div>
+        <div class="plot-wrap"><canvas id="mirage-canvas" role="img" aria-label="真實光線在熱空氣折射率梯度中逐步彎向上方，並顯示視線的反向虛線延長。"></canvas></div>
+        <div class="controls"><div class="control"><label for="mirage-heat">近地熱層強度：<span id="mirage-heat-out">1.0x</span></label><input id="mirage-heat" type="range" min="0" max="2" step="0.05" value="1"></div><div class="control"><label for="mirage-depth">熱層厚度：<span id="mirage-depth-out">30%</span></label><input id="mirage-depth" type="range" min="10" max="55" step="1" value="30"></div><div class="control"><label for="mirage-speed">播放速度：<span id="mirage-speed-out">0.35x</span></label><input id="mirage-speed" type="range" min="0.1" max="1.5" step="0.05" value="0.35"></div></div>
+        <div class="checks"><label class="check"><input id="mirage-show-layers" type="checkbox" checked>顯示空氣層</label><label class="check"><input id="mirage-show-virtual" type="checkbox" checked>顯示視線反向延長</label></div>
+      </section>
+
+      <section id="panel-rainbow" class="panel" role="tabpanel">
+        <div class="module-head"><div><h2>彩虹：水滴內的折射與一次反射</h2><p class="module-copy">陽光由觀察者背後射向水滴。主虹光路依序經過入射折射、滴內一次反射、出射折射；不同顏色由不同角度送回眼睛。</p></div></div>
+        <div class="values"><div class="badge" id="rainbow-red">紅光主虹角度</div><div class="badge" id="rainbow-violet">紫光主虹角度</div><div class="badge" id="rainbow-status">紅外紫內</div></div>
+        <div class="plot-wrap"><canvas id="rainbow-canvas" role="img" aria-label="放大水滴顯示一次內反射光路與紅紫光出射角，另一側顯示以反太陽點為中心的主虹。"></canvas></div>
+        <div class="controls"><div class="control"><label for="rainbow-sun">太陽仰角：<span id="rainbow-sun-out">15°</span></label><input id="rainbow-sun" type="range" min="0" max="40" step="1" value="15"></div><div class="control"><label for="rainbow-size">水滴示意大小：<span id="rainbow-size-out">100%</span></label><input id="rainbow-size" type="range" min="65" max="125" step="1" value="100"></div><div class="control"><label for="rainbow-speed">播放速度：<span id="rainbow-speed-out">0.35x</span></label><input id="rainbow-speed" type="range" min="0.1" max="1.5" step="0.05" value="0.35"></div></div>
+        <div class="checks"><label class="check"><input id="rainbow-show-path" type="checkbox" checked>顯示滴內光路</label><label class="check"><input id="rainbow-show-arc" type="checkbox" checked>顯示天空主虹</label></div>
       </section>
 
       <section id="panel-prism" class="panel" role="tabpanel">
@@ -1653,6 +1681,7 @@
           <button type="button" class="em-mode" data-em="motor" aria-pressed="false">直流馬達</button>
           <button type="button" class="em-mode" data-em="cyclotron" aria-pressed="false">迴旋加速器</button>
           <button type="button" class="em-mode" data-em="selector" aria-pressed="false">速度選擇器</button>
+          <button type="button" class="em-mode" data-em="spectrometer" aria-pressed="false">質譜儀</button>
         </div>
 
         <div id="em-view-brake" class="em-view active">
@@ -1846,13 +1875,19 @@
           </div>
           <div class="checks"><label class="check"><input id="sel-show-comparison" type="checkbox" checked>同時顯示其他速度</label><label class="check"><input id="sel-show-force" type="checkbox" checked>顯示粒子受力</label></div>
         </div>
+        <div id="em-view-spectrometer" class="em-view">
+          <div class="module-head"><div><h2>質譜儀：先選速度，再依質量分離</h2><p class="module-copy">離子先穿過 E 與 B 交叉的速度選擇器，只有 v = E/B 的粒子筆直通過。進入均勻磁場後，磁力只改變方向；不同質量畫出不同半徑，落在不同偵測位置。</p></div></div>
+          <div class="values"><div class="badge" id="spec-velocity">選定速度 = 0 m/s</div><div class="badge" id="spec-light">輕同位素半徑 = 0 m</div><div class="badge" id="spec-heavy">重同位素半徑 = 0 m</div><div class="badge" id="spec-spacing">落點間距 = 0 m</div></div>
+          <div class="plot-wrap lab-instrument"><canvas id="spectrometer-canvas" role="img" aria-label="離子先在交叉電磁場速度選擇器中直行，再進入磁分析室，不同質量彎出不同半徑而落在不同偵測點。"></canvas></div>
+          <div class="controls"><div class="control"><label for="spec-e">選速電場 E：<span id="spec-e-out">4.0 kV/m</span></label><input id="spec-e" type="range" min="1" max="8" step="0.1" value="4"></div><div class="control"><label for="spec-b-select">選速磁場 B₁：<span id="spec-b-select-out">0.80 T</span></label><input id="spec-b-select" type="range" min="0.3" max="1.2" step="0.02" value="0.8"></div><div class="control"><label for="spec-b-analyze">分析磁場 B₂：<span id="spec-b-analyze-out">0.006 T</span></label><input id="spec-b-analyze" type="range" min="0.002" max="0.012" step="0.0002" value="0.006"></div><div class="control"><label for="spec-mass">較輕同位素質量：<span id="spec-mass-out">20 u</span></label><input id="spec-mass" type="range" min="12" max="40" step="1" value="20"></div><div class="control"><label for="spec-speed">播放速度：<span id="spec-speed-out">0.35x</span></label><input id="spec-speed" type="range" min="0.1" max="1.5" step="0.05" value="0.35"></div></div>
+        </div>
       </section>
 
       <section id="panel-retrograde" class="panel" role="tabpanel">
         <div class="module-head">
           <div>
-            <h2>日心模型如何產生行星逆行</h2>
-            <p class="module-copy">上方用俯視軌道看誰追越誰；下方把地球固定在星空中央，直接畫出行星視位置何時折返。可切換等速圓軌道與克卜勒橢圓。</p>
+            <h2>日心與地心視角如何描述行星逆行</h2>
+            <p class="module-copy">上方可切換太陽固定的軌道圖，或以地球為原點的本輪分解；下方觀測到的星空軌跡不因座標選擇而改變。等速圓與克卜勒橢圓可以分別比較。</p>
           </div>
           <div class="legend" aria-label="行星逆行圖例">
             <span class="orange"><i class="dot"></i>太陽</span>
@@ -1871,6 +1906,7 @@
           <canvas id="retrograde-canvas" role="img" aria-label="日心軌道、三個等時間視線與固定星空上的行星逆行折返軌跡。"></canvas>
         </div>
         <div class="controls">
+          <div class="control"><label for="retro-view">模型視角</label><select id="retro-view"><option value="heliocentric" selected>日心：地球追越行星</option><option value="geocentric">地心：均輪與本輪分解</option></select></div>
           <div class="control">
             <label for="retro-planet">觀測行星</label>
             <select id="retro-planet">
@@ -1929,11 +1965,11 @@
     let activeMotorLayer = 'all';
     const categoryLabs = {
       wave: [['standing', '駐波疊加'], ['doppler', '都卜勒效應'], ['ripple', '水波槽干涉'], ['huygens', '惠更斯原理']],
-      refraction: [['refraction', '折射與全反射'], ['prism', '稜鏡色散'], ['brewster', '布魯斯特角'], ['aberration', '球面像差'], ['atmosphere', '大氣散射與星光閃爍']],
+      refraction: [['refraction', '折射與全反射'], ['mirage', '海市蜃樓'], ['prism', '稜鏡色散'], ['rainbow', '彩虹'], ['brewster', '布魯斯特角'], ['atmosphere', '大氣散射與星光閃爍']],
       physical: [['double', '雙狹縫干涉'], ['single', '單狹縫繞射'], ['film', '薄膜干涉']],
-      imaging: [['mirror', '面鏡成像'], ['lens', '透鏡成像'], ['reflection', '鏡像文字'], ['trifold', '多面鏡'], ['microscope', '顯微鏡'], ['eye', '眼睛成像']],
-      mechanics: [['circular', '圓周運動與投影'], ['precession', '角動量與進動'], ['pulley', '滑輪組']],
-      electromagnetism: [['brake', '磁煞車'], ['motor', '直流馬達'], ['cyclotron', '迴旋加速器'], ['selector', '速度選擇器']],
+      imaging: [['mirror', '面鏡成像'], ['lens', '透鏡成像'], ['aberration', '球面像差'], ['reflection', '鏡像文字'], ['trifold', '多面鏡'], ['microscope', '顯微鏡'], ['eye', '眼睛成像']],
+      mechanics: [['circular', '圓周運動與投影'], ['skater', '滑冰者與角動量'], ['precession', '角動量與進動'], ['pulley', '滑輪組']],
+      electromagnetism: [['brake', '磁煞車'], ['motor', '直流馬達'], ['selector', '速度選擇器'], ['spectrometer', '質譜儀'], ['cyclotron', '粒子加速器（迴旋）']],
       astronomy: [['retrograde', '行星逆行']]
     };
     const lastLabByCategory = {};
@@ -1942,6 +1978,8 @@
     let mirrorParallelMode = 'single';
     let running = true;
     let time = 0;
+    let skaterPhase = 0;
+    let skaterArmCurrent = 1;
     let last = performance.now();
     let standingPresetSignature = '';
     const reflectionOffset = { x: 0, y: 0 };
@@ -2009,6 +2047,8 @@
       if (activeModule === 'double') return number('dbl-speed');
       if (activeModule === 'single') return number('sgl-speed');
       if (activeModule === 'huygens') return number('huy-speed');
+      if (activeModule === 'mirage') return number('mirage-speed');
+      if (activeModule === 'rainbow') return number('rainbow-speed');
       if (activeModule === 'prism' || activeModule === 'film' || activeModule === 'brewster' || activeModule === 'aberration') return .42;
       if (activeModule === 'light') {
         return activeLight === 'refraction' ? number('ref-play-speed') : number('scatter-speed');
@@ -2017,10 +2057,12 @@
         if (activeElectromagnetism === 'brake') return number('brake-speed');
         if (activeElectromagnetism === 'motor') return number('motor-speed');
         if (activeElectromagnetism === 'cyclotron') return number('cyc-speed');
+        if (activeElectromagnetism === 'spectrometer') return number('spec-speed');
         return number('sel-speed');
       }
       if (activeModule === 'mechanics') {
         if (activeMechanics === 'circular') return number('circ-speed');
+        if (activeMechanics === 'skater') return number('skater-speed');
         if (activeMechanics === 'precession') return number('prec-speed');
         return number('pulley-speed');
       }
@@ -2384,6 +2426,9 @@
       const canvas = $('doppler-canvas');
       const { ctx, w, h } = resizeCanvas(canvas);
       clearCanvas(ctx, w, h);
+      const backdrop = ctx.createLinearGradient(0, 0, 0, h);
+      backdrop.addColorStop(0, '#f3f9fc'); backdrop.addColorStop(1, '#eaf3f4');
+      ctx.fillStyle = backdrop; ctx.fillRect(0, 0, w, h);
       const mode = $('dop-mode').value;
       const approaching = $('dop-direction').value === 'approach';
       const c = number('dop-c');
@@ -2489,7 +2534,7 @@
       ctx.restore();
 
       ctx.save();
-      ctx.fillStyle = css('--orange');
+      ctx.fillStyle = '#d87a4d';
       emissions.forEach(({ x, y, age }, index) => {
         const alpha = Math.max(0.25, 1 - age / cycleDuration);
         ctx.globalAlpha = alpha;
@@ -2498,17 +2543,10 @@
         ctx.fill();
       });
       ctx.globalAlpha = 1;
-      ctx.font = '13px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.font = '700 12px "Microsoft JhengHei", Arial, sans-serif';
       ctx.textAlign = 'center';
-      ctx.fillStyle = css('--orange');
-      if (sourceMoves) {
-        const recent = emissions.slice(-4);
-        recent.forEach(({ x }, idx) => {
-          ctx.fillText(idx === recent.length - 1 ? '剛發波' : '發波點', x, cy - 58 - idx * 13);
-        });
-      } else {
-        ctx.fillText('固定發波位置', sourceStart, cy - 58);
-      }
+      ctx.fillStyle = '#a45737';
+      if (emissions.length) ctx.fillText(sourceMoves ? '橘點保留每次發波的位置' : '固定發波位置', w * .50, h - 18);
       ctx.restore();
 
       if (sonic) {
@@ -2543,12 +2581,10 @@
       const frontLambda = approaching ? (c - Math.min(vs, c * 0.98)) / f : (c + vs) / f;
       const backLambda = approaching ? (c + vs) / f : (c - Math.min(vs, c * 0.98)) / f;
       if (sourceMoves) {
-        drawCenteredText(ctx, `運動前方相鄰發波點較近：λ前約 ${frontLambda.toFixed(1)} m`, w * 0.64, 44, css('--muted'));
-        drawCenteredText(ctx, `運動後方相鄰發波點較遠：λ後約 ${backLambda.toFixed(1)} m`, w * 0.26, 44, css('--muted'));
-        drawCenteredText(ctx, `每 ${period.toFixed(2)} s 發出一圈波；橘點保留當時的發波位置`, w / 2, h - 24, css('--muted'));
+        drawSceneLabel(ctx, 14, 15, `後方 λ ≈ ${backLambda.toFixed(1)} m`);
+        drawSceneLabel(ctx, w - 14, 15, `前方 λ ≈ ${frontLambda.toFixed(1)} m`, 'right');
       } else {
-        drawCenteredText(ctx, `波源不動：左右波面間距都約 ${lambda.toFixed(1)} m`, w / 2, 44, css('--muted'));
-        drawCenteredText(ctx, `橘點重疊在固定發波位置；綠色觀察者移動穿越波峰`, w / 2, h - 24, css('--muted'));
+        drawSceneLabel(ctx, 14, 15, `波源固定｜λ ≈ ${lambda.toFixed(1)} m`);
       }
     }
 
@@ -3305,7 +3341,7 @@
       const count = number('huy-count');
       const barrierX = w * 0.38;
       const centerY = h / 2;
-      const radius = (time * 58) % lambda;
+      const radius = 25 + (time * 145) % (lambda * 2);
       setText('huy-lambda-out', `${lambda.toFixed(0)} px`);
       setText('huy-aperture-out', `${aperture.toFixed(0)} px`);
       setText('huy-count-out', `${count.toFixed(0)} 個`);
@@ -3349,16 +3385,17 @@
       }
 
       const points = huygensPoints(mode, count, aperture, w, h, barrierX);
+      const frontRadius = radius;
       if ($('huy-show-wavelets').checked) {
         ctx.save();
-        ctx.strokeStyle = 'rgba(234, 88, 12, 0.35)';
-        ctx.lineWidth = 1.7;
-        points.forEach(([x, y]) => {
-          for (let r = radius; r < Math.min(w - x + 80, 260); r += lambda) {
-            ctx.beginPath();
-            ctx.arc(x, y, r, -Math.PI / 2, Math.PI / 2);
-            ctx.stroke();
-          }
+        ctx.strokeStyle = 'rgba(234, 88, 12, 0.43)';
+        ctx.lineWidth = 1.6;
+        const step = Math.max(1, Math.ceil(points.length / 9));
+        points.forEach(([x, y], index) => {
+          if (index % step && index !== points.length - 1) return;
+          ctx.beginPath();
+          ctx.arc(x, y, frontRadius, -Math.PI / 2, Math.PI / 2);
+          ctx.stroke();
         });
         ctx.restore();
       }
@@ -3374,26 +3411,19 @@
         ctx.lineWidth = 4;
         ctx.globalAlpha = 0.85;
         ctx.lineCap = 'round';
-        if (mode === 'plane') {
-          ctx.beginPath();
-          ctx.moveTo(barrierX + radius, 48);
-          ctx.lineTo(barrierX + radius, h - 48);
-          ctx.stroke();
-        } else if (mode === 'slit') {
-          ctx.beginPath();
-          ctx.arc(barrierX, centerY, Math.max(8, radius + lambda), -0.95, 0.95);
-          ctx.stroke();
-        } else {
-          ctx.beginPath();
-          ctx.moveTo(barrierX + radius, centerY);
-          ctx.lineTo(barrierX + radius, h - 48);
-          ctx.stroke();
-          ctx.beginPath();
-          ctx.arc(barrierX, centerY, Math.max(8, radius + lambda), 0, 0.95);
-          ctx.stroke();
+        const firstY = points[0][1];
+        const lastY = points[points.length - 1][1];
+        ctx.beginPath();
+        for (let y = Math.max(34, firstY - frontRadius); y <= Math.min(h - 34, lastY + frontRadius); y += 2) {
+          const gap = y < firstY ? firstY - y : y > lastY ? y - lastY : 0;
+          const x = barrierX + Math.sqrt(Math.max(0, frontRadius * frontRadius - gap * gap));
+          if (y === Math.max(34, firstY - frontRadius)) ctx.moveTo(x, y);
+          else ctx.lineTo(x, y);
         }
+        ctx.stroke();
         ctx.restore();
       }
+      drawSceneLabel(ctx, barrierX + 18, 18, mode === 'plane' ? '新波前是所有次波的外包絡：仍為直線' : '新波前是橘色次波的外包絡，會伸進陰影區');
       drawCenteredText(ctx, '入射波前', barrierX - 150, h - 18, css('--blue'));
       drawCenteredText(ctx, '次波源與新波前', barrierX + 170, h - 18, css('--green'));
     }
@@ -6089,7 +6119,7 @@
       const tailEnabled = $('heli-tail-enabled').checked;
       const compact = w < 680;
       const reaction = rpm / 420;
-      const yaw = tailEnabled ? .025 * Math.sin(time * .9) : -time * .42 * reaction;
+      const yaw = tailEnabled ? .015 * Math.sin(time * .9) : -time * 1.1 * reaction;
       const rotorAngle = time * rpm * .12;
       setText('heli-main-rpm-out', `${rpm.toFixed(0)} rpm`);
       $('prec-L').innerHTML = `主旋翼角動量 L<small>從上方看，主旋翼逆時針轉</small>`;
@@ -6100,7 +6130,7 @@
       $('prec-period').classList.toggle('warning', !tailEnabled);
       $('prec-period').innerHTML = tailEnabled
         ? '結果：航向穩定<small>兩個相反扭矩接近平衡</small>'
-        : '結果：機身持續偏航<small>方向與主旋翼旋轉相反</small>';
+        : `機身已偏航 ${Math.abs(yaw * 180 / Math.PI).toFixed(0)}°<small>尾旋翼停止，機身朝主旋翼反方向轉</small>`;
 
       const center = { x: w * (compact ? .47 : .38), y: h * .54 };
       const rotorR = Math.min(w * (compact ? .29 : .19), h * .34, 145);
@@ -6122,6 +6152,10 @@
       ctx.stroke();
       ctx.restore();
       drawSceneLabel(ctx, center.x - rotorR - 44, 24, '俯視圖：灰線是起始航向');
+      ctx.save(); ctx.translate(center.x, center.y);
+      ctx.setLineDash([7, 6]); ctx.strokeStyle = '#8595a7'; ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.ellipse(25, 0, 65, 34, 0, 0, 2 * Math.PI);
+      ctx.moveTo(-32, 0); ctx.lineTo(-145, 0); ctx.stroke(); ctx.restore();
 
       ctx.save();
       ctx.translate(center.x, center.y);
@@ -6211,6 +6245,10 @@
       if ($('heli-show-torque').checked) {
         drawArcArrow(ctx, center.x, center.y, rotorR + 22, .15, Math.PI * 1.55, css('--blue'), '主旋翼');
         drawArcArrow(ctx, center.x, center.y, Math.max(48, rotorR * .48), Math.PI * 1.15, -.15, css('--red'), '機身反向');
+      }
+      if (!tailEnabled) {
+        const swept = Math.min(Math.PI * 1.85, Math.abs(yaw));
+        drawArcArrow(ctx, center.x, center.y, rotorR + 45, 0, -swept, css('--red'), '偏航');
       }
       const nose = { x: center.x + Math.cos(yaw) * (rotorR + 46), y: center.y + Math.sin(yaw) * (rotorR + 46) };
       drawLabeledArrow(ctx, center, nose, tailEnabled ? '#475569' : css('--red'), tailEnabled ? '機鼻方向幾乎不變' : '機身正在反向偏航', 3);
@@ -6634,44 +6672,36 @@
       ctx.lineTo(freeX + 15, freeY + 14);
       ctx.stroke();
       ctx.restore();
-      drawSceneLabel(ctx, freeX, Math.min(h - 20, freeY + 24), `自由端已拉 ${pulled.toFixed(2)} m`, 'center');
+      if (!compact) {
+        ctx.fillStyle = '#0f766e'; ctx.font = '700 12px "Microsoft JhengHei", sans-serif';
+        ctx.fillText('繩端', Math.min(w - 46, freeX + 12), Math.min(h - 18, freeY + 10));
+      }
 
       if ($('pulley-show-segments').checked && strands > 1) {
         const midY = (topY + lowerY) / 2;
-        drawSceneLabel(
-          ctx,
-          Math.max(18, movingCenters[0].x - (compact ? 12 : 18)),
-          midY,
-          compact ? `${strands} 股各縮短 ${rise.toFixed(1)} m` : `${strands} 股支撐繩各縮短 h = ${rise.toFixed(2)} m`
-        );
+        ctx.fillStyle = '#3d6271'; ctx.font = '700 13px "Microsoft JhengHei", sans-serif';
+        ctx.fillText(`${strands} 股支撐`, 15, midY);
       }
 
       if ($('pulley-show-force').checked) {
-        drawLabeledArrow(ctx, { x: freeX + 20, y: Math.max(topY + 30, freeY - 65) }, { x: freeX + 20, y: Math.max(topY + 65, freeY - 18) }, css('--blue'), `F=${force.toFixed(0)}N`);
-        drawLabeledArrow(ctx, { x: loadX - 50, y: loadTop + 4 }, { x: loadX - 50, y: loadTop + 46 }, css('--red'), `mg=${(mass * 9.8).toFixed(0)}N`);
+        drawArrow(ctx, freeX + 28, Math.max(topY + 25, freeY - 60), freeX + 28, Math.max(topY + 60, freeY - 15), css('--blue'));
+        if (!compact) drawArrow(ctx, loadX - 53, loadTop + 3, loadX - 53, loadTop + 43, css('--red'));
       }
 
       if ($('pulley-show-rulers').checked) {
-        const panelX = w * (compact ? .80 : .83);
-        const panelW = w - panelX - 14;
-        ctx.save();
-        ctx.fillStyle = 'rgba(248,250,252,.96)';
-        ctx.strokeStyle = '#cbd5e1';
-        ctx.lineWidth = 1;
-        ctx.beginPath();
-        ctx.roundRect(panelX, 72, panelW, h - 100, 7);
-        ctx.fill();
-        ctx.stroke();
-        ctx.restore();
-        drawCenteredText(ctx, '繩長守恆', panelX + panelW / 2, 96, '#334155', compact ? 10 : 14);
-        drawCenteredText(ctx, `自由端 s`, panelX + panelW / 2, 132, css('--blue'), compact ? 10 : 13);
-        drawCenteredText(ctx, `${pulled.toFixed(2)} m`, panelX + panelW / 2, 154, css('--blue'), compact ? 12 : 18);
-        drawCenteredText(ctx, `負載 h`, panelX + panelW / 2, 198, css('--green'), compact ? 10 : 13);
-        drawCenteredText(ctx, `${rise.toFixed(2)} m`, panelX + panelW / 2, 220, css('--green'), compact ? 12 : 18);
-        drawCenteredText(ctx, `s = ${strands}h`, panelX + panelW / 2, 270, '#475569', compact ? 11 : 16);
-        drawCenteredText(ctx, `${strands} 股各縮短 h`, panelX + panelW / 2, 296, '#64748b', compact ? 9 : 12);
+        const x1 = w * (compact ? .78 : .78);
+        const x2 = w * (compact ? .91 : .88);
+        ctx.save(); ctx.strokeStyle = '#cad7de'; ctx.lineWidth = 2;
+        for (const x of [x1, x2]) { ctx.beginPath(); ctx.moveTo(x, 82); ctx.lineTo(x, h - 28); ctx.stroke(); }
+        ctx.strokeStyle = css('--green'); ctx.lineWidth = 5;
+        ctx.beginPath(); ctx.moveTo(x1, lowerBaseY); ctx.lineTo(x1, lowerY); ctx.stroke();
+        ctx.strokeStyle = css('--blue'); ctx.beginPath(); ctx.moveTo(x2, freeBaseY); ctx.lineTo(x2, freeY); ctx.stroke(); ctx.restore();
+        drawCenteredText(ctx, 'h', x1, 68, css('--green'), 15);
+        drawCenteredText(ctx, 's', x2, 68, css('--blue'), 15);
+        drawCenteredText(ctx, `${rise.toFixed(2)}m`, x1, h - 20, css('--green'), compact ? 10 : 13);
+        drawCenteredText(ctx, `${pulled.toFixed(2)}m`, x2, h - 20, css('--blue'), compact ? 10 : 13);
       }
-      drawSceneLabel(ctx, 18, 18, '藍色線是一條連續且不可伸長的繩；亮點沿同一條繩移動');
+      drawSceneLabel(ctx, 18, 14, '同一條連續繩：s = n h');
     }
 
     const earthOrbit = { name: '地球', period: 1, a: 1, e: .0167, inclination: 0, color: '#2563eb' };
@@ -6752,12 +6782,68 @@
       ) / (2 * epsilon);
     }
 
+    function drawGeocentricRetrograde(ctx, w, topBottom, planet, model, years, phase, history, state, compact) {
+      const center = { x: w * (compact ? .5 : .31), y: topBottom * .55 };
+      const scale = Math.min(w * (compact ? .36 : .20), topBottom * .35) / (planet.a + 1.1);
+      const outer = planet.type === 'outer';
+      const first = outer ? state.outer : { x: -state.earth.x, y: -state.earth.y };
+      const second = outer ? { x: -state.earth.x, y: -state.earth.y } : state.outer;
+      const add = (a, b) => ({ x: a.x + b.x, y: a.y + b.y });
+      const map = point => ({ x: center.x + point.x * scale, y: center.y - point.y * scale });
+      const hinge = map(first);
+      const result = map(add(first, second));
+      drawCenteredText(ctx, '地球固定：大圓 + 小圓的向量分解', center.x, 26, '#243944', compact ? 12 : 15);
+      if ($('retro-show-orbits').checked) {
+        ctx.save(); ctx.setLineDash([6, 5]); ctx.strokeStyle = '#9aaebc'; ctx.lineWidth = 1.5;
+        if (model === 'circle') {
+          [Math.hypot(first.x, first.y) * scale].forEach(radius => { ctx.beginPath(); ctx.arc(center.x, center.y, radius, 0, 2 * Math.PI); ctx.stroke(); });
+          ctx.beginPath(); ctx.arc(hinge.x, hinge.y, Math.hypot(second.x, second.y) * scale, 0, 2 * Math.PI); ctx.stroke();
+        } else {
+          ctx.beginPath();
+          for (let i = 0; i <= 160; i += 1) {
+            const sample = retroState(planet, years - history / 2 + history * i / 160, phase, model);
+            const vector = outer ? sample.outer : { x: -sample.earth.x, y: -sample.earth.y };
+            const p = map(vector);
+            if (!i) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y);
+          }
+          ctx.stroke();
+        }
+        ctx.restore();
+      }
+      if ($('retro-show-trail').checked) {
+        ctx.save(); ctx.strokeStyle = 'rgba(16,130,95,.55)'; ctx.lineWidth = 2.5; ctx.beginPath();
+        for (let i = 0; i <= 180; i += 1) {
+          const sample = retroState(planet, years - history / 2 + history * i / 180, phase, model);
+          const p = map(sample.relative);
+          if (!i) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y);
+        }
+        ctx.stroke(); ctx.restore();
+      }
+      drawArrow(ctx, center.x, center.y, hinge.x, hinge.y, '#397ab1');
+      drawArrow(ctx, hinge.x, hinge.y, result.x, result.y, '#dc7557');
+      if ($('retro-show-sight').checked) drawArrow(ctx, center.x, center.y, result.x, result.y, '#168a6b');
+      for (const [point, radius, color] of [[center, 8, '#397ab1'], [hinge, 5, '#dc7557'], [result, 8, planet.color]]) {
+        ctx.fillStyle = color; ctx.beginPath(); ctx.arc(point.x, point.y, radius, 0, 2 * Math.PI); ctx.fill();
+      }
+      drawSceneLabel(ctx, center.x - 26, center.y + 25, '地球', 'center');
+      drawSceneLabel(ctx, result.x + 18, result.y - 35, planet.name);
+      if (!compact) {
+        const x = w * .57;
+        drawSceneLabel(ctx, x, 62, '藍：第一個旋轉向量');
+        drawSceneLabel(ctx, x, 94, '橘：第二個旋轉向量');
+        drawSceneLabel(ctx, x, 126, '綠：地球看到的合成位置');
+        drawSceneLabel(ctx, x, 174, model === 'circle' ? '圓軌道時，兩個等速圓可精確合成同一視位置。' : '橢圓與變速時，固定等速本輪不再精確。');
+        drawSceneLabel(ctx, x, 208, '這是座標分解，不是完整的托勒密歷史模型。');
+      }
+    }
+
     function drawRetrograde() {
       const canvas = $('retrograde-canvas');
       const { ctx, w, h } = resizeCanvas(canvas);
       clearCanvas(ctx, w, h);
       const planet = retroPlanets[$('retro-planet').value];
       const model = $('retro-orbit-model').value;
+      const view = $('retro-view').value;
       const phaseDeg = number('retro-phase');
       const phase = phaseDeg * Math.PI / 180;
       const history = number('retro-history');
@@ -6782,9 +6868,12 @@
       $('retro-angle').innerHTML = `視黃經 = ${angleDeg.toFixed(1)}°<small>角速度 ${angularRate.toFixed(2)} rad/年</small>`;
       $('retro-model').innerHTML = model === 'kepler'
         ? `克卜勒橢圓：e = ${planet.e.toFixed(3)}<small>太陽在焦點；等時間不等距</small>`
-        : `等速圓軌道<small>${innerPlanet ? `${planet.name}在內合附近追越地球` : `地球在衝附近追越${planet.name}`}</small>`;
+        : `${view === 'geocentric' ? '地心本輪分解' : '等速圓軌道'}<small>${view === 'geocentric' ? '兩個旋轉向量合成地球到行星的視線' : innerPlanet ? `${planet.name}在內合附近追越地球` : `地球在衝附近追越${planet.name}`}</small>`;
 
       const topBottom = h * .61;
+      if (view === 'geocentric') {
+        drawGeocentricRetrograde(ctx, w, topBottom, planet, model, years, phase, history, state, compact);
+      } else {
       const orbitCenter = { x: w * (compact ? .5 : .29), y: topBottom * .55 };
       const maxA = Math.max(1, planet.a * (1 + (model === 'kepler' ? planet.e : 0)));
       const orbitScale = Math.min(w * (compact ? .40 : .235), topBottom * .36) / maxA;
@@ -6872,6 +6961,7 @@
         drawCenteredText(ctx, '視線夾角為了看清楚已放大', panelX + panelW / 2, panelY + panelH - 8, '#64748b', 11);
       }
 
+      }
       const skyLeft = 22;
       const skyRight = w - 22;
       const skyTop = topBottom + 34;
@@ -7281,7 +7371,7 @@
       const brightness = clampValue(1 - flickerDepth * (.52 + .48 * flicker), .18, 1);
       const jitterWave = turbulence * (Math.sin(time * 5.3) + .42 * Math.sin(time * 11.7 + .8));
       const visualRefraction = clampValue(refractionArcmin * .72, .45, 9);
-      const visualJitter = jitterWave * clampValue(.35 + pathLength * .09, .4, 1.15);
+      const visualJitter = jitterWave * .035;
       const trueAngle = elevation * Math.PI / 180;
       const apparentAngle = clampValue(elevation + visualRefraction + visualJitter, 3, 87) * Math.PI / 180;
       const scene = compact
@@ -7403,7 +7493,7 @@
       }
 
       drawStarShape(ctx, truePoint.x, truePoint.y, 8, 3.4, '#f8fafc', .82);
-      drawStarShape(ctx, apparentPoint.x, apparentPoint.y, 7 + brightness * 3, 3, '#c084fc', .45 + brightness * .45);
+      drawStarShape(ctx, apparentPoint.x, apparentPoint.y, 3 + brightness * 9, 2, '#f8fafc', .18 + brightness * .82);
       drawSceneLabel(ctx, Math.max(scene.x + 8, truePoint.x + 10), Math.max(scene.y + 8, truePoint.y - 28), '真實方向');
       drawSceneLabel(ctx, Math.max(scene.x + 8, apparentPoint.x + 10), Math.min(groundY - 42, apparentPoint.y + 10), '視位置較高');
 
@@ -7425,7 +7515,7 @@
       ctx.moveTo(observer.x + 12, observer.y + 12);
       ctx.lineTo(observer.x + 25, groundY + 22);
       ctx.stroke();
-      drawSceneLabel(ctx, scene.x + 12, scene.y + 12, '折射：平均視位置偏高；擾動：位置與亮度快速變動');
+      drawSceneLabel(ctx, scene.x + 12, scene.y + 12, '平均折射抬高視位置；湍流主要使亮度閃爍');
 
       ctx.fillStyle = '#07111f';
       ctx.strokeStyle = '#35546b';
@@ -7452,8 +7542,8 @@
       ctx.fillStyle = '#94a3b8';
       ctx.font = '600 10px "Microsoft JhengHei", Arial, sans-serif';
       ctx.fillText('平均位置', viewCenter.x + 6, viewCenter.y - 6);
-      const spotX = viewCenter.x + Math.sin(time * 5.3) * viewRadius * .42 * clampValue(turbulence, 0, 1.5);
-      const spotY = viewCenter.y + Math.sin(time * 7.7 + 1.1) * viewRadius * .25 * clampValue(turbulence, 0, 1.5);
+      const spotX = viewCenter.x + Math.sin(time * 5.3) * viewRadius * .045 * clampValue(turbulence, 0, 1.5);
+      const spotY = viewCenter.y + Math.sin(time * 7.7 + 1.1) * viewRadius * .035 * clampValue(turbulence, 0, 1.5);
       drawStarShape(ctx, spotX, spotY, 4 + brightness * 7, 2 + brightness * 2.2, brightness > .55 ? '#f8fafc' : '#93c5fd', .38 + brightness * .62);
 
       const graphX = inset.x + 18;
@@ -7492,6 +7582,52 @@
       $('scatter-status').innerHTML = `星光閃爍：光量 ${(brightness * 100).toFixed(0)}%<small>湍流使星像漂移約 ${jitterArcsec.toFixed(1)}″</small>`;
     }
 
+    function drawStormSky(ctx, w, h, elevation, density, turbulence) {
+      const horizon = h * .79;
+      const sunset = clampValue((26 - elevation) / 24, 0, 1);
+      const cloud = clampValue((density - .4) / 1.6, 0, 1);
+      const sky = ctx.createLinearGradient(0, 0, 0, horizon);
+      sky.addColorStop(0, sunset > .5 ? '#415269' : '#6aa5c2');
+      sky.addColorStop(.57, sunset > .5 ? '#8f7287' : '#9ac3cc');
+      sky.addColorStop(1, sunset > .5 ? '#d99b78' : '#c3d7d6');
+      ctx.fillStyle = sky; ctx.fillRect(0, 0, w, horizon);
+      ctx.fillStyle = '#354747'; ctx.fillRect(0, horizon, w, h - horizon);
+      const cloudBase = h * (.42 + cloud * .10);
+      const light = ctx.createLinearGradient(0, 0, 0, cloudBase + h * .11);
+      light.addColorStop(0, '#3c4956');
+      light.addColorStop(.68, sunset > .5 ? '#53605f' : '#53727a');
+      light.addColorStop(1, sunset > .5 ? '#526f64' : '#4d7074');
+      ctx.fillStyle = light;
+      ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(w, 0);
+      for (let x = w; x >= 0; x -= 6) {
+        const base = cloudBase + h * (.045 * Math.sin(x * .012) + .018 * Math.sin(x * .041 + 2.1) + .012 * Math.sin(x * .073));
+        ctx.lineTo(x, base);
+      }
+      ctx.closePath(); ctx.fill();
+      const veil = ctx.createLinearGradient(0, cloudBase - 25, 0, horizon);
+      veil.addColorStop(0, `rgba(55,88,85,${.13 + cloud * .25})`);
+      veil.addColorStop(1, 'rgba(60,83,79,0)');
+      ctx.fillStyle = veil; ctx.fillRect(0, cloudBase - 25, w, horizon - cloudBase + 25);
+      ctx.save(); ctx.strokeStyle = `rgba(165,198,190,${.06 + cloud * .10})`;
+      ctx.lineWidth = 1;
+      for (let i = 0; i < 75; i += 1) {
+        const x = (i * 89 + 29) % w;
+        const y = cloudBase + ((i * 43) % Math.max(20, horizon - cloudBase - 12));
+        ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x - 8, y + 28); ctx.stroke();
+      }
+      ctx.restore();
+      drawSceneLabel(ctx, 18, 18, '入射光色 + 厚雲遮蔽 + 水滴與冰晶 + 觀看方向');
+      drawSceneLabel(ctx, 18, h - 55, '綠／紫外觀並非龍捲風判據；顏色沒有單一固定原因');
+      $('scatter-path').innerHTML = `太陽仰角 ${elevation.toFixed(0)}°<small>低角度改變入射光的色彩</small>`;
+      $('scatter-blue').innerHTML = `雲層光學厚度：定性 ${density.toFixed(2)}x<small>厚雲擋住部分直射與天空光</small>`;
+      $('scatter-direct').innerHTML = `${sunset > .5 ? '偏暖的低角度日光' : '較白的高角度日光'}<small>雲滴與冰晶對各色的散射不同於分子 Rayleigh 模型</small>`;
+      $('scatter-status').innerHTML = `雲色是多因素外觀<small>不能由顏色單獨判定是否有龍捲風</small>`;
+      setText('scatter-elevation-out', `${elevation.toFixed(0)}°`);
+      setText('scatter-density-out', `${density.toFixed(2)}x`);
+      setText('scatter-speed-out', `${number('scatter-speed').toFixed(2)}x`);
+      setText('scatter-turbulence-out', `${turbulence.toFixed(2)}x`);
+    }
+
     function drawScattering() {
       const canvas = $('scattering-canvas');
       const { ctx, w, h } = resizeCanvas(canvas);
@@ -7500,6 +7636,10 @@
       const turbulence = number('scatter-turbulence');
       if (activeScatterScene === 'star') {
         drawStarlightScintillation(ctx, w, h, elevation, density, turbulence);
+        return;
+      }
+      if (activeScatterScene === 'storm') {
+        drawStormSky(ctx, w, h, elevation, density, turbulence);
         return;
       }
       const rayleigh = $('scatter-type').value === 'rayleigh';
@@ -7593,16 +7733,16 @@
       }
 
       if ($('scatter-show-rays').checked) {
-        const eventCount = rayleigh ? 7 : 5;
+        const eventCount = rayleigh ? 9 : 6;
         for (let i = 0; i < eventCount; i += 1) {
           const ratio = .18 + i / (eventCount + 2) * .67;
           const event = pointOnSegment(sun, observer, ratio);
           const lift = (i % 2 ? -1 : 1) * (40 + (i % 3) * 18);
           const scatterPoint = { x: event.x + 30 + i * 4, y: clampValue(event.y + lift, 45, horizon - 50) };
-          const color = rayleigh ? '#7dd3fc' : '#f8fafc';
+          const color = rayleigh ? (i % 5 === 0 ? '#ef8a74' : i % 3 === 0 ? '#9bd8a2' : '#7dd3fc') : '#f8fafc';
           ctx.save();
           ctx.strokeStyle = color;
-          ctx.globalAlpha = rayleigh ? .48 : .35;
+          ctx.globalAlpha = rayleigh ? (color === '#7dd3fc' ? .64 : .25) : .35;
           ctx.lineWidth = 1.4;
           ctx.setLineDash([5, 5]);
           ctx.beginPath();
@@ -7631,6 +7771,9 @@
       ctx.fillRect(observer.x - 8, observer.y - 6, 16, 28);
       ctx.restore();
       drawSceneLabel(ctx, w - 18, horizon - 72, '觀察者收到直達光', 'right');
+      drawSceneLabel(ctx, 16, horizon - 62, rayleigh
+        ? elevation < 15 ? '長路徑：藍光多被散走，直達夕陽偏紅' : '側向散射進入眼睛：藍光較多，天空偏藍'
+        : '較大粒子使各色散射較接近，雲霧偏白');
 
       if ($('scatter-show-bars').checked) {
         const barX = w - 172;
@@ -8964,6 +9107,19 @@
       if (reflectedS > .00001) drawBeam(ctx, hit, reflect, '#2563eb', 2 + Math.sqrt(reflectedS) * 10, Math.max(.2, Math.sqrt(reflectedS)));
       if (reflectedP > .00001) drawBeam(ctx, hit, reflect, '#ea580c', 1.5 + Math.sqrt(reflectedP) * 7, Math.max(.18, Math.sqrt(reflectedP)));
       if (transmit) drawBeam(ctx, hit, transmit, '#0f766e', 3.5, .8);
+      const reflectMid = pointOnSegment(hit, reflect, .64);
+      ctx.fillStyle = '#ffffff'; ctx.strokeStyle = '#2563eb'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(reflectMid.x, reflectMid.y, 13, 0, 2 * Math.PI); ctx.fill(); ctx.stroke();
+      drawCenteredText(ctx, mode === 'p' ? 'p' : 's', reflectMid.x, reflectMid.y, '#2563eb', 13);
+      if (Math.abs(incidence - brewster) < .035 && transmit) {
+        ctx.save(); ctx.strokeStyle = '#a14f79'; ctx.lineWidth = 2;
+        const a = Math.atan2(reflect.y - hit.y, reflect.x - hit.x);
+        const b = Math.atan2(transmit.y - hit.y, transmit.x - hit.x);
+        const p1 = { x: hit.x + 20 * Math.cos(a), y: hit.y + 20 * Math.sin(a) };
+        const p2 = { x: p1.x + 20 * Math.cos(b), y: p1.y + 20 * Math.sin(b) };
+        const p3 = { x: hit.x + 20 * Math.cos(b), y: hit.y + 20 * Math.sin(b) };
+        ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.lineTo(p3.x, p3.y); ctx.stroke(); ctx.restore();
+      }
       drawMovingRayDot(ctx, [start, hit, transmit || reflect], '#f8fafc', time * .25, compact ? 3 : 5);
       drawSceneLabel(ctx, scene.x + 15, scene.y + 16, `n₁ = ${n1.toFixed(2)}`);
       drawSceneLabel(ctx, scene.x + 15, scene.y + scene.h - 34, `n₂ = ${n2.toFixed(2)}`);
@@ -8972,6 +9128,8 @@
         drawSceneLabel(ctx, reflect.x + 8, reflect.y - 14, '反射光');
         if (transmit) drawSceneLabel(ctx, transmit.x + 7, transmit.y + 10, '折射光');
       }
+      drawSceneLabel(ctx, scene.x + 15, scene.y + scene.h - 78,
+        Math.abs(incidence - brewster) < .035 ? '反射與折射方向垂直；p 反射消失，留下 s' : '調角度，觀察橘色 p 反射降到零');
 
       const chart = compact ? { x: 34, y: h * .65, w: w - 58, h: h * .24 } : { x: w * .66, y: h * .18, w: w * .29, h: h * .57 };
       const chartMax = .55;
@@ -9050,10 +9208,10 @@
       const lambda = number('film-wavelength');
       const theta = number('film-angle') * Math.PI / 180;
       const result = thinFilmResult(lambda, nFilm, nSubstrate, theta);
-      const top = h * (compact ? .24 : .28);
-      const bottom = h * (compact ? .48 : .51);
+      const top = h * .19;
+      const depth = 2 + number('film-thickness') / 900 * h * .29;
+      const bottom = top + depth;
       const entry = { x: w * (compact ? .32 : .29), y: top };
-      const depth = bottom - top;
       const sourceLength = Math.min(top * .85, compact ? 90 : 140);
       const source = { x: entry.x - sourceLength * Math.sin(theta), y: top - sourceLength * Math.cos(theta) };
       const bounce = { x: entry.x + depth * Math.tan(result.thetaFilm), y: bottom };
@@ -9082,15 +9240,25 @@
       drawBeam(ctx, emerge, reflected2, '#ea580c', 2.5, .9);
       drawMovingRayDot(ctx, [source, entry, reflected1], '#2563eb', time * .2, 3.5);
       drawMovingRayDot(ctx, [entry, bounce, emerge, reflected2], '#ea580c', time * .2 - .35, 3.5);
+      for (let marker = 0; marker < 5; marker += 1) {
+        drawMovingRayDot(ctx, [entry, reflected1], '#2563eb', time * .16 + marker / 5, 2.8);
+        drawMovingRayDot(ctx, [entry, bounce, emerge, reflected2], '#ea580c', time * .16 + marker / 5, 2.8);
+      }
+      const dimensionX = Math.min(w - 28, Math.max(entry.x, emerge.x) + 34);
+      ctx.strokeStyle = '#2a626e'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(dimensionX, top); ctx.lineTo(dimensionX, bottom);
+      ctx.moveTo(dimensionX - 5, top); ctx.lineTo(dimensionX + 5, top);
+      ctx.moveTo(dimensionX - 5, bottom); ctx.lineTo(dimensionX + 5, bottom); ctx.stroke();
+      drawSceneLabel(ctx, dimensionX + 8, depth < 42 ? top - 34 : (top + bottom) / 2 - 10, `t = ${number('film-thickness')} nm`);
       drawSceneLabel(ctx, 14, 13, '空氣 n = 1.00');
-      drawSceneLabel(ctx, 14, top + 15, `薄膜 n = ${nFilm.toFixed(2)}`);
+      if (depth > 42) drawSceneLabel(ctx, 14, (top + bottom) / 2 - 14, `薄膜 n = ${nFilm.toFixed(2)}`);
       drawSceneLabel(ctx, 14, bottom + 13, `基底 n = ${nSubstrate.toFixed(2)}`);
       if (!compact) {
         drawSceneLabel(ctx, reflected1.x - 8, reflected1.y - 12, '上表面反射 r₁', 'right');
         drawSceneLabel(ctx, reflected2.x + 8, reflected2.y - 12, '下表面反射 r₂');
       }
-      const chartTop = h * .69;
-      const chartBottom = h * .84;
+      const chartTop = h * .60;
+      const chartBottom = h * .76;
       const chartLeft = compact ? 18 : 34;
       const chartRight = w - (compact ? 18 : 34);
       const ampScale = Math.max(Math.abs(result.r01), Math.abs(result.r12), .04);
@@ -9114,8 +9282,23 @@
         }
         ctx.stroke();
       });
+      const phaseFraction = .64;
+      const phaseX = chartLeft + phaseFraction * (chartRight - chartLeft);
+      const phaseAtX = phaseFraction * 5 * Math.PI + time * 2;
+      const samples = [
+        [result.r01 * Math.cos(phaseAtX), '#2563eb'],
+        [result.r12 * Math.cos(phaseAtX + result.delta), '#ea580c'],
+        [result.r01 * Math.cos(phaseAtX) + result.r12 * Math.cos(phaseAtX + result.delta), '#15803d']
+      ];
+      ctx.save(); ctx.setLineDash([4, 4]); ctx.strokeStyle = '#52616b'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(phaseX, chartTop - 5); ctx.lineTo(phaseX, chartBottom + 4); ctx.stroke(); ctx.restore();
+      samples.forEach(([sample, fill]) => {
+        const y = (chartTop + chartBottom) / 2 - sample / (ampScale * 2.1) * (chartBottom - chartTop) * .43;
+        ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(phaseX, y, 6, 0, 2 * Math.PI); ctx.fill();
+        ctx.fillStyle = fill; ctx.beginPath(); ctx.arc(phaseX, y, 4, 0, 2 * Math.PI); ctx.fill();
+      });
       drawSceneLabel(ctx, chartLeft, chartTop - 28, '前兩束反射電場：藍 r₁　橘 r₂　綠 合成');
-      const stripY = h * .92;
+      const stripY = h * .87;
       const stripH = compact ? 19 : 23;
       for (let x = Math.round(chartLeft); x < chartRight; x += 2) {
         const wave = 400 + (x - chartLeft) / (chartRight - chartLeft) * 300;
@@ -9242,29 +9425,33 @@
       drawSceneLabel(ctx, px(near.flat), axisY + aperture * scale + 10, '球面平凸透鏡', 'center');
       drawSceneLabel(ctx, 15, 15, centralOnly ? '光圈縮小：邊緣光被遮住' : '全口徑：邊緣光與近軸光焦點不同');
       if ($('aberration-show-zoom').checked) {
-        const inset = { x: 16, y: h * .77, w: w - 32, h: h * .18 };
-        ctx.fillStyle = '#ffffff';
-        ctx.strokeStyle = '#cbd5e1';
+        const inset = { x: 16, y: h * .74, w: w - 32, h: h * .23 };
+        ctx.fillStyle = '#152638';
+        ctx.strokeStyle = '#607a89';
         ctx.fillRect(inset.x, inset.y, inset.w, inset.h);
         ctx.strokeRect(inset.x, inset.y, inset.w, inset.h);
-        const leftFocus = Math.min(near.focus, edge.focus) - Math.max(2, difference * .25);
-        const rightFocus = Math.max(near.focus, edge.focus) + Math.max(2, difference * .25);
-        const focusX = focus => inset.x + 26 + (focus - leftFocus) / (rightFocus - leftFocus) * (inset.w - 52);
-        ctx.strokeStyle = '#94a3b8';
-        ctx.beginPath();
-        ctx.moveTo(inset.x + 15, inset.y + inset.h * .55);
-        ctx.lineTo(inset.x + inset.w - 15, inset.y + inset.h * .55);
-        ctx.stroke();
-        [['邊緣 F', edge.focus, '#ea580c'], ['近軸 F', near.focus, '#2563eb']].forEach(([label, focus, color], i) => {
-          const x = focusX(focus);
-          ctx.strokeStyle = color;
-          ctx.lineWidth = 3;
-          ctx.beginPath();
-          ctx.moveTo(x, inset.y + 15);
-          ctx.lineTo(x, inset.y + inset.h - 12);
-          ctx.stroke();
-          drawSceneLabel(ctx, x, inset.y + (i ? inset.h - 26 : 6), label, 'center');
+        const blurAt = limit => {
+          let spread = 0;
+          for (let j = 1; j <= 40; j += 1) {
+            const y = aperture * limit * j / 40;
+            const ray = tracePlanoConvexRay(y, radius, aperture, index);
+            if (!ray) continue;
+            spread = Math.max(spread, Math.abs(ray.exitHeight + (near.focus - ray.flat) * ray.outgoing.y / ray.outgoing.x));
+          }
+          return spread;
+        };
+        const cases = [['全口徑：光點有暈圈', .96], ['縮光圈：光點較集中', .33]];
+        cases.forEach(([label, limit], i) => {
+          const x = inset.x + inset.w * (i ? .75 : .25);
+          const y = inset.y + inset.h * .53;
+          const blur = Math.min(38, 4 + blurAt(limit) * 18);
+          const glow = ctx.createRadialGradient(x, y, 0, x, y, blur);
+          glow.addColorStop(0, '#ffffff'); glow.addColorStop(.15, 'rgba(188,225,255,.9)'); glow.addColorStop(1, 'rgba(85,172,237,0)');
+          ctx.fillStyle = glow; ctx.beginPath(); ctx.arc(x, y, blur, 0, 2 * Math.PI); ctx.fill();
+          ctx.fillStyle = '#dceef8'; ctx.font = `700 ${compact ? 10 : 13}px "Microsoft JhengHei", sans-serif`;
+          ctx.textAlign = 'center'; ctx.fillText(label, x, inset.y + 22);
         });
+        ctx.strokeStyle = '#6b8896'; ctx.beginPath(); ctx.moveTo(inset.x + inset.w / 2, inset.y + 10); ctx.lineTo(inset.x + inset.w / 2, inset.y + inset.h - 10); ctx.stroke();
       }
       setText('aberration-radius-out', `${radius.toFixed(1)} cm`);
       setText('aberration-aperture-out', `${aperture.toFixed(1)} cm`);
@@ -9613,6 +9800,234 @@
       ctx.fillStyle = '#0f766e'; ctx.fillRect(20, h - 17, (w - 40) * Math.min(1, simTime / Math.max(path.duration, 1e-6)), 4);
     }
 
+    function drawMirage() {
+      const { ctx, w, h } = resizeCanvas($('mirage-canvas'));
+      clearCanvas(ctx, w, h);
+      const heat = number('mirage-heat');
+      const layer = h * number('mirage-depth') / 100;
+      const ground = h * .80;
+      const eye = { x: w * .86, y: ground - h * .12 };
+      const contrast = .075 * heat;
+      const nAt = y => 1 + contrast * (1 - Math.exp(-Math.max(0, ground - y) / layer));
+      const dnDy = y => -contrast / layer * Math.exp(-Math.max(0, ground - y) / layer);
+      setText('mirage-heat-out', `${heat.toFixed(2)}x`);
+      setText('mirage-depth-out', `${number('mirage-depth')}%`);
+      setText('mirage-speed-out', `${number('mirage-speed').toFixed(2)}x`);
+      $('mirage-index').innerHTML = `示意折射率差 ${contrast.toFixed(3)}<small>實際空氣差遠小於圖中；曲率放大以看清</small>`;
+      $('mirage-status').innerHTML = heat < .08 ? '熱層消失<small>光線近似直行</small>' : '下蜃景<small>近地 n 較小，光線朝上方較大 n 區彎曲</small>';
+      const sky = ctx.createLinearGradient(0, 0, 0, ground);
+      sky.addColorStop(0, '#a8d6ec'); sky.addColorStop(.68, '#e7f4f7'); sky.addColorStop(1, '#ebc5a7');
+      ctx.fillStyle = sky; ctx.fillRect(0, 0, w, ground);
+      ctx.fillStyle = '#6c7376'; ctx.fillRect(0, ground, w, h - ground);
+      ctx.strokeStyle = '#f7df92'; ctx.lineWidth = 2; ctx.setLineDash([18, 20]);
+      ctx.beginPath(); ctx.moveTo(0, ground + (h - ground) * .55); ctx.lineTo(w, ground + (h - ground) * .55); ctx.stroke(); ctx.setLineDash([]);
+      if ($('mirage-show-layers').checked) {
+        for (let i = 1; i <= 5; i += 1) {
+          const y = ground - layer * i / 5;
+          ctx.strokeStyle = `rgba(176,93,58,${.20 + i * .035})`; ctx.lineWidth = 1;
+          ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(w, y); ctx.stroke();
+        }
+      }
+      const trace = angle => {
+        let x = eye.x, y = eye.y, vx = -Math.cos(angle), vy = Math.sin(angle);
+        const points = [{ x, y }];
+        for (let i = 0; i < 1400 && x > 12 && y > 8 && y < ground - 3; i += 1) {
+          const curvature = dnDy(y) / nAt(y);
+          vx += -curvature * vx * vy * 1.4;
+          vy += curvature * (1 - vy * vy) * 1.4;
+          const norm = Math.hypot(vx, vy); vx /= norm; vy /= norm;
+          x += vx * 1.4; y += vy * 1.4;
+          if (i % 3 === 0) points.push({ x, y });
+        }
+        return points;
+      };
+      let focusPath = [];
+      [0.025, .045, .065, .085].forEach((angle, index) => {
+        const points = trace(angle);
+        if (index === 2) focusPath = points;
+        ctx.strokeStyle = index === 2 ? '#0c6e92' : 'rgba(12,110,146,.46)'; ctx.lineWidth = index === 2 ? 4 : 2;
+        ctx.beginPath(); points.forEach((p, i) => i ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)); ctx.stroke();
+        if (points.length > 4) {
+          const point = points[Math.floor((1 - positiveModulo(time * .11 + index * .18, 1)) * (points.length - 1))];
+          instrumentParticle(ctx, point.x, point.y, '#fff7bc', 4);
+        }
+      });
+      $('mirage-turn').innerHTML = `追蹤光線最低處距路面 ${Math.max(0, (ground - Math.max(...focusPath.map(p => p.y))) / h * 100).toFixed(1)}% 畫面高度<small>向左回溯時先降後升，光路可逆</small>`;
+      if ($('mirage-show-virtual').checked && focusPath.length > 5) {
+        ctx.save(); ctx.setLineDash([7, 6]); ctx.strokeStyle = '#c35065'; ctx.lineWidth = 2;
+        const slope = .065;
+        ctx.beginPath(); ctx.moveTo(eye.x, eye.y); ctx.lineTo(Math.max(0, eye.x - (ground + 24 - eye.y) / slope), ground + 24); ctx.stroke(); ctx.restore();
+        drawSceneLabel(ctx, w - 12, ground + 13, w < 500 ? '虛線：誤認的直線方向' : '虛線：眼睛把入射切線誤認為直線來源', 'right');
+      }
+      ctx.fillStyle = '#193c54'; ctx.beginPath(); ctx.arc(eye.x, eye.y, 11, 0, 2 * Math.PI); ctx.fill();
+      drawSceneLabel(ctx, w - 12, eye.y - 44, '觀察者', 'right');
+      drawSceneLabel(ctx, 18, 20, '天空的光沿彎曲路徑到達眼睛');
+      drawSceneLabel(ctx, 18, ground - 20, '熱路面：較低折射率');
+    }
+
+    function rainbowAngle(index) {
+      const i = Math.asin(Math.sqrt((4 - index * index) / 3));
+      const r = Math.asin(Math.sin(i) / index);
+      return { incidence: i, refraction: r, bow: Math.PI - (Math.PI + 2 * i - 4 * r) };
+    }
+
+    function drawRainbow() {
+      const { ctx, w, h } = resizeCanvas($('rainbow-canvas'));
+      clearCanvas(ctx, w, h);
+      const compact = w < 680;
+      const sunAngle = number('rainbow-sun');
+      const red = rainbowAngle(1.331);
+      const violet = rainbowAngle(1.343);
+      const drop = { x: w * (compact ? .31 : .30), y: h * .42, r: Math.min(w * (compact ? .22 : .17), h * .28) * number('rainbow-size') / 100 };
+      setText('rainbow-sun-out', `${sunAngle}°`);
+      setText('rainbow-size-out', `${number('rainbow-size')}%`);
+      setText('rainbow-speed-out', `${number('rainbow-speed').toFixed(2)}x`);
+      $('rainbow-red').innerHTML = `紅光約 ${(red.bow * 180 / Math.PI).toFixed(1)}°<small>相對反太陽點的主虹半徑</small>`;
+      $('rainbow-violet').innerHTML = `紫光約 ${(violet.bow * 180 / Math.PI).toFixed(1)}°<small>紅外紫內；角度非水滴大小決定</small>`;
+      $('rainbow-status').innerHTML = sunAngle > 42 ? '太陽過高<small>地面觀察者看不到主虹弧</small>' : '可見主虹<small>太陽在背後，雨滴在前方</small>';
+      ctx.fillStyle = '#d9edf5'; ctx.fillRect(0, 0, w, h);
+      drawSceneLabel(ctx, 18, 15, '單一水滴放大：一次內反射');
+      ctx.fillStyle = 'rgba(197,234,245,.74)'; ctx.strokeStyle = '#5aafc7'; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.arc(drop.x, drop.y, drop.r, 0, 2 * Math.PI); ctx.fill(); ctx.stroke();
+      if ($('rainbow-show-path').checked) {
+        [[1.331, '#d74d49', 0], [1.343, '#7256b2', 1]].forEach(([n, color, offset]) => {
+          const { incidence: i, refraction: r } = rainbowAngle(n);
+          const entry = { x: drop.x - drop.r * Math.cos(i), y: drop.y - drop.r * Math.sin(i) + offset * 2 };
+          const direction = { x: Math.cos(i - r), y: Math.sin(i - r) };
+          const local = { x: entry.x - drop.x, y: entry.y - drop.y };
+          const length1 = -2 * (local.x * direction.x + local.y * direction.y);
+          const back = { x: entry.x + length1 * direction.x, y: entry.y + length1 * direction.y };
+          const norm = { x: (back.x - drop.x) / drop.r, y: (back.y - drop.y) / drop.r };
+          const dot = direction.x * norm.x + direction.y * norm.y;
+          const bounce = { x: direction.x - 2 * dot * norm.x, y: direction.y - 2 * dot * norm.y };
+          const length2 = -2 * ((back.x - drop.x) * bounce.x + (back.y - drop.y) * bounce.y);
+          const exit = { x: back.x + length2 * bounce.x, y: back.y + length2 * bounce.y };
+          const outward = { x: (exit.x - drop.x) / drop.r, y: (exit.y - drop.y) / drop.r };
+          const tangent = { x: bounce.x - Math.cos(r) * outward.x, y: bounce.y - Math.cos(r) * outward.y };
+          const tNorm = Math.hypot(tangent.x, tangent.y) || 1;
+          const out = { x: Math.cos(i) * outward.x + Math.sin(i) * tangent.x / tNorm, y: Math.cos(i) * outward.y + Math.sin(i) * tangent.y / tNorm };
+          const points = [{ x: Math.max(6, entry.x - drop.r * .58), y: entry.y }, entry, back, exit, { x: exit.x + out.x * drop.r * .72, y: exit.y + out.y * drop.r * .72 }];
+          ctx.strokeStyle = color; ctx.lineWidth = 3; ctx.beginPath(); points.forEach((p, j) => j ? ctx.lineTo(p.x, p.y) : ctx.moveTo(p.x, p.y)); ctx.stroke();
+          const stage = positiveModulo(time * .28 + offset * .35, 1) * 4;
+          const k = Math.min(3, Math.floor(stage)); const t = stage - k;
+          instrumentParticle(ctx, points[k].x + (points[k + 1].x - points[k].x) * t, points[k].y + (points[k + 1].y - points[k].y) * t, color, 5);
+        });
+        if (!compact) drawSceneLabel(ctx, drop.x - drop.r, drop.y + drop.r + 18, '入射折射 → 內反射 → 出射折射');
+      }
+      if ($('rainbow-show-arc').checked) {
+        const origin = { x: w * (compact ? .66 : .77), y: h * .77 + sunAngle / 40 * h * .18 };
+        const arcScale = Math.min(w * (compact ? .29 : .22), h * .45) / (red.bow * 180 / Math.PI);
+        for (const [n, color] of [[1.331, '#cf4a49'], [1.334, '#ed9a41'], [1.337, '#e6cb50'], [1.339, '#51a578'], [1.341, '#4587c2'], [1.343, '#7358aa']]) {
+          const radius = rainbowAngle(n).bow * 180 / Math.PI * arcScale;
+          ctx.strokeStyle = color; ctx.lineWidth = 4; ctx.beginPath(); ctx.arc(origin.x, origin.y, radius, Math.PI, 2 * Math.PI); ctx.stroke();
+        }
+        ctx.fillStyle = '#233e53'; ctx.beginPath(); ctx.arc(origin.x, origin.y, 6, 0, 2 * Math.PI); ctx.fill();
+        drawSceneLabel(ctx, origin.x, h - 41, sunAngle > 42 ? '主虹位於地平線下' : '反太陽點', 'center');
+        if (!compact) drawSceneLabel(ctx, Math.min(w - 155, origin.x + 20), 20, '紅外 / 紫內');
+      }
+    }
+
+    function drawSkater() {
+      const { ctx, w, h } = resizeCanvas($('skater-canvas'));
+      clearCanvas(ctx, w, h);
+      const compact = w < 680;
+      const extension = skaterArmCurrent;
+      const inertia = .65 + 1.35 * extension * extension;
+      const angularMomentum = 3.6;
+      const omega = angularMomentum / inertia;
+      const cx = w * (compact ? .5 : .39);
+      const cy = h * .50;
+      const radius = Math.min(w * (compact ? .29 : .23), h * .31);
+      setText('skater-arms-out', `${Math.round(extension * 100)}%`);
+      setText('skater-speed-out', `${number('skater-speed').toFixed(2)}x`);
+      $('skater-inertia').innerHTML = `轉動慣量 I = ${inertia.toFixed(2)} kg·m²<small>手臂越靠近轉軸，I 越小</small>`;
+      $('skater-omega').innerHTML = `角速度 ω = ${omega.toFixed(2)} rad/s<small>收手前為 1.80 rad/s</small>`;
+      $('skater-angular').innerHTML = `角動量 L = ${angularMomentum.toFixed(2)} kg·m²/s<small>外力矩近似為零，L 不變</small>`;
+      $('skater-period').innerHTML = `轉一圈需 ${(2 * Math.PI / omega).toFixed(2)} s<small>收手前為 3.49 s</small>`;
+      ctx.fillStyle = '#f3f8fb'; ctx.fillRect(0, 0, w, h);
+      ctx.strokeStyle = '#cbd5e1'; ctx.lineWidth = 2;
+      [radius * .40, radius * .78].forEach(r => { ctx.beginPath(); ctx.ellipse(cx, cy, r, r * .75, 0, 0, 2 * Math.PI); ctx.stroke(); });
+      drawSceneLabel(ctx, 20, 16, '俯視：追蹤衣袖亮點的轉動');
+      ctx.save(); ctx.translate(cx, cy); ctx.rotate(skaterPhase);
+      const arm = radius * (.25 + extension * .60);
+      ctx.strokeStyle = '#247d8e'; ctx.lineWidth = 16; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(-arm, -5); ctx.lineTo(arm, -5); ctx.stroke();
+      ctx.strokeStyle = '#203e59'; ctx.lineWidth = 9;
+      ctx.beginPath(); ctx.moveTo(-7, 15); ctx.lineTo(-12, 39); ctx.moveTo(7, 15); ctx.lineTo(12, 39); ctx.stroke();
+      ctx.fillStyle = '#193c54'; ctx.beginPath(); ctx.ellipse(0, 0, 19, 23, 0, 0, 2 * Math.PI); ctx.fill();
+      ctx.fillStyle = '#e99d61'; ctx.beginPath(); ctx.arc(0, -19, 10, 0, 2 * Math.PI); ctx.fill();
+      ctx.fillStyle = '#e99d61'; [-arm, arm].forEach(x => { ctx.beginPath(); ctx.arc(x, 0, 9, 0, 2 * Math.PI); ctx.fill(); });
+      ctx.fillStyle = '#fff9b0'; ctx.shadowColor = '#e9a800'; ctx.shadowBlur = 18;
+      ctx.beginPath(); ctx.arc(arm, 0, 6, 0, 2 * Math.PI); ctx.fill(); ctx.restore();
+      const meterX = compact ? 20 : w * .70;
+      const meterY = compact ? h * .78 : h * .33;
+      const meterW = compact ? w - 40 : w * .23;
+      drawSceneLabel(ctx, meterX, meterY - 28, '同一秒轉過的角度');
+      ctx.fillStyle = '#dce8ee'; ctx.fillRect(meterX, meterY, meterW, 15);
+      ctx.fillStyle = '#e39050'; ctx.fillRect(meterX, meterY, meterW * Math.min(1, 1.8 / 5.54), 15);
+      ctx.fillStyle = '#087a70'; ctx.fillRect(meterX, meterY + 35, meterW * Math.min(1, omega / 5.54), 15);
+      drawSceneLabel(ctx, meterX, meterY + 60, `張開 1.80 → 現在 ${omega.toFixed(2)} rad/s`);
+    }
+
+    function drawMassSpectrometer() {
+      const { ctx, w, h } = resizeCanvas($('spectrometer-canvas'));
+      clearCanvas(ctx, w, h);
+      instrumentBackdrop(ctx, w, h, '選速器 → 磁分析室 → 偵測器', '正離子；場與光路以示意尺度繪製');
+      const e = number('spec-e') * 1000;
+      const bSelect = number('spec-b-select');
+      const bAnalyze = number('spec-b-analyze');
+      const velocity = e / bSelect;
+      const massU = number('spec-mass');
+      const charge = 1.602176634e-19;
+      const u = 1.66053906660e-27;
+      const radius1 = massU * u * velocity / (charge * bAnalyze);
+      const radius2 = (massU + 2) * u * velocity / (charge * bAnalyze);
+      const compact = w < 680;
+      const entranceX = w * (compact ? .50 : .53);
+      const entranceY = h * .73;
+      const fieldTop = h * .15;
+      const maxRadiusPx = Math.min(w * (compact ? .27 : .25), (entranceY - fieldTop - 14) / 2);
+      const scale = maxRadiusPx / Math.max(radius2, .14);
+      const r1 = radius1 * scale;
+      const r2 = radius2 * scale;
+      setText('spec-e-out', `${(e / 1000).toFixed(1)} kV/m`);
+      setText('spec-b-select-out', `${bSelect.toFixed(2)} T`);
+      setText('spec-b-analyze-out', `${bAnalyze.toFixed(4)} T`);
+      setText('spec-mass-out', `${massU} u`);
+      setText('spec-speed-out', `${number('spec-speed').toFixed(2)}x`);
+      $('spec-velocity').innerHTML = `選定速度 ${(velocity / 1000).toFixed(2)} km/s<small>v = E/B₁</small>`;
+      $('spec-light').innerHTML = `${massU} u 半徑 ${(radius1 * 100).toFixed(1)} cm<small>r = mv/(qB₂)</small>`;
+      $('spec-heavy').innerHTML = `${massU + 2} u 半徑 ${(radius2 * 100).toFixed(1)} cm<small>相同 q、v、B₂ 時質量越大越不易轉彎</small>`;
+      $('spec-spacing').innerHTML = `偵測落點相隔 ${(2 * (radius2 - radius1) * 100).toFixed(1)} cm<small>半圓後位移是 2r；圖上間距放大呈現</small>`;
+      const selectorLeft = 24;
+      const selectorRight = entranceX - 24;
+      ctx.fillStyle = 'rgba(46,112,167,.09)'; ctx.fillRect(selectorLeft, entranceY - 53, selectorRight - selectorLeft, 106);
+      ctx.strokeStyle = '#417b9c'; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(selectorLeft, entranceY - 54); ctx.lineTo(selectorRight, entranceY - 54);
+      ctx.moveTo(selectorLeft, entranceY + 54); ctx.lineTo(selectorRight, entranceY + 54); ctx.stroke();
+      for (let x = selectorLeft + 20; x < selectorRight - 5; x += 34) drawFluxSymbol(ctx, x, entranceY, true, '#5286b9', 6, .65);
+      drawSceneLabel(ctx, selectorLeft + 6, entranceY - 94, '選速：qE ↓ 與 qvB ↑ 抵銷');
+      ctx.fillStyle = 'rgba(71,149,184,.08)'; ctx.fillRect(entranceX, fieldTop, w - entranceX - 18, entranceY - fieldTop + 15);
+      for (let x = entranceX + 24; x < w - 20; x += 48) for (let y = fieldTop + 24; y < entranceY - 12; y += 46) drawFluxSymbol(ctx, x, y, true, '#3776b7', 5, .35);
+      if (!compact) drawSceneLabel(ctx, Math.min(w - 146, entranceX + 110), fieldTop + 8, '磁分析室 B₂ ⊗');
+      ctx.strokeStyle = '#657780'; ctx.lineWidth = 8;
+      ctx.beginPath(); ctx.moveTo(entranceX, fieldTop); ctx.lineTo(entranceX, entranceY - 9); ctx.moveTo(entranceX, entranceY + 9); ctx.lineTo(entranceX, h - 30); ctx.stroke();
+      ctx.save(); ctx.strokeStyle = '#aabcc6'; ctx.setLineDash([5, 5]); ctx.beginPath(); ctx.moveTo(selectorLeft, entranceY); ctx.lineTo(entranceX, entranceY); ctx.stroke(); ctx.restore();
+      const travel = (time * .23) % 1;
+      for (let k = 0; k < 5; k += 1) { const x = selectorLeft + positiveModulo(travel + k / 5, 1) * (entranceX - selectorLeft); instrumentParticle(ctx, x, entranceY, '#f5c45e', 3.8); }
+      [[r1, massU, '#26b39a'], [r2, massU + 2, '#f08c63']].forEach(([r, mass, color], index) => {
+        ctx.strokeStyle = color; ctx.lineWidth = compact ? 3 : 4; ctx.beginPath();
+        for (let j = 0; j <= 90; j += 1) { const theta = Math.PI / 2 - Math.PI * j / 90; const x = entranceX + r * Math.cos(theta); const y = entranceY - r + r * Math.sin(theta); if (!j) ctx.moveTo(x, y); else ctx.lineTo(x, y); }
+        ctx.stroke();
+        const theta = Math.PI / 2 - Math.PI * 2 * positiveModulo(time * .18 + index * .16, 1);
+        instrumentParticle(ctx, entranceX + r * Math.cos(theta), entranceY - r + r * Math.sin(theta), color, 6);
+        const detectorY = entranceY - 2 * r;
+        ctx.fillStyle = color; ctx.fillRect(entranceX - 7, detectorY - 4, 14, 8);
+        drawSceneLabel(ctx, entranceX + 13, detectorY - (index ? 15 : -12), `${mass} u`);
+      });
+      drawSceneLabel(ctx, 20, h - 36, '質量較大 → r 較大 → 擊中較遠處');
+    }
+
     function drawActive() {
       if (activeModule === 'standing') drawStanding();
       else if (activeModule === 'doppler') drawDoppler();
@@ -9621,6 +10036,8 @@
       else if (activeModule === 'single') drawSingleSlit();
       else if (activeModule === 'huygens') drawHuygens();
       else if (activeModule === 'prism') drawPrism();
+      else if (activeModule === 'mirage') drawMirage();
+      else if (activeModule === 'rainbow') drawRainbow();
       else if (activeModule === 'brewster') drawBrewster();
       else if (activeModule === 'aberration') drawAberration();
       else if (activeModule === 'film') drawThinFilm();
@@ -9632,10 +10049,12 @@
         if (activeElectromagnetism === 'brake') drawMagneticBrake();
         else if (activeElectromagnetism === 'motor') drawMotor();
         else if (activeElectromagnetism === 'cyclotron') drawCyclotron();
+        else if (activeElectromagnetism === 'spectrometer') drawMassSpectrometer();
         else drawVelocitySelector();
       }
       else if (activeModule === 'mechanics') {
         if (activeMechanics === 'circular') drawCircularProjection();
+        else if (activeMechanics === 'skater') drawSkater();
         else if (activeMechanics === 'precession') drawPrecession();
         else drawPulleyPhysical();
       }
@@ -9682,7 +10101,10 @@
         return option;
       }));
       select.value = lab;
-      if (category === 'imaging') { setTab('optics'); setOpticsMode(lab); }
+      if (category === 'imaging') {
+        if (lab === 'aberration') setTab('aberration');
+        else { setTab('optics'); setOpticsMode(lab); }
+      }
       else if (category === 'mechanics') { setTab('mechanics'); setMechanicsMode(lab); }
       else if (category === 'electromagnetism') { setTab('electromagnetism'); setElectromagnetismMode(lab); }
       else if (lab === 'refraction' || lab === 'atmosphere') { setTab('light'); setLightMode(lab === 'refraction' ? 'refraction' : 'scattering'); }
@@ -9727,8 +10149,8 @@
         button.setAttribute('aria-pressed', active ? 'true' : 'false');
       });
       const starMode = name === 'star';
-      $('scatter-type').disabled = starMode;
-      $('scatter-type-control').classList.toggle('is-muted', starMode);
+      $('scatter-type').disabled = starMode || name === 'storm';
+      $('scatter-type-control').classList.toggle('is-muted', starMode || name === 'storm');
       if (enteringStarScene && number('scatter-elevation') > 25) {
         $('scatter-elevation').value = '12';
         $('scatter-turbulence').value = '1.2';
@@ -10084,10 +10506,23 @@
 
     window.addEventListener('resize', drawActive);
 
+    $('skater-out').addEventListener('click', () => { $('skater-arms').value = '100'; drawActive(); });
+    $('skater-in').addEventListener('click', () => { $('skater-arms').value = '0'; drawActive(); });
+
     function frame(now) {
       const elapsed = Math.max(0, Math.min(0.05, (now - last) / 1000));
       last = now;
-      if (running) time += elapsed * playback();
+      if (activeModule === 'mechanics' && activeMechanics === 'skater') {
+        skaterArmCurrent += (number('skater-arms') / 100 - skaterArmCurrent) * Math.min(1, elapsed * 3.5);
+      }
+      if (running) {
+        const scaled = elapsed * playback();
+        time += scaled;
+        if (activeModule === 'mechanics' && activeMechanics === 'skater') {
+          const extension = skaterArmCurrent;
+          skaterPhase += scaled * 3.6 / (.65 + 1.35 * extension * extension);
+        }
+      }
       drawActive();
       requestAnimationFrame(frame);
     }
