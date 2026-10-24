@@ -1528,7 +1528,7 @@
           <div class="module-head">
             <div>
               <h2>大氣光學：散射、折射與星光閃爍</h2>
-              <p class="module-copy">白天模式比較不同波長如何被大氣散射；星光模式則把平均折射偏移與湍流造成的快速光束漂移分開呈現。</p>
+              <p class="module-copy">追蹤同一束日光的紅、綠、藍通量：短波較容易離開直射方向；星光則觀察固定瞳孔收到的光量如何波動。</p>
             </div>
             <div class="legend" aria-label="散射圖例">
               <span class="blue"><i class="dot"></i>短波藍光</span>
@@ -1538,7 +1538,7 @@
           </div>
           <div class="values" aria-live="polite">
             <div class="badge" id="scatter-path">相對路徑 = 1.4<small>太陽越低，穿越大氣越長</small></div>
-            <div class="badge" id="scatter-blue">藍光散射權重 = 4.1<small>Rayleigh：強度約與 1/λ⁴ 成正比</small></div>
+            <div class="badge" id="scatter-blue">藍／紅散射比 = 4.4<small>Rayleigh：強度約與 1/λ⁴ 成正比</small></div>
             <div class="badge" id="scatter-direct">直達光：近白色<small>藍光尚未大量離開光束</small></div>
             <div class="badge" id="scatter-status">晴朗天空<small>分子尺度遠小於可見光波長</small></div>
           </div>
@@ -1548,7 +1548,7 @@
             <button type="button" class="scatter-scene" data-scatter-scene="storm" aria-pressed="false">暴風雲色</button>
           </div>
           <div class="plot-wrap">
-            <canvas id="scattering-canvas" role="img" aria-label="日光散射，以及星光穿過分層與擾動大氣後產生視位置偏移與閃爍的動態示意。"></canvas>
+            <canvas id="scattering-canvas" role="img" aria-label="紅綠藍光沿相同方向等速傳播、逐段散射的通量示意，以及固定瞳孔觀察星光閃爍。"></canvas>
           </div>
           <div class="controls">
             <div class="control">
@@ -1584,15 +1584,16 @@
             <button type="button" class="preset scatter-preset" data-scene="storm" data-elevation="8" data-density="1.8" data-turbulence="1" data-type="mie">傍晚暴風雲</button>
           </div>
           <div class="checks">
-            <label class="check"><input type="checkbox" id="scatter-show-packets" checked>顯示紅綠藍光包</label>
-            <label class="check"><input type="checkbox" id="scatter-show-rays" checked>顯示散射到眼睛的路徑</label>
-            <label class="check"><input type="checkbox" id="scatter-show-bars" checked>顯示波長比較</label>
+            <label class="check"><input type="checkbox" id="scatter-show-packets" checked>顯示等速光點</label>
+            <label class="check"><input type="checkbox" id="scatter-show-rays" checked>顯示離開直射束的光</label>
+            <label class="check"><input type="checkbox" id="scatter-show-bars" checked>顯示各段剩餘通量</label>
             <label class="check"><input type="checkbox" id="scatter-show-layers" checked>顯示大氣分層與擾動</label>
           </div>
           <section class="teacher-note">
-            <p><strong>講法：</strong>日光模式先比較紅、綠、藍光離開直射光束的比例。藍光較容易從側面散入眼睛；紅、綠光並非消失，較多繼續沿原方向傳播，也可向其他方向散射。低角度的長路徑使直達夕陽偏紅。星光模式先關閉擾動看平均折射，再增加擾動觀察亮度閃爍。</p>
-            <p><strong>限制：</strong>實際折射偏移只有角分量級、閃爍只有角秒量級；畫面將角度放大供課堂觀察，數值欄仍顯示未放大的物理量。</p>
-            <p><strong>暴風雲色：</strong>厚雲遮蔽、太陽高度、雲滴與冰晶、周圍天空的照明共同影響所見顏色；綠色或紫色天空不是龍捲風的專屬或可靠判據。此情境是光色混合的定性示意，不是由單一公式預報天色。</p>
+            <p><strong>模型界線：</strong>日光圖中的光點同步移動，數量代表相對通量，不代表不同顏色在空氣中有可見的速差。為了讓散射在螢幕上看清，光學厚度與側向光線均為教學放大；直射剩餘比例採用 Beer–Lambert 衰減和近似的波長依賴，不是實測當地天色。</p>
+            <p><strong>星光：</strong>亂流折射率變化讓固定瞳孔收到的光量起伏；微弱星點在示意的偵測門檻以下可暫時看不見。單條光線偏出瞳孔只是直觀模型，實際閃爍還涉及波前聚焦與散焦，不能以圖上的百分比預測某一顆星。</p>
+            <p><strong>真實影像與界線：</strong><a href="https://www.noaa.gov/jetstream/clouds/color-of-clouds" target="_blank" rel="noopener noreferrer">NOAA 雲色照片</a>展示雲會反映其所受的照明；<a href="https://www.weather.gov/lub/news-20080827volcanicsunsets" target="_blank" rel="noopener noreferrer">美國氣象局紫色晚霞照片</a>與氣膠條件有關。綠色暴風天空與大量冰水雲的關聯仍有爭議，<a href="https://www.nssl.noaa.gov/education/svrwx101/hail/faq/" target="_blank" rel="noopener noreferrer">NOAA 並未認定單一成因</a>，顏色也不是龍捲風判據。此頁只比較入射照明，不宣稱由它預測雲色。</p>
+            <p><a href="https://science.nasa.gov/earth/earth-observatory/crepuscular-rays-and-light-scattering-150090/" target="_blank" rel="noopener noreferrer">NASA 夕陽與雲光實拍</a> · <a href="https://starchild.gsfc.nasa.gov/docs/StarChild/questions/question26.html" target="_blank" rel="noopener noreferrer">NASA 星光閃爍說明</a></p>
           </section>
         </div>
       </section>
@@ -7407,271 +7408,307 @@
       ctx.restore();
     }
 
-    function drawStarlightScintillation(ctx, w, h, elevation, density, turbulence) {
+    function scintillationSample(t, elevation, turbulence) {
+      const airMass = Math.min(7, 1 / (Math.sin(elevation * Math.PI / 180) + .08));
+      const drift = (Math.sin(t * 3.3) * .7 + Math.sin(t * 5.7 + 1.3) * .34 + Math.sin(t * 8.1 + .4) * .15);
+      const offset = drift * turbulence * (6 + airMass * 3.1);
+      return { offset, light: Math.exp(-.5 * Math.pow(offset / 8.5, 2)) };
+    }
+
+    function drawScintillationModel(ctx, w, h, elevation, density, turbulence) {
       const compact = w < 720;
-      const refractionArcmin = atmosphericRefractionArcmin(elevation, density);
-      const pathLength = Math.min(8, 1 / (Math.sin(elevation * Math.PI / 180) + .055));
-      const jitterArcsec = turbulence * density * (.45 + pathLength * .42);
-      const flickerDepth = clampValue(turbulence * pathLength * .075, 0, .62);
-      const flicker = Math.sin(time * 7.1) * .58 + Math.sin(time * 12.7 + 1.4) * .27 + Math.sin(time * 19.3) * .15;
-      const brightness = clampValue(1 - flickerDepth * (.52 + .48 * flicker), .18, 1);
-      const jitterWave = turbulence * (Math.sin(time * 5.3) + .42 * Math.sin(time * 11.7 + .8));
-      const visualRefraction = clampValue(refractionArcmin * .72, .45, 9);
-      const visualJitter = jitterWave * .035;
-      const trueAngle = elevation * Math.PI / 180;
-      const apparentAngle = clampValue(elevation + visualRefraction + visualJitter, 3, 87) * Math.PI / 180;
-      const scene = compact
-        ? { x: 10, y: 10, w: w - 20, h: h * .62 }
-        : { x: 10, y: 10, w: w * .68 - 14, h: h - 20 };
-      const inset = compact
-        ? { x: 10, y: h * .65, w: w - 20, h: h * .35 - 10 }
-        : { x: w * .69, y: 10, w: w * .31 - 10, h: h - 20 };
-
-      const night = ctx.createLinearGradient(0, scene.y, 0, scene.y + scene.h);
-      night.addColorStop(0, '#030712');
-      night.addColorStop(.72, '#0b2741');
-      night.addColorStop(1, '#204968');
-      ctx.fillStyle = night;
-      ctx.fillRect(0, 0, w, h);
-      ctx.fillStyle = 'rgba(2,6,23,.88)';
-      ctx.strokeStyle = '#35546b';
-      ctx.lineWidth = 1.2;
-      ctx.beginPath();
-      ctx.roundRect(scene.x, scene.y, scene.w, scene.h, 8);
-      ctx.fill();
-      ctx.stroke();
-
-      const atmosphereTop = scene.y + 38;
-      const groundY = scene.y + scene.h * .86;
+      const scene = { x: 12, y: 12, w: compact ? w - 24 : w * .64 - 16, h: compact ? h * .57 : h - 24 };
+      const graph = compact ? { x: 12, y: h * .60, w: w - 24, h: h * .37 - 12 }
+        : { x: w * .66, y: 12, w: w * .34 - 12, h: h - 24 };
+      const sample = scintillationSample(time, elevation, turbulence);
+      const brightness = sample.light;
+      const threshold = .12;
+      ctx.fillStyle = '#07111e'; ctx.fillRect(0, 0, w, h);
+      ctx.strokeStyle = '#38556b'; ctx.lineWidth = 1;
+      ctx.strokeRect(scene.x, scene.y, scene.w, scene.h);
+      ctx.strokeRect(graph.x, graph.y, graph.w, graph.h);
+      const star = { x: scene.x + scene.w * .12, y: scene.y + scene.h * .49 };
+      const pupil = { x: scene.x + scene.w * .84, y: star.y };
+      const atmosphereX = scene.x + scene.w * .42;
       if ($('scatter-show-layers').checked) {
-        const layerCount = 6;
-        for (let layer = 0; layer < layerCount; layer += 1) {
-          const y0 = atmosphereTop + layer * (groundY - atmosphereTop) / layerCount;
-          const y1 = atmosphereTop + (layer + 1) * (groundY - atmosphereTop) / layerCount;
-          ctx.fillStyle = `rgba(56,189,248,${.025 + layer * .018 * density})`;
-          ctx.fillRect(scene.x + 1, y0, scene.w - 2, y1 - y0);
-          ctx.strokeStyle = `rgba(125,211,252,${.10 + layer * .025})`;
-          ctx.lineWidth = 1;
-          ctx.beginPath();
-          ctx.moveTo(scene.x + 8, y1);
-          for (let x = scene.x + 8; x <= scene.x + scene.w - 8; x += 18) {
-            ctx.lineTo(x, y1 + Math.sin(x * .025 + time * (1.1 + layer * .12)) * turbulence * 2.5);
-          }
-          ctx.stroke();
-        }
-        for (let i = 0; i < (compact ? 16 : 26); i += 1) {
-          const cellX = scene.x + 28 + ((i * 79 + time * (8 + i % 3)) % Math.max(40, scene.w - 56));
-          const cellY = atmosphereTop + 20 + ((i * 53 + i * i * 3) % Math.max(40, groundY - atmosphereTop - 38));
-          const cellR = 8 + (i % 4) * 3;
-          ctx.strokeStyle = `rgba(147,197,253,${.12 + turbulence * .10})`;
-          ctx.beginPath();
-          ctx.ellipse(cellX, cellY, cellR * 1.7, cellR, -.28, 0, Math.PI * 2);
-          ctx.stroke();
+        ctx.fillStyle = 'rgba(56,189,248,.08)';
+        ctx.fillRect(atmosphereX, scene.y + 28, scene.w * .29, scene.h - 56);
+        for (let i = 0; i < 4; i += 1) {
+          const x = atmosphereX + i * scene.w * .095;
+          ctx.strokeStyle = 'rgba(125,211,252,.24)';
+          ctx.beginPath(); ctx.moveTo(x, scene.y + 32); ctx.lineTo(x, scene.y + scene.h - 32); ctx.stroke();
         }
       }
-
-      ctx.fillStyle = '#111827';
-      ctx.fillRect(scene.x, groundY, scene.w, scene.y + scene.h - groundY);
-      ctx.strokeStyle = '#475569';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(scene.x, groundY);
-      ctx.lineTo(scene.x + scene.w, groundY);
-      ctx.stroke();
-
-      const observer = { x: scene.x + scene.w * .84, y: groundY - 16 };
-      const truePoint = rayBoundaryPoint(observer, trueAngle, { x: scene.x, y: atmosphereTop, w: scene.w, h: groundY - atmosphereTop });
-      const apparentPoint = rayBoundaryPoint(observer, apparentAngle, { x: scene.x, y: atmosphereTop, w: scene.w, h: groundY - atmosphereTop });
-      const rayDistance = Math.hypot(observer.x - truePoint.x, observer.y - truePoint.y);
-      const cp1 = {
-        x: truePoint.x + Math.cos(trueAngle) * rayDistance * .34,
-        y: truePoint.y + Math.sin(trueAngle) * rayDistance * .34
-      };
-      const cp2 = {
-        x: observer.x - Math.cos(apparentAngle) * rayDistance * .31,
-        y: observer.y - Math.sin(apparentAngle) * rayDistance * .31
-      };
-
-      ctx.save();
-      ctx.setLineDash([7, 6]);
-      ctx.strokeStyle = 'rgba(148,163,184,.72)';
-      ctx.lineWidth = 1.5;
-      ctx.beginPath();
-      ctx.moveTo(observer.x, observer.y);
-      ctx.lineTo(truePoint.x, truePoint.y);
-      ctx.stroke();
-      ctx.strokeStyle = '#c084fc';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(observer.x, observer.y);
-      ctx.lineTo(apparentPoint.x, apparentPoint.y);
-      ctx.stroke();
-      ctx.setLineDash([]);
-      ctx.restore();
-
-      if ($('scatter-show-rays').checked) {
-        [-1, 0, 1].forEach(bundle => {
-          const offset = bundle * (2 + turbulence * 1.7);
-          ctx.strokeStyle = bundle === 0 ? '#f8fafc' : 'rgba(125,211,252,.38)';
-          ctx.lineWidth = bundle === 0 ? 3 : 1.3;
-          ctx.shadowColor = '#93c5fd';
-          ctx.shadowBlur = bundle === 0 ? 8 : 0;
-          ctx.beginPath();
-          ctx.moveTo(truePoint.x, truePoint.y + offset);
-          ctx.bezierCurveTo(cp1.x, cp1.y + offset, cp2.x, cp2.y + offset * .35, observer.x, observer.y + offset * .18);
+      ctx.fillStyle = '#cbd5e1'; ctx.font = '700 13px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.fillText('固定星點', star.x - 20, scene.y + 29);
+      ctx.fillText('擾動空氣', atmosphereX, scene.y + 29);
+      ctx.fillText('固定瞳孔', pupil.x - 32, scene.y + 29);
+      drawStarShape(ctx, star.x, star.y, 11, 4, '#f8fafc', 1);
+      const aperture = compact ? 13 : 17;
+      ctx.strokeStyle = '#f8fafc'; ctx.lineWidth = 5;
+      ctx.beginPath(); ctx.arc(pupil.x, pupil.y, aperture, -Math.PI / 2, Math.PI / 2); ctx.stroke();
+      ctx.strokeStyle = '#f8fafc'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(pupil.x + aperture + 3, pupil.y - 22);
+      ctx.lineTo(pupil.x + aperture + 3, pupil.y + 22); ctx.stroke();
+      const rayCount = 9;
+      for (let i = 0; i < rayCount; i += 1) {
+        const rayOffset = (i - 4) * (compact ? 3.4 : 4.6);
+        const endY = pupil.y + sample.offset + rayOffset * .45;
+        const hit = Math.abs(endY - pupil.y) < aperture;
+        if ($('scatter-show-rays').checked) {
+          ctx.strokeStyle = hit ? 'rgba(250,204,21,.72)' : 'rgba(148,163,184,.38)';
+          ctx.lineWidth = hit ? 2 : 1.2;
+          ctx.beginPath(); ctx.moveTo(star.x + 12, star.y + rayOffset * .4);
+          ctx.lineTo(atmosphereX, star.y + rayOffset * .4);
+          ctx.quadraticCurveTo(atmosphereX + scene.w * .15, star.y + rayOffset * .4 + sample.offset * .6, pupil.x, endY);
           ctx.stroke();
-        });
-        ctx.shadowBlur = 0;
-      }
-
-      if ($('scatter-show-packets').checked) {
-        for (let i = 0; i < 11; i += 1) {
-          const phase = ((time * .22 + i / 11) % 1 + 1) % 1;
-          const photon = cubicPoint(truePoint, cp1, cp2, observer, phase);
-          ctx.fillStyle = '#ffffff';
-          ctx.shadowColor = '#93c5fd';
-          ctx.shadowBlur = 9;
-          ctx.beginPath();
-          ctx.arc(photon.x, photon.y, 2.3, 0, Math.PI * 2);
-          ctx.fill();
         }
-        ctx.shadowBlur = 0;
+        if ($('scatter-show-packets').checked) {
+          const phase = (time * .27 + i / rayCount) % 1;
+          const px = star.x + 12 + (pupil.x - star.x - 12) * phase;
+          const py = star.y + rayOffset * .4 + (endY - star.y - rayOffset * .4) * Math.max(0, (phase - .35) / .65);
+          ctx.fillStyle = hit ? '#fde68a' : '#94a3b8';
+          ctx.beginPath(); ctx.arc(px, py, 2.5, 0, Math.PI * 2); ctx.fill();
+        }
       }
+      if (brightness >= threshold) {
+        ctx.fillStyle = '#fef3c7';
+        ctx.beginPath(); ctx.arc(pupil.x + aperture + 13, pupil.y, 4 + brightness * 7, 0, Math.PI * 2); ctx.fill();
+      }
+      ctx.fillStyle = '#cbd5e1'; ctx.font = '700 12px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.fillText('光束中心偏移（圖上放大）', scene.x + 14, scene.y + scene.h - 42);
+      ctx.fillText('灰線未進瞳孔；黃線進入', scene.x + 14, scene.y + scene.h - 20);
 
-      drawStarShape(ctx, truePoint.x, truePoint.y, 8, 3.4, '#f8fafc', .82);
-      drawStarShape(ctx, apparentPoint.x, apparentPoint.y, 3 + brightness * 9, 2, '#f8fafc', .18 + brightness * .82);
-      drawSceneLabel(ctx, Math.max(scene.x + 8, truePoint.x + 10), Math.max(scene.y + 8, truePoint.y - 28), '真實方向');
-      drawSceneLabel(ctx, Math.max(scene.x + 8, apparentPoint.x + 10), Math.min(groundY - 42, apparentPoint.y + 10), '視位置較高');
-
-      ctx.save();
-      ctx.translate(observer.x, observer.y);
-      ctx.rotate(-apparentAngle);
-      ctx.fillStyle = '#94a3b8';
-      ctx.fillRect(-4, -12, 31, 24);
-      ctx.fillStyle = '#38bdf8';
-      ctx.fillRect(-8, -15, 7, 30);
-      ctx.fillStyle = '#334155';
-      ctx.fillRect(22, -7, 17, 14);
-      ctx.restore();
-      ctx.strokeStyle = '#64748b';
-      ctx.lineWidth = 3;
+      const gx = graph.x + 18, gy = graph.y + (compact ? 70 : 120);
+      const gw = graph.w - 36, gh = compact ? graph.h - 95 : graph.h * .38;
+      ctx.fillStyle = '#e2e8f0'; ctx.font = '700 14px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.fillText('固定瞳孔的相對進光量', gx, graph.y + 28);
+      ctx.font = '800 24px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.fillStyle = brightness < threshold ? '#fb7185' : '#fde68a';
+      ctx.fillText((brightness * 100).toFixed(0) + '%', gx, graph.y + 58);
+      ctx.strokeStyle = '#475569'; ctx.strokeRect(gx, gy, gw, gh);
+      ctx.strokeStyle = '#fb7185'; ctx.setLineDash([4, 4]);
+      const thresholdY = gy + gh * (1 - threshold);
+      ctx.beginPath(); ctx.moveTo(gx, thresholdY); ctx.lineTo(gx + gw, thresholdY); ctx.stroke();
+      ctx.setLineDash([]); ctx.strokeStyle = '#facc15'; ctx.lineWidth = 2;
       ctx.beginPath();
-      ctx.moveTo(observer.x + 12, observer.y + 12);
-      ctx.lineTo(observer.x + 3, groundY + 22);
-      ctx.moveTo(observer.x + 12, observer.y + 12);
-      ctx.lineTo(observer.x + 25, groundY + 22);
-      ctx.stroke();
-      drawSceneLabel(ctx, scene.x + 12, scene.y + 12, '平均折射抬高視位置；湍流主要使亮度閃爍');
-
-      ctx.fillStyle = '#07111f';
-      ctx.strokeStyle = '#35546b';
-      ctx.lineWidth = 1.2;
-      ctx.beginPath();
-      ctx.roundRect(inset.x, inset.y, inset.w, inset.h, 8);
-      ctx.fill();
-      ctx.stroke();
-      ctx.fillStyle = '#e2e8f0';
-      ctx.font = `800 ${compact ? 12 : 14}px "Microsoft JhengHei", Arial, sans-serif`;
-      ctx.fillText('望遠鏡視野：同一顆星的像', inset.x + 14, inset.y + 24);
-
-      const viewCenter = { x: inset.x + inset.w * .5, y: inset.y + inset.h * (compact ? .40 : .32) };
-      const viewRadius = Math.min(inset.w * .24, inset.h * (compact ? .22 : .16), 62);
-      ctx.strokeStyle = '#475569';
-      ctx.lineWidth = 1;
-      ctx.beginPath();
-      ctx.arc(viewCenter.x, viewCenter.y, viewRadius, 0, Math.PI * 2);
-      ctx.moveTo(viewCenter.x - viewRadius, viewCenter.y);
-      ctx.lineTo(viewCenter.x + viewRadius, viewCenter.y);
-      ctx.moveTo(viewCenter.x, viewCenter.y - viewRadius);
-      ctx.lineTo(viewCenter.x, viewCenter.y + viewRadius);
-      ctx.stroke();
-      ctx.fillStyle = '#94a3b8';
-      ctx.font = '600 10px "Microsoft JhengHei", Arial, sans-serif';
-      ctx.fillText('平均位置', viewCenter.x + 6, viewCenter.y - 6);
-      const spotX = viewCenter.x + Math.sin(time * 5.3) * viewRadius * .045 * clampValue(turbulence, 0, 1.5);
-      const spotY = viewCenter.y + Math.sin(time * 7.7 + 1.1) * viewRadius * .035 * clampValue(turbulence, 0, 1.5);
-      drawStarShape(ctx, spotX, spotY, 4 + brightness * 7, 2 + brightness * 2.2, brightness > .55 ? '#f8fafc' : '#93c5fd', .38 + brightness * .62);
-
-      const graphX = inset.x + 18;
-      const graphW = inset.w - 36;
-      const graphY = inset.y + inset.h * (compact ? .70 : .62);
-      const graphH = compact ? 42 : 58;
-      ctx.strokeStyle = '#475569';
-      ctx.strokeRect(graphX, graphY, graphW, graphH);
-      ctx.strokeStyle = '#f8fafc';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      for (let i = 0; i <= 80; i += 1) {
-        const sampleTime = time - (80 - i) * .035;
-        const sample = Math.sin(sampleTime * 7.1) * .58 + Math.sin(sampleTime * 12.7 + 1.4) * .27 + Math.sin(sampleTime * 19.3) * .15;
-        const sampleBrightness = clampValue(1 - flickerDepth * (.52 + .48 * sample), .18, 1);
-        const x = graphX + i / 80 * graphW;
-        const y = graphY + graphH - sampleBrightness * (graphH - 8) - 4;
-        if (i === 0) ctx.moveTo(x, y);
-        else ctx.lineTo(x, y);
+      for (let i = 0; i <= 100; i += 1) {
+        const value = scintillationSample(time - (100 - i) * .035, elevation, turbulence).light;
+        const x = gx + gw * i / 100;
+        const y = gy + (1 - value) * gh;
+        if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
       }
       ctx.stroke();
-      ctx.fillStyle = '#cbd5e1';
-      ctx.font = '700 10px "Microsoft JhengHei", Arial, sans-serif';
-      ctx.fillText(`進眼光量 ${(brightness * 100).toFixed(0)}%`, graphX, graphY - 8);
-      ctx.fillText('時間 →', graphX + graphW - 40, graphY + graphH + 15);
-      ctx.fillStyle = '#93c5fd';
-      ctx.fillText(`位置抖動約 ${jitterArcsec.toFixed(1)}″`, graphX, graphY + graphH + (compact ? 15 : 34));
+      ctx.fillStyle = '#fda4af'; ctx.font = '600 11px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.fillText('示意辨識門檻', gx, Math.min(graph.y + graph.h - 10, thresholdY + 18));
+      if (!compact) {
+        ctx.fillStyle = '#cbd5e1'; ctx.font = '600 12px "Microsoft JhengHei", Arial, sans-serif';
+        ctx.fillText('星點位置固定；亮度會起伏', gx, gy + gh + 35);
+        ctx.fillText('亂流偏折與聚焦使進光量改變', gx, gy + gh + 56);
+      }
+      const arcmin = atmosphericRefractionArcmin(elevation, density);
+      setText('scatter-elevation-out', elevation.toFixed(0) + '°');
+      setText('scatter-density-out', density.toFixed(2) + 'x');
+      setText('scatter-speed-out', number('scatter-speed').toFixed(2) + 'x');
+      setText('scatter-turbulence-out', turbulence.toFixed(2) + 'x');
+      $('scatter-path').innerHTML = '星體高度 ' + elevation.toFixed(0) + '°<small>越低，大氣路徑越長</small>';
+      $('scatter-blue').innerHTML = '平均折射約 ' + arcmin.toFixed(1) + '′<small>與快速閃爍是兩種效應</small>';
+      $('scatter-direct').innerHTML = '進眼光量 ' + (brightness * 100).toFixed(0) + '%<small>教學相對值，非實測光度</small>';
+      $('scatter-status').innerHTML = brightness < threshold
+        ? '暫低於示意辨識門檻<small>微弱星點可能暫時看不見</small>'
+        : '可見的星光<small>瞳孔位置與星體位置保持固定</small>';
+    }
 
-      setText('scatter-elevation-out', `${elevation.toFixed(0)}°`);
-      setText('scatter-density-out', `${density.toFixed(2)}x`);
-      setText('scatter-speed-out', `${number('scatter-speed').toFixed(2)}x`);
-      setText('scatter-turbulence-out', `${turbulence.toFixed(2)}x`);
-      $('scatter-path').innerHTML = `真實高度 = ${elevation.toFixed(1)}°<small>越接近地平線，通過的大氣越長</small>`;
-      $('scatter-blue').innerHTML = `平均折射 = ${refractionArcmin.toFixed(2)}′<small>標準近似；圖中角度已放大</small>`;
-      $('scatter-direct').innerHTML = `視高度 ≈ ${(elevation + refractionArcmin / 60).toFixed(2)}°<small>觀察者沿最後方向反推，所以看得較高</small>`;
-      $('scatter-status').innerHTML = `星光閃爍：光量 ${(brightness * 100).toFixed(0)}%<small>湍流使星像漂移約 ${jitterArcsec.toFixed(1)}″</small>`;
+    function drawStarlightScintillation(ctx, w, h, elevation, density, turbulence) {
+      return drawScintillationModel(ctx, w, h, elevation, density, turbulence);
     }
 
     function drawStormSky(ctx, w, h, elevation, density, turbulence) {
-      const horizon = h * .79;
-      const sunset = clampValue((26 - elevation) / 24, 0, 1);
-      const cloud = clampValue((density - .4) / 1.6, 0, 1);
-      const sky = ctx.createLinearGradient(0, 0, 0, horizon);
-      sky.addColorStop(0, sunset > .5 ? '#415269' : '#6aa5c2');
-      sky.addColorStop(.57, sunset > .5 ? '#8f7287' : '#9ac3cc');
-      sky.addColorStop(1, sunset > .5 ? '#d99b78' : '#c3d7d6');
-      ctx.fillStyle = sky; ctx.fillRect(0, 0, w, horizon);
-      ctx.fillStyle = '#354747'; ctx.fillRect(0, horizon, w, h - horizon);
-      const cloudBase = h * (.42 + cloud * .10);
-      const light = ctx.createLinearGradient(0, 0, 0, cloudBase + h * .11);
-      light.addColorStop(0, '#3c4956');
-      light.addColorStop(.68, sunset > .5 ? '#53605f' : '#53727a');
-      light.addColorStop(1, sunset > .5 ? '#526f64' : '#4d7074');
-      ctx.fillStyle = light;
-      ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(w, 0);
-      for (let x = w; x >= 0; x -= 6) {
-        const base = cloudBase + h * (.045 * Math.sin(x * .012) + .018 * Math.sin(x * .041 + 2.1) + .012 * Math.sin(x * .073));
-        ctx.lineTo(x, base);
+      const compact = w < 720;
+      const airMass = Math.min(12, 1 / (Math.sin(elevation * Math.PI / 180) + .035));
+      const direct = {
+        red: Math.exp(-.16 * density * airMass * Math.pow(550 / 650, 4)),
+        green: Math.exp(-.16 * density * airMass * Math.pow(550 / 530, 4)),
+        blue: Math.exp(-.16 * density * airMass * Math.pow(550 / 450, 4))
+      };
+      const sky = { red: 1 - direct.red, green: 1 - direct.green, blue: 1 - direct.blue };
+      const sunlightColor = wavelengthRgb(direct);
+      const skylightColor = wavelengthRgb(sky);
+      ctx.fillStyle = '#10202d'; ctx.fillRect(0, 0, w, h);
+      const sun = { x: w * .15, y: h * .27 };
+      const skyPoint = { x: w * .15, y: h * .66 };
+      const cloudX = w * .42, cloudY = h * .20;
+      const cloudW = w * (.25 + density * .035), cloudH = h * (.48 + density * .06);
+      const eye = { x: w * .87, y: h * .48 };
+      ctx.fillStyle = '#e2e8f0';
+      ctx.font = '700 ' + (compact ? 12 : 15) + 'px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.fillText('低角度直射光', 18, 34);
+      ctx.fillText('周圍天空散射光', 18, h * .58);
+      ctx.fillStyle = sunlightColor; ctx.beginPath();
+      ctx.arc(sun.x, sun.y, compact ? 15 : 24, 0, Math.PI * 2); ctx.fill();
+      ctx.fillStyle = skylightColor; ctx.beginPath();
+      ctx.arc(skyPoint.x, skyPoint.y, compact ? 13 : 20, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = sunlightColor; ctx.lineWidth = compact ? 5 : 9;
+      ctx.beginPath(); ctx.moveTo(sun.x + 25, sun.y); ctx.lineTo(cloudX, cloudY + cloudH * .37); ctx.stroke();
+      ctx.strokeStyle = skylightColor; ctx.lineWidth = compact ? 5 : 9;
+      ctx.beginPath(); ctx.moveTo(skyPoint.x + 25, skyPoint.y); ctx.lineTo(cloudX, cloudY + cloudH * .65); ctx.stroke();
+      const cloudGradient = ctx.createLinearGradient(cloudX, cloudY, cloudX, cloudY + cloudH);
+      cloudGradient.addColorStop(0, '#d5dde2');
+      cloudGradient.addColorStop(.5, '#667d87');
+      cloudGradient.addColorStop(1, '#253944');
+      ctx.fillStyle = cloudGradient;
+      ctx.beginPath(); ctx.roundRect(cloudX, cloudY, cloudW, cloudH, 36); ctx.fill();
+      for (let i = 0; i < 80; i += 1) {
+        const x = cloudX + 12 + (i * 43 % Math.max(12, cloudW - 24));
+        const y = cloudY + 12 + (i * 61 % Math.max(12, cloudH - 24));
+        ctx.fillStyle = 'rgba(237,245,249,.24)';
+        ctx.beginPath(); ctx.arc(x, y, 2 + i % 3, 0, Math.PI * 2); ctx.fill();
       }
-      ctx.closePath(); ctx.fill();
-      const veil = ctx.createLinearGradient(0, cloudBase - 25, 0, horizon);
-      veil.addColorStop(0, `rgba(55,88,85,${.13 + cloud * .25})`);
-      veil.addColorStop(1, 'rgba(60,83,79,0)');
-      ctx.fillStyle = veil; ctx.fillRect(0, cloudBase - 25, w, horizon - cloudBase + 25);
-      ctx.save(); ctx.strokeStyle = `rgba(165,198,190,${.06 + cloud * .10})`;
-      ctx.lineWidth = 1;
-      for (let i = 0; i < 75; i += 1) {
-        const x = (i * 89 + 29) % w;
-        const y = cloudBase + ((i * 43) % Math.max(20, horizon - cloudBase - 12));
-        ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x - 8, y + 28); ctx.stroke();
+      ctx.fillStyle = '#0b1723'; ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.arc(eye.x, eye.y, compact ? 15 : 23, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#1f3744'; ctx.font = '700 ' + (compact ? 11 : 13) + 'px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.fillText('含冰水的厚雲', cloudX + 8, cloudY + 26);
+      ctx.fillStyle = '#e2e8f0';
+      ctx.fillText('觀看方向', eye.x - 34, eye.y + 42);
+      ctx.strokeStyle = '#94a3b8'; ctx.setLineDash([5, 5]); ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(cloudX + cloudW, cloudY + cloudH * .5); ctx.lineTo(eye.x - 24, eye.y); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = '#cbd5e1'; ctx.font = '700 ' + (compact ? 11 : 14) + 'px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.fillText('？', cloudX + cloudW + (eye.x - cloudX - cloudW) * .45, eye.y - 12);
+      const infoY = h * .83;
+      ctx.fillText(compact ? '紫霞：紅色晚霞與藍色散射光' : '紫色晚霞：偏紅的低角度照明與較短波散射光、氣膠條件可能共同作用', 18, infoY);
+      ctx.fillStyle = '#94a3b8'; ctx.font = '600 ' + (compact ? 10 : 12) + 'px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.fillText(compact ? '綠雲：冰水雲假說仍有爭議' : '綠色暴風天空與冰水豐富的雲有關的假說仍有爭議；不能用單一公式定色。', 18, infoY + 25);
+      ctx.fillText(compact ? '雲色不能當龍捲風警報' : '綠色或紫色都不是龍捲風警報；圖示只給出可能的入射照明。', 18, infoY + 49);
+      $('scatter-path').innerHTML = '太陽仰角 ' + elevation.toFixed(0) + '°<small>決定直射光的相對路徑</small>';
+      $('scatter-blue').innerHTML = '雲量設定 ' + density.toFixed(2) + 'x<small>僅表示雲層示意厚度</small>';
+      $('scatter-direct').innerHTML = '直射與天空光色不同<small>照明混合不等於雲色預報</small>';
+      $('scatter-status').innerHTML = '綠／紫天色原因未定<small>不能當成龍捲風判據</small>';
+      setText('scatter-elevation-out', elevation.toFixed(0) + '°');
+      setText('scatter-density-out', density.toFixed(2) + 'x');
+      setText('scatter-speed-out', number('scatter-speed').toFixed(2) + 'x');
+      setText('scatter-turbulence-out', turbulence.toFixed(2) + 'x');
+    }
+
+    function drawScatteringModel(ctx, w, h, elevation, density) {
+      const rayleigh = $('scatter-type').value === 'rayleigh';
+      const exponent = rayleigh ? 4 : 1.05;
+      const colors = [
+        { key: 'red', label: '紅', wavelength: 650, color: '#fb6b66' },
+        { key: 'green', label: '綠', wavelength: 530, color: '#68d69a' },
+        { key: 'blue', label: '藍', wavelength: 450, color: '#61bbff' }
+      ];
+      const airMass = Math.min(12, 1 / (Math.sin(elevation * Math.PI / 180) + .035));
+      const depth = density * airMass * (rayleigh ? .16 : .20);
+      const transmissionAt = (channel, fraction) => Math.exp(-depth * Math.pow(550 / channel.wavelength, exponent) * fraction);
+      const transmission = Object.fromEntries(colors.map(channel => [channel.key, transmissionAt(channel, 1)]));
+      const side = Object.fromEntries(colors.map(channel => [channel.key, 1 - transmission[channel.key]]));
+      const compact = w < 720;
+      const left = compact ? 36 : 76, right = w - (compact ? 24 : 70);
+      const beamY = compact ? h * .34 : h * .36;
+      ctx.fillStyle = '#081827'; ctx.fillRect(0, 0, w, h);
+      const skyColor = wavelengthRgb(side);
+      const skyGradient = ctx.createLinearGradient(0, 0, 0, beamY);
+      skyGradient.addColorStop(0, skyColor);
+      skyGradient.addColorStop(1, '#081827');
+      ctx.globalAlpha = rayleigh ? .23 : .13;
+      ctx.fillStyle = skyGradient; ctx.fillRect(0, 0, w, beamY);
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = '#e2e8f0'; ctx.font = '700 ' + (compact ? 12 : 15) + 'px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.fillText('同一束入射白光', left, 30);
+      ctx.fillText('側面看天空：散出的光', left, compact ? 67 : 71);
+      ctx.fillStyle = skyColor;
+      ctx.fillRect(right - (compact ? 33 : 44), compact ? 54 : 55, compact ? 28 : 36, 14);
+      const tracks = colors.map((channel, index) => ({ ...channel, y: beamY + (index - 1) * (compact ? 15 : 20) }));
+      tracks.forEach(channel => {
+        ctx.fillStyle = channel.color;
+        ctx.font = '800 13px "Microsoft JhengHei", Arial, sans-serif';
+        ctx.fillText(channel.label, left - 23, channel.y + 4);
+        for (let j = 0; j < 36; j += 1) {
+          const a = j / 36, b = (j + 1) / 36;
+          ctx.strokeStyle = channel.color;
+          ctx.globalAlpha = .10 + .82 * transmissionAt(channel, (a + b) / 2);
+          ctx.lineWidth = compact ? 5 : 7;
+          ctx.beginPath(); ctx.moveTo(left + (right - left) * a, channel.y);
+          ctx.lineTo(left + (right - left) * b + 1, channel.y); ctx.stroke();
+        }
+        ctx.globalAlpha = 1;
+      });
+      if ($('scatter-show-packets').checked) {
+        for (let i = 0; i < 13; i += 1) {
+          const progress = (time * .12 + i / 13) % 1;
+          const x = left + (right - left) * progress;
+          tracks.forEach(channel => {
+            const present = ((i * 37 + (channel.wavelength % 19) * 13) % 100) / 100 < transmissionAt(channel, progress);
+            if (!present) return;
+            ctx.fillStyle = channel.color;
+            ctx.beginPath(); ctx.arc(x, channel.y, compact ? 3 : 4, 0, Math.PI * 2); ctx.fill();
+          });
+        }
       }
-      ctx.restore();
-      drawSceneLabel(ctx, 18, 18, '入射光色 + 厚雲遮蔽 + 水滴與冰晶 + 觀看方向');
-      drawSceneLabel(ctx, 18, h - 55, '綠／紫外觀並非龍捲風判據；顏色沒有單一固定原因');
-      $('scatter-path').innerHTML = `太陽仰角 ${elevation.toFixed(0)}°<small>低角度改變入射光的色彩</small>`;
-      $('scatter-blue').innerHTML = `雲層光學厚度：定性 ${density.toFixed(2)}x<small>厚雲擋住部分直射與天空光</small>`;
-      $('scatter-direct').innerHTML = `${sunset > .5 ? '偏暖的低角度日光' : '較白的高角度日光'}<small>雲滴與冰晶對各色的散射不同於分子 Rayleigh 模型</small>`;
-      $('scatter-status').innerHTML = `雲色是多因素外觀<small>不能由顏色單獨判定是否有龍捲風</small>`;
-      setText('scatter-elevation-out', `${elevation.toFixed(0)}°`);
-      setText('scatter-density-out', `${density.toFixed(2)}x`);
-      setText('scatter-speed-out', `${number('scatter-speed').toFixed(2)}x`);
-      setText('scatter-turbulence-out', `${turbulence.toFixed(2)}x`);
+      if ($('scatter-show-rays').checked) {
+        for (let step = 1; step <= 7; step += 1) {
+          const fraction = step / 8;
+          const x = left + (right - left) * fraction;
+          tracks.forEach((channel, index) => {
+            const lost = transmissionAt(channel, fraction - .06) - transmissionAt(channel, fraction + .06);
+            const rise = compact ? 53 : 75;
+            ctx.strokeStyle = channel.color;
+            ctx.globalAlpha = Math.min(.82, .08 + lost * 4.2);
+            ctx.lineWidth = 1.4 + lost * 10;
+            ctx.beginPath(); ctx.moveTo(x, channel.y);
+            ctx.lineTo(x + (index - 1) * 5, channel.y - rise); ctx.stroke();
+            ctx.fillStyle = channel.color;
+            ctx.beginPath(); ctx.arc(x + (index - 1) * 5, channel.y - rise, 2.8, 0, Math.PI * 2); ctx.fill();
+          });
+        }
+        ctx.globalAlpha = 1;
+      }
+      const directColor = wavelengthRgb(transmission);
+      ctx.fillStyle = '#e2e8f0'; ctx.font = '700 ' + (compact ? 11 : 14) + 'px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.fillText('直射方向剩下的光', left, beamY + (compact ? 57 : 69));
+      ctx.fillStyle = directColor;
+      ctx.beginPath(); ctx.arc(right - 13, beamY + (compact ? 54 : 65), compact ? 9 : 13, 0, Math.PI * 2); ctx.fill();
+      const tableY = h * .57;
+      ctx.strokeStyle = '#456176'; ctx.lineWidth = 1;
+      ctx.beginPath(); ctx.moveTo(left - 16, tableY - 17); ctx.lineTo(right, tableY - 17); ctx.stroke();
+      if ($('scatter-show-bars').checked) {
+        const columnW = (right - left) / 4;
+        for (let step = 0; step <= 3; step += 1) {
+          const x = left + step * columnW;
+          const barW = Math.max(20, columnW - (compact ? 11 : 22));
+          ctx.fillStyle = '#cbd5e1';
+          ctx.font = '700 ' + (compact ? 10 : 13) + 'px "Microsoft JhengHei", Arial, sans-serif';
+          ctx.fillText(step === 0 ? '入射' : step === 3 ? '到眼睛' : step + '/3', x, tableY);
+          colors.forEach((channel, index) => {
+            const y = tableY + 20 + index * (compact ? 31 : 39);
+            const amount = transmissionAt(channel, step / 3);
+            ctx.fillStyle = '#223649'; ctx.fillRect(x, y, barW, compact ? 12 : 15);
+            ctx.fillStyle = channel.color; ctx.fillRect(x, y, barW * amount, compact ? 12 : 15);
+            if (!compact) {
+              ctx.fillStyle = '#cbd5e1'; ctx.font = '600 10px Arial';
+              ctx.fillText(Math.round(amount * 100) + '%', x, y + 28);
+            }
+          });
+        }
+      }
+      const noteY = h - 33;
+      ctx.fillStyle = '#cbd5e1'; ctx.font = '600 ' + (compact ? 10 : 12) + 'px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.fillText('光點等速；亮度與色彩代表剩餘通量，非傳播速度', left, noteY);
+      setText('scatter-elevation-out', elevation.toFixed(0) + '°');
+      setText('scatter-density-out', density.toFixed(2) + 'x');
+      setText('scatter-speed-out', number('scatter-speed').toFixed(2) + 'x');
+      setText('scatter-turbulence-out', number('scatter-turbulence').toFixed(2) + 'x');
+      $('scatter-path').innerHTML = '相對路徑 ' + airMass.toFixed(1) + '<small>仰角越低，穿過的大氣越長</small>';
+      $('scatter-blue').innerHTML = '藍／紅散射比 ' + (Math.pow(650 / 450, exponent)).toFixed(1)
+        + '<small>' + (rayleigh ? '分子散射：約與波長四次方成反比' : '霧滴近似：對波長選擇較弱') + '</small>';
+      $('scatter-direct').innerHTML = '直射剩餘：紅 ' + Math.round(transmission.red * 100)
+        + '%／綠 ' + Math.round(transmission.green * 100) + '%／藍 ' + Math.round(transmission.blue * 100)
+        + '%<small>短波離開直射方向較多</small>';
+      $('scatter-status').innerHTML = transmission.blue < transmission.red * .5
+        ? '直射光明顯偏暖<small>長路徑使藍光大多散到別處</small>'
+        : rayleigh ? '側向天空偏藍<small>不是藍光跑得比較快</small>'
+          : '霧滴散射偏白<small>各色離開直射束較接近</small>';
     }
 
     function drawScattering() {
@@ -7688,175 +7725,7 @@
         drawStormSky(ctx, w, h, elevation, density, turbulence);
         return;
       }
-      const rayleigh = $('scatter-type').value === 'rayleigh';
-      const elevationRad = elevation * Math.PI / 180;
-      const pathLength = Math.min(8, 1 / (Math.sin(elevationRad) + .055));
-      const exponent = rayleigh ? 4 : 1.05;
-      const weights = {
-        red: Math.pow(550 / 650, exponent),
-        green: Math.pow(550 / 530, exponent),
-        blue: Math.pow(550 / 450, exponent)
-      };
-      const opticalDepth = density * pathLength * (rayleigh ? .075 : .12);
-      const transmission = {
-        red: Math.exp(-opticalDepth * weights.red),
-        green: Math.exp(-opticalDepth * weights.green),
-        blue: Math.exp(-opticalDepth * weights.blue)
-      };
-      const directColor = wavelengthRgb(transmission);
-      const horizon = h * .82;
-      const sun = {
-        x: 62 + (elevation / 80) * w * .08,
-        y: horizon - Math.sin(elevationRad) * h * .62
-      };
-      const observer = { x: w * .84, y: horizon - 6 };
-
-      const sky = ctx.createLinearGradient(0, 0, 0, horizon);
-      const blueStrength = clampValue((1 - transmission.blue) * (rayleigh ? 1.4 : .45), 0, 1);
-      sky.addColorStop(0, rayleigh ? `rgb(${Math.round(20 + 55 * (1 - blueStrength))},${Math.round(80 + 75 * blueStrength)},${Math.round(130 + 100 * blueStrength)})` : '#aeb8bd');
-      sky.addColorStop(1, elevation < 15 ? '#f4a261' : rayleigh ? '#cfe8f7' : '#d8d4c8');
-      ctx.fillStyle = sky;
-      ctx.fillRect(0, 0, w, horizon);
-      ctx.fillStyle = '#31483a';
-      ctx.fillRect(0, horizon, w, h - horizon);
-
-      ctx.save();
-      ctx.globalAlpha = .24 + density * .08;
-      for (let i = 0; i < 120; i += 1) {
-        const x = 16 + ((i * 83 + 19) % Math.max(20, w - 32));
-        const y = 22 + ((i * 47 + i * i * 7) % Math.max(20, horizon - 45));
-        ctx.fillStyle = rayleigh ? (i % 3 === 0 ? '#bfdbfe' : '#f8fafc') : '#f1f5f9';
-        ctx.beginPath();
-        ctx.arc(x, y, rayleigh ? 1.4 : 2.8, 0, Math.PI * 2);
-        ctx.fill();
-      }
-      ctx.restore();
-
-      const sunGlow = ctx.createRadialGradient(sun.x, sun.y, 3, sun.x, sun.y, 38);
-      sunGlow.addColorStop(0, '#ffffff');
-      sunGlow.addColorStop(.25, directColor);
-      sunGlow.addColorStop(1, 'rgba(251,191,36,0)');
-      ctx.fillStyle = sunGlow;
-      ctx.fillRect(sun.x - 42, sun.y - 42, 84, 84);
-      ctx.fillStyle = directColor;
-      ctx.beginPath();
-      ctx.arc(sun.x, sun.y, 13, 0, Math.PI * 2);
-      ctx.fill();
-      drawSceneLabel(ctx, 16, 14, elevation < 15 ? '低角度：大氣路徑很長' : '高角度：大氣路徑較短');
-
-      ctx.save();
-      ctx.strokeStyle = directColor;
-      ctx.globalAlpha = .5;
-      ctx.lineWidth = 10;
-      ctx.shadowColor = directColor;
-      ctx.shadowBlur = 16;
-      ctx.beginPath();
-      ctx.moveTo(sun.x, sun.y);
-      ctx.lineTo(observer.x, observer.y);
-      ctx.stroke();
-      ctx.lineWidth = 2;
-      ctx.globalAlpha = .9;
-      ctx.shadowBlur = 0;
-      ctx.stroke();
-      ctx.restore();
-
-      if ($('scatter-show-packets').checked) {
-        const channels = [
-          { color: '#ef4444', value: transmission.red, offset: -7, speed: .17 },
-          { color: '#22c55e', value: transmission.green, offset: 0, speed: .19 },
-          { color: '#38bdf8', value: transmission.blue, offset: 7, speed: .21 }
-        ];
-        const dx = observer.x - sun.x;
-        const dy = observer.y - sun.y;
-        const length = Math.hypot(dx, dy);
-        const nx = -dy / length;
-        const ny = dx / length;
-        channels.forEach(channel => {
-          const a = { x: sun.x + nx * channel.offset, y: sun.y + ny * channel.offset };
-          const b = { x: observer.x + nx * channel.offset, y: observer.y + ny * channel.offset };
-          drawMovingParticles(ctx, a, b, 9, time * channel.speed, channel.color, .25 + .75 * channel.value, 3.2);
-        });
-      }
-
-      if ($('scatter-show-rays').checked) {
-        const eventCount = rayleigh ? 9 : 6;
-        for (let i = 0; i < eventCount; i += 1) {
-          const ratio = .18 + i / (eventCount + 2) * .67;
-          const event = pointOnSegment(sun, observer, ratio);
-          const lift = (i % 2 ? -1 : 1) * (40 + (i % 3) * 18);
-          const scatterPoint = { x: event.x + 30 + i * 4, y: clampValue(event.y + lift, 45, horizon - 50) };
-          const color = rayleigh ? (i % 5 === 0 ? '#ef8a74' : i % 3 === 0 ? '#9bd8a2' : '#7dd3fc') : '#f8fafc';
-          ctx.save();
-          ctx.strokeStyle = color;
-          ctx.globalAlpha = rayleigh ? (color === '#7dd3fc' ? .64 : .25) : .35;
-          ctx.lineWidth = 1.4;
-          ctx.setLineDash([5, 5]);
-          ctx.beginPath();
-          ctx.moveTo(event.x, event.y);
-          ctx.quadraticCurveTo(scatterPoint.x, scatterPoint.y, observer.x, observer.y - 18);
-          ctx.stroke();
-          ctx.setLineDash([]);
-          ctx.fillStyle = color;
-          ctx.shadowColor = color;
-          ctx.shadowBlur = 8;
-          ctx.beginPath();
-          ctx.arc(event.x, event.y, 4, 0, Math.PI * 2);
-          ctx.fill();
-          ctx.restore();
-        }
-      }
-
-      ctx.save();
-      ctx.fillStyle = '#f8fafc';
-      ctx.strokeStyle = '#334155';
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.arc(observer.x, observer.y - 17, 11, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.stroke();
-      ctx.fillRect(observer.x - 8, observer.y - 6, 16, 28);
-      ctx.restore();
-      drawSceneLabel(ctx, w - 18, horizon - 72, '觀察者收到直達光', 'right');
-      drawSceneLabel(ctx, 16, horizon - 62, rayleigh
-        ? elevation < 15 ? '長路徑：藍光多被散走，直達夕陽偏紅' : '側向散射進入眼睛：藍光較多，天空偏藍'
-        : '較大粒子使各色散射較接近，雲霧偏白');
-
-      if ($('scatter-show-bars').checked) {
-        const barX = w - 172;
-        const barY = 34;
-        const barW = 118;
-        ctx.save();
-        ctx.fillStyle = 'rgba(255,255,255,.84)';
-        ctx.strokeStyle = 'rgba(51,65,85,.35)';
-        ctx.beginPath();
-        ctx.roundRect(barX - 12, barY - 15, 158, 118, 8);
-        ctx.fill();
-        ctx.stroke();
-        [['藍 450 nm', weights.blue, '#0ea5e9'], ['綠 530 nm', weights.green, '#22c55e'], ['紅 650 nm', weights.red, '#ef4444']].forEach((entry, index) => {
-          const normalized = entry[1] / weights.blue;
-          const y = barY + index * 31;
-          ctx.fillStyle = '#334155';
-          ctx.font = '700 11px "Microsoft JhengHei", Arial, sans-serif';
-          ctx.fillText(entry[0], barX, y);
-          ctx.fillStyle = 'rgba(148,163,184,.25)';
-          ctx.fillRect(barX, y + 7, barW, 8);
-          ctx.fillStyle = entry[2];
-          ctx.fillRect(barX, y + 7, barW * normalized, 8);
-        });
-        ctx.restore();
-      }
-
-      setText('scatter-elevation-out', `${elevation.toFixed(0)}°`);
-      setText('scatter-density-out', `${density.toFixed(2)}x`);
-      setText('scatter-speed-out', `${number('scatter-speed').toFixed(2)}x`);
-      setText('scatter-turbulence-out', `${turbulence.toFixed(2)}x`);
-      $('scatter-path').innerHTML = `相對路徑 = ${pathLength.toFixed(1)}<small>太陽越低，穿越大氣越長</small>`;
-      $('scatter-blue').innerHTML = `藍／紅散射比 = ${(weights.blue / weights.red).toFixed(1)}<small>${rayleigh ? 'Rayleigh：強度約與 1/λ⁴ 成正比' : 'Mie：對波長選擇較弱，外觀偏白'}</small>`;
-      const warm = transmission.blue < transmission.red * .7;
-      $('scatter-direct').innerHTML = `直達光：${warm ? '橘紅色' : rayleigh ? '近白色' : '偏白'}<small>R ${(transmission.red * 100).toFixed(0)}%｜G ${(transmission.green * 100).toFixed(0)}%｜B ${(transmission.blue * 100).toFixed(0)}%</small>`;
-      $('scatter-status').innerHTML = rayleigh
-        ? `${elevation < 15 ? '夕陽情境' : '晴朗天空'}<small>短波光較容易被分子散到側方</small>`
-        : '霧滴／懸浮微粒<small>各色光散射較接近，因此霧偏白</small>';
+      return drawScatteringModel(ctx, w, h, elevation, density);
     }
 
     function drawCurrentLoop(ctx, center, rx, ry, direction, strength, phase, color) {
