@@ -4,6 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>高中物理現象模擬器</title>
+  <link rel="stylesheet" href="vendor/katex.min.css">
   <style>
     :root {
       color-scheme: light;
@@ -27,7 +28,7 @@
     * { box-sizing: border-box; }
     body {
       margin: 0;
-      font-family: "Noto Sans TC", "Microsoft JhengHei", Arial, sans-serif;
+      font-family: "Times New Roman", "DFKai-SB", "標楷體", "BiauKai", serif;
       color: var(--ink);
       background: var(--bg);
       line-height: 1.65;
@@ -96,6 +97,9 @@
       font-weight: 700;
       cursor: pointer;
     }
+    input, select { font: inherit; }
+    .katex { font-size: 1em; }
+    .badge .katex { white-space: nowrap; }
     button.secondary { background: #334155; }
     button.tab {
       background: #e2e8f0;
@@ -364,6 +368,10 @@
     #scattering-canvas { height: min(76vh, 680px); min-height: 560px; }
     #brake-canvas { height: min(84vh, 780px); min-height: 680px; }
     #motor-canvas { height: min(80vh, 720px); min-height: 620px; }
+    .em-stage { position: relative; width: 100%; height: min(80vh, 720px); min-height: 620px; overflow: hidden; background: #f2f6f5; touch-action: none; }
+    .em-stage canvas { display: block; width: 100%; height: 100%; }
+    .em-stage:fullscreen { height: 100vh !important; min-height: 0 !important; }
+    [hidden] { display: none !important; }
     #cyclotron-canvas, #selector-canvas { height: min(76vh, 650px); min-height: 550px; }
     #prism-canvas, #brewster-canvas, #aberration-canvas, #film-canvas {
       height: min(68vh, 590px);
@@ -494,7 +502,8 @@
       #refraction-canvas { height: 500px; min-height: 440px; }
       #scattering-canvas { height: 680px; min-height: 620px; }
       #brake-canvas { height: 860px; min-height: 810px; }
-      #motor-canvas { height: 720px; min-height: 680px; }
+      #motor-canvas { height: 570px; min-height: 540px; }
+      .em-stage { height: 380px; min-height: 360px; }
       #cyclotron-canvas, #selector-canvas { height: 590px; min-height: 550px; }
       #prism-canvas, #brewster-canvas, #aberration-canvas, #film-canvas { height: 540px; min-height: 500px; }
       .tabs { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: thin; }
@@ -1825,7 +1834,7 @@
           </div>
           <div class="values" aria-live="polite">
             <div class="badge" id="motor-current">線圈電流 I = 2.3 A<small>電子流方向與傳統電流相反</small></div>
-            <div class="badge" id="motor-torque">電磁力矩 τ = 0.18 N·m<small>τ = NIAB sinθ</small></div>
+            <div class="badge" id="motor-torque">電磁力矩</div>
             <div class="badge" id="motor-speed-badge">轉速 = 0 rpm<small>啟動後逐漸接近平衡轉速</small></div>
             <div class="badge" id="motor-commutator">換向器：A 接正極<small>跨過半圈時交換電流方向</small></div>
           </div>
@@ -1835,9 +1844,11 @@
             <button type="button" class="motor-layer" data-motor-layer="force" aria-pressed="false">2 判斷 I × B</button>
             <button type="button" class="motor-layer" data-motor-layer="torque" aria-pressed="false">3 合成力矩</button>
           </div>
-          <div class="plot-wrap">
+          <div class="presets" role="group" aria-label="馬達視圖"><button type="button" class="preset em-render active" data-em-render="motor" data-view="diagram" aria-pressed="true">2D 因果圖</button><button type="button" class="preset em-render" data-em-render="motor" data-view="apparatus" aria-pressed="false">3D 裝置</button></div>
+          <div class="plot-wrap" id="motor-diagram">
             <canvas id="motor-canvas" role="img" aria-label="包含磁極、線圈、電流粒子、受力方向、分裂環換向器與電刷的直流馬達動畫。"></canvas>
           </div>
+          <div class="em-stage" id="motor-three" hidden title="拖曳旋轉視角；滾輪縮放" aria-label="可拖曳旋轉檢視的馬達立體裝置：磁極、轉子線圈、分裂環、電刷及磁力方向。"></div>
           <div class="law-chain" aria-label="馬達磁力定律鏈">
             <div class="law-step"><strong>1 電流</strong><span id="motor-proof-current">兩側導線電流方向相反</span></div>
             <div class="law-step"><strong>2 磁場</strong><span id="motor-proof-field">B 由 N 極指向 S 極</span></div>
@@ -1880,9 +1891,11 @@
         </div>
 
         <div id="em-view-generator" class="em-view">
-          <div class="module-head"><div><h2>交流發電機：轉動線圈產生電壓</h2><p class="module-copy">外力帶動線圈在 N、S 磁極之間旋轉；穿過線圈的磁通量 Φ = NBA cosθ 持續改變，因此感應電動勢 ε = NBAω sinθ。兩個滑環維持連接，輸出每半圈反向；這和有分裂環的直流馬達不同。</p></div></div>
+          <div class="module-head"><div><h2>交流發電機：轉動線圈產生電壓</h2><p class="module-copy">外力帶動線圈在 N、S 磁極之間旋轉；磁通鏈結 <span data-latex="N\Phi=NBA\cos\theta"></span> 改變，產生感應電動勢 <span data-latex="\varepsilon=NBA\omega\sin\theta"></span>。兩個完整滑環使電路保持連接，輸出每半圈反向；它不是直流馬達的分裂環。</p></div></div>
           <div class="values"><div class="badge" id="gen-flux">磁通量</div><div class="badge" id="gen-emf">感應電動勢</div><div class="badge" id="gen-power">負載功率</div><div class="badge" id="gen-speed-badge">轉速</div></div>
-          <div class="plot-wrap"><canvas id="generator-canvas" role="img" aria-label="磁極間旋轉線圈、兩個滑環、電刷和負載燈；下方同步顯示磁通量與感應電動勢的時間曲線。"></canvas></div>
+          <div class="presets" role="group" aria-label="發電機視圖"><button type="button" class="preset em-render active" data-em-render="generator" data-view="diagram" aria-pressed="true">2D 磁通與電壓</button><button type="button" class="preset em-render" data-em-render="generator" data-view="apparatus" aria-pressed="false">3D 裝置</button></div>
+          <div class="plot-wrap" id="generator-diagram"><canvas id="generator-canvas" role="img" aria-label="磁極間旋轉線圈、兩個滑環、電刷和負載燈；下方同步顯示磁通量與感應電動勢的時間曲線。"></canvas></div>
+          <div class="em-stage" id="generator-three" hidden title="拖曳旋轉視角；滾輪縮放" aria-label="可拖曳旋轉檢視的發電機立體裝置：磁極、轉子線圈、兩個滑環、電刷與負載燈。"></div>
           <div class="controls"><div class="control"><label for="gen-field">磁場 B：<span id="gen-field-out">0.20 T</span></label><input id="gen-field" type="range" min="0" max="0.6" step="0.01" value="0.2"></div><div class="control"><label for="gen-turns">線圈匝數：<span id="gen-turns-out">200</span></label><input id="gen-turns" type="range" min="20" max="400" step="10" value="200"></div><div class="control"><label for="gen-rpm">轉速：<span id="gen-rpm-out">30 rpm</span></label><input id="gen-rpm" type="range" min="0" max="120" step="1" value="30"></div><div class="control"><label for="gen-resistance">負載電阻：<span id="gen-resistance-out">10 Ω</span></label><input id="gen-resistance" type="range" min="2" max="40" step="1" value="10"></div></div>
           <div class="checks"><label class="check"><input id="gen-show-field" type="checkbox" checked>顯示磁場方向</label><label class="check"><input id="gen-show-current" type="checkbox" checked>顯示電流與電刷</label></div>
         </div>
@@ -1910,6 +1923,7 @@
             <div class="badge" id="cyc-frequency">共振頻率 0.00 MHz<small>f = qB / 2πm</small></div>
             <div class="badge" id="cyc-status">同步加速<small>RF 與粒子轉彎節奏相同</small></div>
           </div>
+          <div class="presets" role="group" aria-label="跳到跨越間隙次數"><button type="button" class="preset cyc-jump" data-crossing="0">第 1 次</button><button type="button" class="preset cyc-jump" data-crossing="4">第 5 次</button><button type="button" class="preset cyc-jump" data-crossing="9">第 10 次</button></div>
           <div class="plot-wrap lab-instrument"><canvas id="cyclotron-canvas" role="img" aria-label="D 形電極、垂直磁場、間隙電場與逐圈擴張的帶電粒子軌道。"></canvas></div>
           <div class="controls">
             <div class="control"><label for="cyc-field">磁場 B：<span id="cyc-field-out">0.60 T</span></label><input id="cyc-field" type="range" min="0.25" max="1.2" step="0.01" value="0.6"></div>
@@ -2019,6 +2033,8 @@
     </div>
   </main>
 
+  <script src="vendor/katex.min.js"></script>
+  <script src="vendor/em-three.bundle.js"></script>
   <script>
     const $ = id => document.getElementById(id);
     const css = name => getComputedStyle(document.documentElement).getPropertyValue(name).trim();
@@ -2034,6 +2050,7 @@
     let mirageLayerTargets = [];
     let mirageCriticalLayer = 0;
     let activeElectromagnetism = 'brake';
+    const emRenderView = { motor: 'diagram', generator: 'diagram' };
     let activeBrakeLayer = 'all';
     let activeMotorLayer = 'all';
     const categoryLabs = {
@@ -2053,6 +2070,7 @@
     let time = 0;
     let skaterPhase = 0;
     let skaterArmCurrent = 1;
+    const motorDynamics = { angle: .20, omega: 0, current: 0 };
     let last = performance.now();
     let standingPresetSignature = '';
     const bell = { power: false, contact: true, x: 0, velocity: 0, current: 0, field: 0, remanence: 0, atGong: false, strikes: 0, flash: 0, elapsed: 0, sample: 0, history: [] };
@@ -2067,6 +2085,17 @@
     function setText(id, text) {
       $(id).textContent = text;
     }
+
+    const mathCache = new Map();
+    function math(expression) {
+      if (!window.katex) return expression;
+      if (!mathCache.has(expression)) mathCache.set(expression, katex.renderToString(expression, { throwOnError: false, output: 'html' }));
+      return mathCache.get(expression);
+    }
+
+    document.querySelectorAll('[data-latex]').forEach(element => {
+      element.innerHTML = math(element.dataset.latex);
+    });
 
     function resizeCanvas(canvas) {
       const dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
@@ -2108,7 +2137,7 @@
     function drawCenteredText(ctx, text, x, y, color = css('--muted'), fontSize = 14) {
       ctx.save();
       ctx.fillStyle = color;
-      ctx.font = `${fontSize}px "Microsoft JhengHei", Arial, sans-serif`;
+      ctx.font = `${fontSize}px "Times New Roman", "DFKai-SB", serif`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText(text, x, y);
@@ -2565,7 +2594,7 @@
       };
       drawTrace(.31, '#f6a85e', 0, 1);
       drawTrace(.70, '#65c9da', k * (right - left) + Math.PI / 2, Math.min(1.6, f / 440));
-      ctx.fillStyle = '#ebf5f7'; ctx.font = `700 ${compact ? 10 : 12}px "Microsoft JhengHei", sans-serif`;
+      ctx.fillStyle = '#ebf5f7'; ctx.font = `700 ${compact ? 10 : 12}px "Times New Roman", "DFKai-SB", serif`;
       ctx.fillText('橘：驅動電流', scope.x + 14, scope.y + 16);
       ctx.fillText('青：麥克風電壓', scope.x + 14, scope.y + scope.h - 8);
     }
@@ -2627,7 +2656,7 @@
         ctx.lineTo(px, base + h * 0.34);
         ctx.stroke();
         ctx.fillStyle = css('--muted');
-        ctx.font = '14px "Microsoft JhengHei", Arial, sans-serif';
+        ctx.font = '14px "Times New Roman", "DFKai-SB", serif';
         ctx.textAlign = align;
         ctx.fillText(text, px, base + h * 0.38);
         ctx.restore();
@@ -2789,7 +2818,7 @@
         ctx.fill();
       });
       ctx.globalAlpha = 1;
-      ctx.font = '700 12px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.font = '700 12px "Times New Roman", "DFKai-SB", serif';
       ctx.textAlign = 'center';
       ctx.fillStyle = '#a45737';
       if (emissions.length) ctx.fillText(sourceMoves ? '橘點保留每次發波的位置' : '固定發波位置', w * .50, h - 18);
@@ -3761,7 +3790,7 @@
 
     function drawSceneLabel(ctx, x, y, text, align = 'left') {
       ctx.save();
-      ctx.font = '700 13px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.font = '700 13px "Times New Roman", "DFKai-SB", serif';
       const width = ctx.measureText(text).width + 20;
       const left = align === 'right' ? x - width : x;
       ctx.fillStyle = 'rgba(255,255,255,.86)';
@@ -3813,7 +3842,7 @@
       ctx.lineTo(w - 42, axis);
       ctx.stroke();
       ctx.fillStyle = css('--muted');
-      ctx.font = '13px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.font = '13px "Times New Roman", "DFKai-SB", serif';
       ctx.textAlign = 'right';
       ctx.fillText('主軸', w - 46, axis - 10);
       ctx.restore();
@@ -3870,7 +3899,7 @@
 
       ctx.setLineDash([]);
       ctx.fillStyle = color;
-      ctx.font = '700 14px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.font = '700 14px "Times New Roman", "DFKai-SB", serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = heightPx >= 0 ? 'bottom' : 'top';
       ctx.fillText(label, x, tipY + (heightPx >= 0 ? -10 : 10));
@@ -3889,7 +3918,7 @@
       ctx.beginPath();
       ctx.arc(x, axis, 3.5, 0, Math.PI * 2);
       ctx.fill();
-      ctx.font = '700 13px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.font = '700 13px "Times New Roman", "DFKai-SB", serif';
       ctx.textAlign = 'center';
       ctx.fillText(label, x, axis + 28);
       ctx.restore();
@@ -3901,7 +3930,7 @@
       ctx.beginPath();
       ctx.arc(x, axis, 4.4, 0, Math.PI * 2);
       ctx.fill();
-      ctx.font = '700 13px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.font = '700 13px "Times New Roman", "DFKai-SB", serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.lineWidth = 4;
@@ -3935,7 +3964,7 @@
       ctx.beginPath();
       ctx.arc(centerX, axis, 4.2, 0, Math.PI * 2);
       ctx.fill();
-      ctx.font = '700 13px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.font = '700 13px "Times New Roman", "DFKai-SB", serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'alphabetic';
       ctx.lineWidth = 4;
@@ -3959,7 +3988,7 @@
       ctx.moveTo(x2, y - 6);
       ctx.lineTo(x2, y + 6);
       ctx.stroke();
-      ctx.font = '700 12px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.font = '700 12px "Times New Roman", "DFKai-SB", serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'bottom';
       ctx.lineWidth = 4;
@@ -4008,7 +4037,7 @@
         ctx.stroke();
       }
       ctx.fillStyle = css('--muted');
-      ctx.font = '700 13px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.font = '700 13px "Times New Roman", "DFKai-SB", serif';
       ctx.textAlign = 'center';
       ctx.fillText(type === 'concave' ? '球面凹面鏡' : '球面凸面鏡', mirrorX, axis + aperture + 25);
       ctx.restore();
@@ -4053,7 +4082,7 @@
       const middle = start + delta / 2;
       const labelX = point.x + Math.cos(middle) * (radius + 11);
       const labelY = point.y + Math.sin(middle) * (radius + 11);
-      ctx.font = '700 12px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.font = '700 12px "Times New Roman", "DFKai-SB", serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.lineWidth = 4;
@@ -4145,7 +4174,7 @@
         ctx.stroke();
       }
       ctx.fillStyle = css('--muted');
-      ctx.font = '700 13px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.font = '700 13px "Times New Roman", "DFKai-SB", serif';
       ctx.textAlign = 'center';
       ctx.fillText(type === 'plane' ? '平面鏡' : (type === 'concave' ? '凹面鏡' : '凸面鏡'), mirrorX, bottom + 22);
       ctx.restore();
@@ -4163,7 +4192,7 @@
       ctx.lineTo(x - direction * 5, clampedY + 9);
       ctx.closePath();
       ctx.fill();
-      ctx.font = '700 13px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.font = '700 13px "Times New Roman", "DFKai-SB", serif';
       ctx.textAlign = side === 'left' ? 'left' : 'right';
       ctx.textBaseline = 'bottom';
       ctx.fillText(text, side === 'left' ? 28 : w - 28, clampedY - 12);
@@ -4212,7 +4241,7 @@
       ctx.arc(lensX, axis, 3.5, 0, Math.PI * 2);
       ctx.fill();
       ctx.fillStyle = css('--muted');
-      ctx.font = '700 13px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.font = '700 13px "Times New Roman", "DFKai-SB", serif';
       ctx.textAlign = 'center';
       ctx.fillText(type === 'convex' ? '凸透鏡' : '凹透鏡', lensX, bottom + 22);
       ctx.restore();
@@ -4236,7 +4265,7 @@
 
     function drawConstructionLabel(ctx, text, x, y, color) {
       ctx.save();
-      ctx.font = '700 13px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.font = '700 13px "Times New Roman", "DFKai-SB", serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.lineWidth = 5;
@@ -4799,7 +4828,7 @@
       const segments = digitalSegments[character];
       if (!segments) {
         ctx.save();
-        ctx.font = `800 ${size * 0.82}px Consolas, "Microsoft JhengHei", sans-serif`;
+        ctx.font = `800 ${size * 0.82}px "Times New Roman", "DFKai-SB", serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(character, x + width / 2, y);
@@ -4840,7 +4869,7 @@
         width = digitalTextWidth(text, preferredSize);
       } else {
         ctx.save();
-        ctx.font = `800 ${preferredSize}px "Microsoft JhengHei", Arial, sans-serif`;
+        ctx.font = `800 ${preferredSize}px "Times New Roman", "DFKai-SB", serif`;
         width = ctx.measureText(text).width;
         ctx.restore();
       }
@@ -4863,7 +4892,7 @@
           cursor += digitalCharacterWidth(character, size) + spacing;
         }
       } else {
-        ctx.font = `800 ${size}px "Microsoft JhengHei", Arial, sans-serif`;
+        ctx.font = `800 ${size}px "Times New Roman", "DFKai-SB", serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(text, 0, 0);
@@ -4960,7 +4989,7 @@
           ctx.strokeStyle = 'rgba(15,118,110,.82)';
           ctx.fillStyle = 'rgba(15,118,110,.9)';
           ctx.lineWidth = 2;
-          ctx.font = '700 12px "Microsoft JhengHei", Arial, sans-serif';
+          ctx.font = '700 12px "Times New Roman", "DFKai-SB", serif';
           ctx.textAlign = 'center';
           [objectX, mirrorX, imageX].forEach(markX => {
             ctx.beginPath();
@@ -4994,7 +5023,7 @@
           ctx.strokeStyle = 'rgba(15,118,110,.82)';
           ctx.fillStyle = 'rgba(15,118,110,.9)';
           ctx.lineWidth = 2;
-          ctx.font = '700 12px "Microsoft JhengHei", Arial, sans-serif';
+          ctx.font = '700 12px "Times New Roman", "DFKai-SB", serif';
           ctx.textAlign = 'right';
           [objectY, surfaceY, imageY].forEach(markY => {
             ctx.beginPath();
@@ -5096,7 +5125,7 @@
       ctx.stroke();
       ctx.setLineDash([]);
       if (label) {
-        ctx.font = '700 12px "Microsoft JhengHei", Arial, sans-serif';
+        ctx.font = '700 12px "Times New Roman", "DFKai-SB", serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'top';
         ctx.fillText(label, point.x, point.y + 14);
@@ -5321,7 +5350,7 @@
       drawPersonSymbol(ctx, screenPerson, css('--orange'), '人物');
       ctx.save();
       ctx.fillStyle = css('--muted');
-      ctx.font = `700 ${w < 500 ? 11 : 13}px "Microsoft JhengHei", Arial, sans-serif`;
+      ctx.font = `700 ${w < 500 ? 11 : 13}px "Times New Roman", "DFKai-SB", serif`;
       ctx.textAlign = 'center';
       screenMirrors.forEach(mirror => {
         const midpoint = { x: (mirror.a.x + mirror.b.x) / 2, y: (mirror.a.y + mirror.b.y) / 2 };
@@ -5331,7 +5360,7 @@
         const legendOrders = Math.min(maxOrder, 6);
         ctx.textAlign = 'left';
         ctx.textBaseline = 'middle';
-        ctx.font = `700 ${w < 500 ? 10 : 12}px "Microsoft JhengHei", Arial, sans-serif`;
+        ctx.font = `700 ${w < 500 ? 10 : 12}px "Times New Roman", "DFKai-SB", serif`;
         for (let order = 1; order <= legendOrders; order += 1) {
           const x = 24 + (order - 1) * (w < 500 ? 54 : 70);
           ctx.fillStyle = mirrorDepthColor(order);
@@ -5370,7 +5399,7 @@
       ctx.closePath();
       if (dashed) ctx.stroke();
       else ctx.fill();
-      ctx.font = '700 13px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.font = '700 13px "Times New Roman", "DFKai-SB", serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = height >= 0 ? 'bottom' : 'top';
       ctx.fillText(label, x, tipY + (height >= 0 ? -9 : 9));
@@ -5392,7 +5421,7 @@
       ctx.fill();
       ctx.stroke();
       ctx.fillStyle = css('--muted');
-      ctx.font = '700 13px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.font = '700 13px "Times New Roman", "DFKai-SB", serif';
       ctx.textAlign = 'center';
       ctx.fillText(label, x, bottom + 22);
       ctx.restore();
@@ -5560,7 +5589,7 @@
       ctx.fill();
       ctx.stroke();
       ctx.fillStyle = '#334155';
-      ctx.font = '700 12px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.font = '700 12px "Times New Roman", "DFKai-SB", serif';
       ctx.textAlign = 'left';
       ctx.textBaseline = 'middle';
       ctx.fillText(label, axisX + half + 10, y);
@@ -5586,7 +5615,7 @@
       ctx.stroke();
       if (label) {
         ctx.fillStyle = '#334155';
-        ctx.font = '700 11px "Microsoft JhengHei", Arial, sans-serif';
+        ctx.font = '700 11px "Times New Roman", "DFKai-SB", serif';
         ctx.textAlign = 'center';
         ctx.fillText(label, x, bottom + 16);
       }
@@ -5612,7 +5641,7 @@
       ctx.lineTo(tipX - direction * 10, y + 6);
       ctx.closePath();
       dashed ? ctx.stroke() : ctx.fill();
-      ctx.font = '700 12px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.font = '700 12px "Times New Roman", "DFKai-SB", serif';
       ctx.textAlign = width >= 0 ? 'left' : 'right';
       ctx.textBaseline = 'bottom';
       ctx.fillText(label, tipX + direction * 6, y - 7);
@@ -5710,7 +5739,7 @@
       ctx.arc(supportX + 3, stageY - 44, compact ? 7 : 11, 0, 2 * Math.PI); ctx.stroke();
       ctx.fillStyle = '#f3e6ba'; ctx.beginPath(); ctx.ellipse(axisX, stageY + 27, compact ? 18 : 23, 7, 0, 0, 2 * Math.PI); ctx.fill();
       ctx.fillStyle = '#0f172a';
-      ctx.font = '700 12px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.font = '700 12px "Times New Roman", "DFKai-SB", serif';
       ctx.textAlign = 'right';
       if (!compact) ctx.fillText('載物台與玻片', axisX - 146, stageY + 6);
       ctx.restore();
@@ -5776,7 +5805,7 @@
         ctx.fillStyle = '#618ba0'; ctx.beginPath(); ctx.arc(px + 2, py - 1, 2.5, 0, 2 * Math.PI); ctx.fill();
       }
       ctx.restore();
-      ctx.fillStyle = '#e8f4f3'; ctx.font = `700 ${compact ? 10 : 12}px "Microsoft JhengHei", sans-serif`;
+      ctx.fillStyle = '#e8f4f3'; ctx.font = `700 ${compact ? 10 : 12}px "Times New Roman", "DFKai-SB", serif`;
       ctx.fillText('目鏡視野', view.x + 8, view.y + 15);
     }
 
@@ -5872,7 +5901,7 @@
       ctx.strokeStyle = '#e9b276'; ctx.lineWidth = compact ? 6 : 10; ctx.lineCap = 'round';
       ctx.beginPath(); ctx.moveTo(previewX, preview.y + 15); ctx.lineTo(previewX, preview.y + preview.h - 22); ctx.stroke();
       ctx.fillStyle = '#f0bc83'; ctx.beginPath(); ctx.arc(previewX, preview.y + preview.h - 18, 11, 0, 2 * Math.PI); ctx.fill(); ctx.restore();
-      ctx.fillStyle = '#e7f4f4'; ctx.font = `700 ${compact ? 10 : 12}px "Microsoft JhengHei", sans-serif`;
+      ctx.fillStyle = '#e7f4f4'; ctx.font = `700 ${compact ? 10 : 12}px "Times New Roman", "DFKai-SB", serif`;
       ctx.fillText('感光元件放大預覽（倒立）', preview.x + 10, preview.y + 16);
     }
 
@@ -5887,7 +5916,7 @@
       ctx.lineTo(labelPoint.x, labelPoint.y);
       ctx.stroke();
       ctx.fillStyle = '#334155';
-      ctx.font = '700 12px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.font = '700 12px "Times New Roman", "DFKai-SB", serif';
       ctx.textAlign = align;
       ctx.textBaseline = 'bottom';
       ctx.fillText(label, labelPoint.x, labelPoint.y - 3);
@@ -6132,7 +6161,7 @@
       drawArrow(ctx, from.x, from.y, to.x, to.y, color);
       ctx.save();
       ctx.fillStyle = color;
-      ctx.font = `700 ${width > 2.5 ? 15 : 13}px "Microsoft JhengHei", Arial, sans-serif`;
+      ctx.font = `700 ${width > 2.5 ? 15 : 13}px "Times New Roman", "DFKai-SB", serif`;
       ctx.textAlign = 'left';
       ctx.textBaseline = 'bottom';
       ctx.fillText(label, to.x + 5, to.y - 4);
@@ -6309,7 +6338,7 @@
           }
           ctx.stroke();
           ctx.fillStyle = series.color;
-          ctx.font = '700 12px "Microsoft JhengHei", Arial, sans-serif';
+          ctx.font = '700 12px "Times New Roman", "DFKai-SB", serif';
           ctx.fillText(series.label, graphLeft + 5, series.mid - graphAmp - 8);
           ctx.beginPath();
           ctx.arc(graphRight, series.mid - series.fn(theta) * graphAmp, 5.5, 0, Math.PI * 2);
@@ -6351,7 +6380,7 @@
       ctx.closePath();
       ctx.fill();
       if (label) {
-        ctx.font = '700 13px "Microsoft JhengHei", Arial, sans-serif';
+        ctx.font = '700 13px "Times New Roman", "DFKai-SB", serif';
         ctx.textAlign = 'center';
         ctx.fillText(label, cx, cy - radius - 10);
       }
@@ -6852,7 +6881,7 @@
       ctx.fillStyle = css('--orange');
       ctx.fillRect(loadX - 42, loadY, 84, 52);
       ctx.fillStyle = '#ffffff';
-      ctx.font = '700 16px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.font = '700 16px "Times New Roman", "DFKai-SB", serif';
       ctx.textAlign = 'center';
       ctx.fillText(`${mass.toFixed(0)} kg`, loadX, loadY + 31);
       ctx.restore();
@@ -7050,7 +7079,7 @@
       ctx.fillStyle = css('--orange');
       ctx.fillRect(loadX - (compact ? 34 : 42), loadTop, compact ? 68 : 84, compact ? 42 : 50);
       ctx.fillStyle = '#ffffff';
-      ctx.font = `700 ${compact ? 13 : 16}px "Microsoft JhengHei", Arial, sans-serif`;
+      ctx.font = `700 ${compact ? 13 : 16}px "Times New Roman", "DFKai-SB", serif`;
       ctx.textAlign = 'center';
       ctx.fillText(`${mass.toFixed(0)} kg`, loadX, loadTop + (compact ? 26 : 31));
       ctx.restore();
@@ -7069,13 +7098,13 @@
       ctx.stroke();
       ctx.restore();
       if (!compact) {
-        ctx.fillStyle = '#0f766e'; ctx.font = '700 12px "Microsoft JhengHei", sans-serif';
+        ctx.fillStyle = '#0f766e'; ctx.font = '700 12px "Times New Roman", "DFKai-SB", serif';
         ctx.fillText('繩端', Math.min(w - 46, freeX + 12), Math.min(h - 18, freeY + 10));
       }
 
       if ($('pulley-show-segments').checked && strands > 1) {
         const midY = (topY + lowerY) / 2;
-        ctx.fillStyle = '#3d6271'; ctx.font = '700 13px "Microsoft JhengHei", sans-serif';
+        ctx.fillStyle = '#3d6271'; ctx.font = '700 13px "Times New Roman", "DFKai-SB", serif';
         ctx.fillText(`${strands} 股支撐`, 15, midY);
       }
 
@@ -7559,7 +7588,7 @@
       ctx.arc(center.x, center.y, radius, from, to, to < from);
       ctx.stroke();
       const mid = (from + to) / 2;
-      ctx.font = '700 13px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.font = '700 13px "Times New Roman", "DFKai-SB", serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText(label, center.x + Math.cos(mid) * (radius + 16), center.y + Math.sin(mid) * (radius + 16));
@@ -7592,7 +7621,7 @@
       ctx.stroke();
       ctx.setLineDash([]);
       ctx.fillStyle = '#dbeafe';
-      ctx.font = '700 12px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.font = '700 12px "Times New Roman", "DFKai-SB", serif';
       ctx.fillText('光纖：反覆全反射把光留在芯層', left + 13, top + boxH - 10);
       ctx.restore();
     }
@@ -7788,7 +7817,7 @@
           ctx.beginPath(); ctx.moveTo(x, scene.y + 32); ctx.lineTo(x, scene.y + scene.h - 32); ctx.stroke();
         }
       }
-      ctx.fillStyle = '#cbd5e1'; ctx.font = '700 13px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.fillStyle = '#cbd5e1'; ctx.font = '700 13px "Times New Roman", "DFKai-SB", serif';
       ctx.fillText('固定星點', star.x - 20, scene.y + 29);
       ctx.fillText('擾動空氣', atmosphereX, scene.y + 29);
       ctx.fillText('固定瞳孔', pupil.x - 32, scene.y + 29);
@@ -7824,15 +7853,15 @@
         ctx.fillStyle = '#fef3c7';
         ctx.beginPath(); ctx.arc(pupil.x + aperture + 13, pupil.y, 4 + brightness * 7, 0, Math.PI * 2); ctx.fill();
       }
-      ctx.fillStyle = '#cbd5e1'; ctx.font = '700 12px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.fillStyle = '#cbd5e1'; ctx.font = '700 12px "Times New Roman", "DFKai-SB", serif';
       ctx.fillText('光束中心偏移（圖上放大）', scene.x + 14, scene.y + scene.h - 42);
       ctx.fillText('灰線未進瞳孔；黃線進入', scene.x + 14, scene.y + scene.h - 20);
 
       const gx = graph.x + 18, gy = graph.y + (compact ? 70 : 120);
       const gw = graph.w - 36, gh = compact ? graph.h - 95 : graph.h * .38;
-      ctx.fillStyle = '#e2e8f0'; ctx.font = '700 14px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.fillStyle = '#e2e8f0'; ctx.font = '700 14px "Times New Roman", "DFKai-SB", serif';
       ctx.fillText('固定瞳孔的相對進光量', gx, graph.y + 28);
-      ctx.font = '800 24px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.font = '800 24px "Times New Roman", "DFKai-SB", serif';
       ctx.fillStyle = brightness < threshold ? '#fb7185' : '#fde68a';
       ctx.fillText((brightness * 100).toFixed(0) + '%', gx, graph.y + 58);
       ctx.strokeStyle = '#475569'; ctx.strokeRect(gx, gy, gw, gh);
@@ -7848,10 +7877,10 @@
         if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
       }
       ctx.stroke();
-      ctx.fillStyle = '#fda4af'; ctx.font = '600 11px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.fillStyle = '#fda4af'; ctx.font = '600 11px "Times New Roman", "DFKai-SB", serif';
       ctx.fillText('示意辨識門檻', gx, Math.min(graph.y + graph.h - 10, thresholdY + 18));
       if (!compact) {
-        ctx.fillStyle = '#cbd5e1'; ctx.font = '600 12px "Microsoft JhengHei", Arial, sans-serif';
+        ctx.fillStyle = '#cbd5e1'; ctx.font = '600 12px "Times New Roman", "DFKai-SB", serif';
         ctx.fillText('星點位置固定；亮度會起伏', gx, gy + gh + 35);
         ctx.fillText('亂流偏折與聚焦使進光量改變', gx, gy + gh + 56);
       }
@@ -7890,7 +7919,7 @@
       const cloudW = w * (.25 + density * .035), cloudH = h * (.48 + density * .06);
       const eye = { x: w * .87, y: h * .48 };
       ctx.fillStyle = '#e2e8f0';
-      ctx.font = '700 ' + (compact ? 12 : 15) + 'px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.font = '700 ' + (compact ? 12 : 15) + 'px "Times New Roman", "DFKai-SB", serif';
       ctx.fillText('低角度直射光', 18, 34);
       ctx.fillText('周圍天空散射光', 18, h * .58);
       ctx.fillStyle = sunlightColor; ctx.beginPath();
@@ -7915,18 +7944,18 @@
       }
       ctx.fillStyle = '#0b1723'; ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 3;
       ctx.beginPath(); ctx.arc(eye.x, eye.y, compact ? 15 : 23, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-      ctx.fillStyle = '#1f3744'; ctx.font = '700 ' + (compact ? 11 : 13) + 'px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.fillStyle = '#1f3744'; ctx.font = '700 ' + (compact ? 11 : 13) + 'px "Times New Roman", "DFKai-SB", serif';
       ctx.fillText('含冰水的厚雲', cloudX + 8, cloudY + 26);
       ctx.fillStyle = '#e2e8f0';
       ctx.fillText('觀看方向', eye.x - 34, eye.y + 42);
       ctx.strokeStyle = '#94a3b8'; ctx.setLineDash([5, 5]); ctx.lineWidth = 2;
       ctx.beginPath(); ctx.moveTo(cloudX + cloudW, cloudY + cloudH * .5); ctx.lineTo(eye.x - 24, eye.y); ctx.stroke();
       ctx.setLineDash([]);
-      ctx.fillStyle = '#cbd5e1'; ctx.font = '700 ' + (compact ? 11 : 14) + 'px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.fillStyle = '#cbd5e1'; ctx.font = '700 ' + (compact ? 11 : 14) + 'px "Times New Roman", "DFKai-SB", serif';
       ctx.fillText('？', cloudX + cloudW + (eye.x - cloudX - cloudW) * .45, eye.y - 12);
       const infoY = h * .83;
       ctx.fillText(compact ? '紫霞：紅色晚霞與藍色散射光' : '紫色晚霞：偏紅的低角度照明與較短波散射光、氣膠條件可能共同作用', 18, infoY);
-      ctx.fillStyle = '#94a3b8'; ctx.font = '600 ' + (compact ? 10 : 12) + 'px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.fillStyle = '#94a3b8'; ctx.font = '600 ' + (compact ? 10 : 12) + 'px "Times New Roman", "DFKai-SB", serif';
       ctx.fillText(compact ? '綠雲：冰水雲假說仍有爭議' : '綠色暴風天空與冰水豐富的雲有關的假說仍有爭議；不能用單一公式定色。', 18, infoY + 25);
       ctx.fillText(compact ? '雲色不能當龍捲風警報' : '綠色或紫色都不是龍捲風警報；圖示只給出可能的入射照明。', 18, infoY + 49);
       $('scatter-path').innerHTML = '太陽仰角 ' + elevation.toFixed(0) + '°<small>決定直射光的相對路徑</small>';
@@ -7963,7 +7992,7 @@
       ctx.globalAlpha = rayleigh ? .23 : .13;
       ctx.fillStyle = skyGradient; ctx.fillRect(0, 0, w, beamY);
       ctx.globalAlpha = 1;
-      ctx.fillStyle = '#e2e8f0'; ctx.font = '700 ' + (compact ? 12 : 15) + 'px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.fillStyle = '#e2e8f0'; ctx.font = '700 ' + (compact ? 12 : 15) + 'px "Times New Roman", "DFKai-SB", serif';
       ctx.fillText('同一束入射白光', left, 30);
       ctx.fillText('側面看天空：散出的光', left, compact ? 67 : 71);
       ctx.fillStyle = skyColor;
@@ -7971,7 +8000,7 @@
       const tracks = colors.map((channel, index) => ({ ...channel, y: beamY + (index - 1) * (compact ? 15 : 20) }));
       tracks.forEach(channel => {
         ctx.fillStyle = channel.color;
-        ctx.font = '800 13px "Microsoft JhengHei", Arial, sans-serif';
+        ctx.font = '800 13px "Times New Roman", "DFKai-SB", serif';
         ctx.fillText(channel.label, left - 23, channel.y + 4);
         for (let j = 0; j < 36; j += 1) {
           const a = j / 36, b = (j + 1) / 36;
@@ -8014,7 +8043,7 @@
         ctx.globalAlpha = 1;
       }
       const directColor = wavelengthRgb(transmission);
-      ctx.fillStyle = '#e2e8f0'; ctx.font = '700 ' + (compact ? 11 : 14) + 'px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.fillStyle = '#e2e8f0'; ctx.font = '700 ' + (compact ? 11 : 14) + 'px "Times New Roman", "DFKai-SB", serif';
       ctx.fillText('直射方向剩下的光', left, beamY + (compact ? 57 : 69));
       ctx.fillStyle = directColor;
       ctx.beginPath(); ctx.arc(right - 13, beamY + (compact ? 54 : 65), compact ? 9 : 13, 0, Math.PI * 2); ctx.fill();
@@ -8027,7 +8056,7 @@
           const x = left + step * columnW;
           const barW = Math.max(20, columnW - (compact ? 11 : 22));
           ctx.fillStyle = '#cbd5e1';
-          ctx.font = '700 ' + (compact ? 10 : 13) + 'px "Microsoft JhengHei", Arial, sans-serif';
+          ctx.font = '700 ' + (compact ? 10 : 13) + 'px "Times New Roman", "DFKai-SB", serif';
           ctx.fillText(step === 0 ? '入射' : step === 3 ? '到眼睛' : step + '/3', x, tableY);
           colors.forEach((channel, index) => {
             const y = tableY + 20 + index * (compact ? 31 : 39);
@@ -8042,7 +8071,7 @@
         }
       }
       const noteY = h - 33;
-      ctx.fillStyle = '#cbd5e1'; ctx.font = '600 ' + (compact ? 10 : 12) + 'px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.fillStyle = '#cbd5e1'; ctx.font = '600 ' + (compact ? 10 : 12) + 'px "Times New Roman", "DFKai-SB", serif';
       ctx.fillText('光點等速；亮度與色彩代表剩餘通量，非傳播速度', left, noteY);
       setText('scatter-elevation-out', elevation.toFixed(0) + '°');
       setText('scatter-density-out', density.toFixed(2) + 'x');
@@ -8209,7 +8238,7 @@
         ctx.fill();
         ctx.stroke();
         ctx.fillStyle = active ? colors[index] : '#94a3b8';
-        ctx.font = `700 ${compact ? 9 : 11}px "Microsoft JhengHei", Arial, sans-serif`;
+        ctx.font = `700 ${compact ? 9 : 11}px "Times New Roman", "DFKai-SB", serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(label, x + boxW / 2, y + 16);
@@ -8233,7 +8262,7 @@
       ctx.stroke();
       ctx.shadowBlur = 0;
       ctx.fillStyle = '#ffffff';
-      ctx.font = `800 ${Math.min(30, height * .48)}px Arial, sans-serif`;
+      ctx.font = `800 ${Math.min(30, height * .48)}px "Times New Roman", "DFKai-SB", serif`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText(label, x + width / 2, y + height / 2);
@@ -8251,7 +8280,7 @@
       ctx.fill();
       ctx.stroke();
       ctx.fillStyle = '#e2e8f0';
-      ctx.font = `700 ${compact ? 12 : 14}px "Microsoft JhengHei", Arial, sans-serif`;
+      ctx.font = `700 ${compact ? 12 : 14}px "Times New Roman", "DFKai-SB", serif`;
       ctx.fillText('局部追蹤：同一塊金屬往下穿越磁區', rect.x + 13, rect.y + 23);
 
       const trackX = rect.x + rect.w * .27;
@@ -8270,7 +8299,7 @@
         ctx.setLineDash([]);
       }
       ctx.fillStyle = '#93c5fd';
-      ctx.font = `700 ${compact ? 10 : 12}px "Microsoft JhengHei", Arial, sans-serif`;
+      ctx.font = `700 ${compact ? 10 : 12}px "Times New Roman", "DFKai-SB", serif`;
       ctx.fillText('外加 B ⊗（進入紙面）', fieldRect.x + 8, fieldRect.y + 17);
       drawArrow(ctx, trackX - 38, top + 4, trackX - 38, top + 46, '#e2e8f0');
       ctx.fillStyle = '#e2e8f0';
@@ -8307,7 +8336,7 @@
       if (showForce && hasInduction) {
         drawArrow(ctx, trackX + loopRadius + 16, centerY + 22, trackX + loopRadius + 16, centerY - 24, '#fb7185');
         ctx.fillStyle = '#fb7185';
-        ctx.font = `700 ${compact ? 10 : 12}px "Microsoft JhengHei", Arial, sans-serif`;
+        ctx.font = `700 ${compact ? 10 : 12}px "Times New Roman", "DFKai-SB", serif`;
         ctx.fillText('F 磁力', trackX + loopRadius + 22, centerY - 9);
       }
 
@@ -8319,7 +8348,7 @@
             ? '完全位於均勻磁區：Φ 不變 → I = 0'
             : '磁區外：Φ = 0 → I = 0';
       ctx.fillStyle = change === 0 ? '#cbd5e1' : '#fbbf24';
-      ctx.font = `700 ${compact ? 10 : 12}px "Microsoft JhengHei", Arial, sans-serif`;
+      ctx.font = `700 ${compact ? 10 : 12}px "Times New Roman", "DFKai-SB", serif`;
       ctx.fillText(stateLabel, rect.x + 13, rect.y + rect.h - 18);
 
       const graphX = rect.x + rect.w * .59;
@@ -8350,7 +8379,7 @@
       ctx.arc(graphDotX, graphDotY, 4.5, 0, Math.PI * 2);
       ctx.fill();
       ctx.fillStyle = '#bfdbfe';
-      ctx.font = `700 ${compact ? 10 : 11}px "Microsoft JhengHei", Arial, sans-serif`;
+      ctx.font = `700 ${compact ? 10 : 11}px "Times New Roman", "DFKai-SB", serif`;
       ctx.fillText('磁通 Φ', graphX, graphTop - 8);
 
       const rows = [
@@ -8413,7 +8442,7 @@
       if (label) {
         const labelPoint = p((x0 + x1) / 2, (y0 + y1) / 2, z0 - .02);
         ctx.fillStyle = '#ffffff';
-        ctx.font = `900 ${Math.max(12, Math.min(24, scale * .34))}px Arial, sans-serif`;
+        ctx.font = `900 ${Math.max(12, Math.min(24, scale * .34))}px "Times New Roman", "DFKai-SB", serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(label, labelPoint.x, labelPoint.y);
@@ -8428,7 +8457,7 @@
       drawArrow(ctx, a.x, a.y, b.x, b.y, color);
       if (label) {
         ctx.fillStyle = color;
-        ctx.font = '800 11px "Microsoft JhengHei", Arial, sans-serif';
+        ctx.font = '800 11px "Times New Roman", "DFKai-SB", serif';
         ctx.textAlign = 'left';
         ctx.fillText(label, b.x + 5, b.y - 5);
       }
@@ -8532,7 +8561,7 @@
       ctx.fill();
       ctx.stroke();
       ctx.fillStyle = '#e2e8f0';
-      ctx.font = `800 ${compact ? 12 : 14}px "Microsoft JhengHei", Arial, sans-serif`;
+      ctx.font = `800 ${compact ? 12 : 14}px "Times New Roman", "DFKai-SB", serif`;
       ctx.fillText('減速實測：同時刻與無磁場參考比較', rect.x + 14, rect.y + 24);
 
       const graph = { x: rect.x + 38, y: rect.y + 48, w: rect.w - 58, h: Math.min(compact ? 96 : 150, rect.h * .38) };
@@ -8571,7 +8600,7 @@
       ctx.arc(dotX, dotY, 5, 0, Math.PI * 2);
       ctx.fill();
       ctx.fillStyle = '#cbd5e1';
-      ctx.font = '700 10px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.font = '700 10px "Times New Roman", "DFKai-SB", serif';
       ctx.fillText('ω', graph.x - 18, graph.y + 6);
       ctx.fillText('時間 →', graph.x + graph.w - 40, graph.y + graph.h + 16);
       ctx.fillStyle = '#94a3b8';
@@ -8581,7 +8610,7 @@
 
       const localY = graph.y + graph.h + 38;
       ctx.fillStyle = '#e2e8f0';
-      ctx.font = `800 ${compact ? 11 : 13}px "Microsoft JhengHei", Arial, sans-serif`;
+      ctx.font = `800 ${compact ? 11 : 13}px "Times New Roman", "DFKai-SB", serif`;
       ctx.fillText('導體局部：電流只在磁通改變處形成閉合迴路', rect.x + 14, localY);
       const localOrigin = { x: rect.x + rect.w * .50, y: rect.y + rect.h * .80 };
       const localScale = Math.min(rect.w / 6.2, (rect.h - (localY - rect.y)) / 3.0);
@@ -8607,7 +8636,7 @@
       }
       const currentPoint = isoPoint(localOrigin, -.05, .78, -.06, localScale);
       ctx.fillStyle = '#fdba74';
-      ctx.font = '800 10px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.font = '800 10px "Times New Roman", "DFKai-SB", serif';
       ctx.textAlign = 'center';
       ctx.fillText('橘色＝渦電流 I', currentPoint.x, currentPoint.y);
     }
@@ -8713,7 +8742,7 @@
 
       const legendY = scene.y + scene.h - 58;
       ctx.fillStyle = '#475569';
-      ctx.font = `700 ${compact ? 10 : 12}px "Microsoft JhengHei", Arial, sans-serif`;
+      ctx.font = `700 ${compact ? 10 : 12}px "Times New Roman", "DFKai-SB", serif`;
       ctx.textAlign = 'left';
       ctx.fillText('橘／綠閉合圈：圓盤導體內的渦電流', scene.x + 14, legendY);
       ctx.fillText('藍箭頭：穿過圓盤厚度的磁場', scene.x + 14, legendY + 20);
@@ -8729,7 +8758,7 @@
         ctx.fillStyle = heatGradient;
         ctx.fillRect(barX, barY, barW * clampValue(state.heat, 0, 1), 10);
         ctx.fillStyle = '#475569';
-        ctx.font = '700 10px "Microsoft JhengHei", Arial, sans-serif';
+        ctx.font = '700 10px "Times New Roman", "DFKai-SB", serif';
         ctx.fillText(`動能轉熱 ${(state.heat * 100).toFixed(0)}%`, barX, barY - 7);
       }
 
@@ -8786,21 +8815,32 @@
       const B = number('motor-field');
       const turns = number('motor-turns');
       const load = number('motor-load');
-      const stallCurrent = voltage / 3.6;
       const area = .008;
-      const driveMax = turns * stallCurrent * B * area;
-      const available = Math.max(0, driveMax * .72 - load);
-      const targetOmega = available / .075;
-      const tau = 1.15;
-      const omega = targetOmega * (1 - Math.exp(-time / tau));
-      const angle = .52 + targetOmega * (time - tau * (1 - Math.exp(-time / tau)));
-      const current = Math.max(.08, stallCurrent * (1 - .58 * (targetOmega ? omega / targetOmega : 0)));
-      const torque = turns * current * B * area * Math.abs(Math.sin(angle));
+      const angle = motorDynamics.angle;
+      const omega = motorDynamics.omega;
+      const current = motorDynamics.current;
+      const torque = turns * current * B * area * Math.abs(Math.cos(angle));
       const activeLength = .12;
       const sideForce = turns * current * activeLength * B;
-      const halfTurn = Math.floor((((angle % (Math.PI * 2)) + Math.PI * 2) % (Math.PI * 2)) / Math.PI);
-      const stalled = available <= .001;
-      return { voltage, B, turns, load, area, activeLength, sideForce, driveMax, targetOmega, omega: stalled ? 0 : omega, angle: stalled ? .52 : angle, current, torque, halfTurn, stalled };
+      const halfTurn = ((Math.floor((angle + Math.PI / 2) / Math.PI) % 2) + 2) % 2;
+      const stalled = omega < .05 && torque < load;
+      return { voltage, B, turns, load, area, activeLength, sideForce, omega, angle, current, torque, halfTurn, stalled };
+    }
+
+    function advanceMotor(dt) {
+      const voltage = number('motor-voltage');
+      const load = number('motor-load');
+      const k = number('motor-turns') * number('motor-field') * .008;
+      const steps = Math.max(1, Math.ceil(dt / .003));
+      for (let i = 0; i < steps; i += 1) {
+        const step = dt / steps;
+        const coupling = Math.abs(Math.cos(motorDynamics.angle));
+        motorDynamics.current = Math.max(0, (voltage - k * motorDynamics.omega * coupling) / 3.6);
+        const torque = k * motorDynamics.current * coupling;
+        const angularAcceleration = (torque - load - .012 * motorDynamics.omega) / .03;
+        motorDynamics.omega = Math.max(0, motorDynamics.omega + angularAcceleration * step);
+        motorDynamics.angle += motorDynamics.omega * step;
+      }
     }
 
     function drawCommutator(ctx, center, radius, angle, halfTurn, showCurrent, showElectrons, phase) {
@@ -8819,7 +8859,7 @@
       ctx.fillRect(center.x - radius - 34, center.y - 9, 26, 18);
       ctx.fillRect(center.x + radius + 8, center.y - 9, 26, 18);
       ctx.fillStyle = '#f8fafc';
-      ctx.font = '700 11px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.font = '700 11px "Times New Roman", "DFKai-SB", serif';
       ctx.textAlign = 'center';
       ctx.fillText('電刷', center.x - radius - 21, center.y - 16);
       ctx.fillText('電刷', center.x + radius + 21, center.y - 16);
@@ -8861,10 +8901,10 @@
       ctx.fill();
       ctx.stroke();
       ctx.fillStyle = '#f8fafc';
-      ctx.font = '800 12px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.font = '800 12px "Times New Roman", "DFKai-SB", serif';
       ctx.textAlign = 'left';
       ctx.fillText('右手定則：F = N I ℓ × B', x + 13, y + 22);
-      ctx.font = '700 13px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.font = '700 13px "Times New Roman", "DFKai-SB", serif';
       if (compact) {
         ctx.fillStyle = '#f8fafc';
         ctx.fillText(`左：I${leftCurrentUp ? '↑' : '↓'} × B→ = F${leftForce}`, x + 13, y + 46);
@@ -8884,12 +8924,124 @@
         ctx.fillText(`= F${rightForce}`, x + width - 67, y + 78);
       }
       ctx.fillStyle = '#cbd5e1';
-      ctx.font = '600 10px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.font = '600 10px "Times New Roman", "DFKai-SB", serif';
       ctx.fillText('±z 是線圈前後方向；兩力形成力偶', x + 13, y + (compact ? 87 : 102));
       ctx.restore();
     }
 
+    function drawMotorDiagram() {
+      const { ctx, w, h } = resizeCanvas($('motor-canvas'));
+      const state = motorState();
+      const compact = w < 620;
+      const currentOn = $('motor-show-current').checked;
+      const electronsOn = $('motor-show-electrons').checked && currentOn;
+      const fieldOn = $('motor-show-field').checked;
+      const forceOn = $('motor-show-force').checked && ['all', 'force', 'torque'].includes(activeMotorLayer);
+      const alpha = state.angle;
+      const cx = w / 2, cy = h * .39;
+      const radius = Math.min(w * .27, h * .29);
+      ctx.fillStyle = '#f6f8f7'; ctx.fillRect(0, 0, w, h);
+      ctx.strokeStyle = '#d1dbdd'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.arc(cx, cy, radius + 22, 0, Math.PI * 2); ctx.stroke();
+      ctx.setLineDash([5, 6]); ctx.strokeStyle = '#cad6d7';
+      ctx.beginPath(); ctx.moveTo(cx - radius - 42, cy); ctx.lineTo(cx + radius + 42, cy);
+      ctx.moveTo(cx, cy - radius - 30); ctx.lineTo(cx, cy + radius + 30); ctx.stroke(); ctx.setLineDash([]);
+      const magnetWidth = Math.min(w * .13, 115), magnetHeight = radius * 1.56;
+      const magnetLeft = Math.max(9, cx - radius - magnetWidth - 47);
+      const magnetRight = Math.min(w - magnetWidth - 9, cx + radius + 47);
+      const drawPole = (x, color, text) => {
+        const fill = ctx.createLinearGradient(x, 0, x + magnetWidth, 0);
+        fill.addColorStop(0, '#54636b'); fill.addColorStop(1, color);
+        ctx.fillStyle = fill; ctx.fillRect(x, cy - magnetHeight / 2, magnetWidth, magnetHeight);
+        ctx.fillStyle = color; ctx.fillRect(x + (text === 'N' ? magnetWidth - 10 : 0), cy - magnetHeight / 2 + 8, 10, magnetHeight - 16);
+        ctx.fillStyle = '#fff'; ctx.font = `700 ${compact ? 20 : 28}px "Times New Roman", serif`;
+        ctx.textAlign = 'center'; ctx.fillText(text, x + magnetWidth / 2, cy + 9);
+      };
+      drawPole(magnetLeft, '#a84f4a', 'N');
+      drawPole(magnetRight, '#427a97', 'S');
+      if (fieldOn) {
+        ctx.strokeStyle = 'rgba(55,119,157,.48)'; ctx.fillStyle = 'rgba(55,119,157,.48)';
+        for (const offset of [-.60, -.30, 0, .30, .60]) {
+          const y = cy + offset * radius;
+          drawArrow(ctx, magnetLeft + magnetWidth + 12, y, magnetRight - 13, y, 'rgba(55,119,157,.36)');
+        }
+      }
+      const a = { x: cx - radius * Math.cos(alpha), y: cy + radius * Math.sin(alpha) };
+      const b = { x: cx + radius * Math.cos(alpha), y: cy - radius * Math.sin(alpha) };
+      ctx.strokeStyle = '#92572f'; ctx.lineWidth = compact ? 12 : 17; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.stroke();
+      ctx.strokeStyle = '#dea16c'; ctx.lineWidth = compact ? 4 : 6;
+      ctx.beginPath(); ctx.moveTo(a.x, a.y - 2); ctx.lineTo(b.x, b.y - 2); ctx.stroke();
+      ctx.fillStyle = '#263d46'; ctx.beginPath(); ctx.arc(cx, cy, compact ? 12 : 17, 0, 2 * Math.PI); ctx.fill();
+      const currentUpA = state.halfTurn === 1;
+      for (const [index, point] of [a, b].entries()) {
+        const up = index === 0 ? currentUpA : !currentUpA;
+        ctx.fillStyle = '#fff9f1'; ctx.strokeStyle = '#a65a2e'; ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.arc(point.x, point.y, compact ? 12 : 16, 0, 2 * Math.PI); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = '#263d46'; ctx.font = `700 ${compact ? 11 : 13}px "Times New Roman", serif`;
+        ctx.textAlign = 'center';
+        ctx.fillText(index === 0 ? 'A' : 'B', point.x, point.y - (compact ? 19 : 24));
+        if (currentOn) {
+          ctx.fillStyle = '#a65a2e'; ctx.strokeStyle = '#a65a2e'; ctx.lineWidth = 3;
+          if (up) { ctx.beginPath(); ctx.arc(point.x, point.y, 4, 0, 2 * Math.PI); ctx.fill(); }
+          else { ctx.beginPath(); ctx.moveTo(point.x - 5, point.y - 5); ctx.lineTo(point.x + 5, point.y + 5);
+            ctx.moveTo(point.x + 5, point.y - 5); ctx.lineTo(point.x - 5, point.y + 5); ctx.stroke(); }
+        }
+        if (forceOn && state.current > .01) {
+          const sign = up ? -1 : 1;
+          drawArrow(ctx, point.x + (index ? 22 : -22), point.y, point.x + (index ? 22 : -22), point.y + sign * (compact ? 38 : 60), '#bf4f56');
+        }
+      }
+      if (currentOn) {
+        const progress = ((time * .55) % 1 + 1) % 1;
+        const from = currentUpA ? a : b, to = currentUpA ? b : a;
+        instrumentParticle(ctx, from.x + (to.x - from.x) * progress, from.y + (to.y - from.y) * progress, '#e89845', compact ? 3 : 4);
+        if (electronsOn) instrumentParticle(ctx, to.x + (from.x - to.x) * progress, to.y + (from.y - to.y) * progress, '#8c73bc', compact ? 2.5 : 3);
+      }
+      const ringY = h * .80, ringR = compact ? 27 : 34;
+      ctx.strokeStyle = '#788a8d'; ctx.lineWidth = compact ? 3 : 4;
+      ctx.beginPath(); ctx.moveTo(cx, cy + 20); ctx.lineTo(cx, ringY - ringR - 8); ctx.stroke();
+      for (let side = 0; side < 2; side += 1) {
+        ctx.strokeStyle = side ? '#cf8a53' : '#9f562d'; ctx.lineWidth = 9; ctx.lineCap = 'butt';
+        ctx.beginPath(); ctx.arc(cx, ringY, ringR, alpha + Math.PI / 2 + .08 + side * Math.PI, alpha + 3 * Math.PI / 2 - .08 + side * Math.PI); ctx.stroke();
+      }
+      ctx.fillStyle = '#865330'; ctx.font = `700 ${compact ? 10 : 12}px "Times New Roman", serif`; ctx.textAlign = 'center';
+      for (let side = 0; side < 2; side += 1) {
+        const mid = alpha + Math.PI + side * Math.PI;
+        ctx.fillText(side ? 'B' : 'A', cx + (ringR + 13) * Math.cos(mid), ringY + (ringR + 13) * Math.sin(mid) + 4);
+      }
+      ctx.fillStyle = '#34434a';
+      ctx.fillRect(cx - ringR - 25, ringY - 7, 19, 14);
+      ctx.fillRect(cx + ringR + 6, ringY - 7, 19, 14);
+      ctx.strokeStyle = '#53646b'; ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.moveTo(cx - ringR - 25, ringY); ctx.lineTo(cx - ringR - 45, ringY); ctx.lineTo(cx - ringR - 45, h - 30);
+      ctx.lineTo(cx - 42, h - 30);
+      ctx.moveTo(cx + ringR + 25, ringY); ctx.lineTo(cx + ringR + 45, ringY); ctx.lineTo(cx + ringR + 45, h - 30);
+      ctx.lineTo(cx + 42, h - 30); ctx.stroke();
+      ctx.fillStyle = '#283a43'; ctx.fillRect(cx - 42, h - 42, 84, 25);
+      ctx.fillStyle = '#f9f4eb'; ctx.font = '700 14px "Times New Roman", serif'; ctx.textAlign = 'center';
+      ctx.fillText(`+  ${state.voltage.toFixed(1)} V  −`, cx, h - 25);
+      ctx.fillStyle = '#52636b'; ctx.font = `700 ${compact ? 11 : 13}px "Times New Roman", "DFKai-SB", serif`;
+      ctx.textAlign = 'left'; ctx.fillText('俯視轉子', 13, 24);
+      ctx.fillText('⊙ 向外　⊗ 向內', 13, 44);
+      if (!compact) { ctx.textAlign = 'right'; ctx.fillText('每半轉，分裂環交換電刷接點', w - 18, h - 28); }
+      setText('motor-voltage-out', `${state.voltage.toFixed(1)} V`);
+      setText('motor-field-out', `${state.B.toFixed(2)} T`);
+      setText('motor-turns-out', state.turns.toFixed(0));
+      setText('motor-load-out', `${state.load.toFixed(2)} N·m`);
+      setText('motor-speed-out', `${number('motor-speed').toFixed(2)}x`);
+      $('motor-current').innerHTML = `線圈電流 ${math('I')} = ${state.current.toFixed(2)} A<small>${math('I=(V-\\varepsilon_{\\rm back})/R')}；反電動勢隨轉速變化</small>`;
+      $('motor-torque').innerHTML = `電磁力矩 ${math('\\tau')} = ${state.torque.toFixed(2)} N·m<small>${math('\\tau=NIAB|\\cos\\theta|')}；負載 ${state.load.toFixed(2)} N·m</small>`;
+      $('motor-speed-badge').innerHTML = `轉速 ${(state.omega * 60 / (2 * Math.PI)).toFixed(0)} rpm<small>${state.stalled ? '力矩不足，轉子停止' : '電磁力矩扣除負載與阻力後加速'}</small>`;
+      $('motor-commutator').innerHTML = `換向器：${state.halfTurn ? 'B' : 'A'} 接正極<small>在力矩趨零處交換線圈電流方向</small>`;
+      setText('motor-proof-current', `A 側 ${currentUpA ? '⊙' : '⊗'}；B 側 ${currentUpA ? '⊗' : '⊙'}（俯視）`);
+      setText('motor-proof-field', `磁場 ${state.B.toFixed(2)} T，由 N → S`);
+      setText('motor-proof-force', `兩側受力相反；每側約 ${state.sideForce.toFixed(2)} N`);
+      setText('motor-proof-torque', `目前電磁力矩 ${state.torque.toFixed(3)} N·m`);
+    }
+
     function drawMotor() {
+      if (emRenderView.motor === 'diagram') return drawMotorDiagram();
       const canvas = $('motor-canvas');
       const { ctx, w, h } = resizeCanvas(canvas);
       const state = motorState();
@@ -8941,7 +9093,7 @@
       drawArrow(ctx, triad.x, triad.y, triad.x + 40, triad.y + 23, '#2563eb');
       drawArrow(ctx, triad.x, triad.y, triad.x, triad.y - 45, '#0f766e');
       drawArrow(ctx, triad.x, triad.y, triad.x - 40, triad.y + 23, '#7c3aed');
-      ctx.font = '800 10px "Microsoft JhengHei", Arial, sans-serif';
+      ctx.font = '800 10px "Times New Roman", "DFKai-SB", serif';
       ctx.fillStyle = '#2563eb';
       ctx.fillText('+x（B）', triad.x + 43, triad.y + 26);
       ctx.fillStyle = '#0f766e';
@@ -8987,7 +9139,7 @@
       ctx.restore();
 
       const currentReversed = state.halfTurn === 1;
-      const leftCurrentUp = !currentReversed;
+      const leftCurrentUp = currentReversed;
       const route = currentReversed ? [...loop].reverse() : loop;
       if (showCurrent) {
         drawPolylineParticles(ctx, route, compact ? 13 : 18, time * .22, '#fb923c', 3.6);
@@ -9004,7 +9156,7 @@
       const rightMid = pointOnSegment(topB, bottomB, .5);
       if (showCurrent) {
         ctx.save();
-        ctx.font = `800 ${compact ? 11 : 13}px "Microsoft JhengHei", Arial, sans-serif`;
+        ctx.font = `800 ${compact ? 11 : 13}px "Times New Roman", "DFKai-SB", serif`;
         ctx.fillStyle = '#c2410c';
         ctx.textAlign = 'right';
         ctx.fillText(`I${leftCurrentUp ? '↑' : '↓'}`, leftMid.x - 13, leftMid.y - 24);
@@ -9056,7 +9208,7 @@
       ctx.fillStyle = '#334155';
       ctx.fillRect(batteryX, batteryY, 68, 24);
       ctx.fillStyle = '#f8fafc';
-      ctx.font = '800 14px Arial, sans-serif';
+      ctx.font = '800 14px "Times New Roman", "DFKai-SB", serif';
       ctx.textAlign = 'center';
       ctx.fillText(`+  ${state.voltage.toFixed(1)} V  −`, origin.x, batteryY + 17);
       if (!compact) drawSceneLabel(ctx, commutatorCenter.x + 54, commutatorCenter.y - 18, '分裂環：每半圈換向', 'left');
@@ -9095,13 +9247,17 @@
       setText('motor-load-out', `${state.load.toFixed(2)} N·m`);
       setText('motor-speed-out', `${number('motor-speed').toFixed(2)}x`);
       $('motor-current').innerHTML = `線圈電流 I = ${state.current.toFixed(2)} A<small>橘色為傳統電流；紫色電子流方向相反</small>`;
-      $('motor-torque').innerHTML = `電磁力矩 τ = ${state.torque.toFixed(2)} N·m<small>τ = NIAB sinθ；目前負載 ${state.load.toFixed(2)} N·m</small>`;
-      $('motor-speed-badge').innerHTML = `轉速 = ${(state.omega * 60 / (Math.PI * 2)).toFixed(0)} rpm<small>${state.stalled ? '啟動力矩小於負載' : `目標約 ${(state.targetOmega * 60 / (Math.PI * 2)).toFixed(0)} rpm`}</small>`;
+      $('motor-torque').innerHTML = `電磁力矩 ${math('\\tau')} = ${state.torque.toFixed(2)} N·m<small>${math('\\tau=NIAB|\\cos\\theta|')}；負載 ${state.load.toFixed(2)} N·m</small>`;
+      $('motor-speed-badge').innerHTML = `轉速 = ${(state.omega * 60 / (Math.PI * 2)).toFixed(0)} rpm<small>${state.stalled ? '電磁力矩不足以克服負載' : '電壓、反電動勢與負載共同決定'}</small>`;
       $('motor-commutator').innerHTML = `換向器：${state.halfTurn === 0 ? 'A 接正極' : 'B 接正極'}<small>跨過半圈時交換線圈電流方向</small>`;
-      setText('motor-proof-current', `左側 I${leftCurrentUp ? '↑' : '↓'}；右側 I${leftCurrentUp ? '↓' : '↑'}（每半圈換向）`);
+      setText('motor-proof-current', `A 側 I${leftCurrentUp ? '↑' : '↓'}；B 側 I${leftCurrentUp ? '↓' : '↑'}（每半圈換向）`);
       setText('motor-proof-field', `B = ${state.B.toFixed(2)} T，由 N → S（向右）`);
       setText('motor-proof-force', `左 F${leftOut}；右 F${rightOut}；每側約 ${state.sideForce.toFixed(2)} N`);
       setText('motor-proof-torque', `兩力形成力偶；τ = ${state.torque.toFixed(3)} N·m`);
+      if (emRenderView.motor === 'apparatus' && window.emThree) window.emThree.renderMotor({
+        angle: state.angle, halfTurn: state.halfTurn, current: state.current, B: state.B, time,
+        showCurrent, showElectrons, showField, showForce
+      });
     }
 
     function drawGenerator() {
@@ -9119,9 +9275,9 @@
       setText('gen-turns-out', String(turns));
       setText('gen-rpm-out', `${rpm} rpm`);
       setText('gen-resistance-out', `${resistance} Ω`);
-      $('gen-flux').innerHTML = `磁通鏈結 NΦ = ${flux.toFixed(2)} Wb·turn<small>N B A cosθ；面積 A = 0.010 m²</small>`;
-      $('gen-emf').innerHTML = `感應電壓 ε = ${emf.toFixed(2)} V<small>ε = −d(NΦ)/dt = NBAω sinθ</small>`;
-      $('gen-power').innerHTML = `負載功率 P = ${power.toFixed(2)} W<small>理想純電阻：P = ε²/R</small>`;
+      $('gen-flux').innerHTML = `磁通鏈結 ${math('N\\Phi')} = ${flux.toFixed(2)} Wb·turn<small>${math('N\\Phi=NBA\\cos\\theta')}；${math('A=0.010\\,\\mathrm{m}^2')}</small>`;
+      $('gen-emf').innerHTML = `感應電壓 ${math('\\varepsilon')} = ${emf.toFixed(2)} V<small>${math('\\varepsilon=-\\frac{d(N\\Phi)}{dt}=NBA\\omega\\sin\\theta')}</small>`;
+      $('gen-power').innerHTML = `負載功率 ${math('P')} = ${power.toFixed(2)} W<small>理想純電阻：${math('P=\\varepsilon^2/R')}</small>`;
       $('gen-speed-badge').innerHTML = `轉速 ${rpm} rpm<small>每秒 ${(rpm / 60).toFixed(2)} 圈；輸出頻率相同</small>`;
       ctx.fillStyle = '#f4f7f8'; ctx.fillRect(0, 0, w, h);
       const top = h * .59;
@@ -9137,7 +9293,7 @@
         g.addColorStop(0, color); g.addColorStop(1, label === 'N' ? '#f08080' : '#6a9df3');
         ctx.fillStyle = g; ctx.fillRect(x, magnetY, magnetW, magnetH);
         ctx.fillStyle = '#9ba7aa'; ctx.fillRect(x + magnetW * .16, magnetY + magnetH, magnetW * .68, top - magnetY - magnetH);
-        ctx.fillStyle = '#fff'; ctx.font = `800 ${compact ? 22 : 32}px Arial, sans-serif`;
+        ctx.fillStyle = '#fff'; ctx.font = `800 ${compact ? 22 : 32}px "Times New Roman", "DFKai-SB", serif`;
         ctx.textAlign = 'center'; ctx.fillText(label, x + magnetW / 2, magnetY + magnetH * .56);
       };
       magnet(leftX, '#ad3939', 'N'); magnet(rightX, '#2e5bad', 'S');
@@ -9219,9 +9375,14 @@
       const markerX = chart.x + chart.w * positiveModulo(theta, 4 * Math.PI) / (4 * Math.PI);
       ctx.strokeStyle = '#70808a'; ctx.setLineDash([4, 4]); ctx.beginPath();
       ctx.moveTo(markerX, chart.y); ctx.lineTo(markerX, chart.y + chart.h); ctx.stroke(); ctx.setLineDash([]);
-      ctx.fillStyle = '#3a739a'; ctx.font = `700 ${compact ? 10 : 12}px "Microsoft JhengHei", sans-serif`;
+      ctx.fillStyle = '#3a739a'; ctx.font = `700 ${compact ? 10 : 12}px "Times New Roman", "DFKai-SB", serif`;
       ctx.fillText('NΦ', chart.x + 7, chart.y + 15);
       ctx.fillStyle = '#b35a3e'; ctx.fillText('ε', chart.x + 7, chart.y + chart.h * .58);
+      if (emRenderView.generator === 'apparatus' && window.emThree) window.emThree.renderGenerator({
+        angle: theta, current: emf / resistance, B, time,
+        showCurrent: $('gen-show-current').checked, showElectrons: false,
+        showField: $('gen-show-field').checked, showForce: false
+      });
     }
 
     function playBellTone() {
@@ -9353,7 +9514,7 @@
       ctx.moveTo(contactX + 10, contactY); ctx.lineTo(w * .93, contactY); ctx.lineTo(w * .93, circuitY); ctx.lineTo(w * .62, circuitY);
       ctx.moveTo(w * .49, circuitY); ctx.lineTo(w * .28, circuitY); ctx.stroke();
       ctx.fillStyle = '#364d55'; ctx.fillRect(w * .14, circuitY - 11, w * .14, 22);
-      ctx.fillStyle = '#edf2f2'; ctx.font = `700 ${compact ? 10 : 13}px Arial, sans-serif`; ctx.textAlign = 'center';
+      ctx.fillStyle = '#edf2f2'; ctx.font = `700 ${compact ? 10 : 13}px "Times New Roman", "DFKai-SB", serif`; ctx.textAlign = 'center';
       ctx.fillText(`${voltage.toFixed(1)} V`, w * .21, circuitY + 4);
       ctx.strokeStyle = bell.power ? '#169080' : '#677a80'; ctx.lineWidth = 4;
       ctx.beginPath(); ctx.moveTo(w * .49, circuitY); ctx.lineTo(w * .62, circuitY + (bell.power ? 0 : -13)); ctx.stroke();
@@ -9387,7 +9548,7 @@
       };
       drawHistory('current', .43, .3, '#f0a46e');
       drawHistory('x', .91, .34, '#73c9d5');
-      ctx.fillStyle = '#f2b281'; ctx.font = `700 ${compact ? 10 : 12}px "Microsoft JhengHei", sans-serif`; ctx.textAlign = 'left';
+      ctx.fillStyle = '#f2b281'; ctx.font = `700 ${compact ? 10 : 12}px "Times New Roman", "DFKai-SB", serif`; ctx.textAlign = 'left';
       ctx.fillStyle = '#18313d'; ctx.fillRect(chart.x + 5, chart.y + 3, compact ? 78 : 98, 18);
       ctx.fillRect(chart.x + 5, chart.y + chart.height * .63 - 13, compact ? 78 : 98, 18);
       ctx.fillStyle = '#f2b281';
@@ -9997,7 +10158,7 @@
           const glow = ctx.createRadialGradient(x, y, 0, x, y, blur);
           glow.addColorStop(0, '#ffffff'); glow.addColorStop(.15, 'rgba(188,225,255,.9)'); glow.addColorStop(1, 'rgba(85,172,237,0)');
           ctx.fillStyle = glow; ctx.beginPath(); ctx.arc(x, y, blur, 0, 2 * Math.PI); ctx.fill();
-          ctx.fillStyle = '#dceef8'; ctx.font = `700 ${compact ? 10 : 13}px "Microsoft JhengHei", sans-serif`;
+          ctx.fillStyle = '#dceef8'; ctx.font = `700 ${compact ? 10 : 13}px "Times New Roman", "DFKai-SB", serif`;
           ctx.textAlign = 'center'; ctx.fillText(label, x, inset.y + 22);
         });
         ctx.strokeStyle = '#6b8896'; ctx.beginPath(); ctx.moveTo(inset.x + inset.w / 2, inset.y + 10); ctx.lineTo(inset.x + inset.w / 2, inset.y + inset.h - 10); ctx.stroke();
@@ -10027,10 +10188,10 @@
       }
       ctx.fillStyle = '#18343e';
       ctx.textAlign = 'left';
-      ctx.font = '700 17px "Microsoft JhengHei", sans-serif';
+      ctx.font = '700 17px "Times New Roman", "DFKai-SB", serif';
       ctx.fillText(title, 22, 31);
       ctx.fillStyle = '#617982';
-      ctx.font = '12px "Microsoft JhengHei", sans-serif';
+      ctx.font = '12px "Times New Roman", "DFKai-SB", serif';
       const lines = [];
       let line = '';
       for (const character of subtitle) {
@@ -10086,6 +10247,7 @@
     }
 
     function drawCyclotron() {
+      return drawCyclotronDiagram();
       const B = number('cyc-field');
       const voltage = number('cyc-voltage');
       const detune = number('cyc-detune');
@@ -10150,7 +10312,7 @@
         for (let yy = cy - outer * .52; yy <= cy + outer * .52; yy += outer * .30) {
           drawArrow(ctx, cx - fieldSign * gap * .28, yy, cx + fieldSign * gap * .28, yy, '#db6b2c');
         }
-        ctx.fillStyle = '#b34d1e'; ctx.font = '700 15px sans-serif'; ctx.textAlign = 'center';
+        ctx.fillStyle = '#b34d1e'; ctx.font = '700 15px "Times New Roman", "DFKai-SB", serif'; ctx.textAlign = 'center';
         ctx.fillText(fieldSign > 0 ? '+    E→    −' : '−    ←E    +', cx, cy - outer - 25);
       }
       ctx.restore();
@@ -10183,19 +10345,140 @@
       ctx.stroke();
       instrumentParticle(ctx, cx + point.x * scale, cy + point.y * scale, '#00a58c', compact ? 5 : 7);
       ctx.restore();
-      ctx.fillStyle = '#1e4853'; ctx.textAlign = 'center'; ctx.font = '700 13px "Microsoft JhengHei", sans-serif';
+      ctx.fillStyle = '#1e4853'; ctx.textAlign = 'center'; ctx.font = '700 13px "Times New Roman", "DFKai-SB", serif';
       ctx.fillText('D 電極', cx - outer * .55, cy - outer * .45);
       ctx.fillText('D 電極', cx + outer * .55, cy - outer * .45);
-      ctx.fillStyle = '#436775'; ctx.font = '12px "Microsoft JhengHei", sans-serif';
+      ctx.fillStyle = '#436775'; ctx.font = '12px "Times New Roman", "DFKai-SB", serif';
       ctx.fillText('磁場朝向觀察者 ⊙', cx, Math.min(h - 35, cy + outer + 34));
       const readX = compact ? 20 : w - 245;
       const readY = compact ? h - 92 : 114;
-      ctx.textAlign = 'left'; ctx.fillStyle = '#254954'; ctx.font = '700 13px "Microsoft JhengHei", sans-serif';
+      ctx.textAlign = 'left'; ctx.fillStyle = '#254954'; ctx.font = '700 13px "Times New Roman", "DFKai-SB", serif';
       ctx.fillText(`跨越間隙：${arcIndex + 1} 次`, readX, readY);
       ctx.fillText(`目前變化：${arc.gain >= 0 ? '+' : ''}${arc.gain.toFixed(3)} MeV`, readX, readY + 24);
       ctx.fillText(`速率：${(arc.speed / 1e6).toFixed(1)} × 10⁶ m/s`, readX, readY + 48);
       ctx.fillStyle = '#728c93'; ctx.fillRect(20, h - 17, w - 40, 4);
       ctx.fillStyle = '#0f766e'; ctx.fillRect(20, h - 17, (w - 40) * (phase / arcs.length), 4);
+    }
+
+    function drawCyclotronDiagram() {
+      const B = number('cyc-field');
+      const voltage = number('cyc-voltage');
+      const detune = number('cyc-detune');
+      const arcs = cyclotronPath(B, voltage, detune);
+      const phase = positiveModulo(time * 5.4, arcs.length);
+      const index = Math.min(arcs.length - 1, Math.floor(phase));
+      const angle = Math.PI * (phase - index);
+      const arc = arcs[index];
+      const point = cyclotronPoint(arc, angle);
+      const fc = 1.602176634e-19 * B / (2 * Math.PI * 1.67262192369e-27) / 1e6;
+      setText('cyc-field-out', `${B.toFixed(2)} T`);
+      setText('cyc-voltage-out', `${voltage.toFixed(0)} kV`);
+      setText('cyc-detune-out', `${detune > 0 ? '+' : ''}${detune.toFixed(1)}%`);
+      setText('cyc-speed-out', `${number('cyc-speed').toFixed(2)}x`);
+      $('cyc-energy').innerHTML = `動能 ${arc.energy.toFixed(2)} MeV<small>第 ${index + 1} 次跨越間隙後；${math('\\Delta K=qV\\cos\\phi')}</small>`;
+      $('cyc-radius').innerHTML = `軌道半徑 ${arc.radius.toFixed(2)} m<small>${math('r=mv/(qB)')}；速率 ${(arc.speed / 1e6).toFixed(1)} × 10⁶ m/s</small>`;
+      $('cyc-frequency').innerHTML = `共振頻率 ${fc.toFixed(2)} MHz<small>${math('f_c=qB/(2\\pi m)')}；射頻 ${(fc * (1 + detune / 100)).toFixed(2)} MHz</small>`;
+      const detuned = Math.abs(detune) > 1.5;
+      $('cyc-status').classList.toggle('warning', detuned || arc.gain < 0);
+      $('cyc-status').innerHTML = arc.gain < 0 ? '失相：間隙減速<small>電場方向與粒子速度相反</small>'
+        : detuned ? '射頻未同步<small>累積相位差使每次增能不再相同</small>'
+        : '同步加速<small>D 電極內只轉彎，間隙才改變動能</small>';
+
+      const { ctx, w, h } = resizeCanvas($('cyclotron-canvas'));
+      const compact = w < 700;
+      const cx = compact ? w * .5 : w * .36;
+      const cy = compact ? h * .36 : h * .51;
+      const outer = compact ? Math.min(w * .39, h * .27) : Math.min(w * .25, h * .38);
+      const scale = outer / .68;
+      const gap = Math.max(12, outer * .095);
+      ctx.fillStyle = '#f6f9f8'; ctx.fillRect(0, 0, w, h);
+      ctx.fillStyle = '#dee8e9'; ctx.beginPath(); ctx.arc(cx, cy, outer + 16, 0, 2 * Math.PI); ctx.fill();
+      ctx.strokeStyle = '#91aab0'; ctx.lineWidth = 2; ctx.stroke();
+      ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, outer, 0, 2 * Math.PI); ctx.clip();
+      const leftFill = ctx.createLinearGradient(cx - outer, 0, cx, 0);
+      leftFill.addColorStop(0, '#acbdc0'); leftFill.addColorStop(1, '#e2ebeb');
+      const rightFill = ctx.createLinearGradient(cx, 0, cx + outer, 0);
+      rightFill.addColorStop(0, '#e2ebeb'); rightFill.addColorStop(1, '#acbdc0');
+      ctx.fillStyle = leftFill; ctx.fillRect(cx - outer, cy - outer, outer - gap / 2, 2 * outer);
+      ctx.fillStyle = rightFill; ctx.fillRect(cx + gap / 2, cy - outer, outer - gap / 2, 2 * outer);
+      ctx.fillStyle = '#fff'; ctx.fillRect(cx - gap / 2, cy - outer, gap, 2 * outer);
+      ctx.strokeStyle = '#6f8d95'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(cx - gap / 2, cy - outer); ctx.lineTo(cx - gap / 2, cy + outer);
+      ctx.moveTo(cx + gap / 2, cy - outer); ctx.lineTo(cx + gap / 2, cy + outer); ctx.stroke();
+      if ($('cyc-show-field').checked) {
+        for (let y = cy - outer + 30; y < cy + outer - 20; y += compact ? 45 : 47) {
+          for (let x = cx - outer + 28; x < cx + outer - 20; x += compact ? 45 : 47) {
+            if (Math.hypot(x - cx, y - cy) > outer - 18 || Math.abs(x - cx) < gap / 2 + 11) continue;
+            ctx.strokeStyle = 'rgba(47,104,121,.27)'; ctx.lineWidth = 1.5;
+            ctx.beginPath(); ctx.arc(x, y, 5, 0, 2 * Math.PI); ctx.stroke();
+            ctx.fillStyle = 'rgba(47,104,121,.42)'; ctx.beginPath(); ctx.arc(x, y, 1.8, 0, 2 * Math.PI); ctx.fill();
+          }
+        }
+      }
+      ctx.restore();
+      if ($('cyc-show-field').checked) {
+        const sign = Math.cos(Math.PI * (1 + detune / 100) * phase) >= 0 ? 1 : -1;
+        for (const offset of [-.42, 0, .42]) {
+          const y = cy + offset * outer;
+          drawArrow(ctx, cx - sign * gap * .43, y, cx + sign * gap * .43, y, '#cf6b3b');
+        }
+      }
+      ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, outer - 2, 0, 2 * Math.PI); ctx.clip();
+      if ($('cyc-show-trail').checked) {
+        ctx.strokeStyle = 'rgba(26,119,112,.58)'; ctx.lineWidth = compact ? 2.1 : 2.6;
+        ctx.beginPath(); let started = false;
+        for (let i = 0; i <= index; i += 1) {
+          const limit = i === index ? angle : Math.PI;
+          const samples = Math.max(1, Math.ceil(limit / .035));
+          for (let j = 0; j <= samples; j += 1) {
+            const p = cyclotronPoint(arcs[i], limit * j / samples);
+            if (!started) { ctx.moveTo(cx + p.x * scale, cy + p.y * scale); started = true; }
+            else ctx.lineTo(cx + p.x * scale, cy + p.y * scale);
+          }
+        }
+        ctx.stroke();
+      }
+      const particleX = cx + point.x * scale, particleY = cy + point.y * scale;
+      instrumentParticle(ctx, particleX, particleY, '#147f75', compact ? 5 : 7);
+      ctx.restore();
+      ctx.fillStyle = '#345965'; ctx.font = `700 ${compact ? 12 : 15}px "Times New Roman", "DFKai-SB", serif`; ctx.textAlign = 'center';
+      ctx.fillText('D', cx - outer * .5, cy - outer * .48);
+      ctx.fillText('D', cx + outer * .5, cy - outer * .48);
+      ctx.fillStyle = '#637e85'; ctx.font = `12px "Times New Roman", "DFKai-SB", serif`;
+      ctx.fillText('磁場 ⊙', cx, cy + outer + 31);
+      const chart = compact
+        ? { x: w * .08, y: h * .74, width: w * .84, height: h * .17 }
+        : { x: w * .67, y: h * .25, width: w * .27, height: h * .46 };
+      ctx.strokeStyle = '#aebfc2'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(chart.x, chart.y); ctx.lineTo(chart.x, chart.y + chart.height);
+      ctx.lineTo(chart.x + chart.width, chart.y + chart.height); ctx.stroke();
+      const limit = Math.min(arcs.length, compact ? 12 : 16);
+      const first = Math.max(0, Math.min(index - limit + 1, arcs.length - limit));
+      const visibleEnergies = arcs.slice(first, first + limit).map(item => item.energy);
+      const baseEnergy = Math.min(first ? arcs[first - 1].energy : 0, ...visibleEnergies);
+      const maxEnergy = Math.max(Math.max(...visibleEnergies) - baseEnergy, .1);
+      const stepWidth = chart.width / limit;
+      ctx.strokeStyle = '#177d75'; ctx.lineWidth = 2.4; ctx.lineJoin = 'miter';
+      ctx.beginPath();
+      for (let i = 0; i < limit; i += 1) {
+        const y = chart.y + chart.height * (1 - (arcs[first + i].energy - baseEnergy) / maxEnergy);
+        const left = chart.x + i * stepWidth, right = left + stepWidth;
+        if (i === 0) ctx.moveTo(left, y); else ctx.lineTo(left, y);
+        ctx.lineTo(right, y);
+      }
+      ctx.stroke();
+      const markerIndex = Math.min(index - first, limit - 1);
+      const markerX = chart.x + (markerIndex + .5) * stepWidth;
+      const markerY = chart.y + chart.height * (1 - (arcs[first + markerIndex].energy - baseEnergy) / maxEnergy);
+      ctx.fillStyle = '#d35b43'; ctx.beginPath(); ctx.arc(markerX, markerY, compact ? 4 : 5, 0, 2 * Math.PI); ctx.fill();
+      ctx.fillStyle = '#425f68'; ctx.font = `700 ${compact ? 11 : 14}px "Times New Roman", "DFKai-SB", serif`; ctx.textAlign = 'left';
+      ctx.fillText('每次跨越間隙後的動能', chart.x, chart.y - 15);
+      ctx.font = `11px "Times New Roman", "DFKai-SB", serif`;
+      ctx.fillText(`${Math.max(...visibleEnergies).toFixed(1)} MeV`, chart.x + 4, chart.y + 13);
+      if (!compact) {
+        ctx.fillText(`第 ${index + 1} 次跨越`, chart.x, chart.y + chart.height + 26);
+        ctx.fillText(`能量變化 ${arc.gain >= 0 ? '+' : ''}${arc.gain.toFixed(3)} MeV`, chart.x, chart.y + chart.height + 49);
+      }
     }
 
     const selectorPathCache = new Map();
@@ -10325,21 +10608,21 @@
       ctx.fillStyle = metal;
       ctx.fillRect(left - 3, center - half - 11, right - left + 6, 11);
       ctx.fillRect(left - 3, center + half, right - left + 6, 11);
-      ctx.fillStyle = '#bd5337'; ctx.font = '700 19px sans-serif'; ctx.textAlign = 'center';
+      ctx.fillStyle = '#bd5337'; ctx.font = '700 19px "Times New Roman", "DFKai-SB", serif'; ctx.textAlign = 'center';
       ctx.fillText('+', left + 20, center - half - 19);
       ctx.fillStyle = '#2b698e'; ctx.fillText('−', left + 20, center + half + 29);
       ctx.fillStyle = '#2c5561';
       ctx.fillRect(right, center - half, compact ? 9 : 13, half - 12);
       ctx.fillRect(right, center + 12, compact ? 9 : 13, half - 12);
-      ctx.fillStyle = '#53727b'; ctx.font = '700 12px "Microsoft JhengHei", sans-serif';
+      ctx.fillStyle = '#53727b'; ctx.font = '700 12px "Times New Roman", "DFKai-SB", serif';
       ctx.fillText('出口狹縫', right - (compact ? 25 : 0), center + half + 39);
       ctx.fillStyle = '#326778'; ctx.fillRect(left - 10, center - 16, 10, 32);
       instrumentParticle(ctx, left - 10, center, '#087a70', 4);
-      ctx.fillStyle = '#345460'; ctx.textAlign = 'left'; ctx.font = '700 13px "Microsoft JhengHei", sans-serif';
+      ctx.fillStyle = '#345460'; ctx.textAlign = 'left'; ctx.font = '700 13px "Times New Roman", "DFKai-SB", serif';
       ctx.fillText('E ↓', left + 12, center - half + 26);
       ctx.fillText('B × 進入畫面', left + 12, center - half + 47);
       const labelY = Math.min(h - 49, center + half + 55);
-      ctx.fillStyle = '#6f858d'; ctx.font = '12px "Microsoft JhengHei", sans-serif';
+      ctx.fillStyle = '#6f858d'; ctx.font = '12px "Times New Roman", "DFKai-SB", serif';
       ctx.fillText('同一裝置 · 不同入射速率', 20, labelY);
       if (!compact) {
         ctx.fillStyle = '#d27747'; ctx.fillText('慢：電場力佔優勢', 20, labelY + 23);
@@ -10391,7 +10674,7 @@
       drawArrow(ctx, inX, inY, cx, cy, '#087a85');
       drawArrow(ctx, cx, cy, endX, endY, interfaceData.total ? '#cc5c4b' : '#087a85');
       ctx.fillStyle = '#294b59';
-      ctx.font = '700 ' + (compact ? 11 : 13) + 'px "Microsoft JhengHei", sans-serif';
+      ctx.font = '700 ' + (compact ? 11 : 13) + 'px "Times New Roman", "DFKai-SB", serif';
       ctx.fillText('原方向', Math.min(w - 52, endX + 5), Math.min(diagramBottom - 8, straightY + 4));
       ctx.fillStyle = interfaceData.total ? '#a4493b' : '#086f73';
       ctx.fillText(interfaceData.total ? '反射' : '折射', Math.min(w - 42, endX + 5), endY - 7);
@@ -10406,14 +10689,14 @@
         interfaceData.total ? '紅線向上；虛線是假設未折射' : shift
       ];
       ctx.fillStyle = '#254855';
-      ctx.font = '700 ' + (compact ? 11 : 14) + 'px "Microsoft JhengHei", sans-serif';
+      ctx.font = '700 ' + (compact ? 11 : 14) + 'px "Times New Roman", "DFKai-SB", serif';
       if (compact) {
         lines.forEach((line, i) => ctx.fillText(line, 12, diagramBottom + 25 + i * 25));
       } else {
         lines.forEach((line, i) => ctx.fillText(line, w * .70, 53 + i * 43));
       }
       ctx.fillStyle = '#4f6b78';
-      ctx.font = '700 ' + (compact ? 11 : 13) + 'px "Microsoft JhengHei", sans-serif';
+      ctx.font = '700 ' + (compact ? 11 : 13) + 'px "Times New Roman", "DFKai-SB", serif';
       ctx.fillText('第 ' + interfaceData.index + ' 道界面', 12, 24);
       if (!compact) ctx.fillText('虛線是未偏折參考；青／紅線是目前光路', 12, h - 20);
     }
@@ -10535,7 +10818,7 @@
         ctx.fillStyle = colors[source]; ctx.beginPath(); ctx.arc(extraX, viewY(ray), 4, 0, Math.PI * 2); ctx.fill();
       }));
       ctx.restore();
-      ctx.fillStyle = '#315463'; ctx.font = `700 ${compact ? 10 : 12}px "Microsoft JhengHei", sans-serif`;
+      ctx.fillStyle = '#315463'; ctx.font = `700 ${compact ? 10 : 12}px "Times New Roman", "DFKai-SB", serif`;
       ctx.fillText('眼中視野', view.x + 10, view.y + 19);
       const apparentY = ray => eye.y + (eye.x - shipX) * Math.tan(ray.angle);
       [direct[0], direct[2]].filter(Boolean).forEach(ray => {
@@ -10656,7 +10939,7 @@
             ctx.fillRect(0, bandY, w, dy);
             drawLine([{ x: 0, y: bandY }, { x: w, y: bandY }], 'rgba(80,107,117,.28)', 1);
             if (!compact && dy > 13) {
-              ctx.font = '11px Arial, sans-serif'; ctx.fillStyle = '#54707d';
+              ctx.font = '11px "Times New Roman", "DFKai-SB", serif'; ctx.fillStyle = '#54707d';
               ctx.fillText(`${i + 1}  n=${indexAt(i).toFixed(3)}`, 8, bandY + dy * .7);
             }
           }
@@ -10821,7 +11104,7 @@
           if (showDirect && mirageTreeCache.direct.every(Boolean)) {
             drawTree(fraction => ({ x: viewX, y: horizonY - 3 - angularHeight * fraction }), compact ? 8 : 12, .65);
           }
-          ctx.fillStyle = '#315463'; ctx.font = `700 ${compact ? 10 : 12}px "Microsoft JhengHei", sans-serif`;
+          ctx.fillStyle = '#315463'; ctx.font = `700 ${compact ? 10 : 12}px "Times New Roman", "DFKai-SB", serif`;
           ctx.fillText('眼中視野', view.x + 10, view.y + 18);
           $('mirage-status').innerHTML = '倒立的實像<small>同一物點的小光束在眼前會聚；眼睛接收會聚後的光</small>';
         } else {
@@ -10842,10 +11125,10 @@
           ctx.beginPath();
           ctx.moveTo(eye.x + 4, eye.y - pupil); ctx.lineTo(eye.x + 54, eye.y);
           ctx.moveTo(eye.x + 4, eye.y + pupil); ctx.lineTo(eye.x + 54, eye.y); ctx.stroke();
-          ctx.fillStyle = '#315463'; ctx.font = '700 11px "Microsoft JhengHei", sans-serif';
+          ctx.fillStyle = '#315463'; ctx.font = '700 11px "Times New Roman", "DFKai-SB", serif';
           ctx.fillText('視網膜', eye.x + 36, eye.y + 37);
         }
-        ctx.fillStyle = '#264b57'; ctx.font = `700 ${compact ? 11 : 13}px "Microsoft JhengHei", sans-serif`;
+        ctx.fillStyle = '#264b57'; ctx.font = `700 ${compact ? 11 : 13}px "Times New Roman", "DFKai-SB", serif`;
         ctx.fillText(compact ? '青：樹底　橘：樹頂' : '青：樹底　橘：樹頂　同色細線會聚後仍進眼', 16, 24);
         if (image) {
           ctx.fillStyle = '#e8f3f0';
@@ -11156,6 +11439,9 @@
     }
 
     function setElectromagnetismMode(name) {
+      if (name === 'motor' && activeElectromagnetism !== 'motor') {
+        Object.assign(motorDynamics, { angle: .20, omega: 0, current: number('motor-voltage') / 3.6 });
+      }
       activeElectromagnetism = name;
       document.querySelectorAll('.em-mode').forEach(btn => {
         const active = btn.dataset.em === name;
@@ -11345,6 +11631,31 @@
 
     document.querySelectorAll('.em-mode').forEach(btn => {
       btn.addEventListener('click', () => setElectromagnetismMode(btn.dataset.em));
+    });
+    document.querySelectorAll('.em-render').forEach(button => {
+      button.addEventListener('click', () => {
+        const kind = button.dataset.emRender;
+        emRenderView[kind] = button.dataset.view;
+        document.querySelectorAll(`.em-render[data-em-render="${kind}"]`).forEach(choice => {
+          const selected = choice.dataset.view === emRenderView[kind];
+          choice.classList.toggle('active', selected);
+          choice.setAttribute('aria-pressed', String(selected));
+        });
+        $(`${kind}-diagram`).hidden = emRenderView[kind] !== 'diagram';
+        $(`${kind}-three`).hidden = emRenderView[kind] !== 'apparatus';
+        drawActive();
+      });
+    });
+    document.querySelectorAll('.cyc-jump').forEach(button => {
+      button.addEventListener('click', () => {
+        const arcs = cyclotronPath(number('cyc-field'), number('cyc-voltage'), number('cyc-detune'));
+        const crossing = Math.min(Number(button.dataset.crossing), arcs.length - 1);
+        time = (crossing + .14) / 5.4;
+        running = false;
+        $('global-play').textContent = '播放';
+        last = performance.now();
+        drawActive();
+      });
     });
     $('bell-power').addEventListener('click', () => { bell.power = !bell.power; drawActive(); });
     $('bell-audio').addEventListener('change', () => {
@@ -11555,6 +11866,9 @@
 
     $('global-reset').addEventListener('click', () => {
       time = 0;
+      if (activeModule === 'electromagnetism' && activeElectromagnetism === 'motor') {
+        Object.assign(motorDynamics, { angle: .20, omega: 0, current: number('motor-voltage') / 3.6 });
+      }
       last = performance.now();
       drawActive();
     });
@@ -11600,6 +11914,7 @@
         const scaled = elapsed * playback();
         time += scaled;
         if (activeModule === 'electromagnetism' && activeElectromagnetism === 'bell') advanceBell(scaled);
+        if (activeModule === 'electromagnetism' && activeElectromagnetism === 'motor') advanceMotor(scaled);
         if (activeModule === 'mechanics' && activeMechanics === 'skater') {
           const extension = skaterArmCurrent;
           skaterPhase += scaled * 3.6 / (.65 + 1.35 * extension * extension);
