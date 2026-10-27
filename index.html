@@ -353,7 +353,7 @@
       height: min(68vh, 580px);
       min-height: 460px;
     }
-    #drive-canvas, #sound-canvas, #camera-canvas, #generator-canvas {
+    #drive-canvas, #sound-canvas, #camera-canvas, #generator-canvas, #bell-canvas {
       height: min(68vh, 570px);
       min-height: 450px;
     }
@@ -490,7 +490,7 @@
       #huygens-canvas { height: 430px; min-height: 400px; }
       #mirror-canvas.parallel-expanded { height: 410px; min-height: 380px; }
       #microscope-canvas, #eye-canvas, #circular-canvas, #precession-canvas { height: 470px; min-height: 430px; }
-      #drive-canvas, #sound-canvas, #camera-canvas, #generator-canvas { height: 520px; min-height: 480px; }
+      #drive-canvas, #sound-canvas, #camera-canvas, #generator-canvas, #bell-canvas { height: 520px; min-height: 480px; }
       #refraction-canvas { height: 500px; min-height: 440px; }
       #scattering-canvas { height: 680px; min-height: 620px; }
       #brake-canvas { height: 860px; min-height: 810px; }
@@ -1729,6 +1729,7 @@
           <button type="button" class="em-mode active" data-em="brake" aria-pressed="true">磁煞車</button>
           <button type="button" class="em-mode" data-em="motor" aria-pressed="false">直流馬達</button>
           <button type="button" class="em-mode" data-em="generator" aria-pressed="false">交流發電機</button>
+          <button type="button" class="em-mode" data-em="bell" aria-pressed="false">自斷電電鈴</button>
           <button type="button" class="em-mode" data-em="cyclotron" aria-pressed="false">迴旋加速器</button>
           <button type="button" class="em-mode" data-em="selector" aria-pressed="false">速度選擇器</button>
           <button type="button" class="em-mode" data-em="spectrometer" aria-pressed="false">質譜儀</button>
@@ -1886,6 +1887,15 @@
           <div class="checks"><label class="check"><input id="gen-show-field" type="checkbox" checked>顯示磁場方向</label><label class="check"><input id="gen-show-current" type="checkbox" checked>顯示電流與電刷</label></div>
         </div>
 
+        <div id="em-view-bell" class="em-view">
+          <div class="module-head"><div><h2>自斷電電鈴</h2><p class="module-copy">按下按鈕後，接點閉合使線圈通電，電磁鐵吸引銜鐵並敲響鈴碗；銜鐵移動又拉開接點，磁場消退，彈簧把它拉回。接點重新接通後，循環自行重複。</p></div></div>
+          <div class="values"><div class="badge" id="bell-circuit">電路未通</div><div class="badge" id="bell-current-badge">線圈電流</div><div class="badge" id="bell-field-badge">鐵芯磁性</div><div class="badge" id="bell-strikes">敲擊次數</div></div>
+          <div class="plot-wrap"><canvas id="bell-canvas" role="img" aria-label="電鈴的電池、按鈕、線圈、鐵芯、銜鐵、接點、彈簧與鈴碗；按鈕按下後，接點自行通斷並帶動敲擊。下方顯示電流與銜鐵位移。"></canvas></div>
+          <div class="presets"><button type="button" class="preset" id="bell-power" aria-pressed="false">按下按鈕</button><button type="button" class="preset" id="bell-reset">重設電鈴</button><label class="check"><input id="bell-audio" type="checkbox">敲擊音效</label></div>
+          <div class="controls"><div class="control"><label for="bell-voltage">電池電壓：<span id="bell-voltage-out">6.0 V</span></label><input id="bell-voltage" type="range" min="2" max="12" step="0.5" value="6"></div><div class="control"><label for="bell-spring">彈簧強度：<span id="bell-spring-out">1.00x</span></label><input id="bell-spring" type="range" min="0.5" max="1.8" step="0.05" value="1"></div><div class="control"><label for="bell-core">鐵芯材料</label><select id="bell-core"><option value="soft">軟鐵：快速退磁</option><option value="steel">高剩磁鋼芯：退磁慢（對照）</option></select></div><div class="control"><label for="bell-speed">播放速度：<span id="bell-speed-out">0.40x</span></label><input id="bell-speed" type="range" min="0.1" max="1" step="0.05" value="0.4"></div></div>
+          <p class="module-copy">模型呈現接點通斷、線圈電流建立與衰減、銜鐵受力和彈回。鋼芯對照是假設有明顯剩磁的極限示意；實際是否持續吸住銜鐵仍取決於材料、磁路與彈簧。</p>
+        </div>
+
         <div id="em-view-cyclotron" class="em-view">
           <div class="module-head">
             <div>
@@ -2032,7 +2042,7 @@
       physical: [['double', '雙狹縫干涉'], ['single', '單狹縫繞射'], ['film', '薄膜干涉']],
       imaging: [['mirror', '面鏡成像'], ['lens', '透鏡成像'], ['aberration', '球面像差'], ['reflection', '鏡像文字'], ['trifold', '多面鏡'], ['microscope', '顯微鏡'], ['camera', '相機對焦'], ['eye', '眼睛成像']],
       mechanics: [['circular', '圓周運動與投影'], ['skater', '滑冰者與角動量'], ['precession', '角動量與進動'], ['pulley', '滑輪組']],
-      electromagnetism: [['brake', '磁煞車'], ['motor', '直流馬達'], ['generator', '交流發電機'], ['selector', '速度選擇器'], ['spectrometer', '質譜儀'], ['cyclotron', '粒子加速器（迴旋）']],
+      electromagnetism: [['brake', '磁煞車'], ['motor', '直流馬達'], ['generator', '交流發電機'], ['bell', '自斷電電鈴'], ['selector', '速度選擇器'], ['spectrometer', '質譜儀'], ['cyclotron', '粒子加速器（迴旋）']],
       astronomy: [['retrograde', '行星逆行']]
     };
     const lastLabByCategory = {};
@@ -2045,6 +2055,8 @@
     let skaterArmCurrent = 1;
     let last = performance.now();
     let standingPresetSignature = '';
+    const bell = { power: false, contact: true, x: 0, velocity: 0, current: 0, field: 0, remanence: 0, atGong: false, strikes: 0, flash: 0, elapsed: 0, sample: 0, history: [] };
+    let bellAudioContext = null;
     const reflectionOffset = { x: 0, y: 0 };
     let draggingReflection = false;
 
@@ -2122,6 +2134,7 @@
         if (activeElectromagnetism === 'brake') return number('brake-speed');
         if (activeElectromagnetism === 'motor') return number('motor-speed');
         if (activeElectromagnetism === 'generator') return .5;
+        if (activeElectromagnetism === 'bell') return number('bell-speed');
         if (activeElectromagnetism === 'cyclotron') return number('cyc-speed');
         if (activeElectromagnetism === 'spectrometer') return number('spec-speed');
         return number('sel-speed');
@@ -9211,6 +9224,177 @@
       ctx.fillStyle = '#b35a3e'; ctx.fillText('ε', chart.x + 7, chart.y + chart.h * .58);
     }
 
+    function playBellTone() {
+      if (!$('bell-audio').checked || !bellAudioContext) return;
+      const now = bellAudioContext.currentTime;
+      for (const [frequency, strength] of [[940, .09], [1470, .04]]) {
+        const oscillator = bellAudioContext.createOscillator();
+        const gain = bellAudioContext.createGain();
+        oscillator.type = 'sine'; oscillator.frequency.value = frequency;
+        gain.gain.setValueAtTime(strength, now);
+        gain.gain.exponentialRampToValueAtTime(.0001, now + .5);
+        oscillator.connect(gain).connect(bellAudioContext.destination);
+        oscillator.start(now); oscillator.stop(now + .52);
+      }
+    }
+
+    function advanceBell(dt) {
+      const voltage = number('bell-voltage');
+      const spring = number('bell-spring');
+      const steel = $('bell-core').value === 'steel';
+      const steps = Math.max(1, Math.ceil(dt / .003));
+      const step = dt / steps;
+      for (let i = 0; i < steps; i += 1) {
+        const energized = bell.power && bell.contact;
+        const targetCurrent = energized ? voltage / 12 : 0;
+        bell.current += (targetCurrent - bell.current) * (1 - Math.exp(-step / (energized ? .025 : .012)));
+        const fieldTarget = steel ? Math.max(bell.current, bell.remanence) : bell.current;
+        const fieldTau = fieldTarget > bell.field ? .018 : steel ? .75 : .018;
+        bell.field += (fieldTarget - bell.field) * (1 - Math.exp(-step / fieldTau));
+        if (steel && energized) bell.remanence = Math.max(bell.remanence, bell.field * .9);
+        const magneticPull = 1000 * bell.field * bell.field / Math.pow(1.35 - .55 * bell.x, 2);
+        bell.velocity += (magneticPull - 260 * spring * bell.x - 9 * bell.velocity) * step;
+        bell.x += bell.velocity * step;
+        if (bell.x >= .94 && bell.velocity > 0) {
+          if (!bell.atGong) { bell.strikes += 1; bell.flash = 1; bell.atGong = true; playBellTone(); }
+          bell.velocity *= -.22;
+          bell.x = .94;
+        }
+        if (bell.x < .86) bell.atGong = false;
+        if (bell.x < 0) { bell.x = 0; bell.velocity = Math.max(0, bell.velocity); }
+        if (bell.contact && bell.x >= .76) bell.contact = false;
+        else if (!bell.contact && bell.x <= .18) bell.contact = true;
+        bell.flash = Math.max(0, bell.flash - step * 5);
+        bell.elapsed += step;
+        bell.sample += step;
+        if (bell.sample >= .012) {
+          bell.history.push({ t: bell.elapsed, current: bell.current, x: bell.x, strike: bell.flash > .93 });
+          bell.sample = 0;
+        }
+      }
+      while (bell.history.length && bell.history[0].t < bell.elapsed - 4) bell.history.shift();
+    }
+
+    function drawBell() {
+      const { ctx, w, h } = resizeCanvas($('bell-canvas'));
+      const compact = w < 620;
+      const voltage = number('bell-voltage');
+      const spring = number('bell-spring');
+      const steel = $('bell-core').value === 'steel';
+      const connected = bell.power && bell.contact;
+      setText('bell-voltage-out', `${voltage.toFixed(1)} V`);
+      setText('bell-spring-out', `${spring.toFixed(2)}x`);
+      setText('bell-speed-out', `${number('bell-speed').toFixed(2)}x`);
+      $('bell-circuit').innerHTML = `${!bell.power ? '按鈕放開' : bell.contact ? '接點閉合' : '接點斷開'}<small>${connected ? '電池經接點供電給線圈' : '電池未持續供電給線圈'}</small>`;
+      $('bell-current-badge').innerHTML = `線圈電流 ${bell.current.toFixed(2)} A<small>閉合穩態約 ${ (voltage / 12).toFixed(2) } A；斷開後衰減</small>`;
+      $('bell-field-badge').innerHTML = `磁性 ${Math.round(bell.field * 100)}%<small>${steel ? '高剩磁對照：斷電後退磁較慢' : '軟鐵：斷電後迅速退磁'}</small>`;
+      $('bell-strikes').innerHTML = `敲擊 ${bell.strikes} 次<small>銜鐵位移 ${(bell.x * 5).toFixed(1)} mm</small>`;
+      $('bell-power').textContent = bell.power ? '放開按鈕' : '按下按鈕';
+      $('bell-power').setAttribute('aria-pressed', String(bell.power));
+      ctx.fillStyle = '#f3f7f7'; ctx.fillRect(0, 0, w, h);
+      const board = { x: w * .035, y: h * .07, width: w * .93, height: h * .60 };
+      ctx.fillStyle = '#e7e5de'; ctx.beginPath(); ctx.roundRect(board.x, board.y, board.width, board.height, 6); ctx.fill();
+      ctx.strokeStyle = '#9aa5a3'; ctx.lineWidth = 1.5; ctx.stroke();
+      const top = h * .30, bottom = h * .48;
+      const coreLeft = w * .16, coreRight = w * .47;
+      const armX = w * (.56 - .075 * bell.x);
+      const gong = { x: w * .63, y: h * .23, r: Math.min(w * .105, h * .115) };
+      const hammer = { x: gong.x + gong.r + w * .075 * (.94 - bell.x), y: gong.y };
+      const coilColor = connected ? '#be6939' : '#936c51';
+      ctx.strokeStyle = '#728387'; ctx.lineWidth = compact ? 12 : 18; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(coreRight, top); ctx.lineTo(coreLeft, top); ctx.lineTo(coreLeft, bottom); ctx.lineTo(coreRight, bottom); ctx.stroke();
+      for (const cy of [top, bottom]) {
+        ctx.strokeStyle = coilColor; ctx.lineWidth = compact ? 3 : 4;
+        for (let j = 0; j < 11; j += 1) {
+          const x = coreLeft + (coreRight - coreLeft) * (.32 + j * .048);
+          ctx.beginPath(); ctx.ellipse(x, cy, compact ? 3.5 : 5, compact ? 12 : 17, 0, 0, 2 * Math.PI); ctx.stroke();
+        }
+      }
+      if (bell.field > .035) {
+        ctx.save(); ctx.strokeStyle = `rgba(26,126,112,${Math.min(.65, bell.field * .75)})`; ctx.lineWidth = 2;
+        for (let j = -1; j <= 1; j += 1) {
+          ctx.beginPath(); ctx.moveTo(coreRight + 7, top + j * 8);
+          ctx.bezierCurveTo(armX - 12, top + j * 8, armX - 12, bottom + j * 8, coreRight + 7, bottom + j * 8); ctx.stroke();
+        }
+        ctx.restore();
+      }
+      ctx.fillStyle = '#596970'; ctx.fillRect(armX - (compact ? 6 : 8), top - 9, compact ? 12 : 16, bottom - top + 18);
+      ctx.fillStyle = '#798991'; ctx.fillRect(armX - 6, bottom + 8, 12, 13);
+      ctx.strokeStyle = '#596970'; ctx.lineWidth = compact ? 4 : 6;
+      ctx.beginPath(); ctx.moveTo(armX, top + 3); ctx.lineTo(armX + w * .065, gong.y); ctx.lineTo(hammer.x, hammer.y); ctx.stroke();
+      const metal = ctx.createRadialGradient(gong.x - gong.r * .2, gong.y - gong.r * .2, 2, gong.x, gong.y, gong.r);
+      metal.addColorStop(0, '#f5d58e'); metal.addColorStop(.65, '#c9953f'); metal.addColorStop(1, '#836027');
+      ctx.fillStyle = metal; ctx.strokeStyle = '#795821'; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.arc(gong.x, gong.y, gong.r, 0, 2 * Math.PI); ctx.fill(); ctx.stroke();
+      ctx.strokeStyle = 'rgba(95,68,28,.4)'; ctx.lineWidth = 2;
+      for (const fraction of [.55, .76]) { ctx.beginPath(); ctx.arc(gong.x, gong.y, gong.r * fraction, 0, 2 * Math.PI); ctx.stroke(); }
+      ctx.fillStyle = '#805c29'; ctx.beginPath(); ctx.arc(gong.x, gong.y, 5, 0, 2 * Math.PI); ctx.fill();
+      if (bell.flash > 0) {
+        ctx.strokeStyle = `rgba(208,116,48,${bell.flash * .7})`; ctx.lineWidth = 2;
+        for (let j = 1; j <= 2; j += 1) { ctx.beginPath(); ctx.arc(gong.x, gong.y, gong.r + j * 11 * (1 - bell.flash + .3), -.85, .85); ctx.stroke(); }
+      }
+      ctx.fillStyle = '#c18d49'; ctx.beginPath(); ctx.arc(hammer.x, hammer.y, compact ? 7 : 10, 0, 2 * Math.PI); ctx.fill();
+      const contactY = h * .43, contactX = w * .83;
+      const stripEnd = bell.contact ? contactX + 3 : contactX - Math.max(8, w * .075 * bell.x * .42);
+      ctx.strokeStyle = '#667a7e'; ctx.lineWidth = compact ? 3 : 5;
+      ctx.beginPath(); ctx.moveTo(armX + 4, contactY + 8); ctx.quadraticCurveTo(w * .72, contactY - 5, stripEnd, contactY); ctx.stroke();
+      ctx.fillStyle = '#bf763f'; ctx.beginPath(); ctx.arc(stripEnd, contactY, compact ? 4 : 5, 0, 2 * Math.PI); ctx.fill();
+      ctx.fillStyle = '#5c6970'; ctx.fillRect(contactX + 2, contactY - 13, compact ? 7 : 9, 26);
+      ctx.strokeStyle = '#667a7e'; ctx.lineWidth = 3;
+      const springY = h * .54, springEnd = w * .87;
+      ctx.beginPath(); ctx.moveTo(armX, bottom + 18);
+      for (let j = 0; j <= 12; j += 1) ctx.lineTo(armX + (springEnd - armX) * j / 12, springY + (j % 2 ? -5 : 5));
+      ctx.lineTo(springEnd, springY); ctx.stroke();
+      ctx.fillStyle = '#788b8d'; ctx.fillRect(springEnd, springY - 12, 9, 24);
+      const circuitY = h * .61;
+      ctx.strokeStyle = '#536a72'; ctx.lineWidth = compact ? 2 : 3;
+      ctx.beginPath(); ctx.moveTo(w * .14, circuitY); ctx.lineTo(w * .09, circuitY); ctx.lineTo(w * .09, top); ctx.lineTo(coreLeft - 8, top);
+      ctx.moveTo(coreRight + 6, bottom); ctx.lineTo(armX - 7, bottom);
+      ctx.moveTo(contactX + 10, contactY); ctx.lineTo(w * .93, contactY); ctx.lineTo(w * .93, circuitY); ctx.lineTo(w * .62, circuitY);
+      ctx.moveTo(w * .49, circuitY); ctx.lineTo(w * .28, circuitY); ctx.stroke();
+      ctx.fillStyle = '#364d55'; ctx.fillRect(w * .14, circuitY - 11, w * .14, 22);
+      ctx.fillStyle = '#edf2f2'; ctx.font = `700 ${compact ? 10 : 13}px Arial, sans-serif`; ctx.textAlign = 'center';
+      ctx.fillText(`${voltage.toFixed(1)} V`, w * .21, circuitY + 4);
+      ctx.strokeStyle = bell.power ? '#169080' : '#677a80'; ctx.lineWidth = 4;
+      ctx.beginPath(); ctx.moveTo(w * .49, circuitY); ctx.lineTo(w * .62, circuitY + (bell.power ? 0 : -13)); ctx.stroke();
+      ctx.fillStyle = bell.power ? '#149280' : '#6a7c80'; ctx.beginPath(); ctx.arc(w * .55, circuitY + 14, 5, 0, 2 * Math.PI); ctx.fill();
+      if (bell.current > .03) {
+        const alpha = Math.min(1, bell.current * 1.7);
+        ctx.save(); ctx.globalAlpha = alpha;
+        for (let j = 0; j < 5; j += 1) {
+          const fraction = positiveModulo(bell.elapsed * 1.9 + j / 5, 1);
+          instrumentParticle(ctx, w * (.1 + .4 * fraction), circuitY, '#e89548', compact ? 2.5 : 3.5);
+        }
+        ctx.restore();
+      }
+      if (!compact) {
+        drawSceneLabel(ctx, w * .12, h * .11, '線圈與軟鐵芯');
+        drawSceneLabel(ctx, w * .73, h * .11, '鈴碗與敲擊錘');
+        drawSceneLabel(ctx, w * .73, h * .47, '自斷電接點');
+      }
+      const chart = { x: w * .06, y: h * .73, width: w * .88, height: h * .21 };
+      ctx.fillStyle = '#18313d'; ctx.beginPath(); ctx.roundRect(chart.x, chart.y, chart.width, chart.height, 5); ctx.fill();
+      ctx.strokeStyle = 'rgba(226,243,242,.2)'; ctx.lineWidth = 1;
+      for (const portion of [.25, .5, .75]) { const y = chart.y + chart.height * portion; ctx.beginPath(); ctx.moveTo(chart.x, y); ctx.lineTo(chart.x + chart.width, y); ctx.stroke(); }
+      const drawHistory = (key, mid, scale, color) => {
+        ctx.strokeStyle = color; ctx.lineWidth = 2.5; ctx.beginPath();
+        bell.history.forEach((point, index) => {
+          const x = chart.x + chart.width * (point.t - bell.elapsed + 4) / 4;
+          const y = chart.y + chart.height * mid - point[key] * chart.height * scale;
+          index ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+        });
+        ctx.stroke();
+      };
+      drawHistory('current', .43, .3, '#f0a46e');
+      drawHistory('x', .91, .34, '#73c9d5');
+      ctx.fillStyle = '#f2b281'; ctx.font = `700 ${compact ? 10 : 12}px "Microsoft JhengHei", sans-serif`; ctx.textAlign = 'left';
+      ctx.fillStyle = '#18313d'; ctx.fillRect(chart.x + 5, chart.y + 3, compact ? 78 : 98, 18);
+      ctx.fillRect(chart.x + 5, chart.y + chart.height * .63 - 13, compact ? 78 : 98, 18);
+      ctx.fillStyle = '#f2b281';
+      ctx.fillText('橘：線圈電流', chart.x + 10, chart.y + 16);
+      ctx.fillStyle = '#8de2e6'; ctx.fillText('青：銜鐵位移', chart.x + 10, chart.y + chart.height * .63);
+    }
+
     function spectralColor(wavelength, lightness = 52) {
       return `hsl(${Math.round((700 - wavelength) * .9)} 94% ${lightness}%)`;
     }
@@ -10857,6 +11041,7 @@
         if (activeElectromagnetism === 'brake') drawMagneticBrake();
         else if (activeElectromagnetism === 'motor') drawMotor();
         else if (activeElectromagnetism === 'generator') drawGenerator();
+        else if (activeElectromagnetism === 'bell') drawBell();
         else if (activeElectromagnetism === 'cyclotron') drawCyclotron();
         else if (activeElectromagnetism === 'spectrometer') drawMassSpectrometer();
         else drawVelocitySelector();
@@ -11161,6 +11346,20 @@
     document.querySelectorAll('.em-mode').forEach(btn => {
       btn.addEventListener('click', () => setElectromagnetismMode(btn.dataset.em));
     });
+    $('bell-power').addEventListener('click', () => { bell.power = !bell.power; drawActive(); });
+    $('bell-audio').addEventListener('change', () => {
+      if ($('bell-audio').checked) {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (AudioContextClass) {
+          bellAudioContext ||= new AudioContextClass();
+          bellAudioContext.resume();
+        }
+      }
+    });
+    $('bell-reset').addEventListener('click', () => {
+      Object.assign(bell, { power: false, contact: true, x: 0, velocity: 0, current: 0, field: 0, remanence: 0, atGong: false, strikes: 0, flash: 0, elapsed: 0, sample: 0, history: [] });
+      drawActive();
+    });
 
     document.querySelectorAll('.brake-layer').forEach(button => {
       button.addEventListener('click', () => setBrakeLayer(button.dataset.brakeLayer));
@@ -11400,6 +11599,7 @@
       if (running) {
         const scaled = elapsed * playback();
         time += scaled;
+        if (activeModule === 'electromagnetism' && activeElectromagnetism === 'bell') advanceBell(scaled);
         if (activeModule === 'mechanics' && activeMechanics === 'skater') {
           const extension = skaterArmCurrent;
           skaterPhase += scaled * 3.6 / (.65 + 1.35 * extension * extension);
