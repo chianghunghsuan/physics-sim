@@ -8064,7 +8064,7 @@
             ctx.fillStyle = '#223649'; ctx.fillRect(x, y, barW, compact ? 12 : 15);
             ctx.fillStyle = channel.color; ctx.fillRect(x, y, barW * amount, compact ? 12 : 15);
             if (!compact) {
-              ctx.fillStyle = '#cbd5e1'; ctx.font = '600 10px Arial';
+              ctx.fillStyle = '#cbd5e1'; ctx.font = '600 10px "Times New Roman", "DFKai-SB", serif';
               ctx.fillText(Math.round(amount * 100) + '%', x, y + 28);
             }
           });
@@ -9035,9 +9035,9 @@
       $('motor-speed-badge').innerHTML = `轉速 ${(state.omega * 60 / (2 * Math.PI)).toFixed(0)} rpm<small>${state.stalled ? '力矩不足，轉子停止' : '電磁力矩扣除負載與阻力後加速'}</small>`;
       $('motor-commutator').innerHTML = `換向器：${state.halfTurn ? 'B' : 'A'} 接正極<small>在力矩趨零處交換線圈電流方向</small>`;
       setText('motor-proof-current', `A 側 ${currentUpA ? '⊙' : '⊗'}；B 側 ${currentUpA ? '⊗' : '⊙'}（俯視）`);
-      setText('motor-proof-field', `磁場 ${state.B.toFixed(2)} T，由 N → S`);
-      setText('motor-proof-force', `兩側受力相反；每側約 ${state.sideForce.toFixed(2)} N`);
-      setText('motor-proof-torque', `目前電磁力矩 ${state.torque.toFixed(3)} N·m`);
+      $('motor-proof-field').innerHTML = `磁場 ${math('B')} = ${state.B.toFixed(2)} T，由 N → S`;
+      $('motor-proof-force').innerHTML = `兩側受力相反；每側 ${math('F')} ≈ ${state.sideForce.toFixed(2)} N`;
+      $('motor-proof-torque').innerHTML = `電磁力矩 ${math('\\tau')} = ${state.torque.toFixed(3)} N·m`;
     }
 
     function drawMotor() {
@@ -9246,14 +9246,14 @@
       setText('motor-turns-out', state.turns.toFixed(0));
       setText('motor-load-out', `${state.load.toFixed(2)} N·m`);
       setText('motor-speed-out', `${number('motor-speed').toFixed(2)}x`);
-      $('motor-current').innerHTML = `線圈電流 I = ${state.current.toFixed(2)} A<small>橘色為傳統電流；紫色電子流方向相反</small>`;
+      $('motor-current').innerHTML = `線圈電流 ${math('I')} = ${state.current.toFixed(2)} A<small>${math('I=(V-\\varepsilon_{\\rm back})/R')}；橘色為傳統電流</small>`;
       $('motor-torque').innerHTML = `電磁力矩 ${math('\\tau')} = ${state.torque.toFixed(2)} N·m<small>${math('\\tau=NIAB|\\cos\\theta|')}；負載 ${state.load.toFixed(2)} N·m</small>`;
       $('motor-speed-badge').innerHTML = `轉速 = ${(state.omega * 60 / (Math.PI * 2)).toFixed(0)} rpm<small>${state.stalled ? '電磁力矩不足以克服負載' : '電壓、反電動勢與負載共同決定'}</small>`;
       $('motor-commutator').innerHTML = `換向器：${state.halfTurn === 0 ? 'A 接正極' : 'B 接正極'}<small>跨過半圈時交換線圈電流方向</small>`;
-      setText('motor-proof-current', `A 側 I${leftCurrentUp ? '↑' : '↓'}；B 側 I${leftCurrentUp ? '↓' : '↑'}（每半圈換向）`);
-      setText('motor-proof-field', `B = ${state.B.toFixed(2)} T，由 N → S（向右）`);
-      setText('motor-proof-force', `左 F${leftOut}；右 F${rightOut}；每側約 ${state.sideForce.toFixed(2)} N`);
-      setText('motor-proof-torque', `兩力形成力偶；τ = ${state.torque.toFixed(3)} N·m`);
+      $('motor-proof-current').innerHTML = `A 側 ${math('I')}${leftCurrentUp ? '↑' : '↓'}；B 側 ${math('I')}${leftCurrentUp ? '↓' : '↑'}（每半圈換向）`;
+      $('motor-proof-field').innerHTML = `${math('B')} = ${state.B.toFixed(2)} T，由 N → S（向右）`;
+      $('motor-proof-force').innerHTML = `左 ${math('F')}${leftOut}；右 ${math('F')}${rightOut}；每側約 ${state.sideForce.toFixed(2)} N`;
+      $('motor-proof-torque').innerHTML = `兩力形成力偶；${math('\\tau')} = ${state.torque.toFixed(3)} N·m`;
       if (emRenderView.motor === 'apparatus' && window.emThree) window.emThree.renderMotor({
         angle: state.angle, halfTurn: state.halfTurn, current: state.current, B: state.B, time,
         showCurrent, showElectrons, showField, showForce
@@ -9278,7 +9278,7 @@
       $('gen-flux').innerHTML = `磁通鏈結 ${math('N\\Phi')} = ${flux.toFixed(2)} Wb·turn<small>${math('N\\Phi=NBA\\cos\\theta')}；${math('A=0.010\\,\\mathrm{m}^2')}</small>`;
       $('gen-emf').innerHTML = `感應電壓 ${math('\\varepsilon')} = ${emf.toFixed(2)} V<small>${math('\\varepsilon=-\\frac{d(N\\Phi)}{dt}=NBA\\omega\\sin\\theta')}</small>`;
       $('gen-power').innerHTML = `負載功率 ${math('P')} = ${power.toFixed(2)} W<small>理想純電阻：${math('P=\\varepsilon^2/R')}</small>`;
-      $('gen-speed-badge').innerHTML = `轉速 ${rpm} rpm<small>每秒 ${(rpm / 60).toFixed(2)} 圈；輸出頻率相同</small>`;
+      $('gen-speed-badge').innerHTML = `轉速 ${rpm} rpm<small>${math('\\theta')} = ${(positiveModulo(theta, 2 * Math.PI) * 180 / Math.PI).toFixed(0)}°；每秒 ${(rpm / 60).toFixed(2)} 圈</small>`;
       ctx.fillStyle = '#f4f7f8'; ctx.fillRect(0, 0, w, h);
       const top = h * .59;
       ctx.fillStyle = '#d5dedf';
@@ -9361,6 +9361,18 @@
       const chart = { x: w * .10, y: h * .68, w: w * .80, h: h * .25 };
       ctx.fillStyle = '#fff'; ctx.fillRect(chart.x, chart.y, chart.w, chart.h);
       ctx.strokeStyle = '#cbd5dc'; ctx.strokeRect(chart.x, chart.y, chart.w, chart.h);
+      const fluxMid = chart.y + chart.h * .27, emfMid = chart.y + chart.h * .73;
+      ctx.strokeStyle = '#d9e1e5'; ctx.lineWidth = 1;
+      for (const mid of [fluxMid, emfMid]) {
+        ctx.beginPath(); ctx.moveTo(chart.x, mid); ctx.lineTo(chart.x + chart.w, mid); ctx.stroke();
+      }
+      ctx.fillStyle = '#677882'; ctx.font = `11px "Times New Roman", "DFKai-SB", serif`;
+      ctx.textAlign = 'center';
+      for (let i = 0; i <= 4; i += 1) {
+        const x = chart.x + chart.w * i / 4;
+        ctx.strokeStyle = '#edf1f3'; ctx.beginPath(); ctx.moveTo(x, chart.y); ctx.lineTo(x, chart.y + chart.h); ctx.stroke();
+        if (i < 4) ctx.fillText(['0', '半圈', '一圈', '一圈半'][i], x, chart.y + chart.h + 13);
+      }
       const graph = (fn, mid, color) => {
         ctx.strokeStyle = color; ctx.lineWidth = 2.4; ctx.beginPath();
         for (let i = 0; i <= 240; i += 1) {
@@ -9370,14 +9382,21 @@
         }
         ctx.stroke();
       };
-      graph(Math.cos, chart.y + chart.h * .27, '#3a739a');
-      graph(Math.sin, chart.y + chart.h * .73, '#b35a3e');
+      graph(Math.cos, fluxMid, '#3a739a');
+      graph(Math.sin, emfMid, '#b35a3e');
       const markerX = chart.x + chart.w * positiveModulo(theta, 4 * Math.PI) / (4 * Math.PI);
       ctx.strokeStyle = '#70808a'; ctx.setLineDash([4, 4]); ctx.beginPath();
       ctx.moveTo(markerX, chart.y); ctx.lineTo(markerX, chart.y + chart.h); ctx.stroke(); ctx.setLineDash([]);
-      ctx.fillStyle = '#3a739a'; ctx.font = `700 ${compact ? 10 : 12}px "Times New Roman", "DFKai-SB", serif`;
-      ctx.fillText('NΦ', chart.x + 7, chart.y + 15);
-      ctx.fillStyle = '#b35a3e'; ctx.fillText('ε', chart.x + 7, chart.y + chart.h * .58);
+      const marker = (y, color) => {
+        ctx.fillStyle = '#fff'; ctx.strokeStyle = color; ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.arc(markerX, y, compact ? 4 : 5, 0, 2 * Math.PI); ctx.fill(); ctx.stroke();
+      };
+      marker(fluxMid - Math.cos(theta) * chart.h * .19, '#3a739a');
+      marker(emfMid - Math.sin(theta) * chart.h * .19, '#b35a3e');
+      ctx.font = `700 ${compact ? 10 : 12}px "Times New Roman", "DFKai-SB", serif`;
+      ctx.textAlign = 'left';
+      ctx.fillStyle = '#3a739a'; ctx.fillText('磁通', chart.x + chart.w + 4, fluxMid + 4);
+      ctx.fillStyle = '#b35a3e'; ctx.fillText('電壓', chart.x + chart.w + 4, emfMid + 4);
       if (emRenderView.generator === 'apparatus' && window.emThree) window.emThree.renderGenerator({
         angle: theta, current: emf / resistance, B, time,
         showCurrent: $('gen-show-current').checked, showElectrons: false,
