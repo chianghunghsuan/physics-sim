@@ -353,6 +353,10 @@
       height: min(68vh, 580px);
       min-height: 460px;
     }
+    #drive-canvas, #sound-canvas, #camera-canvas, #generator-canvas {
+      height: min(68vh, 570px);
+      min-height: 450px;
+    }
     #refraction-canvas {
       height: min(68vh, 590px);
       min-height: 470px;
@@ -486,6 +490,7 @@
       #huygens-canvas { height: 430px; min-height: 400px; }
       #mirror-canvas.parallel-expanded { height: 410px; min-height: 380px; }
       #microscope-canvas, #eye-canvas, #circular-canvas, #precession-canvas { height: 470px; min-height: 430px; }
+      #drive-canvas, #sound-canvas, #camera-canvas, #generator-canvas { height: 520px; min-height: 480px; }
       #refraction-canvas { height: 500px; min-height: 440px; }
       #scattering-canvas { height: 680px; min-height: 620px; }
       #brake-canvas { height: 860px; min-height: 810px; }
@@ -625,6 +630,22 @@
           <p><strong>講法：</strong>先讓學生只看藍色向右波，確認「波形在移動、質點上下振動」。再打開橘色反射波，最後打開綠色疊加，讓節點從相消而來，不是憑空出現。</p>
           <p><strong>強調：</strong>同頻、等振幅只保證干涉圖形穩定；還要同時符合左右兩端的節點或腹點條件，才是這段弦的正常模態。</p>
         </section>
+      </section>
+
+      <section id="panel-drive" class="panel" role="tabpanel">
+        <div class="module-head"><div><h2>同一偏心輪：橫波與縱波</h2><p class="module-copy">同一轉軸同時驅動繩子的橫向振動與彈簧的縱向振動；固定介質波速後，提高頻率會縮短兩者的波長。紅色追蹤點是介質質點，不跟著波峰一路前進。</p></div></div>
+        <div class="values"><div class="badge" id="drive-period">週期 T</div><div class="badge" id="drive-wavelength">波長 λ</div><div class="badge" id="drive-speed-badge">波速 v</div></div>
+        <div class="plot-wrap"><canvas id="drive-canvas" role="img" aria-label="同一偏心輪驅動繩子橫波與彈簧縱波，標記介質質點與傳播方向。"></canvas></div>
+        <div class="controls"><div class="control"><label for="drive-frequency">驅動頻率：<span id="drive-frequency-out">1.5 Hz</span></label><input id="drive-frequency" type="range" min="0.4" max="3" step="0.1" value="1.5"></div><div class="control"><label for="drive-speed">波速：<span id="drive-speed-out">0.80 m/s</span></label><input id="drive-speed" type="range" min="0.4" max="1.6" step="0.05" value="0.8"></div><div class="control"><label for="drive-amplitude">振幅：<span id="drive-amplitude-out">1.0x</span></label><input id="drive-amplitude" type="range" min="0.2" max="1.5" step="0.05" value="1"></div></div>
+        <div class="checks"><label class="check"><input id="drive-show-particles" type="checkbox" checked>追蹤介質質點</label><label class="check"><input id="drive-show-front" type="checkbox" checked>顯示波峰與密部</label></div>
+      </section>
+
+      <section id="panel-sound" class="panel" role="tabpanel">
+        <div class="module-head"><div><h2>揚聲器、空氣與麥克風</h2><p class="module-copy">交流電讓揚聲器線圈與振膜往復運動；空氣質點只在原位附近振動，疏密波傳到另一端，推動動圈式麥克風振膜並產生電壓。這是聲音傳送與接收的聲學鏈，不含電話網路。</p></div></div>
+        <div class="values"><div class="badge" id="sound-frequency-badge">頻率</div><div class="badge" id="sound-wavelength-badge">波長</div><div class="badge" id="sound-delay-badge">傳播延遲</div><div class="badge" id="sound-voltage-badge">麥克風訊號</div></div>
+        <div class="plot-wrap"><canvas id="sound-canvas" role="img" aria-label="揚聲器振膜推動空氣形成縱波，麥克風振膜隨到達的聲壓振動，下方示波器顯示輸入與輸出。"></canvas></div>
+        <div class="controls"><div class="control"><label for="sound-frequency">音調／頻率：<span id="sound-frequency-out">440 Hz</span></label><input id="sound-frequency" type="range" min="180" max="900" step="10" value="440"></div><div class="control"><label for="sound-current">驅動電流振幅：<span id="sound-current-out">0.60 A</span></label><input id="sound-current" type="range" min="0" max="1.2" step="0.05" value="0.6"></div><div class="control"><label for="sound-distance">揚聲器到麥克風：<span id="sound-distance-out">1.0 m</span></label><input id="sound-distance" type="range" min="0.3" max="3" step="0.1" value="1"></div></div>
+        <div class="checks"><label class="check"><input id="sound-show-air" type="checkbox" checked>顯示空氣質點</label><label class="check"><input id="sound-show-pressure" type="checkbox" checked>顯示壓縮區</label></div>
       </section>
 
       <section id="panel-doppler" class="panel" role="tabpanel">
@@ -923,6 +944,7 @@
           <button type="button" class="optics-mode" data-optics="reflection" aria-pressed="false">鏡像文字</button>
           <button type="button" class="optics-mode" data-optics="trifold" aria-pressed="false">多面鏡</button>
           <button type="button" class="optics-mode" data-optics="microscope" aria-pressed="false">顯微鏡</button>
+          <button type="button" class="optics-mode" data-optics="camera" aria-pressed="false">相機對焦</button>
           <button type="button" class="optics-mode" data-optics="eye" aria-pressed="false">眼睛成像</button>
         </div>
 
@@ -1211,6 +1233,14 @@
             <label class="check"><input type="checkbox" id="micro-show-eyepiece" checked>顯示目鏡成像光線</label>
             <label class="check"><input type="checkbox" id="micro-show-extensions" checked>顯示最終虛像延長線</label>
           </div>
+        </div>
+
+        <div id="optics-view-camera" class="optics-view">
+          <div class="module-head"><div><h2>相機對焦：鏡頭移動、感光元件固定</h2><p class="module-copy">人靠近時，依薄透鏡公式算出的像距增加；鏡頭需往物體方向移動，讓實像重新落在固定的感光元件上。左右距離與像高採不同圖示比例，數值計算仍用相同單位。</p></div></div>
+          <div class="values"><div class="badge" id="camera-image-distance">理論像距</div><div class="badge" id="camera-lens-position">鏡頭到感光元件</div><div class="badge" id="camera-blur">散焦圈直徑</div><div class="badge" id="camera-status">對焦狀態</div></div>
+          <div class="plot-wrap"><canvas id="camera-canvas" role="img" aria-label="剖面相機內固定的感光元件與可移動鏡頭；多條光線從人物頂端通過光圈，在焦平面會聚或於感光元件形成散焦圈。"></canvas></div>
+          <div class="controls"><div class="control"><label for="camera-object">人物距鏡頭：<span id="camera-object-out">2.00 m</span></label><input id="camera-object" type="range" min="0.35" max="5" step="0.05" value="2"></div><div class="control"><label for="camera-focus">鏡頭到感光元件：<span id="camera-focus-out">51.3 mm</span></label><input id="camera-focus" type="range" min="50" max="59" step="0.1" value="51.3"></div><div class="control"><label for="camera-aperture">光圈直徑：<span id="camera-aperture-out">20 mm</span></label><input id="camera-aperture" type="range" min="5" max="28" step="1" value="20"></div></div>
+          <div class="presets"><button type="button" class="preset" id="camera-autofocus">對焦到人物</button><button type="button" class="preset" id="camera-far">遠景</button><button type="button" class="preset" id="camera-near">近景</button></div>
         </div>
 
         <div id="optics-view-eye" class="optics-view">
@@ -1698,6 +1728,7 @@
         <div class="phenomenon-switch legacy-topic-switch" role="group" aria-label="電磁現象主題">
           <button type="button" class="em-mode active" data-em="brake" aria-pressed="true">磁煞車</button>
           <button type="button" class="em-mode" data-em="motor" aria-pressed="false">直流馬達</button>
+          <button type="button" class="em-mode" data-em="generator" aria-pressed="false">交流發電機</button>
           <button type="button" class="em-mode" data-em="cyclotron" aria-pressed="false">迴旋加速器</button>
           <button type="button" class="em-mode" data-em="selector" aria-pressed="false">速度選擇器</button>
           <button type="button" class="em-mode" data-em="spectrometer" aria-pressed="false">質譜儀</button>
@@ -1839,12 +1870,20 @@
             <label class="check"><input type="checkbox" id="motor-show-electrons" checked>顯示電子流</label>
             <label class="check"><input type="checkbox" id="motor-show-field" checked>顯示磁場</label>
             <label class="check"><input type="checkbox" id="motor-show-force" checked>顯示兩側受力</label>
-            <label class="check"><input type="checkbox" id="motor-show-vector" checked>顯示 I × B 向量驗證</label>
+            <label class="check"><input type="checkbox" id="motor-show-vector">顯示 I × B 向量驗證</label>
           </div>
           <section class="teacher-note">
             <p><strong>講法：</strong>先暫停，沿著橘色粒子找出線圈兩側電流，再用 I × B 判斷紅色受力。播放後盯著下方分裂環：每跨過半圈，刷子接觸的銅片交換，線圈電流反向，但轉動力矩仍維持同向。</p>
             <p><strong>強調：</strong>電能先進入線圈，再由磁力做機械功；電壓、磁場或匝數增加會提高可用力矩，負載太大則無法啟動。</p>
           </section>
+        </div>
+
+        <div id="em-view-generator" class="em-view">
+          <div class="module-head"><div><h2>交流發電機：轉動線圈產生電壓</h2><p class="module-copy">外力帶動線圈在 N、S 磁極之間旋轉；穿過線圈的磁通量 Φ = NBA cosθ 持續改變，因此感應電動勢 ε = NBAω sinθ。兩個滑環維持連接，輸出每半圈反向；這和有分裂環的直流馬達不同。</p></div></div>
+          <div class="values"><div class="badge" id="gen-flux">磁通量</div><div class="badge" id="gen-emf">感應電動勢</div><div class="badge" id="gen-power">負載功率</div><div class="badge" id="gen-speed-badge">轉速</div></div>
+          <div class="plot-wrap"><canvas id="generator-canvas" role="img" aria-label="磁極間旋轉線圈、兩個滑環、電刷和負載燈；下方同步顯示磁通量與感應電動勢的時間曲線。"></canvas></div>
+          <div class="controls"><div class="control"><label for="gen-field">磁場 B：<span id="gen-field-out">0.20 T</span></label><input id="gen-field" type="range" min="0" max="0.6" step="0.01" value="0.2"></div><div class="control"><label for="gen-turns">線圈匝數：<span id="gen-turns-out">200</span></label><input id="gen-turns" type="range" min="20" max="400" step="10" value="200"></div><div class="control"><label for="gen-rpm">轉速：<span id="gen-rpm-out">30 rpm</span></label><input id="gen-rpm" type="range" min="0" max="120" step="1" value="30"></div><div class="control"><label for="gen-resistance">負載電阻：<span id="gen-resistance-out">10 Ω</span></label><input id="gen-resistance" type="range" min="2" max="40" step="1" value="10"></div></div>
+          <div class="checks"><label class="check"><input id="gen-show-field" type="checkbox" checked>顯示磁場方向</label><label class="check"><input id="gen-show-current" type="checkbox" checked>顯示電流與電刷</label></div>
         </div>
 
         <div id="em-view-cyclotron" class="em-view">
@@ -1988,12 +2027,12 @@
     let activeBrakeLayer = 'all';
     let activeMotorLayer = 'all';
     const categoryLabs = {
-      wave: [['standing', '駐波疊加'], ['doppler', '都卜勒效應'], ['ripple', '水波槽干涉'], ['huygens', '惠更斯原理']],
+      wave: [['standing', '駐波疊加'], ['drive', '同源橫波與縱波'], ['sound', '揚聲器與麥克風'], ['doppler', '都卜勒效應'], ['ripple', '水波槽干涉'], ['huygens', '惠更斯原理']],
       refraction: [['refraction', '折射與全反射'], ['mirage', '海市蜃樓'], ['prism', '稜鏡色散'], ['rainbow', '彩虹'], ['brewster', '布魯斯特角'], ['atmosphere', '大氣散射與星光閃爍']],
       physical: [['double', '雙狹縫干涉'], ['single', '單狹縫繞射'], ['film', '薄膜干涉']],
-      imaging: [['mirror', '面鏡成像'], ['lens', '透鏡成像'], ['aberration', '球面像差'], ['reflection', '鏡像文字'], ['trifold', '多面鏡'], ['microscope', '顯微鏡'], ['eye', '眼睛成像']],
+      imaging: [['mirror', '面鏡成像'], ['lens', '透鏡成像'], ['aberration', '球面像差'], ['reflection', '鏡像文字'], ['trifold', '多面鏡'], ['microscope', '顯微鏡'], ['camera', '相機對焦'], ['eye', '眼睛成像']],
       mechanics: [['circular', '圓周運動與投影'], ['skater', '滑冰者與角動量'], ['precession', '角動量與進動'], ['pulley', '滑輪組']],
-      electromagnetism: [['brake', '磁煞車'], ['motor', '直流馬達'], ['selector', '速度選擇器'], ['spectrometer', '質譜儀'], ['cyclotron', '粒子加速器（迴旋）']],
+      electromagnetism: [['brake', '磁煞車'], ['motor', '直流馬達'], ['generator', '交流發電機'], ['selector', '速度選擇器'], ['spectrometer', '質譜儀'], ['cyclotron', '粒子加速器（迴旋）']],
       astronomy: [['retrograde', '行星逆行']]
     };
     const lastLabByCategory = {};
@@ -2066,6 +2105,8 @@
 
     function playback() {
       if (activeModule === 'standing') return number('stand-speed');
+      if (activeModule === 'drive') return .38;
+      if (activeModule === 'sound') return .38;
       if (activeModule === 'doppler') return number('dop-speed');
       if (activeModule === 'ripple') return number('rip-speed');
       if (activeModule === 'double') return number('dbl-speed');
@@ -2080,6 +2121,7 @@
       if (activeModule === 'electromagnetism') {
         if (activeElectromagnetism === 'brake') return number('brake-speed');
         if (activeElectromagnetism === 'motor') return number('motor-speed');
+        if (activeElectromagnetism === 'generator') return .5;
         if (activeElectromagnetism === 'cyclotron') return number('cyc-speed');
         if (activeElectromagnetism === 'spectrometer') return number('spec-speed');
         return number('sel-speed');
@@ -2091,6 +2133,7 @@
         return number('pulley-speed');
       }
       if (activeModule === 'retrograde') return number('retro-speed');
+      if (activeModule === 'optics' && activeOptics === 'camera') return .3;
       if (
         activeModule === 'optics' &&
         activeOptics === 'mirror' &&
@@ -2346,6 +2389,172 @@
       }
       ctx.stroke();
       ctx.restore();
+    }
+
+    function drawWaveDrive() {
+      const { ctx, w, h } = resizeCanvas($('drive-canvas'));
+      const f = number('drive-frequency'), v = number('drive-speed');
+      const amplitude = number('drive-amplitude'), wavelength = v / f;
+      const compact = w < 620;
+      const x0 = w * (compact ? .18 : .22), x1 = w * .94;
+      const ropeY = h * .29, springY = h * .67;
+      const phase = 2 * Math.PI * f * time;
+      const spanMeters = 2.2;
+      const k = 2 * Math.PI * spanMeters / (wavelength * (x1 - x0));
+      const ropeA = h * .075 * amplitude, springA = Math.min(11, w * .025) * amplitude;
+      const trackX = x0 + (x1 - x0) * .43;
+      const showParticles = $('drive-show-particles').checked;
+      const showFront = $('drive-show-front').checked;
+      setText('drive-frequency-out', `${f.toFixed(1)} Hz`);
+      setText('drive-speed-out', `${v.toFixed(2)} m/s`);
+      setText('drive-amplitude-out', `${amplitude.toFixed(2)}x`);
+      $('drive-period').innerHTML = `週期 T = ${(1 / f).toFixed(2)} s<small>偏心輪每轉一圈，產生一個完整振動</small>`;
+      $('drive-wavelength').innerHTML = `波長 λ = ${wavelength.toFixed(2)} m<small>λ = v / f；兩種波使用同一頻率</small>`;
+      $('drive-speed-badge').innerHTML = `波速 v = ${v.toFixed(2)} m/s<small>波形與疏密區向右傳播</small>`;
+      ctx.fillStyle = '#f4f8f8'; ctx.fillRect(0, 0, w, h);
+      ctx.fillStyle = '#e4eced'; ctx.fillRect(0, h * .48, w, 1);
+      const wheel = { x: w * (compact ? .085 : .105), y: h * .48, r: Math.min(w * .06, 33) };
+      ctx.fillStyle = '#d5dfe2'; ctx.fillRect(wheel.x - wheel.r - 14, wheel.y + wheel.r + 6, wheel.r * 2 + 28, 16);
+      ctx.strokeStyle = '#455e65'; ctx.lineWidth = 5; ctx.beginPath(); ctx.arc(wheel.x, wheel.y, wheel.r, 0, 2 * Math.PI); ctx.stroke();
+      ctx.strokeStyle = '#8ca0a7'; ctx.lineWidth = 2;
+      for (let j = 0; j < 4; j += 1) {
+        const a = phase + j * Math.PI / 2;
+        ctx.beginPath(); ctx.moveTo(wheel.x, wheel.y); ctx.lineTo(wheel.x + Math.cos(a) * wheel.r, wheel.y + Math.sin(a) * wheel.r); ctx.stroke();
+      }
+      const pin = { x: wheel.x + Math.cos(phase) * wheel.r, y: wheel.y - Math.sin(phase) * wheel.r };
+      ctx.fillStyle = '#bb6639'; ctx.beginPath(); ctx.arc(pin.x, pin.y, 6, 0, 2 * Math.PI); ctx.fill();
+      const ropeStartY = ropeY - ropeA * Math.sin(phase);
+      const springStartX = x0 + springA * Math.cos(phase);
+      ctx.strokeStyle = '#677d82'; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(pin.x, pin.y); ctx.lineTo(pin.x, ropeStartY); ctx.lineTo(x0, ropeStartY);
+      ctx.moveTo(pin.x, pin.y); ctx.lineTo(pin.x, springY); ctx.lineTo(springStartX, springY); ctx.stroke();
+      ctx.strokeStyle = '#93a8ad'; ctx.lineWidth = 1; ctx.setLineDash([5, 6]);
+      ctx.beginPath(); ctx.moveTo(x0, ropeY); ctx.lineTo(x1, ropeY); ctx.moveTo(x0, springY); ctx.lineTo(x1, springY); ctx.stroke(); ctx.setLineDash([]);
+      ctx.strokeStyle = '#246c9c'; ctx.lineWidth = compact ? 2.5 : 3.5; ctx.beginPath();
+      for (let i = 0; i <= 260; i += 1) {
+        const x = x0 + (x1 - x0) * i / 260;
+        const y = ropeY - ropeA * Math.sin(phase - k * (x - x0));
+        i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+      }
+      ctx.stroke();
+      ctx.strokeStyle = '#547a79'; ctx.lineWidth = 1.5; ctx.beginPath();
+      for (let i = 0; i <= 190; i += 1) {
+        const baseX = x0 + (x1 - x0) * i / 190;
+        const x = baseX + springA * Math.cos(phase - k * (baseX - x0));
+        const y = springY + (i % 2 ? -12 : 12);
+        i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+      }
+      ctx.stroke();
+      if (showFront) {
+        const pxPerCycle = wavelength / spanMeters * (x1 - x0);
+        const crestX = x0 + positiveModulo((phase - Math.PI / 2) / (2 * Math.PI) * pxPerCycle, x1 - x0);
+        const denseX = x0 + positiveModulo((phase + Math.PI / 2) / (2 * Math.PI) * pxPerCycle, x1 - x0);
+        ctx.strokeStyle = 'rgba(191,80,63,.45)'; ctx.lineWidth = 1.5; ctx.setLineDash([4, 5]);
+        ctx.beginPath(); ctx.moveTo(crestX, ropeY - ropeA - 15); ctx.lineTo(crestX, ropeY + ropeA + 15);
+        ctx.moveTo(denseX, springY - 24); ctx.lineTo(denseX, springY + 24); ctx.stroke(); ctx.setLineDash([]);
+      }
+      if (showParticles) {
+        const ropePointY = ropeY - ropeA * Math.sin(phase - k * (trackX - x0));
+        const springPointX = trackX + springA * Math.cos(phase - k * (trackX - x0));
+        ctx.fillStyle = '#c34b4b';
+        [[trackX, ropePointY], [springPointX, springY]].forEach(([x, y]) => {
+          ctx.beginPath(); ctx.arc(x, y, 6, 0, 2 * Math.PI); ctx.fill();
+        });
+        ctx.strokeStyle = 'rgba(195,75,75,.45)'; ctx.setLineDash([4, 4]);
+        ctx.beginPath(); ctx.moveTo(trackX, ropeY - ropeA - 16); ctx.lineTo(trackX, ropeY + ropeA + 16);
+        ctx.moveTo(trackX - springA - 12, springY + 27); ctx.lineTo(trackX + springA + 12, springY + 27); ctx.stroke(); ctx.setLineDash([]);
+      }
+      drawSceneLabel(ctx, x0 + 4, 15, '繩波：質點上下振動，波往右走');
+      drawSceneLabel(ctx, x0 + 4, h * .52, '彈簧波：質點左右振動，疏密往右走');
+      if (!compact) drawSceneLabel(ctx, wheel.x - wheel.r, h - 42, '同一偏心輪');
+    }
+
+    function drawSoundChain() {
+      const { ctx, w, h } = resizeCanvas($('sound-canvas'));
+      const compact = w < 620;
+      const f = number('sound-frequency'), current = number('sound-current');
+      const distance = number('sound-distance'), speed = 340;
+      const wavelength = speed / f, delay = distance / speed;
+      const left = w * .18, right = w * .82, centerY = h * .36;
+      const phase = 2 * Math.PI * (f / 220) * time;
+      const k = 2 * Math.PI * distance / wavelength / (right - left);
+      const amp = current / 1.2;
+      const coneDx = amp * (compact ? 7 : 11) * Math.sin(phase);
+      const micPhase = phase - k * (right - left);
+      const micDx = amp * (compact ? 4 : 6) * Math.cos(micPhase);
+      const microphoneVoltage = 0.08 * current * (f / 440) * -Math.sin(micPhase);
+      setText('sound-frequency-out', `${f} Hz`);
+      setText('sound-current-out', `${current.toFixed(2)} A`);
+      setText('sound-distance-out', `${distance.toFixed(1)} m`);
+      $('sound-frequency-badge').innerHTML = `頻率 ${f} Hz<small>提高頻率，時間波形更密、音調更高</small>`;
+      $('sound-wavelength-badge').innerHTML = `波長 ${(wavelength * 100).toFixed(0)} cm<small>λ = 340 m/s ÷ f</small>`;
+      $('sound-delay-badge').innerHTML = `延遲 ${(delay * 1000).toFixed(1)} ms<small>空氣疏密傳播到麥克風所需時間</small>`;
+      $('sound-voltage-badge').innerHTML = `麥克風 ${(microphoneVoltage * 1000).toFixed(0)} mV<small>理想動圈模型：訊號與振膜速度有關</small>`;
+      ctx.fillStyle = '#f4f8f9'; ctx.fillRect(0, 0, w, h);
+      ctx.fillStyle = '#e7f0f2'; ctx.fillRect(left, h * .16, right - left, h * .39);
+      if ($('sound-show-pressure').checked && current > 0) {
+        for (let i = 0; i < 110; i += 1) {
+          const x = left + (right - left) * i / 109;
+          const pressure = Math.cos(phase - k * (x - left));
+          ctx.fillStyle = pressure >= 0 ? `rgba(204,87,59,${pressure * amp * .34})` : `rgba(57,129,168,${-pressure * amp * .25})`;
+          ctx.fillRect(x, h * .16, (right - left) / 109 + 1, h * .39);
+        }
+      }
+      if ($('sound-show-air').checked) {
+        for (let row = 0; row < 7; row += 1) {
+          for (let col = 0; col < 35; col += 1) {
+            const baseX = left + 8 + (right - left - 16) * col / 34;
+            const x = baseX + amp * (compact ? 8 : 17) * Math.sin(phase - k * (baseX - left));
+            const y = h * (.22 + row * .044);
+            ctx.fillStyle = '#5f8793'; ctx.beginPath(); ctx.arc(x, y, compact ? 1.3 : 1.8, 0, 2 * Math.PI); ctx.fill();
+          }
+        }
+      }
+      if ($('sound-show-air').checked) {
+        const x0 = left + (right - left) * .47;
+        const x = x0 + amp * (compact ? 8 : 17) * Math.sin(phase - k * (x0 - left));
+        ctx.strokeStyle = 'rgba(188,70,56,.7)'; ctx.setLineDash([4, 4]);
+        ctx.beginPath(); ctx.moveTo(x0, h * .19); ctx.lineTo(x0, h * .54); ctx.stroke(); ctx.setLineDash([]);
+        ctx.fillStyle = '#bd4638'; ctx.beginPath(); ctx.arc(x, centerY, compact ? 5 : 6, 0, 2 * Math.PI); ctx.fill();
+      }
+      const speakerX = left + coneDx;
+      ctx.fillStyle = '#243e53'; ctx.fillRect(left - (compact ? 32 : 52), h * .20, compact ? 30 : 48, h * .31);
+      ctx.fillStyle = '#c6d7df'; ctx.strokeStyle = '#425d6c'; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(left - 3, h * .21); ctx.lineTo(speakerX + 8, centerY); ctx.lineTo(left - 3, h * .51); ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#b67947'; ctx.fillRect(left - 13 + coneDx, centerY - 15, 14, 30);
+      ctx.fillStyle = '#c74642'; ctx.fillRect(left - 28, centerY - 19, 8, 38);
+      ctx.fillStyle = '#384e5a'; ctx.fillRect(right + 6, centerY - 44, compact ? 25 : 43, 88);
+      ctx.fillStyle = '#b67947'; ctx.fillRect(right - 1 + micDx, centerY - 20, 9, 40);
+      ctx.strokeStyle = '#405f70'; ctx.lineWidth = 4;
+      ctx.beginPath(); ctx.moveTo(right + micDx, centerY - 50); ctx.lineTo(right + micDx, centerY + 50); ctx.stroke();
+      ctx.fillStyle = '#b9cbd4'; ctx.fillRect(right + (compact ? 15 : 24), centerY - 18, 8, 36);
+      if (!compact) {
+        drawSceneLabel(ctx, 14, 14, '揚聲器：I × B 推動線圈與振膜');
+        drawSceneLabel(ctx, w - 96, 14, '動圈麥克風：振膜帶動線圈', 'right');
+      } else {
+        drawSceneLabel(ctx, 8, 12, '振膜 → 空氣疏密 → 振膜');
+      }
+      const scope = { x: w * .08, y: h * .66, w: w * .84, h: h * .24 };
+      ctx.fillStyle = '#172c3b'; ctx.beginPath(); ctx.roundRect(scope.x, scope.y, scope.w, scope.h, 6); ctx.fill();
+      ctx.strokeStyle = 'rgba(150,198,207,.22)'; ctx.lineWidth = 1;
+      for (let j = 1; j < 4; j += 1) {
+        const y = scope.y + scope.h * j / 4;
+        ctx.beginPath(); ctx.moveTo(scope.x + 8, y); ctx.lineTo(scope.x + scope.w - 8, y); ctx.stroke();
+      }
+      const drawTrace = (offset, color, phaseOffset, gain) => {
+        ctx.strokeStyle = color; ctx.lineWidth = 2.5; ctx.beginPath();
+        for (let i = 0; i <= 180; i += 1) {
+          const x = scope.x + 12 + (scope.w - 24) * i / 180;
+          const y = scope.y + scope.h * offset - amp * gain * scope.h * .16 * Math.sin(phase - phaseOffset - i / 180 * Math.PI * 5 * f / 440);
+          i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+        }
+        ctx.stroke();
+      };
+      drawTrace(.31, '#f6a85e', 0, 1);
+      drawTrace(.70, '#65c9da', k * (right - left) + Math.PI / 2, Math.min(1.6, f / 440));
+      ctx.fillStyle = '#ebf5f7'; ctx.font = `700 ${compact ? 10 : 12}px "Microsoft JhengHei", sans-serif`;
+      ctx.fillText('橘：驅動電流', scope.x + 14, scope.y + 16);
+      ctx.fillText('青：麥克風電壓', scope.x + 14, scope.y + scope.h - 8);
     }
 
     function drawStanding() {
@@ -5448,12 +5657,18 @@
       const finalPhysicalY = finiteFinal ? eyepieceY - imageDistance2 * scale : null;
       const finalY = finiteFinal ? Math.max(52, Math.min(h - 42, finalPhysicalY)) : null;
       const objectWidth = compact ? 22 : 28;
-      const intermediateWidth = finiteFirst ? Math.max(-90, Math.min(90, m1 * objectWidth)) : 0;
-      const finalWidth = finiteFinal ? Math.max(-150, Math.min(150, totalM * objectWidth)) : 0;
+      const intermediateWidth = finiteFirst ? Math.max(compact ? -70 : -90, Math.min(90, m1 * objectWidth)) : 0;
+      const finalWidth = finiteFinal ? Math.max(compact ? -Math.min(95, axisX - 24) : -150, Math.min(150, totalM * objectWidth)) : 0;
       const objectTip = { x: axisX + objectWidth, y: objectY };
       const intermediateTip = finiteFirst ? { x: axisX + intermediateWidth, y: intermediateY } : null;
 
       ctx.save();
+      const supportX = axisX + (compact ? 70 : 105);
+      ctx.strokeStyle = '#637782'; ctx.lineWidth = compact ? 12 : 17; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(supportX, eyepieceY + 16); ctx.lineTo(supportX + 12, h * .79);
+      ctx.lineTo(axisX + (compact ? 37 : 55), h * .83); ctx.stroke();
+      ctx.fillStyle = '#354b57'; ctx.beginPath();
+      ctx.roundRect(axisX - (compact ? 90 : 140), h * .92, compact ? 200 : 310, 16, 5); ctx.fill();
       ctx.fillStyle = 'rgba(15,23,42,.035)';
       ctx.beginPath();
       ctx.roundRect(axisX - (compact ? 54 : 72), eyepieceY - 18, compact ? 108 : 144, objectiveY - eyepieceY + 40, 18);
@@ -5476,10 +5691,15 @@
       ctx.fillRect(axisX - (compact ? 92 : 140), stageY, compact ? 184 : 280, 9);
       ctx.fillStyle = '#bae6fd';
       ctx.fillRect(axisX - 42, stageY - 5, 84, 5);
+      ctx.fillStyle = '#f1c279'; ctx.beginPath(); ctx.arc(axisX + 16, stageY - 7, 5, 0, 2 * Math.PI); ctx.fill();
+      ctx.fillStyle = '#7e9299'; ctx.beginPath(); ctx.arc(supportX + 3, stageY - 44, compact ? 12 : 17, 0, 2 * Math.PI); ctx.fill();
+      ctx.strokeStyle = '#e6eef0'; ctx.lineWidth = 2; ctx.beginPath();
+      ctx.arc(supportX + 3, stageY - 44, compact ? 7 : 11, 0, 2 * Math.PI); ctx.stroke();
+      ctx.fillStyle = '#f3e6ba'; ctx.beginPath(); ctx.ellipse(axisX, stageY + 27, compact ? 18 : 23, 7, 0, 0, 2 * Math.PI); ctx.fill();
       ctx.fillStyle = '#0f172a';
       ctx.font = '700 12px "Microsoft JhengHei", Arial, sans-serif';
       ctx.textAlign = 'right';
-      ctx.fillText('載物台與玻片', axisX - (compact ? 98 : 146), stageY + 6);
+      if (!compact) ctx.fillText('載物台與玻片', axisX - 146, stageY + 6);
       ctx.restore();
 
       if (validFirst && $('micro-show-objective').checked) {
@@ -5504,15 +5724,15 @@
           strokeSegment(ctx, p1, finalTip, css('--red'), 1.7, [7, 7], .68);
           strokeSegment(ctx, p2, finalTip, css('--red'), 1.7, [7, 7], .68);
         }
-        drawSideArrow(ctx, axisX, finalY, finalWidth, css('--image'), finalVirtual ? '最終虛像' : '最終實像', finalVirtual);
+        if (!compact) drawSideArrow(ctx, axisX, finalY, finalWidth, css('--image'), finalVirtual ? '最終虛像' : '最終實像', finalVirtual);
       }
 
       drawVerticalLens(ctx, axisX, objectiveY, compact ? 92 : 126, '物鏡');
       drawVerticalLens(ctx, axisX, eyepieceY, compact ? 116 : 154, '目鏡');
       drawSideArrow(ctx, axisX, objectY, objectWidth, css('--orange'), '');
-      drawSceneLabel(ctx, axisX - 12, objectY + 14, '微小標本', 'right');
+      if (!compact) drawSceneLabel(ctx, axisX - 12, objectY + 14, '微小標本', 'right');
       if (validFirst && intermediateY > eyepieceY + 16 && intermediateY < objectiveY - 16) {
-        drawSideArrow(ctx, axisX, intermediateY, intermediateWidth, css('--green'), '倒立中間實像');
+        drawSideArrow(ctx, axisX, intermediateY, intermediateWidth, css('--green'), compact ? '' : '倒立中間實像');
       }
 
       ctx.save();
@@ -5526,8 +5746,121 @@
       ctx.arc(axisX, 24, 5, 0, Math.PI * 2);
       ctx.fill();
       ctx.restore();
-      drawSceneLabel(ctx, axisX + 46, 16, '觀察眼');
-      drawSceneLabel(ctx, 20, 20, '光由標本向上傳播，依序通過物鏡與目鏡');
+      if (!compact) drawSceneLabel(ctx, axisX + 46, 16, '觀察眼');
+      const view = { x: compact ? w - 113 : w - 205, y: compact ? h * .72 : h * .17,
+        w: compact ? 103 : 170, h: compact ? 106 : 170 };
+      ctx.save(); ctx.fillStyle = '#213f52'; ctx.strokeStyle = '#9cb6be'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.roundRect(view.x, view.y, view.w, view.h, 6); ctx.fill(); ctx.stroke();
+      ctx.beginPath(); ctx.arc(view.x + view.w / 2, view.y + view.h * .55, view.w * .34, 0, 2 * Math.PI); ctx.clip();
+      ctx.fillStyle = '#dce9e8'; ctx.fillRect(view.x, view.y, view.w, view.h);
+      const cellScale = validFirst && finalVirtual ? Math.min(1.35, Math.max(.65, Math.sqrt(Math.abs(totalM)) / 4)) : .65;
+      for (let i = 0; i < 7; i += 1) {
+        const a = i * 2.4;
+        const px = view.x + view.w / 2 + Math.cos(a) * view.w * .19;
+        const py = view.y + view.h * .55 + Math.sin(a) * view.w * .19;
+        ctx.fillStyle = i % 2 ? '#91c7bc' : '#a9d7d0'; ctx.strokeStyle = '#598f86';
+        ctx.beginPath(); ctx.ellipse(px, py, cellScale * view.w * .13, cellScale * view.w * .09, a, 0, 2 * Math.PI); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = '#618ba0'; ctx.beginPath(); ctx.arc(px + 2, py - 1, 2.5, 0, 2 * Math.PI); ctx.fill();
+      }
+      ctx.restore();
+      ctx.fillStyle = '#e8f4f3'; ctx.font = `700 ${compact ? 10 : 12}px "Microsoft JhengHei", sans-serif`;
+      ctx.fillText('目鏡視野', view.x + 8, view.y + 15);
+    }
+
+    function drawCamera() {
+      const { ctx, w, h } = resizeCanvas($('camera-canvas'));
+      const compact = w < 620;
+      const objectMeters = number('camera-object');
+      const sensorDistance = number('camera-focus');
+      const aperture = number('camera-aperture');
+      const focal = 50;
+      const objectMm = objectMeters * 1000;
+      const imageMm = focal * objectMm / (objectMm - focal);
+      const circleMm = aperture * Math.abs(1 - sensorDistance / imageMm);
+      const focused = circleMm < .12;
+      setText('camera-object-out', `${objectMeters.toFixed(2)} m`);
+      setText('camera-focus-out', `${sensorDistance.toFixed(1)} mm`);
+      setText('camera-aperture-out', `${aperture} mm`);
+      $('camera-image-distance').innerHTML = `理論像距 ${imageMm.toFixed(2)} mm<small>1/f = 1/do + 1/di；f = 50 mm</small>`;
+      $('camera-lens-position').innerHTML = `鏡頭距感光元件 ${sensorDistance.toFixed(1)} mm<small>感光元件固定，鏡頭沿光軸移動</small>`;
+      $('camera-blur').innerHTML = `散焦圈 ${circleMm.toFixed(2)} mm<small>光圈越大，同樣離焦量越顯著</small>`;
+      $('camera-status').innerHTML = focused
+        ? '已對焦<small>光束在感光元件附近會聚</small>'
+        : sensorDistance < imageMm
+          ? '焦點在感光元件後<small>鏡頭需往物體方向移動</small>'
+          : '焦點在感光元件前<small>鏡頭需往感光元件方向移動</small>';
+      ctx.fillStyle = '#f4f7f8'; ctx.fillRect(0, 0, w, h);
+      const axis = h * .47;
+      const sensorX = w * (compact ? .84 : .83);
+      const lensX = sensorX - w * (.15 + (sensorDistance - 50) / 9 * .11);
+      const personX = w * (.10 + .16 * (1 - objectMeters / 5));
+      const personHeight = Math.min(h * .28, h * (.13 + .11 / Math.sqrt(objectMeters)));
+      const head = { x: personX, y: axis - personHeight };
+      const aperturePx = Math.max(10, aperture / 28 * h * .125);
+      const imageHeight = Math.min(h * .18, Math.max(18, h * 2.6 * imageMm / objectMm));
+      const imageX = lensX + (sensorX - lensX) * imageMm / sensorDistance;
+      const imageTip = { x: imageX, y: axis + imageHeight };
+      ctx.strokeStyle = '#b3c3c9'; ctx.lineWidth = 1.5; ctx.setLineDash([6, 5]);
+      ctx.beginPath(); ctx.moveTo(w * .04, axis); ctx.lineTo(w * .96, axis); ctx.stroke(); ctx.setLineDash([]);
+      ctx.fillStyle = '#d8e2e4'; ctx.fillRect(w * .03, axis + 5, lensX - w * .03, 3);
+      const bodyTop = h * .18, bodyBottom = h * .72;
+      ctx.fillStyle = '#344c5c'; ctx.fillRect(lensX - 12, bodyTop, sensorX - lensX + 40, bodyBottom - bodyTop);
+      ctx.fillStyle = '#e7eff0'; ctx.fillRect(lensX + 7, bodyTop + 15, sensorX - lensX + 5, bodyBottom - bodyTop - 30);
+      ctx.fillStyle = '#bdcbd0'; ctx.fillRect(sensorX + 7, bodyTop - 18, 18, bodyBottom - bodyTop + 36);
+      ctx.fillStyle = '#233f56'; ctx.fillRect(sensorX - 2, bodyTop + 11, 8, bodyBottom - bodyTop - 22);
+      ctx.strokeStyle = '#284f70'; ctx.lineWidth = 7; ctx.beginPath();
+      ctx.moveTo(sensorX, bodyTop + 17); ctx.lineTo(sensorX, bodyBottom - 17); ctx.stroke();
+      const lensGrad = ctx.createLinearGradient(lensX - 10, 0, lensX + 10, 0);
+      lensGrad.addColorStop(0, '#597f92'); lensGrad.addColorStop(.5, '#d6f1ed'); lensGrad.addColorStop(1, '#517b91');
+      ctx.fillStyle = lensGrad; ctx.strokeStyle = '#355268'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.ellipse(lensX, axis, compact ? 9 : 12, h * .20, 0, 0, 2 * Math.PI); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#1d3445';
+      ctx.fillRect(lensX - 17, bodyTop + 1, 34, Math.max(0, axis - aperturePx - bodyTop - 1));
+      ctx.fillRect(lensX - 17, axis + aperturePx, 34, Math.max(0, bodyBottom - axis - aperturePx - 1));
+      const hits = [];
+      [-1, -.5, 0, .5, 1].forEach((fraction, index) => {
+        const atLens = { x: lensX, y: axis + fraction * aperturePx };
+        const t = (sensorX - lensX) / (imageX - lensX);
+        const hit = { x: sensorX, y: atLens.y + (imageTip.y - atLens.y) * t };
+        hits.push(hit);
+        ctx.strokeStyle = index === 2 ? '#1c7293' : 'rgba(39,111,146,.68)';
+        ctx.lineWidth = index === 2 ? 2.6 : 1.8; ctx.beginPath();
+        ctx.moveTo(head.x, head.y); ctx.lineTo(atLens.x, atLens.y); ctx.stroke();
+        ctx.strokeStyle = index === 2 ? '#b85044' : 'rgba(185,80,68,.72)';
+        ctx.beginPath(); ctx.moveTo(atLens.x, atLens.y); ctx.lineTo(hit.x, hit.y); ctx.stroke();
+        const travel = positiveModulo(time * .65 + index * .2, 1);
+        const start = travel < .55 ? head : atLens;
+        const end = travel < .55 ? atLens : hit;
+        const portion = travel < .55 ? travel / .55 : (travel - .55) / .45;
+        instrumentParticle(ctx, start.x + (end.x - start.x) * portion, start.y + (end.y - start.y) * portion, '#fff8d6', compact ? 2.5 : 3.5);
+      });
+      const hitRange = Math.max(...hits.map(point => point.y)) - Math.min(...hits.map(point => point.y));
+      ctx.strokeStyle = focused ? '#10817d' : '#b64a43'; ctx.lineWidth = 3;
+      ctx.beginPath(); ctx.moveTo(sensorX + 12, hits[0].y); ctx.lineTo(sensorX + 12, hits.at(-1).y); ctx.stroke();
+      ctx.fillStyle = focused ? '#0e807b' : '#b64a43';
+      ctx.beginPath(); ctx.arc(sensorX, hits[2].y, Math.max(3, hitRange / 2), 0, 2 * Math.PI); ctx.globalAlpha = .25; ctx.fill(); ctx.globalAlpha = 1;
+      ctx.strokeStyle = '#bf7148'; ctx.lineWidth = compact ? 5 : 7; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(personX, axis); ctx.lineTo(personX, head.y + personHeight * .26);
+      ctx.moveTo(personX, head.y + personHeight * .4); ctx.lineTo(personX - 13, head.y + personHeight * .65);
+      ctx.moveTo(personX, head.y + personHeight * .4); ctx.lineTo(personX + 13, head.y + personHeight * .65);
+      ctx.moveTo(personX, axis - 8); ctx.lineTo(personX - 12, axis + 15);
+      ctx.moveTo(personX, axis - 8); ctx.lineTo(personX + 12, axis + 15); ctx.stroke();
+      ctx.fillStyle = '#d69465'; ctx.beginPath(); ctx.arc(head.x, head.y + 8, compact ? 7 : 9, 0, 2 * Math.PI); ctx.fill();
+      drawSceneLabel(ctx, compact ? 8 : 18, 14, '物體 → 可移動鏡頭 → 固定感光元件');
+      if (!compact) {
+        drawSceneLabel(ctx, personX - 24, axis + 29, '人物');
+        drawSceneLabel(ctx, sensorX + 26, axis - 36, '感光元件');
+      }
+      const preview = { x: w * .10, y: h * .78, w: w * .80, h: h * .17 };
+      ctx.fillStyle = '#20384a'; ctx.beginPath(); ctx.roundRect(preview.x, preview.y, preview.w, preview.h, 6); ctx.fill();
+      const previewX = preview.x + preview.w * .5;
+      ctx.save(); ctx.beginPath(); ctx.rect(preview.x + 5, preview.y + 5, preview.w - 10, preview.h - 10); ctx.clip();
+      ctx.filter = `blur(${Math.min(14, circleMm * (compact ? 9 : 12)).toFixed(1)}px)`;
+      ctx.strokeStyle = '#e9b276'; ctx.lineWidth = compact ? 6 : 10; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(previewX, preview.y + 15); ctx.lineTo(previewX, preview.y + preview.h - 22); ctx.stroke();
+      ctx.fillStyle = '#f0bc83'; ctx.beginPath(); ctx.arc(previewX, preview.y + preview.h - 18, 11, 0, 2 * Math.PI); ctx.fill(); ctx.restore();
+      ctx.fillStyle = '#e7f4f4'; ctx.font = `700 ${compact ? 10 : 12}px "Microsoft JhengHei", sans-serif`;
+      ctx.fillText('感光元件放大預覽（倒立）', preview.x + 10, preview.y + 16);
     }
 
     function drawEyeLeader(ctx, anchor, labelPoint, label, align = 'left') {
@@ -8577,7 +8910,7 @@
       ctx.fill();
 
       const origin = { x: w * (compact ? .49 : .48), y: sceneBottom * .55 };
-      const scale = Math.min(w / (compact ? 7.2 : 8.6), sceneBottom / 5.6);
+      const scale = Math.min(w / (compact ? 8.4 : 10.8), sceneBottom / 8.2);
       const northBox = { x: -2.55, y: -1.38, z: -1.15, w: .92, h: 2.76, d: 2.30 };
       const southBox = { x: 1.63, y: -1.38, z: -1.15, w: .92, h: 2.76, d: 2.30 };
       drawIsoCuboid(ctx, origin, southBox, scale, { front: '#2563eb', side: '#1e3a8a', top: '#60a5fa' }, 'S');
@@ -8713,13 +9046,7 @@
       ctx.font = '800 14px Arial, sans-serif';
       ctx.textAlign = 'center';
       ctx.fillText(`+  ${state.voltage.toFixed(1)} V  −`, origin.x, batteryY + 17);
-      drawSceneLabel(
-        ctx,
-        commutatorCenter.x + (compact ? 42 : 54),
-        commutatorCenter.y - 18,
-        '分裂環：每半圈換向',
-        'left'
-      );
+      if (!compact) drawSceneLabel(ctx, commutatorCenter.x + 54, commutatorCenter.y - 18, '分裂環：每半圈換向', 'left');
 
       if (showTorque) {
         const torqueCenter = isoPoint(origin, 0, 1.62, 0, scale);
@@ -8762,6 +9089,126 @@
       setText('motor-proof-field', `B = ${state.B.toFixed(2)} T，由 N → S（向右）`);
       setText('motor-proof-force', `左 F${leftOut}；右 F${rightOut}；每側約 ${state.sideForce.toFixed(2)} N`);
       setText('motor-proof-torque', `兩力形成力偶；τ = ${state.torque.toFixed(3)} N·m`);
+    }
+
+    function drawGenerator() {
+      const { ctx, w, h } = resizeCanvas($('generator-canvas'));
+      const compact = w < 620;
+      const B = number('gen-field'), turns = number('gen-turns');
+      const rpm = number('gen-rpm'), resistance = number('gen-resistance');
+      const omega = 2 * Math.PI * rpm / 60, theta = omega * time;
+      const fluxMax = turns * B * .01;
+      const flux = fluxMax * Math.cos(theta);
+      const emfMax = fluxMax * omega;
+      const emf = emfMax * Math.sin(theta);
+      const power = emf * emf / resistance;
+      setText('gen-field-out', `${B.toFixed(2)} T`);
+      setText('gen-turns-out', String(turns));
+      setText('gen-rpm-out', `${rpm} rpm`);
+      setText('gen-resistance-out', `${resistance} Ω`);
+      $('gen-flux').innerHTML = `磁通鏈結 NΦ = ${flux.toFixed(2)} Wb·turn<small>N B A cosθ；面積 A = 0.010 m²</small>`;
+      $('gen-emf').innerHTML = `感應電壓 ε = ${emf.toFixed(2)} V<small>ε = −d(NΦ)/dt = NBAω sinθ</small>`;
+      $('gen-power').innerHTML = `負載功率 P = ${power.toFixed(2)} W<small>理想純電阻：P = ε²/R</small>`;
+      $('gen-speed-badge').innerHTML = `轉速 ${rpm} rpm<small>每秒 ${(rpm / 60).toFixed(2)} 圈；輸出頻率相同</small>`;
+      ctx.fillStyle = '#f4f7f8'; ctx.fillRect(0, 0, w, h);
+      const top = h * .59;
+      ctx.fillStyle = '#d5dedf';
+      ctx.beginPath(); ctx.moveTo(w * .05, top - 6); ctx.lineTo(w * .93, top - 6);
+      ctx.lineTo(w * .97, top + 17); ctx.lineTo(w * .08, top + 17); ctx.closePath(); ctx.fill();
+      const magnetY = h * .23, magnetH = h * .25;
+      const magnetW = w * (compact ? .16 : .13);
+      const leftX = w * (compact ? .05 : .12);
+      const rightX = w * (compact ? .79 : .74);
+      const magnet = (x, color, label) => {
+        const g = ctx.createLinearGradient(x, 0, x + magnetW, 0);
+        g.addColorStop(0, color); g.addColorStop(1, label === 'N' ? '#f08080' : '#6a9df3');
+        ctx.fillStyle = g; ctx.fillRect(x, magnetY, magnetW, magnetH);
+        ctx.fillStyle = '#9ba7aa'; ctx.fillRect(x + magnetW * .16, magnetY + magnetH, magnetW * .68, top - magnetY - magnetH);
+        ctx.fillStyle = '#fff'; ctx.font = `800 ${compact ? 22 : 32}px Arial, sans-serif`;
+        ctx.textAlign = 'center'; ctx.fillText(label, x + magnetW / 2, magnetY + magnetH * .56);
+      };
+      magnet(leftX, '#ad3939', 'N'); magnet(rightX, '#2e5bad', 'S');
+      if ($('gen-show-field').checked) {
+        for (let j = -1; j <= 1; j += 1) {
+          const y = magnetY + magnetH * (.5 + j * .24);
+          drawArrow(ctx, leftX + magnetW + 10, y, rightX - 12, y, 'rgba(42,100,161,.35)');
+        }
+      }
+      const cx = w * .5, cy = h * .34;
+      const coilHalf = w * (compact ? .11 : .115);
+      const height = h * .17;
+      const project = (r, y) => ({ x: cx + coilHalf * (Math.sin(theta) + .25 * Math.cos(theta)) * r,
+        y: cy + y * height - coilHalf * .17 * Math.cos(theta) * r });
+      const a = project(-1, -1), b = project(1, -1), c = project(1, 1), d = project(-1, 1);
+      ctx.save(); ctx.strokeStyle = '#9a5427'; ctx.lineWidth = compact ? 7 : 10;
+      ctx.lineJoin = 'round'; ctx.shadowColor = 'rgba(132,75,33,.24)'; ctx.shadowBlur = 6;
+      ctx.beginPath(); ctx.moveTo(a.x, a.y); ctx.lineTo(b.x, b.y); ctx.lineTo(c.x, c.y);
+      ctx.moveTo(d.x, d.y); ctx.lineTo(a.x, a.y); ctx.stroke(); ctx.restore();
+      const ringY = top - 58, ringGap = compact ? 15 : 22;
+      ctx.strokeStyle = '#aa6333'; ctx.lineWidth = compact ? 3 : 4;
+      ctx.beginPath(); ctx.moveTo(c.x, c.y); ctx.lineTo(cx + ringGap, ringY);
+      ctx.moveTo(d.x, d.y); ctx.lineTo(cx - ringGap, ringY); ctx.stroke();
+      ctx.strokeStyle = '#56616c'; ctx.lineWidth = 7;
+      ctx.beginPath(); ctx.moveTo(cx, magnetY - 32); ctx.lineTo(cx, top - 30); ctx.stroke();
+      const handleX = cx + (compact ? 24 : 34);
+      ctx.strokeStyle = '#334155'; ctx.lineWidth = 5;
+      ctx.beginPath(); ctx.moveTo(cx, magnetY - 32); ctx.lineTo(handleX, magnetY - 32);
+      ctx.lineTo(handleX, magnetY - 49); ctx.stroke();
+      ctx.fillStyle = '#a26a42'; ctx.beginPath(); ctx.arc(handleX, magnetY - 49, 7, 0, 2 * Math.PI); ctx.fill();
+      [-ringGap, ringGap].forEach((dx, j) => {
+        ctx.strokeStyle = '#b46b38'; ctx.lineWidth = 7; ctx.beginPath();
+        ctx.ellipse(cx + dx, ringY, compact ? 13 : 18, 7, 0, 0, 2 * Math.PI); ctx.stroke();
+        ctx.fillStyle = '#374b57'; ctx.fillRect(cx + dx - 5, ringY + 7, 10, 13);
+        if ($('gen-show-current').checked && Math.abs(emf) > .02) {
+          const dir = emf > 0 ? 1 : -1;
+          const dotX = cx + dx + Math.cos(time * 8 * dir + j) * (compact ? 13 : 18);
+          instrumentParticle(ctx, dotX, ringY + Math.sin(time * 8 * dir + j) * 7, '#eaa04e', 3);
+        }
+      });
+      const lamp = { x: w * (compact ? .89 : .84), y: top - 40 };
+      ctx.strokeStyle = '#526476'; ctx.lineWidth = 2.4; ctx.beginPath();
+      ctx.moveTo(cx - ringGap, ringY + 20); ctx.lineTo(cx - ringGap, top - 20);
+      ctx.lineTo(lamp.x - 16, top - 20); ctx.lineTo(lamp.x - 16, lamp.y);
+      ctx.moveTo(cx + ringGap, ringY + 20); ctx.lineTo(cx + ringGap, top - 10);
+      ctx.lineTo(lamp.x + 16, top - 10); ctx.lineTo(lamp.x + 16, lamp.y); ctx.stroke();
+      if ($('gen-show-current').checked && emfMax > 0 && Math.abs(emf) > .02) {
+        ctx.save(); ctx.globalAlpha = Math.max(.28, Math.min(1, Math.abs(emf / emfMax)));
+        const direction = Math.sign(emf);
+        for (let j = 0; j < 3; j += 1) {
+          const portion = positiveModulo(time * 1.4 * direction + j / 3, 1);
+          const upperX = cx - ringGap + (lamp.x - 16 - cx + ringGap) * portion;
+          const lowerX = lamp.x + 16 + (cx + ringGap - lamp.x - 16) * portion;
+          instrumentParticle(ctx, upperX, top - 20, '#e98638', compact ? 3 : 4);
+          instrumentParticle(ctx, lowerX, top - 10, '#e98638', compact ? 3 : 4);
+        }
+        ctx.restore();
+      }
+      const glow = emfMax ? Math.min(1, Math.sqrt(power / Math.max(.001, emfMax * emfMax / resistance))) : 0;
+      ctx.fillStyle = `rgba(250,199,70,${.16 + glow * .8})`;
+      ctx.shadowColor = '#f3c04b'; ctx.shadowBlur = 20 * glow;
+      ctx.beginPath(); ctx.arc(lamp.x, lamp.y, compact ? 13 : 19, 0, 2 * Math.PI); ctx.fill();
+      ctx.shadowBlur = 0; ctx.strokeStyle = '#615843'; ctx.lineWidth = 2; ctx.stroke();
+      drawSceneLabel(ctx, compact ? 8 : 16, 13, '機械轉動 → 磁通改變 → 交流電');
+      const chart = { x: w * .10, y: h * .68, w: w * .80, h: h * .25 };
+      ctx.fillStyle = '#fff'; ctx.fillRect(chart.x, chart.y, chart.w, chart.h);
+      ctx.strokeStyle = '#cbd5dc'; ctx.strokeRect(chart.x, chart.y, chart.w, chart.h);
+      const graph = (fn, mid, color) => {
+        ctx.strokeStyle = color; ctx.lineWidth = 2.4; ctx.beginPath();
+        for (let i = 0; i <= 240; i += 1) {
+          const x = chart.x + chart.w * i / 240;
+          const y = mid - fn(i / 240 * 4 * Math.PI) * chart.h * .19;
+          i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
+        }
+        ctx.stroke();
+      };
+      graph(Math.cos, chart.y + chart.h * .27, '#3a739a');
+      graph(Math.sin, chart.y + chart.h * .73, '#b35a3e');
+      const markerX = chart.x + chart.w * positiveModulo(theta, 4 * Math.PI) / (4 * Math.PI);
+      ctx.strokeStyle = '#70808a'; ctx.setLineDash([4, 4]); ctx.beginPath();
+      ctx.moveTo(markerX, chart.y); ctx.lineTo(markerX, chart.y + chart.h); ctx.stroke(); ctx.setLineDash([]);
+      ctx.fillStyle = '#3a739a'; ctx.font = `700 ${compact ? 10 : 12}px "Microsoft JhengHei", sans-serif`;
+      ctx.fillText('NΦ', chart.x + 7, chart.y + 15);
+      ctx.fillStyle = '#b35a3e'; ctx.fillText('ε', chart.x + 7, chart.y + chart.h * .58);
     }
 
     function spectralColor(wavelength, lightness = 52) {
@@ -10389,6 +10836,8 @@
 
     function drawActive() {
       if (activeModule === 'standing') drawStanding();
+      else if (activeModule === 'drive') drawWaveDrive();
+      else if (activeModule === 'sound') drawSoundChain();
       else if (activeModule === 'doppler') drawDoppler();
       else if (activeModule === 'ripple') drawRipple();
       else if (activeModule === 'double') drawDoubleSlit();
@@ -10407,6 +10856,7 @@
       else if (activeModule === 'electromagnetism') {
         if (activeElectromagnetism === 'brake') drawMagneticBrake();
         else if (activeElectromagnetism === 'motor') drawMotor();
+        else if (activeElectromagnetism === 'generator') drawGenerator();
         else if (activeElectromagnetism === 'cyclotron') drawCyclotron();
         else if (activeElectromagnetism === 'spectrometer') drawMassSpectrometer();
         else drawVelocitySelector();
@@ -10424,6 +10874,7 @@
         else if (activeOptics === 'reflection') drawReflection();
         else if (activeOptics === 'trifold') drawTrifoldMirrors();
         else if (activeOptics === 'microscope') drawMicroscopeVertical();
+        else if (activeOptics === 'camera') drawCamera();
         else drawEye();
       }
     }
@@ -10932,6 +11383,13 @@
 
     $('skater-out').addEventListener('click', () => { $('skater-arms').value = '100'; drawActive(); });
     $('skater-in').addEventListener('click', () => { $('skater-arms').value = '0'; drawActive(); });
+    $('camera-autofocus').addEventListener('click', () => {
+      const objectMm = number('camera-object') * 1000;
+      $('camera-focus').value = String(Math.round(10 * 50 * objectMm / (objectMm - 50)) / 10);
+      drawActive();
+    });
+    $('camera-far').addEventListener('click', () => { $('camera-object').value = '5'; drawActive(); });
+    $('camera-near').addEventListener('click', () => { $('camera-object').value = '0.35'; drawActive(); });
 
     function frame(now) {
       const elapsed = Math.max(0, Math.min(0.05, (now - last) / 1000));
