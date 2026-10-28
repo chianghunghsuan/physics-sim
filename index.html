@@ -9310,7 +9310,7 @@
       $('motor-proof-force').innerHTML = `左 ${math('F')}${leftOut}；右 ${math('F')}${rightOut}；每側約 ${state.sideForce.toFixed(2)} N`;
       $('motor-proof-torque').innerHTML = `兩力形成力偶；${math('\\tau')} = ${state.torque.toFixed(3)} N·m`;
       if (emRenderView.motor === 'apparatus' && window.emThree) window.emThree.renderMotor({
-        angle: state.angle, halfTurn: state.halfTurn, current: state.current, B: state.B, time,
+        angle: state.angle, halfTurn: state.halfTurn, current: state.current, maxCurrent: 3, B: state.B, time,
         showCurrent, showElectrons, showField, showForce
       });
     }
@@ -9453,7 +9453,7 @@
       ctx.fillStyle = '#3a739a'; ctx.fillText('磁通', chart.x + chart.w + 4, fluxMid + 4);
       ctx.fillStyle = '#b35a3e'; ctx.fillText('電壓', chart.x + chart.w + 4, emfMid + 4);
       if (emRenderView.generator === 'apparatus' && window.emThree) window.emThree.renderGenerator({
-        angle: theta, current: emf / resistance, B, time,
+        angle: theta, current: emf / resistance, maxCurrent: .5, B, time,
         showCurrent: $('gen-show-current').checked, showElectrons: false,
         showField: $('gen-show-field').checked, showForce: false
       });

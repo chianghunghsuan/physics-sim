@@ -64,6 +64,53 @@ function label(parent, text, position, width = .5) {
   parent.add(mesh);
 }
 
+function ammeter(scene, housingMaterial) {
+  box(scene, [.96, .74, .29], [1.12, -1.57, 1.55], housingMaterial);
+  for (const x of [.75, 1.49]) {
+    const terminal = new THREE.Mesh(new THREE.SphereGeometry(.065, 16, 12), metal('#b9794f', .3, .75));
+    terminal.position.set(x, -1.18, 1.55); scene.add(terminal);
+  }
+  const canvas = document.createElement('canvas');
+  canvas.width = 256; canvas.height = 256;
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  const face = new THREE.Mesh(new THREE.PlaneGeometry(.68, .68),
+    new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide }));
+  face.position.set(1.12, -1.57, 1.705);
+  scene.add(face);
+  return { canvas, texture, previous: NaN };
+}
+
+function paintAmmeter(meter, ratio) {
+  const value = THREE.MathUtils.clamp(ratio, -1, 1);
+  if (Math.abs(value - meter.previous) < .008) return;
+  meter.previous = value;
+  const ctx = meter.canvas.getContext('2d');
+  ctx.fillStyle = '#f5f2e8'; ctx.fillRect(0, 0, 256, 256);
+  ctx.strokeStyle = '#86969a'; ctx.lineWidth = 5; ctx.strokeRect(4, 4, 248, 248);
+  ctx.strokeStyle = '#31434b'; ctx.lineWidth = 3;
+  for (let i = 0; i <= 10; i += 1) {
+    const angle = (-150 + i * 12) * Math.PI / 180;
+    ctx.beginPath();
+    ctx.moveTo(128 + 85 * Math.cos(angle), 174 + 85 * Math.sin(angle));
+    ctx.lineTo(128 + (i % 5 ? 97 : 105) * Math.cos(angle), 174 + (i % 5 ? 97 : 105) * Math.sin(angle));
+    ctx.stroke();
+  }
+  ctx.font = 'bold 27px "Times New Roman", serif';
+  ctx.textAlign = 'center'; ctx.fillStyle = '#273941';
+  ctx.fillText('A', 128, 227);
+  ctx.font = 'bold 19px "Times New Roman", serif';
+  ctx.fillText('-0.5', 37, 161);
+  ctx.fillText('0', 128, 56);
+  ctx.fillText('+0.5', 219, 161);
+  const needle = (-90 + value * 60) * Math.PI / 180;
+  ctx.strokeStyle = '#b74c3d'; ctx.lineWidth = 5; ctx.lineCap = 'round';
+  ctx.beginPath(); ctx.moveTo(128, 174);
+  ctx.lineTo(128 + 92 * Math.cos(needle), 174 + 92 * Math.sin(needle)); ctx.stroke();
+  ctx.fillStyle = '#34434a'; ctx.beginPath(); ctx.arc(128, 174, 9, 0, 2 * Math.PI); ctx.fill();
+  meter.texture.needsUpdate = true;
+}
+
 function createStage(host, kind) {
   const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: 'high-performance' });
   renderer.setPixelRatio(Math.min(2, window.devicePixelRatio || 1));
@@ -121,6 +168,7 @@ function createStage(host, kind) {
   for (const depth of [-.095, .095]) {
     coilTube(rotor, coilCurve(halfWidth, halfHeight, .14, depth), .014, brightCopper);
   }
+  for (const y of [-.84, .84]) box(rotor, [1.91, .075, .11], [0, y, 0], darkMetal);
   const shaft = new THREE.Mesh(new THREE.CylinderGeometry(.075, .075, kind === 'generator' ? 4.15 : 3.65, 24), darkMetal);
   if (kind === 'generator') shaft.position.y = .25;
   shaft.castShadow = true; rotor.add(shaft);
@@ -139,8 +187,8 @@ function createStage(host, kind) {
   const currentMarkers = [];
   const electronMarkers = [];
   for (let index = 0; index < 12; index += 1) {
-    const current = new THREE.Mesh(new THREE.SphereGeometry(.043, 12, 9), new THREE.MeshBasicMaterial({ color: '#ffb461' }));
-    const electron = new THREE.Mesh(new THREE.SphereGeometry(.028, 10, 7), new THREE.MeshBasicMaterial({ color: '#a597dc' }));
+    const current = new THREE.Mesh(new THREE.SphereGeometry(.066, 14, 10), new THREE.MeshBasicMaterial({ color: '#f26a27' }));
+    const electron = new THREE.Mesh(new THREE.SphereGeometry(.039, 10, 8), new THREE.MeshBasicMaterial({ color: '#7951cb' }));
     rotor.add(current, electron); currentMarkers.push(current); electronMarkers.push(electron);
   }
 
@@ -173,23 +221,35 @@ function createStage(host, kind) {
     tube(rotor, [[.18, -halfHeight, 0], [.31, -1.47, 0], [.31, -1.64, 0]], .036, brightCopper);
     const lampY = -1.15;
     tube(scene, [[-.46, -1.37, 0], [-.9, -1.65, .4], [-.9, -1.65, 1.65], [-.22, -1.65, 2.03], [-.22, lampY, 2.03]], .024, darkMetal);
-    tube(scene, [[.46, -1.64, 0], [.9, -1.75, .7], [.9, -1.75, 1.65], [.22, -1.65, 2.03], [.22, lampY, 2.03]], .024, darkMetal);
+    tube(scene, [[.46, -1.64, 0], [.9, -1.75, .7], [1.49, -1.18, 1.55]], .024, darkMetal);
+    tube(scene, [[.75, -1.18, 1.55], [.64, -1.73, 1.88], [.22, -1.65, 2.03], [.22, lampY, 2.03]], .024, darkMetal);
     externalPath = new THREE.CatmullRomCurve3([
       [-.46, -1.37, 0], [-.9, -1.65, .4], [-.9, -1.65, 1.65], [-.22, -1.65, 2.03],
-      [0, -1.15, 2.03], [.22, -1.65, 2.03], [.9, -1.75, 1.65], [.9, -1.75, .7], [.46, -1.64, 0]
+      [0, -1.15, 2.03], [.22, -1.65, 2.03], [.64, -1.73, 1.88], [.75, -1.18, 1.55],
+      [1.12, -1.18, 1.55], [1.49, -1.18, 1.55], [.9, -1.75, .7], [.46, -1.64, 0]
     ].map(point => new THREE.Vector3(...point)), false, 'centripetal');
     for (let i = 0; i < 9; i += 1) {
-      const marker = new THREE.Mesh(new THREE.SphereGeometry(.046, 12, 9), new THREE.MeshBasicMaterial({ color: '#ed9a39' }));
+      const marker = new THREE.Mesh(new THREE.SphereGeometry(.06, 12, 9), new THREE.MeshBasicMaterial({ color: '#f26a27' }));
       scene.add(marker); externalMarkers.push(marker);
     }
   }
 
   let bulb = null;
+  let bulbLight = null;
+  let filament = null;
+  let meter = null;
   if (kind === 'generator') {
-    const glass = new THREE.MeshPhysicalMaterial({ color: '#f8ddb3', emissive: '#f2a641', emissiveIntensity: .15, roughness: .12, transmission: .48, thickness: .45 });
+    const glass = new THREE.MeshPhysicalMaterial({ color: '#cbd8d9', emissive: '#e8a249', emissiveIntensity: .03,
+      roughness: .13, transmission: .55, thickness: .25, transparent: true, opacity: .48, depthWrite: false });
     bulb = new THREE.Mesh(new THREE.SphereGeometry(.25, 24, 16), glass);
     bulb.position.set(0, -1.15, 2.03); bulb.castShadow = true; scene.add(bulb);
     box(scene, [.24, .18, .24], [0, -1.43, 2.03], darkMetal);
+    filament = tube(scene, [[-.10, -1.25, 2.05], [-.07, -1.12, 2.05], [0, -1.04, 2.05],
+      [.07, -1.12, 2.05], [.10, -1.25, 2.05]], .016,
+    new THREE.MeshBasicMaterial({ color: '#ffa43e' }));
+    bulbLight = new THREE.PointLight(0xffc783, 0, 3.2);
+    bulbLight.position.copy(bulb.position); scene.add(bulbLight);
+    meter = ammeter(scene, metal('#495a61', .62, .3));
   } else {
     const battery = box(scene, [1.06, .36, .55], [0, -1.76, 1.49], darkMetal);
     battery.castShadow = true;
@@ -228,7 +288,7 @@ function createStage(host, kind) {
     event.preventDefault(); control.distance = THREE.MathUtils.clamp(control.distance + event.deltaY * .008, 7.6, 13);
   }, { passive: false });
 
-  const stage = { kind, host, renderer, scene, camera, rotor, pathCurve, currentMarkers, electronMarkers, externalPath, externalMarkers, fieldArrows, forceArrows, bulb, control };
+  const stage = { kind, host, renderer, scene, camera, rotor, pathCurve, currentMarkers, electronMarkers, externalPath, externalMarkers, fieldArrows, forceArrows, bulb, bulbLight, filament, meter, control, chargePhase: 0, lastTime: NaN };
   stages.set(kind, stage);
   return stage;
 }
@@ -244,7 +304,7 @@ function render(kind, state) {
     console.warn('WebGL unavailable', error);
     return;
   }
-  const { renderer, scene, camera, rotor, pathCurve, currentMarkers, electronMarkers, externalPath, externalMarkers, fieldArrows, forceArrows, bulb, control } = stage;
+  const { renderer, scene, camera, rotor, pathCurve, currentMarkers, electronMarkers, externalPath, externalMarkers, fieldArrows, forceArrows, bulb, bulbLight, filament, meter, control } = stage;
   const width = host.clientWidth, height = host.clientHeight;
   if (!width || !height) return;
   if (renderer.domElement.width !== Math.round(width * renderer.getPixelRatio()) || renderer.domElement.height !== Math.round(height * renderer.getPixelRatio())) {
@@ -259,19 +319,26 @@ function render(kind, state) {
     Math.cos(control.azimuth) * Math.cos(control.elevation) * distance);
   camera.lookAt(0, -.60, 0);
   rotor.rotation.y = state.angle + (kind === 'generator' ? Math.PI / 2 : 0);
-  for (const arrow of fieldArrows) arrow.visible = state.showField;
+  for (const arrow of fieldArrows) arrow.visible = state.showField && state.B > .001;
   const reverse = kind === 'motor' ? state.halfTurn === 0 : state.current < 0;
+  const elapsed = Number.isFinite(stage.lastTime) && state.time >= stage.lastTime
+    ? Math.min(.1, state.time - stage.lastTime) : 0;
+  if (state.time < stage.lastTime) stage.chargePhase = 0;
+  stage.lastTime = state.time;
+  const signedCurrent = kind === 'motor' && reverse ? -state.current : state.current;
+  stage.chargePhase += elapsed * .42 * signedCurrent / Math.max(.001, state.maxCurrent);
   for (let i = 0; i < currentMarkers.length; i += 1) {
-    const fraction = ((i / currentMarkers.length + state.time * .36) % 1 + 1) % 1;
-    currentMarkers[i].position.copy(pathCurve.getPoint(reverse ? 1 - fraction : fraction));
+    const fraction = ((i / currentMarkers.length + stage.chargePhase) % 1 + 1) % 1;
+    currentMarkers[i].position.copy(pathCurve.getPoint(fraction));
     currentMarkers[i].visible = state.showCurrent && Math.abs(state.current) > .01;
-    electronMarkers[i].position.copy(pathCurve.getPoint(reverse ? fraction : 1 - fraction));
+    const electronFraction = ((i / electronMarkers.length - stage.chargePhase) % 1 + 1) % 1;
+    electronMarkers[i].position.copy(pathCurve.getPoint(electronFraction));
     electronMarkers[i].position.z += .085;
     electronMarkers[i].visible = state.showElectrons && Math.abs(state.current) > .01;
   }
   for (let i = 0; i < externalMarkers.length; i += 1) {
-    const fraction = (i / externalMarkers.length + state.time * Math.max(.2, Math.abs(state.current) * .17)) % 1;
-    externalMarkers[i].position.copy(externalPath.getPoint(state.current < 0 ? fraction : 1 - fraction));
+    const fraction = ((i / externalMarkers.length - stage.chargePhase) % 1 + 1) % 1;
+    externalMarkers[i].position.copy(externalPath.getPoint(fraction));
     externalMarkers[i].visible = state.showCurrent && Math.abs(state.current) > .04;
   }
   if (forceArrows.length) for (const [index, arrow] of forceArrows.entries()) {
@@ -282,7 +349,14 @@ function render(kind, state) {
     arrow.setDirection(new THREE.Vector3(0, 0, sign));
     arrow.visible = state.showForce && state.B > .001 && Math.abs(state.current) > .01;
   }
-  if (bulb) bulb.material.emissiveIntensity = Math.min(3.5, .12 + Math.abs(state.current) * 2.8);
+  if (bulb) {
+    const brightness = Math.min(1, Math.abs(state.current) / Math.max(.001, state.maxCurrent));
+    bulb.material.color.set(brightness > .08 ? '#f4c26b' : '#cbd8d9');
+    bulb.material.emissiveIntensity = .03 + brightness * .8;
+    filament.visible = brightness > .06;
+    bulbLight.intensity = brightness * brightness * 4;
+    paintAmmeter(meter, state.current / Math.max(.001, state.maxCurrent));
+  }
   renderer.render(scene, camera);
 }
 
