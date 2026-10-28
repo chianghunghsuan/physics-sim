@@ -195,9 +195,15 @@ function createStage(host, kind) {
   scene.add(rotor);
   const halfWidth = .96, halfHeight = 1.12;
   const pathCurve = coilCurve(halfWidth, halfHeight, .14, 0);
-  coilTube(rotor, pathCurve, .055, copper);
-  for (const depth of [-.095, .095]) {
-    coilTube(rotor, coilCurve(halfWidth, halfHeight, .14, depth), .014, brightCopper);
+  coilTube(rotor, pathCurve, .034, copper);
+  const windingLoops = [];
+  for (let index = 0; index < 8; index += 1) {
+    const inset = .018 + index * .019;
+    const depth = (index - 3.5) * .042;
+    const winding = coilTube(rotor,
+      coilCurve(halfWidth - inset, halfHeight - inset, .14, depth), .016,
+      index % 2 ? brightCopper : copper);
+    windingLoops.push(winding);
   }
   for (const y of [-.84, .84]) box(rotor, [1.91, .075, .11], [0, y, 0], darkMetal);
   const shaft = new THREE.Mesh(new THREE.CylinderGeometry(.075, .075, kind === 'generator' ? 4.15 : 3.65, 24), darkMetal);
@@ -355,7 +361,7 @@ function createStage(host, kind) {
     event.preventDefault(); control.distance = THREE.MathUtils.clamp(control.distance + event.deltaY * .008, 7.6, 13);
   }, { passive: false });
 
-  const stage = { kind, host, renderer, scene, camera, rotor, pathCurve, currentMarkers, electronMarkers, externalPaths, externalMarkers, fieldArrows, forceArrows, bulb, bulbLight, filament, meter, control, chargePhase: 0, supplyPhase: 0, lastTime: NaN };
+  const stage = { kind, host, renderer, scene, camera, rotor, pathCurve, windingLoops, currentMarkers, electronMarkers, externalPaths, externalMarkers, fieldArrows, forceArrows, bulb, bulbLight, filament, meter, control, chargePhase: 0, supplyPhase: 0, lastTime: NaN };
   stages.set(kind, stage);
   return stage;
 }
@@ -371,7 +377,7 @@ function render(kind, state) {
     console.warn('WebGL unavailable', error);
     return;
   }
-  const { renderer, scene, camera, rotor, pathCurve, currentMarkers, electronMarkers, externalPaths, externalMarkers, fieldArrows, forceArrows, bulb, bulbLight, filament, meter, control } = stage;
+  const { renderer, scene, camera, rotor, pathCurve, windingLoops, currentMarkers, electronMarkers, externalPaths, externalMarkers, fieldArrows, forceArrows, bulb, bulbLight, filament, meter, control } = stage;
   const width = host.clientWidth, height = host.clientHeight;
   if (!width || !height) return;
   if (renderer.domElement.width !== Math.round(width * renderer.getPixelRatio()) || renderer.domElement.height !== Math.round(height * renderer.getPixelRatio())) {
@@ -386,6 +392,12 @@ function render(kind, state) {
     Math.cos(control.azimuth) * Math.cos(control.elevation) * distance);
   camera.lookAt(0, -.60, 0);
   rotor.rotation.y = state.angle + (kind === 'generator' ? Math.PI / 2 : 0);
+  const minTurns = kind === 'motor' ? 10 : 20;
+  const maxTurns = kind === 'motor' ? 100 : 400;
+  const visibleWindings = Math.round(2 + 6 * THREE.MathUtils.clamp((state.turns - minTurns) / (maxTurns - minTurns), 0, 1));
+  for (let index = 0; index < windingLoops.length; index += 1) {
+    windingLoops[index].visible = index < visibleWindings;
+  }
   for (const arrow of fieldArrows) arrow.visible = state.showField && state.B > .001;
   const reverse = kind === 'motor' ? state.halfTurn === 0 : state.current < 0;
   const elapsed = Number.isFinite(stage.lastTime) && state.time >= stage.lastTime
