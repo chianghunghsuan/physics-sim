@@ -5818,7 +5818,21 @@
       ctx.fillText('目鏡視野', view.x + 8, view.y + 15);
     }
 
+    const cameraPersonImage = new Image();
+    cameraPersonImage.src = 'assets/camera-student.png';
+
     function drawCameraPerson(ctx, x, top, height, inverted = false) {
+      if (cameraPersonImage.complete && cameraPersonImage.naturalWidth) {
+        const width = height * cameraPersonImage.naturalWidth / cameraPersonImage.naturalHeight;
+        ctx.save();
+        if (inverted) {
+          ctx.translate(x, top + height);
+          ctx.rotate(Math.PI);
+          ctx.drawImage(cameraPersonImage, -width / 2, 0, width, height);
+        } else ctx.drawImage(cameraPersonImage, x - width / 2, top, width, height);
+        ctx.restore();
+        return;
+      }
       ctx.save();
       ctx.translate(x, inverted ? top + height : top);
       if (inverted) ctx.rotate(Math.PI);
@@ -5864,7 +5878,7 @@
       setText('camera-object-out', `${objectMeters.toFixed(2)} m`);
       setText('camera-focus-out', `${sensorDistance.toFixed(1)} mm`);
       setText('camera-aperture-out', `${aperture} mm`);
-      $('camera-image-distance').innerHTML = `理論像距 ${imageMm.toFixed(2)} mm<small>1/f = 1/do + 1/di；f = 50 mm</small>`;
+      $('camera-image-distance').innerHTML = `理論像距 ${imageMm.toFixed(2)} mm<small>${math('\\frac{1}{f}=\\frac{1}{d_o}+\\frac{1}{d_i}')}；${math('f=50\\,\\mathrm{mm}')}</small>`;
       $('camera-lens-position').innerHTML = `鏡頭距感光元件 ${sensorDistance.toFixed(1)} mm<small>感光元件固定，鏡頭沿光軸移動</small>`;
       $('camera-blur').innerHTML = `散焦圈 ${circleMm.toFixed(2)} mm<small>光圈越大，同樣離焦量越顯著</small>`;
       $('camera-status').innerHTML = focused
@@ -5877,7 +5891,7 @@
       const sensorX = w * (compact ? .84 : .83);
       const lensX = sensorX - w * (.15 + (sensorDistance - 50) / 9 * .11);
       const personX = w * (.10 + .16 * (1 - objectMeters / 5));
-      const personHeight = Math.min(h * .28, h * (.13 + .11 / Math.sqrt(objectMeters)));
+      const personHeight = Math.min(h * .32, h * (.16 + .14 / Math.sqrt(objectMeters)));
       const head = { x: personX, y: axis - personHeight };
       const aperturePx = Math.max(10, aperture / 28 * h * .125);
       const imageHeight = Math.min(h * .18, Math.max(18, h * 2.6 * imageMm / objectMm));
@@ -5952,9 +5966,12 @@
       const preview = { x: w * .10, y: h * .78, w: w * .80, h: h * .17 };
       ctx.fillStyle = '#20384a'; ctx.beginPath(); ctx.roundRect(preview.x, preview.y, preview.w, preview.h, 6); ctx.fill();
       const previewX = preview.x + preview.w * .5;
+      const baselineImageMm = focal * 2000 / (2000 - focal);
+      const relativeMagnification = (imageMm / objectMm) / (baselineImageMm / 2000);
+      const previewHeight = (preview.h - 24) * Math.min(3.2, Math.max(.35, relativeMagnification));
       ctx.save(); ctx.beginPath(); ctx.rect(preview.x + 5, preview.y + 5, preview.w - 10, preview.h - 10); ctx.clip();
       ctx.filter = `blur(${Math.min(14, circleMm * (compact ? 9 : 12)).toFixed(1)}px)`;
-      drawCameraPerson(ctx, previewX, preview.y + 11, preview.h - 24, true);
+      drawCameraPerson(ctx, previewX, preview.y + preview.h / 2 - previewHeight / 2, previewHeight, true);
       ctx.restore();
       ctx.fillStyle = '#e7f4f4'; ctx.font = `700 ${compact ? 10 : 12}px "Times New Roman", "DFKai-SB", serif`;
       ctx.fillText('感光元件放大預覽（倒立）', preview.x + 10, preview.y + 16);
