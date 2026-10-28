@@ -23,6 +23,31 @@ function tube(parent, points, radius, material, closed = false) {
   return mesh;
 }
 
+function coilCurve(halfWidth, halfHeight, corner, depth) {
+  const curve = new THREE.CurvePath();
+  const p = (x, y) => new THREE.Vector3(x, y, depth);
+  const line = (a, b) => curve.add(new THREE.LineCurve3(p(...a), p(...b)));
+  const bend = (a, control, b) => curve.add(new THREE.QuadraticBezierCurve3(p(...a), p(...control), p(...b)));
+  const w = halfWidth, h = halfHeight, r = corner;
+  line([-.18, -h], [-w + r, -h]);
+  bend([-w + r, -h], [-w, -h], [-w, -h + r]);
+  line([-w, -h + r], [-w, h - r]);
+  bend([-w, h - r], [-w, h], [-w + r, h]);
+  line([-w + r, h], [w - r, h]);
+  bend([w - r, h], [w, h], [w, h - r]);
+  line([w, h - r], [w, -h + r]);
+  bend([w, -h + r], [w, -h], [w - r, -h]);
+  line([w - r, -h], [.18, -h]);
+  return curve;
+}
+
+function coilTube(parent, curve, radius, material) {
+  const mesh = new THREE.Mesh(new THREE.TubeGeometry(curve, 128, radius, 10, false), material);
+  mesh.castShadow = true;
+  parent.add(mesh);
+  return mesh;
+}
+
 function label(parent, text, position, width = .5) {
   const canvas = document.createElement('canvas');
   canvas.width = 256; canvas.height = 256;
@@ -91,24 +116,21 @@ function createStage(host, kind) {
   const rotor = new THREE.Group();
   scene.add(rotor);
   const halfWidth = .96, halfHeight = 1.12;
-  const path = kind === 'motor'
-    ? [[-halfWidth, halfHeight, 0], [halfWidth, halfHeight, 0], [halfWidth, -halfHeight, 0], [-halfWidth, -halfHeight, 0]]
-    : [[-halfWidth, -halfHeight, 0], [-halfWidth, halfHeight, 0], [halfWidth, halfHeight, 0], [halfWidth, -halfHeight, 0]];
-  const pathCurve = new THREE.CatmullRomCurve3(path.map(point => new THREE.Vector3(...point)), true, 'centripetal');
-  tube(rotor, path, .055, copper, true);
+  const pathCurve = coilCurve(halfWidth, halfHeight, .14, 0);
+  coilTube(rotor, pathCurve, .055, copper);
   for (const depth of [-.095, .095]) {
-    tube(rotor, path.map(([x, y]) => [x, y, depth]), .014, brightCopper, true);
+    coilTube(rotor, coilCurve(halfWidth, halfHeight, .14, depth), .014, brightCopper);
   }
-  const shaft = new THREE.Mesh(new THREE.CylinderGeometry(.075, .075, kind === 'generator' ? 4.55 : 3.65, 24), darkMetal);
-  if (kind === 'generator') shaft.position.y = .45;
+  const shaft = new THREE.Mesh(new THREE.CylinderGeometry(.075, .075, kind === 'generator' ? 4.15 : 3.65, 24), darkMetal);
+  if (kind === 'generator') shaft.position.y = .25;
   shaft.castShadow = true; rotor.add(shaft);
   if (kind === 'generator') {
     const wheel = new THREE.Mesh(new THREE.TorusGeometry(.63, .055, 12, 72), darkMetal);
-    wheel.rotation.x = Math.PI / 2; wheel.position.y = 2.43; wheel.castShadow = true; rotor.add(wheel);
-    box(rotor, [1.20, .075, .075], [0, 2.43, 0], darkMetal);
-    box(rotor, [.075, .075, 1.20], [0, 2.43, 0], darkMetal);
+    wheel.rotation.x = Math.PI / 2; wheel.position.y = 2.10; wheel.castShadow = true; rotor.add(wheel);
+    box(rotor, [1.20, .075, .075], [0, 2.10, 0], darkMetal);
+    box(rotor, [.075, .075, 1.20], [0, 2.10, 0], darkMetal);
     const handle = new THREE.Mesh(new THREE.CylinderGeometry(.075, .075, .32, 20), copper);
-    handle.position.set(.61, 2.61, 0); handle.castShadow = true; rotor.add(handle);
+    handle.position.set(.61, 2.28, 0); handle.castShadow = true; rotor.add(handle);
   }
   for (const y of [1.74, -1.79]) {
     const bearing = new THREE.Mesh(new THREE.CylinderGeometry(.20, .20, .20, 32), metal('#879499', .32, .75));
@@ -137,6 +159,8 @@ function createStage(host, kind) {
       box(scene, [.28, .17, .29], [side * .48, -1.47, 0], metal('#313d43', .8, .23));
       tube(scene, [[side * .48, -1.47, 0], [side * .72, -1.55, .15], [side * .72, -1.62, 1.12], [side * .40, -1.53, 1.49]], .025, darkMetal);
     }
+    tube(rotor, [[-.18, -halfHeight, 0], [-.32, -1.30, 0], [-.34, -1.47, 0]], .035, copper);
+    tube(rotor, [[.18, -halfHeight, 0], [.32, -1.30, 0], [.34, -1.47, 0]], .035, brightCopper);
   } else {
     for (const [index, y] of [-1.37, -1.64].entries()) {
       const ring = new THREE.Mesh(new THREE.TorusGeometry(.33, .055, 10, 64), index ? brightCopper : copper);
@@ -145,8 +169,8 @@ function createStage(host, kind) {
       box(scene, [.29, .18, .23], [side * .46, y, 0], metal('#303e47', .79, .29));
       brushes.push([side * .46, y, 0]);
     }
-    tube(rotor, [[-halfWidth, -halfHeight, 0], [-.31, -1.2, 0], [-.31, -1.37, 0]], .036, copper);
-    tube(rotor, [[halfWidth, -halfHeight, 0], [.31, -1.47, 0], [.31, -1.64, 0]], .036, brightCopper);
+    tube(rotor, [[-.18, -halfHeight, 0], [-.31, -1.2, 0], [-.31, -1.37, 0]], .036, copper);
+    tube(rotor, [[.18, -halfHeight, 0], [.31, -1.47, 0], [.31, -1.64, 0]], .036, brightCopper);
     const lampY = -1.15;
     tube(scene, [[-.46, -1.37, 0], [-.9, -1.65, .4], [-.9, -1.65, 1.65], [-.22, -1.65, 2.03], [-.22, lampY, 2.03]], .024, darkMetal);
     tube(scene, [[.46, -1.64, 0], [.9, -1.75, .7], [.9, -1.75, 1.65], [.22, -1.65, 2.03], [.22, lampY, 2.03]], .024, darkMetal);
@@ -188,7 +212,7 @@ function createStage(host, kind) {
     scene.add(arrow); forceArrows.push(arrow);
   }
 
-  const control = { azimuth: .65, elevation: .39, distance: 10.4, dragging: false, x: 0, y: 0 };
+  const control = { azimuth: .65, elevation: .39, distance: kind === 'generator' ? 11.3 : 10.4, dragging: false, x: 0, y: 0 };
   renderer.domElement.addEventListener('pointerdown', event => {
     control.dragging = true; control.x = event.clientX; control.y = event.clientY;
     renderer.domElement.setPointerCapture(event.pointerId);
@@ -229,7 +253,7 @@ function render(kind, state) {
     camera.fov = width < 620 ? 46 : 37;
     camera.updateProjectionMatrix();
   }
-  const distance = control.distance * (width < 620 ? 1.10 : 1);
+  const distance = control.distance * (width < 620 ? (kind === 'generator' ? .88 : .94) : 1);
   camera.position.set(Math.sin(control.azimuth) * Math.cos(control.elevation) * distance,
     Math.sin(control.elevation) * distance,
     Math.cos(control.azimuth) * Math.cos(control.elevation) * distance);
@@ -247,7 +271,7 @@ function render(kind, state) {
   }
   for (let i = 0; i < externalMarkers.length; i += 1) {
     const fraction = (i / externalMarkers.length + state.time * Math.max(.2, Math.abs(state.current) * .17)) % 1;
-    externalMarkers[i].position.copy(externalPath.getPoint(state.current < 0 ? 1 - fraction : fraction));
+    externalMarkers[i].position.copy(externalPath.getPoint(state.current < 0 ? fraction : 1 - fraction));
     externalMarkers[i].visible = state.showCurrent && Math.abs(state.current) > .04;
   }
   if (forceArrows.length) for (const [index, arrow] of forceArrows.entries()) {

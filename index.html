@@ -210,9 +210,9 @@
       border-right: 1px solid var(--line);
     }
     .law-step:last-child { border-right: 0; }
-    .law-step strong, .law-step span { display: block; }
-    .law-step strong { color: #0f766e; font-size: 14px; }
-    .law-step span { color: var(--muted); font-size: 13px; line-height: 1.45; }
+    .law-step > strong, .law-step > span { display: block; }
+    .law-step > strong { color: #0f766e; font-size: 14px; }
+    .law-step > span { color: var(--muted); font-size: 13px; line-height: 1.45; }
     button.preset {
       background: #e2e8f0;
       color: #1f2933;
@@ -1934,7 +1934,7 @@
           <div class="presets" role="group" aria-label="跳到跨越間隙次數"><button type="button" class="preset cyc-jump" data-crossing="0">第 1 次</button><button type="button" class="preset cyc-jump" data-crossing="4">第 5 次</button><button type="button" class="preset cyc-jump" data-crossing="9">第 10 次</button></div>
           <div class="plot-wrap lab-instrument"><canvas id="cyclotron-canvas" role="img" aria-label="D 形電極、垂直磁場、間隙電場與逐圈擴張的帶電粒子軌道。"></canvas></div>
           <div class="controls">
-            <div class="control"><label for="cyc-field">磁場 B：<span id="cyc-field-out">0.60 T</span></label><input id="cyc-field" type="range" min="0.25" max="1.2" step="0.01" value="0.6"></div>
+            <div class="control"><label for="cyc-field">磁場 B：<span id="cyc-field-out">0.32 T</span></label><input id="cyc-field" type="range" min="0.25" max="1.2" step="0.01" value="0.32"></div>
             <div class="control"><label for="cyc-voltage">間隙電壓：<span id="cyc-voltage-out">120 kV</span></label><input id="cyc-voltage" type="range" min="20" max="250" step="5" value="120"></div>
             <div class="control"><label for="cyc-detune">射頻偏差：<span id="cyc-detune-out">0%</span></label><input id="cyc-detune" type="range" min="-12" max="12" step="0.5" value="0"></div>
             <div class="control"><label for="cyc-speed">播放速度：<span id="cyc-speed-out">0.35x</span></label><input id="cyc-speed" type="range" min="0.1" max="1.5" step="0.05" value="0.35"></div>
@@ -10644,14 +10644,15 @@
       ctx.lineTo(chart.x + chart.width, chart.y + chart.height); ctx.stroke();
       const limit = Math.min(arcs.length, compact ? 12 : 16);
       const first = Math.max(0, Math.min(index - limit + 1, arcs.length - limit));
-      const visibleEnergies = arcs.slice(first, first + limit).map(item => item.energy);
-      const baseEnergy = Math.min(first ? arcs[first - 1].energy : 0, ...visibleEnergies);
-      const maxEnergy = Math.max(Math.max(...visibleEnergies) - baseEnergy, .1);
+      const visibleSpeeds = arcs.slice(first, first + limit).map(item => item.speed);
+      const baseSpeed = first ? arcs[first - 1].speed : 0;
+      const speedMinimum = Math.min(baseSpeed, ...visibleSpeeds);
+      const speedSpan = Math.max(1e5, Math.max(baseSpeed, ...visibleSpeeds) - speedMinimum);
       const stepWidth = chart.width / limit;
       ctx.strokeStyle = '#177d75'; ctx.lineWidth = 2.4; ctx.lineJoin = 'miter';
       ctx.beginPath();
       for (let i = 0; i < limit; i += 1) {
-        const y = chart.y + chart.height * (1 - (arcs[first + i].energy - baseEnergy) / maxEnergy);
+        const y = chart.y + chart.height * (1 - (arcs[first + i].speed - speedMinimum) / speedSpan);
         const left = chart.x + i * stepWidth, right = left + stepWidth;
         if (i === 0) ctx.moveTo(left, y); else ctx.lineTo(left, y);
         ctx.lineTo(right, y);
@@ -10659,16 +10660,16 @@
       ctx.stroke();
       const markerIndex = Math.min(index - first, limit - 1);
       const markerX = chart.x + (markerIndex + .5) * stepWidth;
-      const markerY = chart.y + chart.height * (1 - (arcs[first + markerIndex].energy - baseEnergy) / maxEnergy);
+      const markerY = chart.y + chart.height * (1 - (arcs[first + markerIndex].speed - speedMinimum) / speedSpan);
       ctx.fillStyle = '#d35b43'; ctx.beginPath(); ctx.arc(markerX, markerY, compact ? 4 : 5, 0, 2 * Math.PI); ctx.fill();
       ctx.fillStyle = '#425f68'; ctx.font = `700 ${compact ? 11 : 14}px "Times New Roman", "DFKai-SB", serif`; ctx.textAlign = 'left';
-      ctx.fillText(`速率 ${(speedNow / 1e6).toFixed(1)} × 10⁶ m/s；等時間點在外圈更疏`, chart.x, chart.y - 33);
-      ctx.fillText('每次跨越間隙後的動能', chart.x, chart.y - 15);
+      ctx.fillText(`目前 ${(speedNow / 1e6).toFixed(1)} × 10⁶ m/s`, chart.x, chart.y - 33);
+      ctx.fillText('每次穿隙後的速率', chart.x, chart.y - 15);
       ctx.font = `11px "Times New Roman", "DFKai-SB", serif`;
-      ctx.fillText(`${Math.max(...visibleEnergies).toFixed(1)} MeV`, chart.x + 4, chart.y + 13);
+      ctx.fillText(`${(Math.max(...visibleSpeeds) / 1e6).toFixed(1)} × 10⁶ m/s`, chart.x + 4, chart.y + 13);
       if (!compact) {
         ctx.fillText(`第 ${index + 1} 次跨越`, chart.x, chart.y + chart.height + 26);
-        ctx.fillText(`能量變化 ${arc.gain >= 0 ? '+' : ''}${arc.gain.toFixed(3)} MeV`, chart.x, chart.y + chart.height + 49);
+        ctx.fillText(`本次增能 ${arc.gain >= 0 ? '+' : ''}${arc.gain.toFixed(3)} MeV`, chart.x, chart.y + chart.height + 49);
       }
     }
 
