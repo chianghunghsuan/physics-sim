@@ -10716,9 +10716,9 @@
       setText('sel-b-out', `${B.toFixed(2)} T`);
       setText('sel-v-out', `${velocity.toFixed(1)} km/s`);
       setText('sel-speed-out', `${number('sel-speed').toFixed(2)}x`);
-      $('sel-target').innerHTML = `通過速度 ${target.toFixed(2)} km/s<small>v = E / B；只對帶電粒子有效</small>`;
-      $('sel-electric').innerHTML = `電場力 ${(1.602176634 * E).toFixed(2)} × 10⁻¹⁶ N<small>F_E = qE；向下</small>`;
-      $('sel-magnetic').innerHTML = `磁場力 ${(1.602176634 * velocity * B).toFixed(2)} × 10⁻¹⁶ N<small>F_B = qvB；向上</small>`;
+      $('sel-target').innerHTML = `通過速度 ${target.toFixed(2)} km/s<small>${math('v=E/B')}；只對帶電粒子有效</small>`;
+      $('sel-electric').innerHTML = `電場力 ${math(`${(1.602176634 * E).toFixed(2)}\\times10^{-16}\\,\\mathrm{N}`)}<small>${math('F_E=qE')}；向下</small>`;
+      $('sel-magnetic').innerHTML = `磁場力 ${math(`${(1.602176634 * velocity * B).toFixed(2)}\\times10^{-16}\\,\\mathrm{N}`)}<small>${math('F_B=qvB')}；向上</small>`;
       const statusText = path.result === 'passed' ? '穿過狹縫' : path.result === 'plate' ? '撞上極板' : '被出口狹縫擋住';
       const direction = velocity > target ? '磁力較大，向上偏' : velocity < target ? '電力較大，向下偏' : '兩力互相抵銷';
       $('sel-status').classList.toggle('warning', path.result !== 'passed');
@@ -11434,6 +11434,18 @@
       drawSceneLabel(ctx, meterX, meterY + 60, `張開 1.80 → 現在 ${omega.toFixed(2)} rad/s`);
     }
 
+    function drawBareFieldCross(ctx, x, y, size, color, alpha) {
+      ctx.save();
+      ctx.globalAlpha = alpha;
+      ctx.strokeStyle = color;
+      ctx.lineWidth = 1.4;
+      ctx.beginPath();
+      ctx.moveTo(x - size, y - size); ctx.lineTo(x + size, y + size);
+      ctx.moveTo(x + size, y - size); ctx.lineTo(x - size, y + size);
+      ctx.stroke();
+      ctx.restore();
+    }
+
     function drawMassSpectrometer() {
       const { ctx, w, h } = resizeCanvas($('spectrometer-canvas'));
       clearCanvas(ctx, w, h);
@@ -11460,31 +11472,33 @@
       setText('spec-b-analyze-out', `${bAnalyze.toFixed(4)} T`);
       setText('spec-mass-out', `${massU} u`);
       setText('spec-speed-out', `${number('spec-speed').toFixed(2)}x`);
-      $('spec-velocity').innerHTML = `選定速度 ${(velocity / 1000).toFixed(2)} km/s<small>v = E/B₁</small>`;
-      $('spec-light').innerHTML = `${massU} u 半徑 ${(radius1 * 100).toFixed(1)} cm<small>r = mv/(qB₂)</small>`;
-      $('spec-heavy').innerHTML = `${massU + 2} u 半徑 ${(radius2 * 100).toFixed(1)} cm<small>相同 q、v、B₂ 時質量越大越不易轉彎</small>`;
-      $('spec-spacing').innerHTML = `偵測落點相隔 ${(2 * (radius2 - radius1) * 100).toFixed(1)} cm<small>半圓後位移是 2r；圖上間距放大呈現</small>`;
+      $('spec-velocity').innerHTML = `選定速度 ${(velocity / 1000).toFixed(2)} km/s<small>${math('v=E/B_1')}</small>`;
+      $('spec-light').innerHTML = `${massU} u 半徑 ${(radius1 * 100).toFixed(1)} cm<small>${math('r=mv/(qB_2)')}</small>`;
+      $('spec-heavy').innerHTML = `${massU + 2} u 半徑 ${(radius2 * 100).toFixed(1)} cm<small>相同 ${math('q,v,B_2')} 時質量越大越不易轉彎</small>`;
+      $('spec-spacing').innerHTML = `偵測落點相隔 ${(2 * (radius2 - radius1) * 100).toFixed(1)} cm<small>半圓後位移是 ${math('2r')}；圖上間距放大呈現</small>`;
       const selectorLeft = 24;
       const selectorRight = entranceX - 24;
       ctx.fillStyle = 'rgba(46,112,167,.09)'; ctx.fillRect(selectorLeft, entranceY - 53, selectorRight - selectorLeft, 106);
       ctx.strokeStyle = '#417b9c'; ctx.lineWidth = 3;
       ctx.beginPath(); ctx.moveTo(selectorLeft, entranceY - 54); ctx.lineTo(selectorRight, entranceY - 54);
       ctx.moveTo(selectorLeft, entranceY + 54); ctx.lineTo(selectorRight, entranceY + 54); ctx.stroke();
-      for (let x = selectorLeft + 20; x < selectorRight - 5; x += 34) drawFluxSymbol(ctx, x, entranceY, true, '#5286b9', 6, .65);
-      drawSceneLabel(ctx, selectorLeft + 6, entranceY - 94, '選速：qE ↓ 與 qvB ↑ 抵銷');
+      for (let x = selectorLeft + 20; x < selectorRight - 5; x += 34) drawBareFieldCross(ctx, x, entranceY, 4, '#5286b9', .65);
+      drawSceneLabel(ctx, selectorLeft + 6, entranceY - 94,
+        compact ? '電力 ↓、磁力 ↑' : '選速：qE ↓ 與 qvB ↑ 抵銷');
       ctx.fillStyle = 'rgba(71,149,184,.08)'; ctx.fillRect(entranceX, fieldTop, w - entranceX - 18, entranceY - fieldTop + 15);
-      for (let x = entranceX + 24; x < w - 20; x += 48) for (let y = fieldTop + 24; y < entranceY - 12; y += 46) drawFluxSymbol(ctx, x, y, true, '#3776b7', 5, .35);
-      if (!compact) drawSceneLabel(ctx, Math.min(w - 146, entranceX + 110), fieldTop + 8, '磁分析室 B₂ ⊗');
+      for (let x = entranceX + 24; x < w - 20; x += 48) for (let y = fieldTop + 24; y < entranceY - 12; y += 46) drawBareFieldCross(ctx, x, y, 4, '#3776b7', .45);
+      if (!compact) drawSceneLabel(ctx, Math.min(w - 190, entranceX + 110), fieldTop + 8, '磁分析室 B₂：叉叉進入紙面');
       ctx.strokeStyle = '#657780'; ctx.lineWidth = 8;
       ctx.beginPath(); ctx.moveTo(entranceX, fieldTop); ctx.lineTo(entranceX, entranceY - 9); ctx.moveTo(entranceX, entranceY + 9); ctx.lineTo(entranceX, h - 30); ctx.stroke();
       ctx.save(); ctx.strokeStyle = '#aabcc6'; ctx.setLineDash([5, 5]); ctx.beginPath(); ctx.moveTo(selectorLeft, entranceY); ctx.lineTo(entranceX, entranceY); ctx.stroke(); ctx.restore();
       const travel = (time * .23) % 1;
       for (let k = 0; k < 5; k += 1) { const x = selectorLeft + positiveModulo(travel + k / 5, 1) * (entranceX - selectorLeft); instrumentParticle(ctx, x, entranceY, '#f5c45e', 3.8); }
+      const cycle = positiveModulo(time * .18, 1 + 2 / massU + .04);
       [[r1, massU, '#26b39a'], [r2, massU + 2, '#f08c63']].forEach(([r, mass, color], index) => {
         ctx.strokeStyle = color; ctx.lineWidth = compact ? 3 : 4; ctx.beginPath();
         for (let j = 0; j <= 90; j += 1) { const theta = Math.PI / 2 - Math.PI * j / 90; const x = entranceX + r * Math.cos(theta); const y = entranceY - r + r * Math.sin(theta); if (!j) ctx.moveTo(x, y); else ctx.lineTo(x, y); }
         ctx.stroke();
-        const theta = Math.PI / 2 - Math.PI * 2 * positiveModulo(time * .18 + index * .16, 1);
+        const theta = Math.PI / 2 - Math.PI * Math.min(1, cycle * massU / mass);
         instrumentParticle(ctx, entranceX + r * Math.cos(theta), entranceY - r + r * Math.sin(theta), color, 6);
         const detectorY = entranceY - 2 * r;
         ctx.fillStyle = color; ctx.fillRect(entranceX - 7, detectorY - 4, 14, 8);
