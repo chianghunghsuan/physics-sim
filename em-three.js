@@ -15,6 +15,28 @@ function box(parent, size, position, material, cast = true) {
   return mesh;
 }
 
+function bevelBox(parent, size, position, material, bevel) {
+  const [width, height, depth] = size;
+  const radius = Math.min(bevel, width / 4, height / 4, depth / 4);
+  const shape = new THREE.Shape();
+  shape.moveTo(-width / 2 + radius, -height / 2 + radius);
+  shape.lineTo(width / 2 - radius, -height / 2 + radius);
+  shape.lineTo(width / 2 - radius, height / 2 - radius);
+  shape.lineTo(-width / 2 + radius, height / 2 - radius);
+  shape.closePath();
+  const geometry = new THREE.ExtrudeGeometry(shape, {
+    depth: depth - 2 * radius, bevelEnabled: true, bevelSize: radius,
+    bevelThickness: radius, bevelSegments: 3, steps: 1
+  });
+  geometry.translate(0, 0, -depth / 2 + radius);
+  const mesh = new THREE.Mesh(geometry, material);
+  mesh.position.set(...position);
+  mesh.castShadow = true;
+  mesh.receiveShadow = true;
+  parent.add(mesh);
+  return mesh;
+}
+
 function tube(parent, points, radius, material, closed = false) {
   const curve = new THREE.CatmullRomCurve3(points.map(point => new THREE.Vector3(...point)), closed, 'centripetal');
   const mesh = new THREE.Mesh(new THREE.TubeGeometry(curve, Math.max(24, points.length * 12), radius, 9, closed), material);
@@ -65,7 +87,7 @@ function label(parent, text, position, width = .5) {
 }
 
 function ammeter(scene, housingMaterial) {
-  box(scene, [.96, .74, .29], [1.12, -1.57, 1.55], housingMaterial);
+  bevelBox(scene, [.96, .74, .29], [1.12, -1.57, 1.55], housingMaterial, .045);
   for (const x of [.75, 1.49]) {
     const terminal = new THREE.Mesh(new THREE.SphereGeometry(.065, 16, 12), metal('#b9794f', .3, .75));
     terminal.position.set(x, -1.18, 1.55); scene.add(terminal);
@@ -144,18 +166,27 @@ function createStage(host, kind) {
   rim.position.set(3, 5, -6); scene.add(rim);
   const floor = new THREE.Mesh(new THREE.PlaneGeometry(200, 200), new THREE.MeshStandardMaterial({ color: '#eef3f1', roughness: .96 }));
   floor.rotation.x = -Math.PI / 2; floor.position.y = -2.28; floor.receiveShadow = true; scene.add(floor);
-  box(scene, [6.9, .24, 4.0], [0, -2.13, 0], metal('#69777a', .76, .25));
+  bevelBox(scene, [6.9, .24, 4.0], [0, -2.13, 0], metal('#69777a', .76, .25), .10);
   box(scene, [6.6, .07, 3.7], [0, -1.97, 0], metal('#d2d9d8', .72, .2));
 
   const magnetBody = metal('#52616a', .49, .63);
   const northFace = metal('#a5473e', .45, .5);
   const southFace = metal('#3d7290', .45, .5);
   for (const side of [-1, 1]) {
-    box(scene, [.77, 2.95, 2.45], [side * 2.48, -.05, 0], magnetBody);
-    box(scene, [.19, 2.43, 2.0], [side * 2.02, -.05, 0], side < 0 ? northFace : southFace);
+    bevelBox(scene, [.77, 2.95, 2.45], [side * 2.48, -.05, 0], magnetBody, .065);
+    bevelBox(scene, [.19, 2.43, 2.0], [side * 2.02, -.05, 0], side < 0 ? northFace : southFace, .028);
     box(scene, [.75, .16, 2.48], [side * 2.48, -1.64, 0], metal('#738185'));
     label(scene, side < 0 ? 'N' : 'S', [side * 2.48, .06, 1.26], .50);
   }
+
+  const frameMetal = metal('#74858a', .38, .75);
+  const frameFoot = metal('#53666d', .54, .55);
+  for (const side of [-1, 1]) {
+    box(scene, [.16, 3.68, .17], [side * 1.42, -.08, -1.39], frameMetal);
+    box(scene, [.39, .10, .42], [side * 1.42, -1.89, -1.39], frameFoot);
+  }
+  box(scene, [3.0, .16, .18], [0, 1.74, -1.39], frameMetal);
+  box(scene, [.18, .14, 1.38], [0, 1.74, -.69], frameMetal);
 
   const copper = metal('#b87343', .25, .82);
   const brightCopper = metal('#da965d', .23, .78);
@@ -218,6 +249,8 @@ function createStage(host, kind) {
   let externalPaths = [];
   const externalMarkers = [];
   if (kind === 'motor') {
+    const insulator = new THREE.Mesh(new THREE.CylinderGeometry(.28, .28, .23, 32), metal('#24333a', .65, .12));
+    insulator.position.y = -1.47; rotor.add(insulator);
     for (const side of [-1, 1]) {
       const points = [];
       for (let i = 0; i <= 30; i += 1) {
@@ -226,6 +259,7 @@ function createStage(host, kind) {
       }
       tube(rotor, points, .06, side < 0 ? copper : brightCopper);
       box(scene, [.28, .17, .29], [side * .48, -1.47, 0], metal('#313d43', .8, .23));
+      box(scene, [.18, .38, .20], [side * .52, -1.74, 0], metal('#d1d9d7', .75, .12));
       tube(scene, [[side * .48, -1.47, 0], [side * .72, -1.55, .15], [side * .72, -1.62, 1.12], [side * .40, -1.53, 1.49]], .025, darkMetal);
     }
     tube(rotor, [[-.18, -halfHeight, 0], [-.32, -1.30, 0], [-.34, -1.47, 0]], .035, copper);
@@ -239,11 +273,15 @@ function createStage(host, kind) {
       scene.add(marker); externalMarkers.push(marker);
     }
   } else {
+    const insulator = new THREE.Mesh(new THREE.CylinderGeometry(.27, .27, .50, 32), metal('#24333a', .65, .12));
+    insulator.position.y = -1.50; rotor.add(insulator);
     for (const [index, y] of [-1.37, -1.64].entries()) {
       const ring = new THREE.Mesh(new THREE.TorusGeometry(.33, .055, 10, 64), index ? brightCopper : copper);
       ring.rotation.x = Math.PI / 2; ring.position.y = y; rotor.add(ring); rings.push(ring);
       const side = index ? 1 : -1;
       box(scene, [.29, .18, .23], [side * .46, y, 0], metal('#303e47', .79, .29));
+      const supportHeight = y + 1.93;
+      box(scene, [.18, supportHeight, .20], [side * .52, (y - 1.93) / 2, 0], metal('#d1d9d7', .75, .12));
       brushes.push([side * .46, y, 0]);
     }
     tube(rotor, [[-.18, -halfHeight, 0], [-.31, -1.2, 0], [-.31, -1.37, 0]], .036, copper);
@@ -280,7 +318,7 @@ function createStage(host, kind) {
     bulbLight.position.copy(bulb.position); scene.add(bulbLight);
     meter = ammeter(scene, metal('#495a61', .62, .3));
   } else {
-    const battery = box(scene, [1.06, .36, .55], [0, -1.76, 1.49], darkMetal);
+    const battery = bevelBox(scene, [1.06, .36, .55], [0, -1.76, 1.49], darkMetal, .055);
     battery.castShadow = true;
     for (const side of [-1, 1]) {
       const terminal = new THREE.Mesh(new THREE.CylinderGeometry(.10, .10, .13, 20), metal(side < 0 ? '#bd5141' : '#8ca4ab', .34, .55));
