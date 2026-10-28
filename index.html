@@ -387,7 +387,7 @@
     .em-stage { position: relative; width: 100%; height: min(80vh, 720px); min-height: 620px; overflow: hidden; background: #f2f6f5; touch-action: none; }
     .em-stage canvas { display: block; width: 100%; height: 100%; }
     .em-stage:fullscreen { height: 100vh !important; min-height: 0 !important; }
-    .generator-apparatus #generator-three { height: min(62vh, 560px); min-height: 480px; }
+    .generator-apparatus #generator-three { height: min(78vh, 680px); min-height: 600px; }
     #generator-phase-canvas { height: 330px; min-height: 330px; }
     [hidden] { display: none !important; }
     #cyclotron-canvas, #selector-canvas { height: min(76vh, 650px); min-height: 550px; }
@@ -523,7 +523,7 @@
       #brake-canvas { height: 860px; min-height: 810px; }
       #motor-canvas { height: 570px; min-height: 540px; }
       .em-stage { height: 380px; min-height: 360px; }
-      .generator-apparatus #generator-three { height: 380px; min-height: 360px; }
+      .generator-apparatus #generator-three { height: 490px; min-height: 470px; }
       #generator-phase-canvas { height: 440px; min-height: 440px; }
       #cyclotron-canvas, #selector-canvas { height: 590px; min-height: 550px; }
       #prism-canvas, #brewster-canvas, #aberration-canvas, #film-canvas { height: 540px; min-height: 500px; }
@@ -9374,7 +9374,7 @@
       const compact = w < 620;
       const B = number('gen-field'), turns = number('gen-turns');
       const rpm = number('gen-rpm'), resistance = number('gen-resistance');
-      const omega = 2 * Math.PI * rpm / 60, theta = omega * time;
+      const omega = 2 * Math.PI * rpm / 60, theta = omega * time + Math.PI / 2;
       const fluxMax = turns * B * .01;
       const flux = fluxMax * Math.cos(theta);
       const emfMax = fluxMax * omega;
@@ -10730,6 +10730,43 @@
       if (!compact) {
         ctx.fillText(`第 ${index + 1} 次跨越`, chart.x, chart.y + chart.height + 26);
         ctx.fillText(`本次增能 ${arc.gain >= 0 ? '+' : ''}${arc.gain.toFixed(3)} MeV`, chart.x, chart.y + chart.height + 49);
+        const inset = { x: chart.x - 10, y: h * .77, width: chart.width + 20, height: h * .19 };
+        ctx.fillStyle = '#eaf1f0';
+        ctx.fillRect(inset.x, inset.y, inset.width, inset.height);
+        ctx.strokeStyle = '#a6bac0'; ctx.lineWidth = 1.5;
+        ctx.strokeRect(inset.x, inset.y, inset.width, inset.height);
+        ctx.textAlign = 'left'; ctx.fillStyle = '#31545e';
+        ctx.font = '700 13px "Times New Roman", "DFKai-SB", serif';
+        ctx.fillText('電極間隙放大', inset.x + 12, inset.y + 22);
+        const leftEdge = inset.x + inset.width * .37;
+        const rightEdge = inset.x + inset.width * .63;
+        const trackY = inset.y + inset.height * .55;
+        ctx.fillStyle = '#bdcfd1';
+        ctx.fillRect(inset.x + 12, trackY - 16, leftEdge - inset.x - 12, 32);
+        ctx.fillRect(rightEdge, trackY - 16, inset.x + inset.width - rightEdge - 12, 32);
+        ctx.strokeStyle = '#75949a'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(leftEdge, trackY - 18); ctx.lineTo(leftEdge, trackY + 18);
+        ctx.moveTo(rightEdge, trackY - 18); ctx.lineTo(rightEdge, trackY + 18); ctx.stroke();
+        const next = arcs[Math.min(index + 1, arcs.length - 1)];
+        const crossingDirection = -arc.direction;
+        const fieldDirection = crossingDirection * Math.sign(next.gain);
+        if ($('cyc-show-field').checked && fieldDirection) {
+          const mid = (leftEdge + rightEdge) / 2;
+          drawArrow(ctx, mid - fieldDirection * 19, trackY - 18, mid + fieldDirection * 19, trackY - 18, '#c86137');
+        }
+        ctx.strokeStyle = '#16776f'; ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.moveTo(leftEdge + 4, trackY); ctx.lineTo(rightEdge - 4, trackY); ctx.stroke();
+        if (inGap) {
+          const progress = (fraction - .9) / .1;
+          const particleX = crossingDirection > 0
+            ? leftEdge + 4 + progress * (rightEdge - leftEdge - 8)
+            : rightEdge - 4 - progress * (rightEdge - leftEdge - 8);
+          instrumentParticle(ctx, particleX, trackY, '#147f75', 6);
+        }
+        ctx.fillStyle = '#4d6a72'; ctx.font = '12px "Times New Roman", "DFKai-SB", serif';
+        ctx.fillText(`穿隙前 ${(arc.speed / 1e6).toFixed(1)}`, inset.x + 12, inset.y + inset.height - 12);
+        ctx.textAlign = 'right';
+        ctx.fillText(`穿隙後 ${(next.speed / 1e6).toFixed(1)} × 10⁶ m/s`, inset.x + inset.width - 12, inset.y + inset.height - 12);
       }
     }
 
