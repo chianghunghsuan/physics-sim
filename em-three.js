@@ -276,10 +276,11 @@ function createStage(host, kind) {
     for (const side of [-1, 1]) {
       const points = [];
       for (let i = 0; i <= 30; i += 1) {
-        const a = Math.PI / 2 + (side < 0 ? .08 : Math.PI + .08) + (Math.PI - .16) * i / 30;
+        const a = Math.PI / 2 + (side < 0 ? .16 : Math.PI + .16) + (Math.PI - .32) * i / 30;
         points.push([.34 * Math.cos(a), -1.47, .34 * Math.sin(a)]);
       }
       tube(rotor, points, .06, side < 0 ? copper : brightCopper);
+      box(rotor, [.10, .16, .10], [0, -1.47, side * .34], metal('#202a30', .8, .08));
       box(scene, [.28, .17, .29], [side * .48, -1.47, 0], metal('#313d43', .8, .23));
       box(scene, [.18, .38, .20], [side * .52, -1.74, 0], metal('#d1d9d7', .75, .12));
       tube(scene, [[side * .48, -1.47, 0], [side * .72, -1.55, .15], [side * .72, -1.62, 1.12], [side * .40, -1.53, 1.49]], .025, darkMetal);
@@ -359,7 +360,31 @@ function createStage(host, kind) {
     forceArrows.push(solidArrow(scene, new THREE.Vector3(0, 0, 1), [0, 0, 0], .74, '#c94a48', .052));
   }
 
-  const control = { azimuth: .65, elevation: .39, distance: kind === 'generator' ? 11.3 : 10.4, dragging: false, x: 0, y: 0 };
+  const control = { azimuth: .65, elevation: .39, distance: kind === 'generator' ? 11.3 : 10.4,
+    targetY: -.60, targetZ: 0, dragging: false, x: 0, y: 0 };
+  const viewBar = document.createElement('div');
+  viewBar.className = 'stage-views';
+  viewBar.setAttribute('role', 'group');
+  viewBar.setAttribute('aria-label', '立體裝置視角');
+  const views = [
+    { name: '全景', distance: control.distance, targetY: -.60, targetZ: 0, azimuth: .65, elevation: .39 },
+    { name: '線圈', distance: 6.2, targetY: .03, targetZ: 0, azimuth: .48, elevation: .28 },
+    { name: kind === 'motor' ? '換向器與電刷' : '滑環與電刷', distance: 5.0,
+      targetY: -1.45, targetZ: .16, azimuth: .68, elevation: .28 }
+  ];
+  for (const [index, view] of views.entries()) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = view.name;
+    button.setAttribute('aria-pressed', index === 0 ? 'true' : 'false');
+    button.addEventListener('click', () => {
+      for (const key of ['distance', 'targetY', 'targetZ', 'azimuth', 'elevation']) control[key] = view[key];
+      for (const sibling of viewBar.children) sibling.setAttribute('aria-pressed', sibling === button ? 'true' : 'false');
+      if (stage.lastState) render(kind, stage.lastState);
+    });
+    viewBar.appendChild(button);
+  }
+  host.appendChild(viewBar);
   renderer.domElement.addEventListener('pointerdown', event => {
     control.dragging = true; control.x = event.clientX; control.y = event.clientY;
     renderer.domElement.setPointerCapture(event.pointerId);
@@ -372,10 +397,10 @@ function createStage(host, kind) {
   });
   renderer.domElement.addEventListener('pointerup', () => { control.dragging = false; });
   renderer.domElement.addEventListener('wheel', event => {
-    event.preventDefault(); control.distance = THREE.MathUtils.clamp(control.distance + event.deltaY * .008, 7.6, 13);
+    event.preventDefault(); control.distance = THREE.MathUtils.clamp(control.distance + event.deltaY * .008, 4.5, 13);
   }, { passive: false });
 
-  const stage = { kind, host, renderer, scene, camera, rotor, pathCurve, windingLoops, currentMarkers, electronMarkers, externalPaths, externalMarkers, fieldArrows, forceArrows, bulb, bulbLight, filament, meter, control, chargePhase: 0, supplyPhase: 0, lastTime: NaN };
+  const stage = { kind, host, renderer, scene, camera, rotor, pathCurve, windingLoops, currentMarkers, electronMarkers, externalPaths, externalMarkers, fieldArrows, forceArrows, bulb, bulbLight, filament, meter, control, chargePhase: 0, supplyPhase: 0, lastTime: NaN, lastState: null };
   stages.set(kind, stage);
   return stage;
 }
@@ -392,6 +417,7 @@ function render(kind, state) {
     return;
   }
   const { renderer, scene, camera, rotor, pathCurve, windingLoops, currentMarkers, electronMarkers, externalPaths, externalMarkers, fieldArrows, forceArrows, bulb, bulbLight, filament, meter, control } = stage;
+  stage.lastState = state;
   const width = host.clientWidth, height = host.clientHeight;
   if (!width || !height) return;
   if (renderer.domElement.width !== Math.round(width * renderer.getPixelRatio()) || renderer.domElement.height !== Math.round(height * renderer.getPixelRatio())) {
@@ -402,9 +428,9 @@ function render(kind, state) {
   }
   const distance = control.distance * (width < 620 ? (kind === 'generator' ? .88 : .94) : 1);
   camera.position.set(Math.sin(control.azimuth) * Math.cos(control.elevation) * distance,
-    Math.sin(control.elevation) * distance,
-    Math.cos(control.azimuth) * Math.cos(control.elevation) * distance);
-  camera.lookAt(0, -.60, 0);
+    control.targetY + Math.sin(control.elevation) * distance,
+    control.targetZ + Math.cos(control.azimuth) * Math.cos(control.elevation) * distance);
+  camera.lookAt(0, control.targetY, control.targetZ);
   rotor.rotation.y = state.angle + (kind === 'generator' ? Math.PI / 2 : 0);
   const minTurns = kind === 'motor' ? 10 : 20;
   const maxTurns = kind === 'motor' ? 100 : 400;

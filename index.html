@@ -331,6 +331,25 @@
       opacity: .88;
     }
     .stage-expand:hover, .stage-expand:focus-visible { opacity: 1; }
+    .stage-views {
+      position: absolute;
+      z-index: 2;
+      top: 10px;
+      left: 10px;
+      display: flex;
+      gap: 4px;
+      flex-wrap: wrap;
+      max-width: calc(100% - 110px);
+    }
+    .stage-views button {
+      padding: 5px 9px;
+      border: 1px solid #bccbd0;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, .92);
+      color: #24414d;
+      font: 700 12px "Times New Roman", "DFKai-SB", serif;
+    }
+    .stage-views button[aria-pressed="true"] { background: #0f766e; border-color: #0f766e; color: #fff; }
     .stage-expand:focus-visible, button:focus-visible, select:focus-visible, input:focus-visible {
       outline: 3px solid #f59e0b;
       outline-offset: 2px;
