@@ -1762,25 +1762,25 @@
             </div>
           </div>
           <div class="values" aria-live="polite">
-            <div class="badge" id="brake-omega">角速度 ω = 12.0 rad/s<small>與無磁場參考直接比較</small></div>
-            <div class="badge" id="brake-current">|dΦ/dt| = 0.0 mWb/s<small>磁通量變化才會產生感應電流</small></div>
-            <div class="badge" id="brake-torque">磁力 F = 0.000 N<small>F = IℓB，方向由 I × B 決定</small></div>
+            <div class="badge" id="brake-omega">角速度 <span data-latex="\omega"></span> = 12.0 rad/s<small>與無磁場參考直接比較</small></div>
+            <div class="badge" id="brake-current"><span data-latex="|d\Phi/dt|"></span> = 0.0 mWb/s<small>磁通量變化才會產生感應電流</small></div>
+            <div class="badge" id="brake-torque">磁力 <span data-latex="F"></span> = 0.000 N<small>大小 <span data-latex="F=I\ell B"></span>，方向由 <span data-latex="d\mathbf F=I\,d\boldsymbol\ell\times\mathbf B"></span> 決定</small></div>
             <div class="badge" id="brake-heat">轉為熱 = 0%<small>沒有接觸摩擦，但仍耗散能量</small></div>
           </div>
           <div class="lesson-steps" role="group" aria-label="磁煞車觀察層次">
             <button type="button" class="brake-layer active" data-brake-layer="all" aria-pressed="true">完整因果</button>
             <button type="button" class="brake-layer" data-brake-layer="flux" aria-pressed="false">1 磁通量變化</button>
             <button type="button" class="brake-layer" data-brake-layer="current" aria-pressed="false">2 渦電流方向</button>
-            <button type="button" class="brake-layer" data-brake-layer="force" aria-pressed="false">3 I × B 磁力</button>
+            <button type="button" class="brake-layer" data-brake-layer="force" aria-pressed="false">3 <span data-latex="\boldsymbol\ell\times\mathbf B"></span> 磁力</button>
           </div>
           <div class="plot-wrap">
             <canvas id="brake-canvas" role="img" aria-label="導體圓盤通過垂直磁場時，追蹤金屬區塊的磁通、渦電流、I 叉乘 B 磁力與減速動畫。"></canvas>
           </div>
           <div class="law-chain" aria-label="磁煞車定律鏈">
-            <div class="law-step"><strong>1 運動</strong><span id="brake-proof-motion">圓盤邊緣 v = rω</span></div>
-            <div class="law-step"><strong>2 磁通</strong><span id="brake-proof-flux">Φ = B · A重疊</span></div>
-            <div class="law-step"><strong>3 感應</strong><span id="brake-proof-current">ε = −dΦ/dt，電流反抗變化</span></div>
-            <div class="law-step"><strong>4 磁力</strong><span id="brake-proof-force">F = Iℓ × B，合力反向</span></div>
+            <div class="law-step"><strong>1 運動</strong><span id="brake-proof-motion">圓盤邊緣 <span data-latex="v=r\omega"></span></span></div>
+            <div class="law-step"><strong>2 磁通</strong><span id="brake-proof-flux"><span data-latex="\Phi=BA_{\rm overlap}"></span></span></div>
+            <div class="law-step"><strong>3 感應</strong><span id="brake-proof-current"><span data-latex="\varepsilon=-d\Phi/dt"></span>，電流反抗變化</span></div>
+            <div class="law-step"><strong>4 磁力</strong><span id="brake-proof-force"><span data-latex="d\mathbf F=I\,d\boldsymbol\ell\times\mathbf B"></span>，合力反向</span></div>
           </div>
           <div class="controls">
             <div class="control">
@@ -1819,8 +1819,8 @@
             <label class="check"><input type="checkbox" id="brake-show-heat" checked>顯示熱能累積</label>
           </div>
           <section class="teacher-note">
-            <p><strong>講法：</strong>依序按 1、2、3。先追蹤同一塊金屬往下穿越「⊗」磁區：進入時 Φ 增加、完全位於均勻磁區時 Φ 不變、離開時 Φ 減少。接著才用楞次定律判斷渦電流，最後在真正位於磁區內的電流段套用 I × B。</p>
-            <p><strong>模型界線：</strong>方向、B² 與速度比例、材料及開槽效應依物理定律計算；圓盤內實際渦電流會是連續分布，此處用兩個主要迴路做教學化呈現，不宣稱是有限元素分析。</p>
+            <p><strong>講法：</strong>依序按 1、2、3。先追蹤同一塊金屬往下穿越「⊗」磁區：進入時 <span data-latex="\Phi"></span> 增加、完全位於均勻磁區時 <span data-latex="\Phi"></span> 不變、離開時 <span data-latex="\Phi"></span> 減少。接著才用楞次定律判斷渦電流，最後在真正位於磁區內的電流段套用 <span data-latex="d\mathbf F=I\,d\boldsymbol\ell\times\mathbf B"></span>。</p>
+            <p><strong>模型界線：</strong>方向、<span data-latex="B^2"></span> 與速度比例、材料及開槽效應依物理定律計算；圓盤內實際渦電流會是連續分布，此處用兩個主要迴路做教學化呈現，不宣稱是有限元素分析。</p>
           </section>
         </div>
 
@@ -1831,14 +1831,14 @@
               <p class="module-copy">電池先驅動線圈電流，磁場對兩側導線施加相反方向的力；分裂環換向器每半圈交換接點，使力矩持續朝同一方向。</p>
             </div>
             <div class="legend" aria-label="馬達圖例">
-              <span class="blue"><i class="dot"></i>磁場 B</span>
-              <span class="orange"><i class="dot"></i>傳統電流 I</span>
+              <span class="blue"><i class="dot"></i>磁場 <span data-latex="B"></span></span>
+              <span class="orange"><i class="dot"></i>傳統電流 <span data-latex="I"></span></span>
               <span class="purple"><i class="dot"></i>電子流</span>
-              <span class="red"><i class="dot"></i>磁力 F</span>
+              <span class="red"><i class="dot"></i>磁力 <span data-latex="F"></span></span>
             </div>
           </div>
           <div class="values" aria-live="polite">
-            <div class="badge" id="motor-current">線圈電流 I = 2.3 A<small>電子流方向與傳統電流相反</small></div>
+            <div class="badge" id="motor-current">線圈電流 <span data-latex="I"></span> = 2.3 A<small>電子流方向與傳統電流相反</small></div>
             <div class="badge" id="motor-torque">電磁力矩</div>
             <div class="badge" id="motor-speed-badge">轉速 = 0 rpm<small>啟動後逐漸接近平衡轉速</small></div>
             <div class="badge" id="motor-commutator">換向器：A 接正極<small>跨過半圈時交換電流方向</small></div>
@@ -1846,7 +1846,7 @@
           <div class="lesson-steps" role="group" aria-label="直流馬達觀察層次">
             <button type="button" class="motor-layer active" data-motor-layer="all" aria-pressed="true">完整因果</button>
             <button type="button" class="motor-layer" data-motor-layer="current" aria-pressed="false">1 找電流方向</button>
-            <button type="button" class="motor-layer" data-motor-layer="force" aria-pressed="false">2 判斷 I × B</button>
+            <button type="button" class="motor-layer" data-motor-layer="force" aria-pressed="false">2 判斷 <span data-latex="\boldsymbol\ell\times\mathbf B"></span></button>
             <button type="button" class="motor-layer" data-motor-layer="torque" aria-pressed="false">3 合成力矩</button>
           </div>
           <div class="presets" role="group" aria-label="馬達視圖"><button type="button" class="preset em-render active" data-em-render="motor" data-view="diagram" aria-pressed="true">2D 因果圖</button><button type="button" class="preset em-render" data-em-render="motor" data-view="apparatus" aria-pressed="false">3D 裝置</button></div>
@@ -1856,8 +1856,8 @@
           <div class="em-stage" id="motor-three" hidden title="拖曳旋轉視角；滾輪縮放" aria-label="可拖曳旋轉檢視的馬達立體裝置：磁極、轉子線圈、分裂環、電刷及磁力方向。"></div>
           <div class="law-chain" aria-label="馬達磁力定律鏈">
             <div class="law-step"><strong>1 電流</strong><span id="motor-proof-current">兩側導線電流方向相反</span></div>
-            <div class="law-step"><strong>2 磁場</strong><span id="motor-proof-field">B 由 N 極指向 S 極</span></div>
-            <div class="law-step"><strong>3 受力</strong><span id="motor-proof-force">F = Iℓ × B，兩側力相反</span></div>
+            <div class="law-step"><strong>2 磁場</strong><span id="motor-proof-field"><span data-latex="B"></span> 由 N 極指向 S 極</span></div>
+            <div class="law-step"><strong>3 受力</strong><span id="motor-proof-force"><span data-latex="\mathbf F=I\boldsymbol\ell\times\mathbf B"></span>，兩側力相反</span></div>
             <div class="law-step"><strong>4 力矩</strong><span id="motor-proof-torque">力偶使線圈繼續轉動</span></div>
           </div>
           <div class="controls">
@@ -1866,11 +1866,11 @@
               <input id="motor-voltage" type="range" min="1" max="15" step="0.5" value="9">
             </div>
             <div class="control">
-              <label for="motor-field">磁場 B：<span id="motor-field-out">0.60 T</span></label>
+              <label for="motor-field">磁場 <span data-latex="B"></span>：<span id="motor-field-out">0.60 T</span></label>
               <input id="motor-field" type="range" min="0.1" max="1.2" step="0.05" value="0.6">
             </div>
             <div class="control">
-              <label for="motor-turns">線圈匝數 N：<span id="motor-turns-out">40</span></label>
+              <label for="motor-turns">線圈匝數 <span data-latex="N"></span>：<span id="motor-turns-out">40</span></label>
               <input id="motor-turns" type="range" min="10" max="100" step="5" value="40">
             </div>
             <div class="control">
@@ -1887,10 +1887,10 @@
             <label class="check"><input type="checkbox" id="motor-show-electrons" checked>顯示電子流</label>
             <label class="check"><input type="checkbox" id="motor-show-field" checked>顯示磁場</label>
             <label class="check"><input type="checkbox" id="motor-show-force" checked>顯示兩側受力</label>
-            <label class="check"><input type="checkbox" id="motor-show-vector">顯示 I × B 向量驗證</label>
+            <label class="check"><input type="checkbox" id="motor-show-vector">顯示 <span data-latex="\boldsymbol\ell\times\mathbf B"></span> 向量驗證</label>
           </div>
           <section class="teacher-note">
-            <p><strong>講法：</strong>先暫停，沿著橘色粒子找出線圈兩側電流，再用 I × B 判斷紅色受力。播放後盯著下方分裂環：每跨過半圈，刷子接觸的銅片交換，線圈電流反向，但轉動力矩仍維持同向。</p>
+            <p><strong>講法：</strong>先暫停，沿著橘色粒子找出線圈兩側電流，再用 <span data-latex="d\mathbf F=I\,d\boldsymbol\ell\times\mathbf B"></span> 判斷紅色受力。播放後盯著下方分裂環：每跨過半圈，刷子接觸的銅片交換，線圈電流反向，但轉動力矩仍維持同向。</p>
             <p><strong>強調：</strong>電能先進入線圈，再由磁力做機械功；電壓、磁場或匝數增加會提高可用力矩，負載太大則無法啟動。</p>
           </section>
         </div>
@@ -1904,7 +1904,7 @@
             <div class="em-stage" id="generator-three" title="拖曳旋轉視角；滾輪縮放" aria-label="可拖曳旋轉檢視的發電機立體裝置：磁極、轉子線圈、兩個滑環、電刷與負載燈。"></div>
             <div class="plot-wrap"><canvas id="generator-phase-canvas" role="img" aria-label="沿轉軸觀看線圈旋轉和磁場方向，右側同步顯示正負交替的感應電壓與目前時刻。"></canvas></div>
           </div>
-          <div class="controls"><div class="control"><label for="gen-field">磁場 B：<span id="gen-field-out">0.20 T</span></label><input id="gen-field" type="range" min="0" max="0.6" step="0.01" value="0.2"></div><div class="control"><label for="gen-turns">線圈匝數：<span id="gen-turns-out">200</span></label><input id="gen-turns" type="range" min="20" max="400" step="10" value="200"></div><div class="control"><label for="gen-rpm">轉速：<span id="gen-rpm-out">30 rpm</span></label><input id="gen-rpm" type="range" min="0" max="120" step="1" value="30"></div><div class="control"><label for="gen-resistance">負載電阻：<span id="gen-resistance-out">10 Ω</span></label><input id="gen-resistance" type="range" min="2" max="40" step="1" value="10"></div></div>
+          <div class="controls"><div class="control"><label for="gen-field">磁場 <span data-latex="B"></span>：<span id="gen-field-out">0.20 T</span></label><input id="gen-field" type="range" min="0" max="0.6" step="0.01" value="0.2"></div><div class="control"><label for="gen-turns">線圈匝數 <span data-latex="N"></span>：<span id="gen-turns-out">200</span></label><input id="gen-turns" type="range" min="20" max="400" step="10" value="200"></div><div class="control"><label for="gen-rpm">轉速：<span id="gen-rpm-out">30 rpm</span></label><input id="gen-rpm" type="range" min="0" max="120" step="1" value="30"></div><div class="control"><label for="gen-resistance">負載電阻 <span data-latex="R"></span>：<span id="gen-resistance-out">10 <span data-latex="\Omega"></span></span></label><input id="gen-resistance" type="range" min="2" max="40" step="1" value="10"></div></div>
           <div class="checks"><label class="check"><input id="gen-show-field" type="checkbox" checked>顯示磁場方向</label><label class="check"><input id="gen-show-current" type="checkbox" checked>顯示電流與電刷</label></div>
         </div>
 
@@ -1927,14 +1927,14 @@
           </div>
           <div class="values" aria-live="polite">
             <div class="badge" id="cyc-energy">動能 0.08 MeV<small>只在跨越間隙時改變</small></div>
-            <div class="badge" id="cyc-radius">軌道半徑 0.07 m<small>r = mv / qB</small></div>
-            <div class="badge" id="cyc-frequency">共振頻率 0.00 MHz<small>f = qB / 2πm</small></div>
+            <div class="badge" id="cyc-radius">軌道半徑 0.07 m<small><span data-latex="r=mv/(qB)"></span></small></div>
+            <div class="badge" id="cyc-frequency">共振頻率 0.00 MHz<small><span data-latex="f_c=qB/(2\pi m)"></span></small></div>
             <div class="badge" id="cyc-status">同步加速<small>RF 與粒子轉彎節奏相同</small></div>
           </div>
           <div class="presets" role="group" aria-label="跳到跨越間隙次數"><button type="button" class="preset cyc-jump" data-crossing="0">第 1 次</button><button type="button" class="preset cyc-jump" data-crossing="4">第 5 次</button><button type="button" class="preset cyc-jump" data-crossing="9">第 10 次</button></div>
           <div class="plot-wrap lab-instrument"><canvas id="cyclotron-canvas" role="img" aria-label="D 形電極、垂直磁場、間隙電場與逐圈擴張的帶電粒子軌道。"></canvas></div>
           <div class="controls">
-            <div class="control"><label for="cyc-field">磁場 B：<span id="cyc-field-out">0.32 T</span></label><input id="cyc-field" type="range" min="0.25" max="1.2" step="0.01" value="0.32"></div>
+            <div class="control"><label for="cyc-field">磁場 <span data-latex="B"></span>：<span id="cyc-field-out">0.32 T</span></label><input id="cyc-field" type="range" min="0.25" max="1.2" step="0.01" value="0.32"></div>
             <div class="control"><label for="cyc-voltage">間隙電壓：<span id="cyc-voltage-out">120 kV</span></label><input id="cyc-voltage" type="range" min="20" max="250" step="5" value="120"></div>
             <div class="control"><label for="cyc-detune">射頻偏差：<span id="cyc-detune-out">0%</span></label><input id="cyc-detune" type="range" min="-12" max="12" step="0.5" value="0"></div>
             <div class="control"><label for="cyc-speed">播放速度：<span id="cyc-speed-out">0.35x</span></label><input id="cyc-speed" type="range" min="0.1" max="1.5" step="0.05" value="0.35"></div>
@@ -1951,22 +1951,22 @@
             <div class="legend"><span class="orange"><i class="dot"></i>電場力</span><span class="blue"><i class="dot"></i>磁場力</span><span class="green"><i class="dot"></i>通過狹縫</span></div>
           </div>
           <div class="values" aria-live="polite">
-            <div class="badge" id="sel-target">通過速度 5.0 km/s<small>v = E / B</small></div>
-            <div class="badge" id="sel-electric">電場力 0.0<small>F_E = qE，方向向下</small></div>
-            <div class="badge" id="sel-magnetic">磁場力 0.0<small>F_B = qvB，方向向上</small></div>
+            <div class="badge" id="sel-target">通過速度 5.0 km/s<small><span data-latex="v=E/B"></span></small></div>
+            <div class="badge" id="sel-electric">電場力 0.0<small><span data-latex="F_E=qE"></span>，方向向下</small></div>
+            <div class="badge" id="sel-magnetic">磁場力 0.0<small><span data-latex="F_B=qvB"></span>，方向向上</small></div>
             <div class="badge" id="sel-status">等速直行<small>選定粒子淨力為 0</small></div>
           </div>
           <div class="plot-wrap lab-instrument"><canvas id="selector-canvas" role="img" aria-label="速度不同的帶電粒子在交叉電磁場中彎曲，只有速度等於 E 除以 B 的粒子穿過狹縫。"></canvas></div>
           <div class="controls">
-            <div class="control"><label for="sel-e">電場 E：<span id="sel-e-out">4.0 kV/m</span></label><input id="sel-e" type="range" min="0" max="8" step="0.1" value="4"></div>
-            <div class="control"><label for="sel-b">磁場 B：<span id="sel-b-out">0.80 T</span></label><input id="sel-b" type="range" min="0.2" max="1.2" step="0.02" value="0.8"></div>
+            <div class="control"><label for="sel-e">電場 <span data-latex="E"></span>：<span id="sel-e-out">4.0 kV/m</span></label><input id="sel-e" type="range" min="0" max="8" step="0.1" value="4"></div>
+            <div class="control"><label for="sel-b">磁場 <span data-latex="B"></span>：<span id="sel-b-out">0.80 T</span></label><input id="sel-b" type="range" min="0.2" max="1.2" step="0.02" value="0.8"></div>
             <div class="control"><label for="sel-v">追蹤粒子速度：<span id="sel-v-out">5.0 km/s</span></label><input id="sel-v" type="range" min="1" max="10" step="0.1" value="5"></div>
             <div class="control"><label for="sel-speed">播放速度：<span id="sel-speed-out">0.40x</span></label><input id="sel-speed" type="range" min="0.1" max="1.5" step="0.05" value="0.4"></div>
           </div>
           <div class="checks"><label class="check"><input id="sel-show-comparison" type="checkbox" checked>同時顯示其他速度</label><label class="check"><input id="sel-show-force" type="checkbox" checked>顯示粒子受力</label></div>
         </div>
         <div id="em-view-spectrometer" class="em-view">
-          <div class="module-head"><div><h2>質譜儀：先選速度，再依質量分離</h2><p class="module-copy">離子先穿過 E 與 B 交叉的速度選擇器，只有 v = E/B 的粒子筆直通過。進入均勻磁場後，磁力只改變方向；不同質量畫出不同半徑，落在不同偵測位置。</p></div></div>
+          <div class="module-head"><div><h2>質譜儀：先選速度，再依質量分離</h2><p class="module-copy">離子先穿過 <span data-latex="E"></span> 與 <span data-latex="B"></span> 交叉的速度選擇器，只有 <span data-latex="v=E/B"></span> 的粒子筆直通過。進入均勻磁場後，磁力只改變方向；不同質量畫出不同半徑，落在不同偵測位置。</p></div></div>
           <div class="values"><div class="badge" id="spec-velocity">選定速度 = 0 m/s</div><div class="badge" id="spec-light">輕同位素半徑 = 0 m</div><div class="badge" id="spec-heavy">重同位素半徑 = 0 m</div><div class="badge" id="spec-spacing">落點間距 = 0 m</div></div>
           <div class="plot-wrap lab-instrument"><canvas id="spectrometer-canvas" role="img" aria-label="離子先在交叉電磁場速度選擇器中直行，再進入磁分析室，不同質量彎出不同半徑而落在不同偵測點。"></canvas></div>
           <div class="controls"><div class="control"><label for="spec-e">選速電場 E：<span id="spec-e-out">4.0 kV/m</span></label><input id="spec-e" type="range" min="1" max="8" step="0.1" value="4"></div><div class="control"><label for="spec-b-select">選速磁場 B₁：<span id="spec-b-select-out">0.80 T</span></label><input id="spec-b-select" type="range" min="0.3" max="1.2" step="0.02" value="0.8"></div><div class="control"><label for="spec-b-analyze">分析磁場 B₂：<span id="spec-b-analyze-out">0.006 T</span></label><input id="spec-b-analyze" type="range" min="0.002" max="0.012" step="0.0002" value="0.006"></div><div class="control"><label for="spec-mass">較輕同位素質量：<span id="spec-mass-out">20 u</span></label><input id="spec-mass" type="range" min="12" max="40" step="1" value="20"></div><div class="control"><label for="spec-speed">播放速度：<span id="spec-speed-out">0.35x</span></label><input id="spec-speed" type="range" min="0.1" max="1.5" step="0.05" value="0.35"></div></div>
@@ -8841,14 +8841,14 @@
       setText('brake-field-out', `${state.B.toFixed(2)} T`);
       setText('brake-start-out', `${state.omega0.toFixed(1)} rad/s`);
       setText('brake-speed-out', `${number('brake-speed').toFixed(2)}x`);
-      $('brake-omega').innerHTML = `角速度 ω = ${state.omega.toFixed(2)} rad/s<small>無磁場參考仍為 ${state.omega0.toFixed(1)} rad/s</small>`;
-      $('brake-current').innerHTML = `|dΦ/dt| = ${(state.fluxRate * 1000).toFixed(1)} mWb/s<small>ε = ${state.emf.toFixed(3)} V；${materialName}渦流 I ≈ ${state.current.toFixed(2)} A</small>`;
-      $('brake-torque').innerHTML = `磁力 F = ${state.force.toFixed(3)} N<small>τ = ${state.torque.toFixed(4)} N·m，方向反抗轉動</small>`;
+      $('brake-omega').innerHTML = `角速度 ${math('\\omega')} = ${state.omega.toFixed(2)} rad/s<small>無磁場參考仍為 ${state.omega0.toFixed(1)} rad/s</small>`;
+      $('brake-current').innerHTML = `${math('|d\\Phi/dt|')} = ${(state.fluxRate * 1000).toFixed(1)} mWb/s<small>${math('\\varepsilon')} = ${state.emf.toFixed(3)} V；${materialName}渦流 ${math('I')} ≈ ${state.current.toFixed(2)} A</small>`;
+      $('brake-torque').innerHTML = `磁力 ${math('F')} = ${state.force.toFixed(3)} N<small>${math('\\tau')} = ${state.torque.toFixed(4)} N·m，方向反抗轉動</small>`;
       $('brake-heat').innerHTML = `轉為熱 = ${(state.heat * 100).toFixed(0)}%<small>累積約 ${state.heatEnergy.toFixed(2)} J；無接觸仍耗散</small>`;
-      setText('brake-proof-motion', `v = rω = ${state.radiusM.toFixed(2)} × ${state.omega.toFixed(2)} = ${state.surfaceSpeed.toFixed(2)} m/s`);
-      setText('brake-proof-flux', `|dΦ/dt| ≈ Bℓv = ${(state.fluxRate * 1000).toFixed(1)} mWb/s`);
-      setText('brake-proof-current', `ε=${state.emf.toFixed(3)} V；I≈${state.current.toFixed(2)} A，方向反抗 ΔΦ`);
-      setText('brake-proof-force', `F≈IℓB=${state.force.toFixed(3)} N；τ≈${state.torque.toFixed(4)} N·m`);
+      $('brake-proof-motion').innerHTML = `${math('v=r\\omega')} = ${state.radiusM.toFixed(2)} × ${state.omega.toFixed(2)} = ${state.surfaceSpeed.toFixed(2)} m/s`;
+      $('brake-proof-flux').innerHTML = `${math('|d\\Phi/dt|\\approx B\\ell v')} = ${(state.fluxRate * 1000).toFixed(1)} mWb/s`;
+      $('brake-proof-current').innerHTML = `${math('\\varepsilon')} = ${state.emf.toFixed(3)} V；${math('I')} ≈ ${state.current.toFixed(2)} A，方向反抗 ${math('\\Delta\\Phi')}`;
+      $('brake-proof-force').innerHTML = `${math('F\\approx I\\ell B')} = ${state.force.toFixed(3)} N；${math('\\tau')} ≈ ${state.torque.toFixed(4)} N·m`;
     }
 
     function polylinePoint(points, ratio) {
@@ -9346,7 +9346,7 @@
       setText('gen-field-out', `${B.toFixed(2)} T`);
       setText('gen-turns-out', String(turns));
       setText('gen-rpm-out', `${rpm} rpm`);
-      setText('gen-resistance-out', `${resistance} Ω`);
+      $('gen-resistance-out').innerHTML = `${resistance} ${math('\\Omega')}`;
       $('gen-flux').innerHTML = `磁通鏈結 ${math('N\\Phi')} = ${flux.toFixed(2)} Wb·turn<small>${math('N\\Phi=NBA\\cos\\theta')}；${math('A=0.010\\,\\mathrm{m}^2')}</small>`;
       $('gen-emf').innerHTML = `感應電壓 ${math('\\varepsilon')} = ${emf.toFixed(2)} V<small>${math('\\varepsilon=-\\frac{d(N\\Phi)}{dt}=NBA\\omega\\sin\\theta')}</small>`;
       $('gen-power').innerHTML = `負載功率 ${math('P')} = ${power.toFixed(2)} W<small>理想純電阻：${math('P=\\varepsilon^2/R')}</small>`;
