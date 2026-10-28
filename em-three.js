@@ -179,6 +179,27 @@ function createStage(host, kind) {
     box(rotor, [.075, .075, 1.20], [0, 2.10, 0], darkMetal);
     const handle = new THREE.Mesh(new THREE.CylinderGeometry(.075, .075, .32, 20), copper);
     handle.position.set(.61, 2.28, 0); handle.castShadow = true; rotor.add(handle);
+  } else {
+    const hub = new THREE.Mesh(new THREE.CylinderGeometry(.18, .18, .18, 32), metal('#b66b40', .28, .7));
+    hub.position.y = 1.94; hub.castShadow = true; rotor.add(hub);
+    const fanMaterial = metal('#69838b', .34, .62);
+    for (let index = 0; index < 3; index += 1) {
+      const bladeShape = new THREE.Shape();
+      bladeShape.moveTo(-.105, .12);
+      bladeShape.bezierCurveTo(-.19, .40, -.27, .67, -.08, .83);
+      bladeShape.bezierCurveTo(.08, .92, .22, .73, .16, .55);
+      bladeShape.bezierCurveTo(.13, .34, .11, .20, .105, .12);
+      bladeShape.closePath();
+      const blade = new THREE.Mesh(new THREE.ExtrudeGeometry(bladeShape, {
+        depth: .045, bevelEnabled: true, bevelThickness: .018, bevelSize: .018, bevelSegments: 2
+      }), fanMaterial);
+      const bladePivot = new THREE.Group();
+      bladePivot.rotation.y = index * 2 * Math.PI / 3;
+      rotor.add(bladePivot);
+      blade.rotation.x = -Math.PI / 2;
+      blade.position.y = 1.93;
+      blade.castShadow = true; bladePivot.add(blade);
+    }
   }
   for (const y of [1.74, -1.79]) {
     const bearing = new THREE.Mesh(new THREE.CylinderGeometry(.20, .20, .20, 32), metal('#879499', .32, .75));
@@ -194,7 +215,7 @@ function createStage(host, kind) {
 
   const brushes = [];
   const rings = [];
-  let externalPath = null;
+  let externalPaths = [];
   const externalMarkers = [];
   if (kind === 'motor') {
     for (const side of [-1, 1]) {
@@ -209,6 +230,14 @@ function createStage(host, kind) {
     }
     tube(rotor, [[-.18, -halfHeight, 0], [-.32, -1.30, 0], [-.34, -1.47, 0]], .035, copper);
     tube(rotor, [[.18, -halfHeight, 0], [.32, -1.30, 0], [.34, -1.47, 0]], .035, brightCopper);
+    externalPaths = [-1, 1].map(side => new THREE.CatmullRomCurve3([
+      [side * .40, -1.52, 1.49], [side * .72, -1.62, 1.12],
+      [side * .72, -1.55, .15], [side * .48, -1.47, 0]
+    ].map(point => new THREE.Vector3(...point)), false, 'centripetal'));
+    for (let i = 0; i < 10; i += 1) {
+      const marker = new THREE.Mesh(new THREE.SphereGeometry(.06, 12, 9), new THREE.MeshBasicMaterial({ color: '#f26a27' }));
+      scene.add(marker); externalMarkers.push(marker);
+    }
   } else {
     for (const [index, y] of [-1.37, -1.64].entries()) {
       const ring = new THREE.Mesh(new THREE.TorusGeometry(.33, .055, 10, 64), index ? brightCopper : copper);
@@ -223,11 +252,11 @@ function createStage(host, kind) {
     tube(scene, [[-.46, -1.37, 0], [-.9, -1.65, .4], [-.9, -1.65, 1.65], [-.22, -1.65, 2.03], [-.22, lampY, 2.03]], .024, darkMetal);
     tube(scene, [[.46, -1.64, 0], [.9, -1.75, .7], [1.49, -1.18, 1.55]], .024, darkMetal);
     tube(scene, [[.75, -1.18, 1.55], [.64, -1.73, 1.88], [.22, -1.65, 2.03], [.22, lampY, 2.03]], .024, darkMetal);
-    externalPath = new THREE.CatmullRomCurve3([
+    externalPaths = [new THREE.CatmullRomCurve3([
       [-.46, -1.37, 0], [-.9, -1.65, .4], [-.9, -1.65, 1.65], [-.22, -1.65, 2.03],
       [0, -1.15, 2.03], [.22, -1.65, 2.03], [.64, -1.73, 1.88], [.75, -1.18, 1.55],
       [1.12, -1.18, 1.55], [1.49, -1.18, 1.55], [.9, -1.75, .7], [.46, -1.64, 0]
-    ].map(point => new THREE.Vector3(...point)), false, 'centripetal');
+    ].map(point => new THREE.Vector3(...point)), false, 'centripetal')];
     for (let i = 0; i < 9; i += 1) {
       const marker = new THREE.Mesh(new THREE.SphereGeometry(.06, 12, 9), new THREE.MeshBasicMaterial({ color: '#f26a27' }));
       scene.add(marker); externalMarkers.push(marker);
@@ -288,7 +317,7 @@ function createStage(host, kind) {
     event.preventDefault(); control.distance = THREE.MathUtils.clamp(control.distance + event.deltaY * .008, 7.6, 13);
   }, { passive: false });
 
-  const stage = { kind, host, renderer, scene, camera, rotor, pathCurve, currentMarkers, electronMarkers, externalPath, externalMarkers, fieldArrows, forceArrows, bulb, bulbLight, filament, meter, control, chargePhase: 0, lastTime: NaN };
+  const stage = { kind, host, renderer, scene, camera, rotor, pathCurve, currentMarkers, electronMarkers, externalPaths, externalMarkers, fieldArrows, forceArrows, bulb, bulbLight, filament, meter, control, chargePhase: 0, supplyPhase: 0, lastTime: NaN };
   stages.set(kind, stage);
   return stage;
 }
@@ -304,7 +333,7 @@ function render(kind, state) {
     console.warn('WebGL unavailable', error);
     return;
   }
-  const { renderer, scene, camera, rotor, pathCurve, currentMarkers, electronMarkers, externalPath, externalMarkers, fieldArrows, forceArrows, bulb, bulbLight, filament, meter, control } = stage;
+  const { renderer, scene, camera, rotor, pathCurve, currentMarkers, electronMarkers, externalPaths, externalMarkers, fieldArrows, forceArrows, bulb, bulbLight, filament, meter, control } = stage;
   const width = host.clientWidth, height = host.clientHeight;
   if (!width || !height) return;
   if (renderer.domElement.width !== Math.round(width * renderer.getPixelRatio()) || renderer.domElement.height !== Math.round(height * renderer.getPixelRatio())) {
@@ -323,10 +352,14 @@ function render(kind, state) {
   const reverse = kind === 'motor' ? state.halfTurn === 0 : state.current < 0;
   const elapsed = Number.isFinite(stage.lastTime) && state.time >= stage.lastTime
     ? Math.min(.1, state.time - stage.lastTime) : 0;
-  if (state.time < stage.lastTime) stage.chargePhase = 0;
+  if (state.time < stage.lastTime) {
+    stage.chargePhase = 0;
+    stage.supplyPhase = 0;
+  }
   stage.lastTime = state.time;
   const signedCurrent = kind === 'motor' && reverse ? -state.current : state.current;
   stage.chargePhase += elapsed * .42 * signedCurrent / Math.max(.001, state.maxCurrent);
+  stage.supplyPhase += elapsed * .42 * Math.abs(state.current) / Math.max(.001, state.maxCurrent);
   for (let i = 0; i < currentMarkers.length; i += 1) {
     const fraction = ((i / currentMarkers.length + stage.chargePhase) % 1 + 1) % 1;
     currentMarkers[i].position.copy(pathCurve.getPoint(fraction));
@@ -337,8 +370,11 @@ function render(kind, state) {
     electronMarkers[i].visible = state.showElectrons && Math.abs(state.current) > .01;
   }
   for (let i = 0; i < externalMarkers.length; i += 1) {
-    const fraction = ((i / externalMarkers.length - stage.chargePhase) % 1 + 1) % 1;
-    externalMarkers[i].position.copy(externalPath.getPoint(fraction));
+    const motor = kind === 'motor';
+    const path = externalPaths[motor ? i % 2 : 0];
+    const phase = motor ? (i % 2 ? -stage.supplyPhase : stage.supplyPhase) : -stage.chargePhase;
+    const fraction = (((motor ? Math.floor(i / 2) / 5 : i / externalMarkers.length) + phase) % 1 + 1) % 1;
+    externalMarkers[i].position.copy(path.getPoint(fraction));
     externalMarkers[i].visible = state.showCurrent && Math.abs(state.current) > .04;
   }
   if (forceArrows.length) for (const [index, arrow] of forceArrows.entries()) {
