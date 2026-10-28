@@ -372,10 +372,11 @@
       height: min(68vh, 580px);
       min-height: 460px;
     }
-    #drive-canvas, #sound-canvas, #camera-canvas, #generator-canvas, #bell-canvas {
+    #drive-canvas, #sound-canvas, #generator-canvas, #bell-canvas {
       height: min(68vh, 570px);
       min-height: 450px;
     }
+    #camera-canvas { height: min(76vh, 690px); min-height: 610px; }
     #refraction-canvas {
       height: min(68vh, 590px);
       min-height: 470px;
@@ -515,7 +516,8 @@
       #huygens-canvas { height: 430px; min-height: 400px; }
       #mirror-canvas.parallel-expanded { height: 410px; min-height: 380px; }
       #microscope-canvas, #eye-canvas, #circular-canvas, #precession-canvas { height: 470px; min-height: 430px; }
-      #drive-canvas, #sound-canvas, #camera-canvas, #generator-canvas, #bell-canvas { height: 520px; min-height: 480px; }
+      #drive-canvas, #sound-canvas, #generator-canvas, #bell-canvas { height: 520px; min-height: 480px; }
+      #camera-canvas { height: 610px; min-height: 610px; }
       #refraction-canvas { height: 500px; min-height: 440px; }
       #scattering-canvas { height: 680px; min-height: 620px; }
       #brake-canvas { height: 860px; min-height: 810px; }
@@ -1864,11 +1866,11 @@
             <button type="button" class="motor-layer" data-motor-layer="force" aria-pressed="false">2 判斷 <span data-latex="\boldsymbol\ell\times\mathbf B"></span></button>
             <button type="button" class="motor-layer" data-motor-layer="torque" aria-pressed="false">3 合成力矩</button>
           </div>
-          <div class="presets" role="group" aria-label="馬達視圖"><button type="button" class="preset em-render active" data-em-render="motor" data-view="diagram" aria-pressed="true">2D 因果圖</button><button type="button" class="preset em-render" data-em-render="motor" data-view="apparatus" aria-pressed="false">3D 裝置</button></div>
-          <div class="plot-wrap" id="motor-diagram">
+          <div class="presets" role="group" aria-label="馬達視圖"><button type="button" class="preset em-render active" data-em-render="motor" data-view="apparatus" aria-pressed="true">3D 裝置</button><button type="button" class="preset em-render" data-em-render="motor" data-view="diagram" aria-pressed="false">2D 因果圖</button></div>
+          <div class="plot-wrap" id="motor-diagram" hidden>
             <canvas id="motor-canvas" role="img" aria-label="包含磁極、線圈、電流粒子、受力方向、分裂環換向器與電刷的直流馬達動畫。"></canvas>
           </div>
-          <div class="em-stage" id="motor-three" hidden title="拖曳旋轉視角；滾輪縮放" aria-label="可拖曳旋轉檢視的馬達立體裝置：磁極、轉子線圈、分裂環、電刷及磁力方向。"></div>
+          <div class="em-stage" id="motor-three" title="拖曳旋轉視角；滾輪縮放" aria-label="可拖曳旋轉檢視的馬達立體裝置：磁極、轉子線圈、分裂環、電刷及磁力方向。"></div>
           <div class="law-chain" aria-label="馬達磁力定律鏈">
             <div class="law-step"><strong>1 電流</strong><span id="motor-proof-current">兩側導線電流方向相反</span></div>
             <div class="law-step"><strong>2 磁場</strong><span id="motor-proof-field"><span data-latex="B"></span> 由 N 極指向 S 極</span></div>
@@ -1913,9 +1915,9 @@
         <div id="em-view-generator" class="em-view">
           <div class="module-head"><div><h2>交流發電機：轉動線圈產生電壓</h2><p class="module-copy">外力帶動線圈在 N、S 磁極之間旋轉；磁通鏈結 <span data-latex="N\Phi=NBA\cos\theta"></span> 改變，產生感應電動勢 <span data-latex="\varepsilon=NBA\omega\sin\theta"></span>。兩個完整滑環使電路保持連接，輸出每半圈反向；它不是直流馬達的分裂環。</p></div></div>
           <div class="values"><div class="badge" id="gen-flux">磁通量</div><div class="badge" id="gen-emf">感應電動勢</div><div class="badge" id="gen-power">負載功率</div><div class="badge" id="gen-speed-badge">轉速</div></div>
-          <div class="presets" role="group" aria-label="發電機視圖"><button type="button" class="preset em-render active" data-em-render="generator" data-view="diagram" aria-pressed="true">2D 磁通與電壓</button><button type="button" class="preset em-render" data-em-render="generator" data-view="apparatus" aria-pressed="false">3D 裝置</button></div>
-          <div class="plot-wrap" id="generator-diagram"><canvas id="generator-canvas" role="img" aria-label="磁極間旋轉線圈、兩個滑環、電刷和負載燈；下方同步顯示磁通量與感應電動勢的時間曲線。"></canvas></div>
-          <div class="generator-apparatus" id="generator-apparatus" hidden>
+          <div class="presets" role="group" aria-label="發電機視圖"><button type="button" class="preset em-render active" data-em-render="generator" data-view="apparatus" aria-pressed="true">3D 裝置</button><button type="button" class="preset em-render" data-em-render="generator" data-view="diagram" aria-pressed="false">2D 磁通與電壓</button></div>
+          <div class="plot-wrap" id="generator-diagram" hidden><canvas id="generator-canvas" role="img" aria-label="磁極間旋轉線圈、兩個滑環、電刷和負載燈；下方同步顯示磁通量與感應電動勢的時間曲線。"></canvas></div>
+          <div class="generator-apparatus" id="generator-apparatus">
             <div class="em-stage" id="generator-three" title="拖曳旋轉視角；滾輪縮放" aria-label="可拖曳旋轉檢視的發電機立體裝置：磁極、轉子線圈、兩個滑環、電刷與負載燈。"></div>
             <div class="plot-wrap"><canvas id="generator-phase-canvas" role="img" aria-label="沿轉軸觀看線圈旋轉和磁場方向，右側同步顯示正負交替的感應電壓與目前時刻。"></canvas></div>
           </div>
@@ -2074,7 +2076,7 @@
     let mirageLayerTargets = [];
     let mirageCriticalLayer = 0;
     let activeElectromagnetism = 'brake';
-    const emRenderView = { motor: 'diagram', generator: 'diagram' };
+    const emRenderView = { motor: 'apparatus', generator: 'apparatus' };
     let activeBrakeLayer = 'all';
     let activeMotorLayer = 'all';
     const categoryLabs = {
@@ -5907,7 +5909,7 @@
       const sensorX = w * (compact ? .84 : .83);
       const lensX = sensorX - w * (.15 + (sensorDistance - 50) / 9 * .11);
       const personX = w * (.10 + .16 * (1 - objectMeters / 5));
-      const personHeight = Math.min(h * .32, h * (.16 + .14 / Math.sqrt(objectMeters)));
+      const personHeight = Math.min(h * .34, h * (.20 + .15 / Math.sqrt(objectMeters)));
       const head = { x: personX, y: axis - personHeight };
       const aperturePx = Math.max(10, aperture / 28 * h * .125);
       const imageHeight = Math.min(h * .18, Math.max(18, h * 2.6 * imageMm / objectMm));
@@ -5916,7 +5918,7 @@
       ctx.strokeStyle = '#b3c3c9'; ctx.lineWidth = 1.5; ctx.setLineDash([6, 5]);
       ctx.beginPath(); ctx.moveTo(w * .04, axis); ctx.lineTo(w * .96, axis); ctx.stroke(); ctx.setLineDash([]);
       ctx.fillStyle = '#d8e2e4'; ctx.fillRect(w * .03, axis + 5, lensX - w * .03, 3);
-      const bodyTop = h * .18, bodyBottom = h * .72;
+      const bodyTop = h * .16, bodyBottom = h * .71;
       ctx.fillStyle = '#263b49';
       ctx.beginPath();
       ctx.moveTo(lensX + 21, bodyTop + 3);
@@ -5924,17 +5926,32 @@
       ctx.lineTo(lensX + 83, bodyTop - 28);
       ctx.lineTo(lensX + 104, bodyTop + 3);
       ctx.closePath(); ctx.fill();
-      ctx.fillStyle = '#344c5c'; ctx.fillRect(lensX - 12, bodyTop, sensorX - lensX + 40, bodyBottom - bodyTop);
-      ctx.fillStyle = '#e7eff0'; ctx.fillRect(lensX + 7, bodyTop + 15, sensorX - lensX + 5, bodyBottom - bodyTop - 30);
+      const chamber = ctx.createLinearGradient(0, bodyTop, 0, bodyBottom);
+      chamber.addColorStop(0, '#243844'); chamber.addColorStop(.15, '#405560');
+      chamber.addColorStop(.50, '#c7d5d8'); chamber.addColorStop(.85, '#405560'); chamber.addColorStop(1, '#263b49');
+      ctx.fillStyle = chamber; ctx.fillRect(lensX - 12, bodyTop, sensorX - lensX + 40, bodyBottom - bodyTop);
+      ctx.fillStyle = '#eaf1f0'; ctx.fillRect(lensX + 12, bodyTop + 20, sensorX - lensX - 13, bodyBottom - bodyTop - 40);
+      ctx.strokeStyle = '#6e858f'; ctx.lineWidth = 2;
+      ctx.strokeRect(lensX + 12, bodyTop + 20, sensorX - lensX - 13, bodyBottom - bodyTop - 40);
       ctx.fillStyle = '#1d3543';
       ctx.beginPath(); ctx.roundRect(lensX - 40, axis - h * .145, 37, h * .29, 5); ctx.fill();
       ctx.fillStyle = '#667e89';
       ctx.fillRect(lensX - 40, axis - h * .135, 4, h * .27);
       ctx.fillRect(lensX - 28, axis - h * .135, 3, h * .27);
+      for (const offset of [-37, -32, -24, -19, -13]) {
+        ctx.fillStyle = offset % 2 ? '#9bb0b9' : '#49616e';
+        ctx.fillRect(lensX + offset, axis - h * .145, 1.5, h * .29);
+      }
       ctx.fillStyle = '#bfcbd0';
       ctx.beginPath(); ctx.roundRect(lensX + 30, bodyTop - 34, 19, 6, 2); ctx.fill();
       ctx.fillStyle = '#bdcbd0'; ctx.fillRect(sensorX + 7, bodyTop - 18, 18, bodyBottom - bodyTop + 36);
       ctx.fillStyle = '#233f56'; ctx.fillRect(sensorX - 2, bodyTop + 11, 8, bodyBottom - bodyTop - 22);
+      ctx.save();
+      ctx.strokeStyle = 'rgba(121,220,224,.48)'; ctx.lineWidth = 1;
+      for (let y = bodyTop + 23; y < bodyBottom - 16; y += 8) {
+        ctx.beginPath(); ctx.moveTo(sensorX + 1, y); ctx.lineTo(sensorX + 5, y); ctx.stroke();
+      }
+      ctx.restore();
       ctx.strokeStyle = '#284f70'; ctx.lineWidth = 7; ctx.beginPath();
       ctx.moveTo(sensorX, bodyTop + 17); ctx.lineTo(sensorX, bodyBottom - 17); ctx.stroke();
       const lensGrad = ctx.createLinearGradient(lensX - 10, 0, lensX + 10, 0);
@@ -5979,18 +5996,21 @@
         drawSceneLabel(ctx, personX - 24, axis + 29, '人物');
         drawSceneLabel(ctx, sensorX + 26, axis - 36, '感光元件');
       }
-      const preview = { x: w * .10, y: h * .78, w: w * .80, h: h * .17 };
-      ctx.fillStyle = '#20384a'; ctx.beginPath(); ctx.roundRect(preview.x, preview.y, preview.w, preview.h, 6); ctx.fill();
+      const preview = { x: w * .09, y: h * .76, w: w * .82, h: h * .21 };
+      const previewGradient = ctx.createLinearGradient(0, preview.y, 0, preview.y + preview.h);
+      previewGradient.addColorStop(0, '#172a36'); previewGradient.addColorStop(1, '#2c4958');
+      ctx.fillStyle = previewGradient; ctx.beginPath(); ctx.roundRect(preview.x, preview.y, preview.w, preview.h, 5); ctx.fill();
+      ctx.strokeStyle = '#a3b5ba'; ctx.lineWidth = 2; ctx.strokeRect(preview.x + 2, preview.y + 2, preview.w - 4, preview.h - 4);
       const previewX = preview.x + preview.w * .5;
       const baselineImageMm = focal * 2000 / (2000 - focal);
       const relativeMagnification = (imageMm / objectMm) / (baselineImageMm / 2000);
-      const previewHeight = (preview.h - 24) * Math.min(3.2, Math.max(.35, relativeMagnification));
+      const previewHeight = (preview.h - 14) * Math.min(3.2, Math.max(.35, relativeMagnification));
       ctx.save(); ctx.beginPath(); ctx.rect(preview.x + 5, preview.y + 5, preview.w - 10, preview.h - 10); ctx.clip();
       ctx.filter = `blur(${Math.min(14, circleMm * (compact ? 9 : 12)).toFixed(1)}px)`;
       drawCameraPerson(ctx, previewX, preview.y + preview.h / 2 - previewHeight / 2, previewHeight, true);
       ctx.restore();
       ctx.fillStyle = '#e7f4f4'; ctx.font = `700 ${compact ? 10 : 12}px "Times New Roman", "DFKai-SB", serif`;
-      ctx.fillText('感光元件放大預覽（倒立）', preview.x + 10, preview.y + 16);
+      ctx.fillText('感光元件放大預覽（倒立）', preview.x + 12, preview.y + 19);
     }
 
     function drawEyeLeader(ctx, anchor, labelPoint, label, align = 'left') {

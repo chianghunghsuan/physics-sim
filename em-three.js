@@ -45,6 +45,22 @@ function tube(parent, points, radius, material, closed = false) {
   return mesh;
 }
 
+function solidArrow(parent, direction, origin, length, color, radius = .035) {
+  const group = new THREE.Group();
+  const material = new THREE.MeshStandardMaterial({ color, roughness: .42, metalness: .18 });
+  const headLength = length * .25;
+  const body = new THREE.Mesh(new THREE.CylinderGeometry(radius, radius, length - headLength, 12), material);
+  body.position.y = (length - headLength) / 2;
+  const head = new THREE.Mesh(new THREE.ConeGeometry(radius * 2.8, headLength, 16), material);
+  head.position.y = length - headLength / 2;
+  body.castShadow = head.castShadow = true;
+  group.add(body, head);
+  group.position.set(...origin);
+  group.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction.clone().normalize());
+  parent.add(group);
+  return group;
+}
+
 function coilCurve(halfWidth, halfHeight, corner, depth) {
   const curve = new THREE.CurvePath();
   const p = (x, y) => new THREE.Vector3(x, y, depth);
@@ -335,14 +351,12 @@ function createStage(host, kind) {
   }
 
   const fieldArrows = [];
-  for (const z of [-.7, 0, .7]) {
-    const arrow = new THREE.ArrowHelper(new THREE.Vector3(1, 0, 0), new THREE.Vector3(-1.7, .18, z), 3.4, 0x477e98, .18, .085);
-    scene.add(arrow); fieldArrows.push(arrow);
+  for (const y of [-.88, 0, .88]) {
+    fieldArrows.push(solidArrow(scene, new THREE.Vector3(1, 0, 0), [-1.8, y, -.83], 3.6, '#3183ad', .026));
   }
   const forceArrows = [];
   if (kind === 'motor') for (let i = 0; i < 2; i += 1) {
-    const arrow = new THREE.ArrowHelper(new THREE.Vector3(0, 0, 1), new THREE.Vector3(), .75, 0xc54b51, .19, .09);
-    scene.add(arrow); forceArrows.push(arrow);
+    forceArrows.push(solidArrow(scene, new THREE.Vector3(0, 0, 1), [0, 0, 0], .74, '#c94a48', .052));
   }
 
   const control = { azimuth: .65, elevation: .39, distance: kind === 'generator' ? 11.3 : 10.4, dragging: false, x: 0, y: 0 };
@@ -432,7 +446,7 @@ function render(kind, state) {
     const x = side * .96 * Math.cos(state.angle), z = -side * .96 * Math.sin(state.angle);
     const sign = (index ? 1 : -1) * (reverse ? -1 : 1);
     arrow.position.set(x, 0, z);
-    arrow.setDirection(new THREE.Vector3(0, 0, sign));
+    arrow.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 0, sign));
     arrow.visible = state.showForce && state.B > .001 && Math.abs(state.current) > .01;
   }
   if (bulb) {
