@@ -6,6 +6,14 @@
   <title>高中物理現象模擬器</title>
   <link rel="stylesheet" href="vendor/katex.min.css">
   <style>
+    @font-face {
+      font-family: "DFKai-SB";
+      src: local("DFKai-SB"), local("標楷體"), local("BiauKai"),
+        url("assets/fonts/TW-Kai-site-subset.woff2") format("woff2");
+      font-style: normal;
+      font-weight: 400;
+      font-display: swap;
+    }
     :root {
       color-scheme: light;
       --bg: #eef2f6;
@@ -65,6 +73,13 @@
       max-width: 1080px;
     }
     .content { padding: 18px 30px 30px; }
+    .font-credit {
+      padding: 9px 30px 12px;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 12px;
+    }
+    .font-credit a { color: inherit; }
     .topbar, .legend, .actions, .checks, .presets, .tabs {
       display: flex;
       gap: 12px;
@@ -2039,6 +2054,7 @@
         </section>
       </section>
     </div>
+    <footer class="font-credit">字型來源：<a href="https://www.cns11643.gov.tw/pageView.jsp?ID=59&amp;SN=&amp;la=0&amp;lang=tw" target="_blank" rel="noopener noreferrer">數位發展部 CNS11643 中文標準交換碼全字庫</a></footer>
   </main>
 
   <script src="vendor/katex.min.js"></script>
