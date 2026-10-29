@@ -272,6 +272,7 @@ function createStage(host, kind) {
   const rings = [];
   let externalPaths = [];
   const externalMarkers = [];
+  const externalArrows = [];
   if (kind === 'motor') {
     const insulator = new THREE.Mesh(new THREE.CylinderGeometry(.28, .28, .23, 32), metal('#24333a', .65, .12));
     insulator.position.y = -1.47; rotor.add(insulator);
@@ -323,6 +324,15 @@ function createStage(host, kind) {
     for (let i = 0; i < 9; i += 1) {
       const marker = new THREE.Mesh(new THREE.SphereGeometry(.06, 12, 9), new THREE.MeshBasicMaterial({ color: '#f26a27' }));
       scene.add(marker); externalMarkers.push(marker);
+    }
+    for (const [center, direction] of [
+      [[-.70, -1.59, 1.76], [.68, 0, .38]],
+      [[.46, -1.68, 1.94], [.42, -.08, -.15]]
+    ]) {
+      const arrow = solidArrow(scene, new THREE.Vector3(...direction), center, .34, '#ef6b30', .045);
+      arrow.userData.center = new THREE.Vector3(...center);
+      arrow.userData.direction = new THREE.Vector3(...direction).normalize();
+      externalArrows.push(arrow);
     }
   }
 
@@ -418,7 +428,7 @@ function createStage(host, kind) {
     event.preventDefault(); control.distance = THREE.MathUtils.clamp(control.distance + event.deltaY * .008, 4.5, 13);
   }, { passive: false });
 
-  const stage = { kind, host, renderer, scene, camera, rotor, pathCurve, windingLoops, currentMarkers, currentArrows, electronMarkers, externalPaths, externalMarkers, fieldArrows, forceArrows, torqueArrow, bulb, bulbLight, filament, meter, control, chargePhase: 0, supplyPhase: 0, lastTime: NaN, lastState: null };
+  const stage = { kind, host, renderer, scene, camera, rotor, pathCurve, windingLoops, currentMarkers, currentArrows, electronMarkers, externalPaths, externalMarkers, externalArrows, fieldArrows, forceArrows, torqueArrow, bulb, bulbLight, filament, meter, control, chargePhase: 0, supplyPhase: 0, lastTime: NaN, lastState: null };
   stages.set(kind, stage);
   return stage;
 }
@@ -434,7 +444,7 @@ function render(kind, state) {
     console.warn('WebGL unavailable', error);
     return;
   }
-  const { renderer, scene, camera, rotor, pathCurve, windingLoops, currentMarkers, currentArrows, electronMarkers, externalPaths, externalMarkers, fieldArrows, forceArrows, torqueArrow, bulb, bulbLight, filament, meter, control } = stage;
+  const { renderer, scene, camera, rotor, pathCurve, windingLoops, currentMarkers, currentArrows, electronMarkers, externalPaths, externalMarkers, externalArrows, fieldArrows, forceArrows, torqueArrow, bulb, bulbLight, filament, meter, control } = stage;
   stage.lastState = state;
   const width = host.clientWidth, height = host.clientHeight;
   if (!width || !height) return;
@@ -490,6 +500,12 @@ function render(kind, state) {
     const fraction = (((motor ? Math.floor(i / 2) / 5 : i / externalMarkers.length) + phase) % 1 + 1) % 1;
     externalMarkers[i].position.copy(path.getPoint(fraction));
     externalMarkers[i].visible = state.showCurrent && Math.abs(state.current) > .04;
+  }
+  for (const arrow of externalArrows) {
+    const direction = arrow.userData.direction.clone().multiplyScalar(-Math.sign(state.current) || 1);
+    arrow.position.copy(arrow.userData.center).addScaledVector(direction, -.17);
+    arrow.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction);
+    arrow.visible = state.showCurrent && Math.abs(state.current) > .04;
   }
   if (forceArrows.length) for (const [index, arrow] of forceArrows.entries()) {
     const side = index ? 1 : -1;
