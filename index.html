@@ -601,10 +601,10 @@
           </div>
         </div>
         <div class="values" aria-live="polite">
-          <div class="badge" id="stand-lambda">λ右 = 1.00 m<small>λ = v / f</small></div>
-          <div class="badge" id="stand-delta">Δf = 0.00 Hz<small>同頻時圖形穩定</small></div>
+          <div class="badge" id="stand-lambda"><span data-latex="\lambda_R"></span> = 1.00 m<small><span data-latex="\lambda=v/f"></span></small></div>
+          <div class="badge" id="stand-delta"><span data-latex="\Delta f"></span> = 0.00 Hz<small>同頻時圖形穩定</small></div>
           <div class="badge" id="stand-amp">振幅比 = 1.00<small>等振幅才有真正節點</small></div>
-          <div class="badge" id="stand-status">固定-固定正常模態<small>L = nλ/2</small></div>
+          <div class="badge" id="stand-status">固定-固定正常模態<small><span data-latex="L=n\lambda/2"></span></small></div>
         </div>
         <div class="plot-wrap">
           <canvas id="standing-canvas" role="img" aria-label="左右行進波疊加成駐波的動態圖。"></canvas>
@@ -612,7 +612,7 @@
         <div class="boundary-setup">
           <div class="boundary-summary">
             <strong id="stand-boundary-summary">固定－固定</strong>
-            <small id="stand-boundary-formula">兩端都是節點；fₙ = nv/(2L)</small>
+            <small id="stand-boundary-formula">兩端都是節點；<span data-latex="f_n=nv/(2L)"></span></small>
           </div>
           <div class="boundary-choice">
             <label for="stand-left-boundary">左端邊界</label>
@@ -631,27 +631,27 @@
         </div>
         <div class="controls">
           <div class="control">
-            <label for="stand-v">波速 v：<span id="stand-v-out">10.0 m/s</span></label>
+            <label for="stand-v">波速 <span data-latex="v"></span>：<span id="stand-v-out">10.0 m/s</span></label>
             <input id="stand-v" type="range" min="1" max="25" step="0.1" value="10">
           </div>
           <div class="control">
-            <label for="stand-L">視窗長度 L：<span id="stand-L-out">1.00 m</span></label>
+            <label for="stand-L">視窗長度 <span data-latex="L"></span>：<span id="stand-L-out">1.00 m</span></label>
             <input id="stand-L" type="range" min="0.5" max="3" step="0.05" value="1">
           </div>
           <div class="control">
-            <label for="stand-fR">右行頻率 fR：<span id="stand-fR-out">10.00 Hz</span></label>
+            <label for="stand-fR">右行頻率 <span data-latex="f_R"></span>：<span id="stand-fR-out">10.00 Hz</span></label>
             <input id="stand-fR" type="range" min="0.5" max="40" step="0.05" value="10">
           </div>
           <div class="control">
-            <label for="stand-fL">左行頻率 fL：<span id="stand-fL-out">10.00 Hz</span></label>
+            <label for="stand-fL">左行頻率 <span data-latex="f_L"></span>：<span id="stand-fL-out">10.00 Hz</span></label>
             <input id="stand-fL" type="range" min="0.5" max="40" step="0.05" value="10">
           </div>
           <div class="control">
-            <label for="stand-AR">右行振幅 AR：<span id="stand-AR-out">1.0</span></label>
+            <label for="stand-AR">右行振幅 <span data-latex="A_R"></span>：<span id="stand-AR-out">1.0</span></label>
             <input id="stand-AR" type="range" min="0" max="1.2" step="0.1" value="1">
           </div>
           <div class="control">
-            <label for="stand-AL">左行振幅 AL：<span id="stand-AL-out">1.0</span></label>
+            <label for="stand-AL">左行振幅 <span data-latex="A_L"></span>：<span id="stand-AL-out">1.0</span></label>
             <input id="stand-AL" type="range" min="0" max="1.2" step="0.1" value="1">
           </div>
           <div class="control">
@@ -662,7 +662,7 @@
         <div class="mode-presets" id="stand-mode-presets">
           <div class="mode-presets-head">
             <strong id="stand-mode-title">固定－固定的完美駐波</strong>
-            <span id="stand-mode-formula">fₙ = nv/(2L)</span>
+            <span id="stand-mode-formula" data-latex="f_n=nv/(2L)"></span>
           </div>
           <div class="mode-buttons" id="stand-mode-buttons"></div>
         </div>
@@ -683,7 +683,7 @@
 
       <section id="panel-drive" class="panel" role="tabpanel">
         <div class="module-head"><div><h2>同一偏心輪：橫波與縱波</h2><p class="module-copy">同一轉軸同時驅動繩子的橫向振動與彈簧的縱向振動；固定介質波速後，提高頻率會縮短兩者的波長。紅色追蹤點是介質質點，不跟著波峰一路前進。</p></div></div>
-        <div class="values"><div class="badge" id="drive-period">週期 T</div><div class="badge" id="drive-wavelength">波長 λ</div><div class="badge" id="drive-speed-badge">波速 v</div></div>
+        <div class="values"><div class="badge" id="drive-period">週期 <span data-latex="T"></span></div><div class="badge" id="drive-wavelength">波長 <span data-latex="\lambda"></span></div><div class="badge" id="drive-speed-badge">波速 <span data-latex="v"></span></div></div>
         <div class="plot-wrap"><canvas id="drive-canvas" role="img" aria-label="同一偏心輪驅動繩子橫波與彈簧縱波，標記介質質點與傳播方向。"></canvas></div>
         <div class="controls"><div class="control"><label for="drive-frequency">驅動頻率：<span id="drive-frequency-out">1.5 Hz</span></label><input id="drive-frequency" type="range" min="0.4" max="3" step="0.1" value="1.5"></div><div class="control"><label for="drive-speed">波速：<span id="drive-speed-out">0.80 m/s</span></label><input id="drive-speed" type="range" min="0.4" max="1.6" step="0.05" value="0.8"></div><div class="control"><label for="drive-amplitude">振幅：<span id="drive-amplitude-out">1.0x</span></label><input id="drive-amplitude" type="range" min="0.2" max="1.5" step="0.05" value="1"></div></div>
         <div class="checks"><label class="check"><input id="drive-show-particles" type="checkbox" checked>追蹤介質質點</label><label class="check"><input id="drive-show-front" type="checkbox" checked>顯示波峰與密部</label></div>
@@ -711,7 +711,7 @@
           </div>
         </div>
         <div class="values" aria-live="polite">
-          <div class="badge" id="dop-lambda">原波長 = 10.00 m<small>λ = v / f</small></div>
+          <div class="badge" id="dop-lambda">原波長 = 10.00 m<small><span data-latex="\lambda=v/f"></span></small></div>
           <div class="badge" id="dop-observed">觀察頻率 = 1.40 Hz<small>接近時變高</small></div>
           <div class="badge" id="dop-ratio">f'/f = 1.00<small>比較音調高低</small></div>
           <div class="badge" id="dop-status">波源靜止或等效靜止<small>波面間距左右相同</small></div>
@@ -777,7 +777,7 @@
         </div>
         <div class="values" aria-live="polite">
           <div class="badge" id="rip-lambda">波長 = 54 px<small>波面間距</small></div>
-          <div class="badge" id="rip-ratio">d/λ = 2.96<small>源距越大，節線越多</small></div>
+          <div class="badge" id="rip-ratio"><span data-latex="d/\lambda"></span> = 2.96<small>源距越大，節線越多</small></div>
           <div class="badge" id="rip-phase">相位差 = 0°<small>同相時中央為腹線</small></div>
           <div class="badge" id="rip-status">同相雙源<small>中央線建設性干涉</small></div>
         </div>
@@ -786,7 +786,7 @@
         </div>
         <div class="controls">
           <div class="control">
-            <label for="rip-lambda-in">波長 λ：<span id="rip-lambda-out">54 px</span></label>
+            <label for="rip-lambda-in">波長 <span data-latex="\lambda"></span>：<span id="rip-lambda-out">54 px</span></label>
             <input id="rip-lambda-in" type="range" min="28" max="90" step="1" value="54">
           </div>
           <div class="control">
@@ -811,7 +811,7 @@
         </div>
         <section class="teacher-note">
           <p><strong>講法：</strong>先只看瞬時水面，確認亮帶與暗帶都會向外移動；再依序打開淺藍腹線與灰色節線，區分「水面正在亮或暗」和「振幅長期最大或為零」。</p>
-          <p><strong>強調：</strong>調大波源距離或調短波長，會讓路徑差容納更多半波長，因此腹線、節線都會增加。若 d/λ 只接近整數，沿波源連線方向是近腹區，不一定有精確腹線。</p>
+          <p><strong>強調：</strong>調大波源距離或調短波長，會讓路徑差容納更多半波長，因此腹線、節線都會增加。若 <span data-latex="d/\lambda"></span> 只接近整數，沿波源連線方向是近腹區，不一定有精確腹線。</p>
         </section>
       </section>
 
@@ -829,9 +829,9 @@
           </div>
         </div>
         <div class="values" aria-live="polite">
-          <div class="badge" id="dbl-lambda">λ = 550 nm<small>紅光較長、藍光較短</small></div>
-          <div class="badge" id="dbl-spacing">條紋間距 = 3.14 mm<small>Δy = λD / d</small></div>
-          <div class="badge" id="dbl-ratio">d/λ = 636<small>縫距越大，條紋越密</small></div>
+          <div class="badge" id="dbl-lambda"><span data-latex="\lambda"></span> = 550 nm<small>紅光較長、藍光較短</small></div>
+          <div class="badge" id="dbl-spacing">條紋間距 = 3.14 mm<small><span data-latex="\Delta y=\lambda D/d"></span></small></div>
+          <div class="badge" id="dbl-ratio"><span data-latex="d/\lambda"></span> = 636<small>縫距越大，條紋越密</small></div>
           <div class="badge" id="dbl-status">理想雙狹縫<small>亮紋等距、等寬、等亮</small></div>
         </div>
         <div class="plot-wrap wave-lab">
@@ -839,7 +839,7 @@
         </div>
         <div class="controls">
           <div class="control">
-            <label for="dbl-lambda-in">波長 λ：<span id="dbl-lambda-out">550 nm</span></label>
+            <label for="dbl-lambda-in">波長 <span data-latex="\lambda"></span>：<span id="dbl-lambda-out">550 nm</span></label>
             <input id="dbl-lambda-in" type="range" min="420" max="680" step="5" value="550">
           </div>
           <div class="control">
@@ -885,9 +885,9 @@
           </div>
         </div>
         <div class="values" aria-live="polite">
-          <div class="badge" id="sgl-lambda">λ = 550 nm<small>波長越長，繞射越明顯</small></div>
-          <div class="badge" id="sgl-ratio">a/λ = 182<small>縫越窄，中央亮紋越寬</small></div>
-          <div class="badge" id="sgl-angle">第一暗紋 θ₁ = 0.32°<small>sin θ₁ = λ/a</small></div>
+          <div class="badge" id="sgl-lambda"><span data-latex="\lambda"></span> = 550 nm<small>波長越長，繞射越明顯</small></div>
+          <div class="badge" id="sgl-ratio"><span data-latex="a/\lambda"></span> = 182<small>縫越窄，中央亮紋越寬</small></div>
+          <div class="badge" id="sgl-angle">第一暗紋 <span data-latex="\theta_1"></span> = 0.32°<small><span data-latex="\sin\theta_1=\lambda/a"></span></small></div>
           <div class="badge" id="sgl-width">中央亮紋寬 = 22.0 mm<small>約為兩側亮紋寬的 2 倍</small></div>
         </div>
         <div class="plot-wrap wave-lab">
@@ -895,7 +895,7 @@
         </div>
         <div class="controls">
           <div class="control">
-            <label for="sgl-lambda-in">波長 λ：<span id="sgl-lambda-out">550 nm</span></label>
+            <label for="sgl-lambda-in">波長 <span data-latex="\lambda"></span>：<span id="sgl-lambda-out">550 nm</span></label>
             <input id="sgl-lambda-in" type="range" min="420" max="680" step="5" value="550">
           </div>
           <div class="control">
@@ -937,7 +937,7 @@
         </div>
         <div class="lesson-steps" role="group" aria-label="惠更斯原理觀察步驟"><button class="huy-step" type="button" data-huy-progress="12" aria-pressed="false">1 波前抵達</button><button class="huy-step" type="button" data-huy-progress="56" aria-pressed="false">2 次波展開</button><button class="huy-step" type="button" data-huy-progress="88" aria-pressed="false">3 外包絡形成</button></div>
         <div class="values" aria-live="polite">
-          <div class="badge" id="huy-lambda">次波半徑 r = 0 px<small>相同時間內 r = vΔt</small></div>
+          <div class="badge" id="huy-lambda">次波半徑 <span data-latex="r"></span> = 0 px<small>相同時間內 <span data-latex="r=v\Delta t"></span></small></div>
           <div class="badge" id="huy-aperture">開口 = 150 px<small>開口越窄，繞射越明顯</small></div>
           <div class="badge" id="huy-points">次波源 = 13 個<small>點越多，包絡越平滑</small></div>
           <div class="badge" id="huy-status">狹縫繞射<small>通過開口的點成為次波源</small></div>
@@ -955,7 +955,7 @@
             </select>
           </div>
           <div class="control">
-            <label for="huy-lambda-in">波長 λ：<span id="huy-lambda-out">46 px</span></label>
+            <label for="huy-lambda-in">波長 <span data-latex="\lambda"></span>：<span id="huy-lambda-out">46 px</span></label>
             <input id="huy-lambda-in" type="range" min="24" max="80" step="1" value="46">
           </div>
           <div class="control">
@@ -981,7 +981,7 @@
           <label class="check"><input type="checkbox" id="huy-show-envelope" checked>顯示包絡</label>
         </div>
         <section class="teacher-note">
-          <p><strong>講法：</strong>依序停在三個步驟：同一波前上的點同時受擾動；經過相同 Δt，各點的次波有相同半徑 vΔt；沿著最前方相切的位置連線，就是下一時刻的波前。</p>
+          <p><strong>講法：</strong>依序停在三個步驟：同一波前上的點同時受擾動；經過相同 <span data-latex="\Delta t"></span>，各點的次波有相同半徑 <span data-latex="v\Delta t"></span>；沿著最前方相切的位置連線，就是下一時刻的波前。</p>
           <p><strong>辨別：</strong>這張圖只建構波前，並未計算亮暗干涉條紋。狹縫後的強度分布還需要把各點波動的相位與振幅相加。</p>
         </section>
       </section>
@@ -1365,16 +1365,16 @@
             <div class="legend" aria-label="圓周投影圖例">
               <span class="blue"><i class="dot"></i>等速圓周</span>
               <span class="orange"><i class="dot"></i>轉動半徑</span>
-              <span class="green"><i class="dot"></i>水平投影 x</span>
-              <span class="purple"><i class="dot"></i>鉛直投影 y</span>
-              <span class="red"><i class="dot"></i>速度 v</span>
+              <span class="green"><i class="dot"></i>水平投影 <span data-latex="x"></span></span>
+              <span class="purple"><i class="dot"></i>鉛直投影 <span data-latex="y"></span></span>
+              <span class="red"><i class="dot"></i>速度 <span data-latex="v"></span></span>
             </div>
           </div>
           <div class="values" aria-live="polite">
-            <div class="badge" id="circ-omega">角速度 ω = 1.05 rad/s<small>每秒轉過的角度</small></div>
-            <div class="badge" id="circ-period-badge">週期 T = 6.0 s<small>圓周與投影週期相同</small></div>
-            <div class="badge" id="circ-position-x">水平 x = 1.00 A<small>x = A cos θ</small></div>
-            <div class="badge" id="circ-position-y">鉛直 y = 0.00 A<small>y = A sin θ</small></div>
+            <div class="badge" id="circ-omega">角速度 <span data-latex="\omega"></span> = 1.05 rad/s<small>每秒轉過的角度</small></div>
+            <div class="badge" id="circ-period-badge">週期 <span data-latex="T"></span> = 6.0 s<small>圓周與投影週期相同</small></div>
+            <div class="badge" id="circ-position-x">水平 <span data-latex="x"></span> = 1.00<small><span data-latex="x=A\cos\theta"></span></small></div>
+            <div class="badge" id="circ-position-y">鉛直 <span data-latex="y"></span> = 0.00<small><span data-latex="y=A\sin\theta"></span></small></div>
             <div class="badge" id="circ-state">端點：速度為零<small>加速度量值最大</small></div>
           </div>
           <div class="plot-wrap">
@@ -1382,7 +1382,7 @@
           </div>
           <div class="controls">
             <div class="control">
-              <label for="circ-radius">振幅 A：<span id="circ-radius-out">3.0</span></label>
+              <label for="circ-radius">振幅 <span data-latex="A"></span>：<span id="circ-radius-out">3.0</span></label>
               <input id="circ-radius" type="range" min="1" max="5" step="0.1" value="3">
             </div>
             <div class="control">
@@ -1409,8 +1409,8 @@
         </div>
 
         <div id="mechanics-view-skater" class="topic-view">
-          <div class="module-head"><div><h2>滑冰者收手，為何轉得更快？</h2><p class="module-copy">外力矩很小時，手臂靠近轉軸使轉動慣量 I 減小；同一個角動量 L = Iω 對應更大的角速度。追蹤衣服上的亮點，比較每一秒轉過的角度。</p></div></div>
-          <div class="values"><div class="badge" id="skater-inertia">轉動慣量 I = 0.0 kg·m²</div><div class="badge" id="skater-omega">角速度 ω = 0.0 rad/s</div><div class="badge" id="skater-angular">角動量 L = 0.0 kg·m²/s</div><div class="badge" id="skater-period">轉一圈需 0.0 s</div></div>
+          <div class="module-head"><div><h2>滑冰者收手，為何轉得更快？</h2><p class="module-copy">外力矩很小時，手臂靠近轉軸使轉動慣量 <span data-latex="I"></span> 減小；同一個角動量 <span data-latex="L=I\omega"></span> 對應更大的角速度。追蹤衣服上的亮點，比較每一秒轉過的角度。</p></div></div>
+          <div class="values"><div class="badge" id="skater-inertia">轉動慣量 <span data-latex="I"></span> = 0.0 kg·m²</div><div class="badge" id="skater-omega">角速度 <span data-latex="\omega"></span> = 0.0 rad/s</div><div class="badge" id="skater-angular">角動量 <span data-latex="L"></span> = 0.0 kg·m²/s</div><div class="badge" id="skater-period">轉一圈需 0.0 s</div></div>
           <div class="plot-wrap"><canvas id="skater-canvas" role="img" aria-label="滑冰者手臂由伸展收回，身體與亮點明顯加速旋轉，旁邊比較同一秒轉過的角度。"></canvas></div>
           <div class="controls"><div class="control"><label for="skater-arms">手臂伸展程度：<span id="skater-arms-out">100%</span></label><input id="skater-arms" type="range" min="0" max="100" step="1" value="100"></div><div class="control"><label for="skater-speed">播放速度：<span id="skater-speed-out">0.50x</span></label><input id="skater-speed" type="range" min="0.1" max="1.5" step="0.05" value="0.5"></div></div>
           <div class="presets"><button type="button" class="preset" id="skater-out">雙臂張開</button><button type="button" class="preset" id="skater-in">雙臂收回</button></div>
@@ -1427,15 +1427,15 @@
               <p class="module-copy" id="angular-copy">重力矩不直接把高速旋轉的陀螺壓倒，而是持續改變角動量的方向，使轉軸繞鉛直方向進動。</p>
             </div>
             <div class="legend" aria-label="陀螺進動圖例">
-              <span class="blue"><i class="dot"></i>角動量 L</span>
-              <span class="red"><i class="dot"></i>力矩 τ</span>
+              <span class="blue"><i class="dot"></i>角動量 <span data-latex="L"></span></span>
+              <span class="red"><i class="dot"></i>力矩 <span data-latex="\tau"></span></span>
               <span class="green"><i class="dot"></i>進動軌跡</span>
             </div>
           </div>
           <div class="values" aria-live="polite">
-            <div class="badge" id="prec-L">角動量 L = 2.51 kg·m²/s<small>L = Iω</small></div>
-            <div class="badge" id="prec-torque">重力矩 τ = 4.25 N·m<small>τ = mgr sin α</small></div>
-            <div class="badge" id="prec-omega">進動角速度 Ω = 1.95 rad/s<small>Ω = mgr/L</small></div>
+            <div class="badge" id="prec-L">角動量 <span data-latex="L"></span> = 2.51 kg·m²/s<small><span data-latex="L=I\omega"></span></small></div>
+            <div class="badge" id="prec-torque">重力矩 <span data-latex="\tau"></span> = 4.25 N·m<small><span data-latex="\tau=mgr\sin\alpha"></span></small></div>
+            <div class="badge" id="prec-omega">進動角速度 <span data-latex="\Omega"></span> = 1.95 rad/s<small><span data-latex="\Omega=mgr/L"></span></small></div>
             <div class="badge" id="prec-period">進動週期 = 3.22 s<small>轉得越快，進動越慢</small></div>
           </div>
           <div class="plot-wrap">
@@ -1468,13 +1468,13 @@
             </div>
           </div>
           <div class="checks">
-            <label class="check gyro-only"><input type="checkbox" id="prec-show-vectors" checked>顯示 L、τ、ΔL 與 L′</label>
+            <label class="check gyro-only"><input type="checkbox" id="prec-show-vectors" checked>顯示 <span data-latex="L"></span>、<span data-latex="\tau"></span>、<span data-latex="\Delta L"></span> 與 <span data-latex="L'"></span></label>
             <label class="check gyro-only"><input type="checkbox" id="prec-show-cone" checked>顯示轉軸掃過範圍</label>
             <label class="check heli-only" hidden><input type="checkbox" id="heli-tail-enabled" checked>尾旋翼運作（取消後觀察機身反轉）</label>
             <label class="check heli-only" hidden><input type="checkbox" id="heli-show-torque" checked>顯示主旋翼與機身的反向扭矩</label>
           </div>
           <section class="teacher-note" id="angular-teacher">
-            <p><strong>講法：</strong>先暫停並比較藍色 L 與紅色 τ：τ 幾乎垂直於 L，所以主要改變方向而不是立即消除自轉。再播放觀察 L 的尖端沿圓周移動。</p>
+            <p><strong>講法：</strong>先暫停並比較藍色 <span data-latex="L"></span> 與紅色 <span data-latex="\tau"></span>：<span data-latex="\tau"></span> 幾乎垂直於 <span data-latex="L"></span>，所以主要改變方向而不是立即消除自轉。再播放觀察 <span data-latex="L"></span> 的尖端沿圓周移動。</p>
             <p><strong>強調：</strong>增加自轉速率會增大 L，因此相同重力矩每秒能改變的方向較少，進動反而變慢。陀螺受到外力矩，所以陀螺本身的 L 方向會改變；把陀螺與地球視為整體時，總角動量才守恆。</p>
           </section>
         </div>
@@ -1559,8 +1559,8 @@
             </div>
           </div>
           <div class="values" aria-live="polite">
-            <div class="badge" id="ref-angles">θ₁ = 45.0°；θ₂ = 28.1°<small>n₁ sinθ₁ = n₂ sinθ₂</small></div>
-            <div class="badge" id="ref-speed">v₂/v₁ = 0.67<small>頻率不變，波長跟速度同比改變</small></div>
+            <div class="badge" id="ref-angles"><span data-latex="\theta_1"></span> = 45.0°；<span data-latex="\theta_2"></span> = 28.1°<small><span data-latex="n_1\sin\theta_1=n_2\sin\theta_2"></span></small></div>
+            <div class="badge" id="ref-speed"><span data-latex="v_2/v_1"></span> = 0.67<small>頻率不變，波長跟速度同比改變</small></div>
             <div class="badge" id="ref-energy">反射 5%｜透射 95%<small>線條亮度依 Fresnel 比例呈現</small></div>
             <div class="badge" id="ref-status">一般折射<small>光進入高折射率介質，向法線偏折</small></div>
           </div>
@@ -1569,11 +1569,11 @@
           </div>
           <div class="controls">
             <div class="control">
-              <label for="ref-n1">上方折射率 n₁：<span id="ref-n1-out">1.00</span></label>
+              <label for="ref-n1">上方折射率 <span data-latex="n_1"></span>：<span id="ref-n1-out">1.00</span></label>
               <input id="ref-n1" type="range" min="1" max="1.8" step="0.01" value="1">
             </div>
             <div class="control">
-              <label for="ref-n2">下方折射率 n₂：<span id="ref-n2-out">1.50</span></label>
+              <label for="ref-n2">下方折射率 <span data-latex="n_2"></span>：<span id="ref-n2-out">1.50</span></label>
               <input id="ref-n2" type="range" min="1" max="1.8" step="0.01" value="1.5">
             </div>
             <div class="control">
@@ -1598,7 +1598,7 @@
             <label class="check"><input type="checkbox" id="ref-show-fiber" checked>全反射時顯示光纖應用</label>
           </div>
           <section class="teacher-note">
-            <p><strong>講法：</strong>先固定角度，只改 n₂，觀察下方光粒子的速度與波前間距同時改變。再切到「玻璃臨界角」，慢慢提高角度：折射光先貼近介面，越過臨界角後才完全消失。</p>
+            <p><strong>講法：</strong>先固定角度，只改 <span data-latex="n_2"></span>，觀察下方光粒子的速度與波前間距同時改變。再切到「玻璃臨界角」，慢慢提高角度：折射光先貼近介面，越過臨界角後才完全消失。</p>
             <p><strong>強調：</strong>全反射要同時滿足由高折射率射向低折射率，以及入射角大於臨界角；不是任何反射都叫全反射。</p>
           </section>
         </div>
@@ -1617,7 +1617,7 @@
           </div>
           <div class="values" aria-live="polite">
             <div class="badge" id="scatter-path">相對路徑 = 1.4<small>太陽越低，穿越大氣越長</small></div>
-            <div class="badge" id="scatter-blue">藍／紅散射比 = 4.4<small>Rayleigh：強度約與 1/λ⁴ 成正比</small></div>
+            <div class="badge" id="scatter-blue">藍／紅散射比 = 4.4<small>Rayleigh：強度約與 <span data-latex="1/\lambda^4"></span> 成正比</small></div>
             <div class="badge" id="scatter-direct">直達光：近白色<small>藍光尚未大量離開光束</small></div>
             <div class="badge" id="scatter-status">晴朗天空<small>分子尺度遠小於可見光波長</small></div>
           </div>
@@ -1721,15 +1721,15 @@
       <section id="panel-brewster" class="panel" role="tabpanel">
         <div class="module-head"><div><h2>布魯斯特角與偏振</h2><p class="module-copy">調整入射角，比較電場垂直入射面（s）與平行入射面（p）的反射率；在布魯斯特角，p 偏振的反射光消失。</p></div></div>
         <div class="values" aria-live="polite">
-          <div class="badge" id="brewster-angle-badge">布魯斯特角 θB = 56.3°</div>
+          <div class="badge" id="brewster-angle-badge">布魯斯特角 <span data-latex="\theta_B"></span> = 56.3°</div>
           <div class="badge" id="brewster-rs">s 反射率 = 0%</div>
           <div class="badge" id="brewster-rp">p 反射率 = 0%</div>
           <div class="badge" id="brewster-status">反射光含兩種偏振</div>
         </div>
         <div class="plot-wrap"><canvas id="brewster-canvas" role="img" aria-label="偏振光在兩介質界面反射折射，右側以曲線比較 s 與 p 偏振反射率。"></canvas></div>
         <div class="controls">
-          <div class="control"><label for="brewster-n1">入射介質 n₁：<span id="brewster-n1-out">1.00</span></label><input id="brewster-n1" type="range" min="1" max="1.8" step="0.01" value="1"></div>
-          <div class="control"><label for="brewster-n2">折射介質 n₂：<span id="brewster-n2-out">1.50</span></label><input id="brewster-n2" type="range" min="1" max="1.8" step="0.01" value="1.5"></div>
+          <div class="control"><label for="brewster-n1">入射介質 <span data-latex="n_1"></span>：<span id="brewster-n1-out">1.00</span></label><input id="brewster-n1" type="range" min="1" max="1.8" step="0.01" value="1"></div>
+          <div class="control"><label for="brewster-n2">折射介質 <span data-latex="n_2"></span>：<span id="brewster-n2-out">1.50</span></label><input id="brewster-n2" type="range" min="1" max="1.8" step="0.01" value="1.5"></div>
           <div class="control"><label for="brewster-incidence">入射角：<span id="brewster-incidence-out">45.0°</span></label><input id="brewster-incidence" type="range" min="0" max="85" step="0.1" value="45"></div>
           <div class="control"><label for="brewster-polarization">入射偏振</label><select id="brewster-polarization"><option value="both">自然光：s + p</option><option value="s">只有 s</option><option value="p">只有 p</option></select></div>
         </div>
@@ -1758,7 +1758,7 @@
         <div class="module-head"><div><h2>薄膜干涉</h2><p class="module-copy">最先返回的兩束光分別由薄膜上、下表面反射。光程差與反射相位決定增強或減弱；反射率計算也包含膜內更高次的反射。</p></div></div>
         <div class="values" aria-live="polite">
           <div class="badge" id="film-path">往返光程 = 0 nm</div>
-          <div class="badge" id="film-phase">相位差 = 0π</div>
+          <div class="badge" id="film-phase">相位差 = <span data-latex="0\pi"></span></div>
           <div class="badge" id="film-reflectance">選定波長反射率 = 0%</div>
           <div class="badge" id="film-status">上下兩束反射光疊加</div>
         </div>
@@ -2005,7 +2005,7 @@
           <div class="module-head"><div><h2>質譜儀：先選速度，再依質量分離</h2><p class="module-copy">離子先穿過 <span data-latex="E"></span> 與 <span data-latex="B"></span> 交叉的速度選擇器，只有 <span data-latex="v=E/B"></span> 的粒子筆直通過。進入均勻磁場後，磁力只改變方向；不同質量畫出不同半徑，落在不同偵測位置。</p></div></div>
           <div class="values"><div class="badge" id="spec-velocity">選定速度 = 0 m/s</div><div class="badge" id="spec-light">輕同位素半徑 = 0 m</div><div class="badge" id="spec-heavy">重同位素半徑 = 0 m</div><div class="badge" id="spec-spacing">落點間距 = 0 m</div></div>
           <div class="plot-wrap lab-instrument"><canvas id="spectrometer-canvas" role="img" aria-label="離子先在交叉電磁場速度選擇器中直行，再進入磁分析室，不同質量彎出不同半徑而落在不同偵測點。"></canvas></div>
-          <div class="controls"><div class="control"><label for="spec-e">選速電場 E：<span id="spec-e-out">4.0 kV/m</span></label><input id="spec-e" type="range" min="1" max="8" step="0.1" value="4"></div><div class="control"><label for="spec-b-select">選速磁場 B₁：<span id="spec-b-select-out">0.80 T</span></label><input id="spec-b-select" type="range" min="0.3" max="1.2" step="0.02" value="0.8"></div><div class="control"><label for="spec-b-analyze">分析磁場 B₂：<span id="spec-b-analyze-out">0.006 T</span></label><input id="spec-b-analyze" type="range" min="0.002" max="0.012" step="0.0002" value="0.006"></div><div class="control"><label for="spec-mass">較輕同位素質量：<span id="spec-mass-out">20 u</span></label><input id="spec-mass" type="range" min="12" max="40" step="1" value="20"></div><div class="control"><label for="spec-speed">播放速度：<span id="spec-speed-out">0.35x</span></label><input id="spec-speed" type="range" min="0.1" max="1.5" step="0.05" value="0.35"></div></div>
+          <div class="controls"><div class="control"><label for="spec-e">選速電場 <span data-latex="E"></span>：<span id="spec-e-out">4.0 kV/m</span></label><input id="spec-e" type="range" min="1" max="8" step="0.1" value="4"></div><div class="control"><label for="spec-b-select">選速磁場 <span data-latex="B_1"></span>：<span id="spec-b-select-out">0.80 T</span></label><input id="spec-b-select" type="range" min="0.3" max="1.2" step="0.02" value="0.8"></div><div class="control"><label for="spec-b-analyze">分析磁場 <span data-latex="B_2"></span>：<span id="spec-b-analyze-out">0.006 T</span></label><input id="spec-b-analyze" type="range" min="0.002" max="0.012" step="0.0002" value="0.006"></div><div class="control"><label for="spec-mass">較輕同位素質量：<span id="spec-mass-out">20 u</span></label><input id="spec-mass" type="range" min="12" max="40" step="1" value="20"></div><div class="control"><label for="spec-speed">播放速度：<span id="spec-speed-out">0.35x</span></label><input id="spec-speed" type="range" min="0.1" max="1.5" step="0.05" value="0.35"></div></div>
         </div>
       </section>
 
@@ -2274,10 +2274,10 @@
       const leftBoundaryName = leftFixed ? '固定' : '自由';
       const rightBoundaryName = rightFixed ? '固定' : '自由';
       const boundaryLabel = `${leftBoundaryName}-${rightBoundaryName}`;
-      const familyFormula = sameEnds ? 'fₙ = nv/(2L)' : 'fₙ = (2n−1)v/(4L)';
+      const familyFormula = sameEnds ? 'f_n=\\frac{nv}{2L}' : 'f_n=\\frac{(2n-1)v}{4L}';
       const modeFormula = sameEnds
-        ? `n=${modeNumber}，L = ${modeNumber}λ/2`
-        : `n=${modeNumber}，L = ${2 * modeNumber - 1}λ/4`;
+        ? `n=${modeNumber},\\;L=\\frac{${modeNumber}\\lambda}{2}`
+        : `n=${modeNumber},\\;L=\\frac{${2 * modeNumber - 1}\\lambda}{4}`;
       return {
         v, L, fR, fL, AR, AL, leftFixed, rightFixed, sameEnds,
         lambdaR, lambdaL, kR, kL, omegaR, omegaL,
@@ -2314,15 +2314,12 @@
       setText('stand-AR-out', s.AR.toFixed(1));
       setText('stand-AL-out', s.AL.toFixed(1));
       setText('stand-speed-out', `${number('stand-speed').toFixed(2)}x`);
-      $('stand-lambda').innerHTML = `λ右 = ${s.lambdaR.toFixed(3)} m<small>λ左 = ${s.lambdaL.toFixed(3)} m</small>`;
-      $('stand-delta').innerHTML = `Δf = ${s.deltaF.toFixed(2)} Hz<small>${s.coherent ? '同頻，圖形可固定' : `拍頻週期約 ${(1 / s.deltaF).toFixed(2)} s`}</small>`;
-      const ratio = s.AL === 0 ? '∞' : (s.AR / s.AL).toFixed(2);
-      $('stand-amp').innerHTML = `振幅比 AR/AL = ${ratio}<small>最小振幅約 |AR - AL| = ${s.ampDiff.toFixed(1)}A</small>`;
+      $('stand-lambda').innerHTML = `${math('\\lambda_R')} = ${s.lambdaR.toFixed(3)} m<small>${math('\\lambda_L')} = ${s.lambdaL.toFixed(3)} m</small>`;
+      $('stand-delta').innerHTML = `${math('\\Delta f')} = ${s.deltaF.toFixed(2)} Hz<small>${s.coherent ? '同頻，圖形可固定' : `拍頻週期約 ${(1 / s.deltaF).toFixed(2)} s`}</small>`;
+      const ratio = s.AL === 0 ? '\\infty' : (s.AR / s.AL).toFixed(2);
+      $('stand-amp').innerHTML = `振幅比 ${math(`A_R/A_L=${ratio}`)}<small>最小振幅 ${math('|A_R-A_L|')} = ${s.ampDiff.toFixed(1)}</small>`;
       setText('stand-boundary-summary', `${s.boundaryLabel.replace('-', '－')}邊界`);
-      setText(
-        'stand-boundary-formula',
-        `左端${s.leftKindLabel}、右端${s.rightKindLabel}；${s.familyFormula}`
-      );
+      $('stand-boundary-formula').innerHTML = `左端${s.leftKindLabel}、右端${s.rightKindLabel}；${math(s.familyFormula)}`;
       let text = '穩定駐波';
       let small = `左端${s.leftKindLabel}、右端${s.rightKindLabel}`;
       let warn = false;
@@ -2336,11 +2333,11 @@
         warn = true;
       } else if (!s.boundaryStable) {
         text = '穩定干涉，但不是所選邊界的正常模態';
-        small = `最近是 n=${s.modeNumber}：${s.targetFrequency.toFixed(2)} Hz`;
+        small = `最近是 ${math(`n=${s.modeNumber}`)}：${s.targetFrequency.toFixed(2)} Hz`;
         warn = true;
       } else {
         text = `${s.boundaryLabel}正常模態`;
-        small = `左端為${s.leftKindLabel}、右端為${s.rightKindLabel}；${s.modeFormula}`;
+        small = `左端為${s.leftKindLabel}、右端為${s.rightKindLabel}；${math(s.modeFormula)}`;
       }
       $('stand-status').classList.toggle('warning', warn);
       $('stand-status').innerHTML = `${text}<small>${small}</small>`;
@@ -2369,14 +2366,14 @@
       if (signature === standingPresetSignature) return;
       standingPresetSignature = signature;
       setText('stand-mode-title', `${s.boundaryLabel.replace('-', '－')}的完美駐波`);
-      setText('stand-mode-formula', s.familyFormula);
+      $('stand-mode-formula').innerHTML = math(s.familyFormula);
       $('stand-mode-buttons').replaceChildren();
       values.forEach(({ f, n }) => {
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'preset';
         if (Math.abs(s.fR - f) < 0.025 && s.coherent && s.equalAmp) btn.classList.add('active');
-        btn.textContent = `n=${n} · ${f.toFixed(2)} Hz`;
+        btn.innerHTML = `${math(`n=${n}`)} · ${f.toFixed(2)} Hz`;
         btn.addEventListener('click', () => {
           $('stand-lock').checked = true;
           $('stand-fR').value = f.toFixed(3);
@@ -2496,9 +2493,9 @@
       setText('drive-frequency-out', `${f.toFixed(1)} Hz`);
       setText('drive-speed-out', `${v.toFixed(2)} m/s`);
       setText('drive-amplitude-out', `${amplitude.toFixed(2)}x`);
-      $('drive-period').innerHTML = `週期 T = ${(1 / f).toFixed(2)} s<small>偏心輪每轉一圈，產生一個完整振動</small>`;
-      $('drive-wavelength').innerHTML = `波長 λ = ${wavelength.toFixed(2)} m<small>λ = v / f；兩種波使用同一頻率</small>`;
-      $('drive-speed-badge').innerHTML = `波速 v = ${v.toFixed(2)} m/s<small>波形與疏密區向右傳播</small>`;
+      $('drive-period').innerHTML = `週期 ${math('T')} = ${(1 / f).toFixed(2)} s<small>偏心輪每轉一圈，產生一個完整振動</small>`;
+      $('drive-wavelength').innerHTML = `波長 ${math('\\lambda')} = ${wavelength.toFixed(2)} m<small>${math('\\lambda=v/f')}；兩種波使用同一頻率</small>`;
+      $('drive-speed-badge').innerHTML = `波速 ${math('v')} = ${v.toFixed(2)} m/s<small>波形與疏密區向右傳播</small>`;
       ctx.fillStyle = '#f4f8f8'; ctx.fillRect(0, 0, w, h);
       ctx.fillStyle = '#e4eced'; ctx.fillRect(0, h * .48, w, 1);
       const wheel = { x: w * (compact ? .085 : .105), y: h * .48, r: Math.min(w * .06, 33) };
@@ -2575,7 +2572,7 @@
       setText('sound-current-out', `${current.toFixed(2)} A`);
       setText('sound-distance-out', `${distance.toFixed(1)} m`);
       $('sound-frequency-badge').innerHTML = `頻率 ${f} Hz<small>提高頻率，時間波形更密、音調更高</small>`;
-      $('sound-wavelength-badge').innerHTML = `波長 ${(wavelength * 100).toFixed(0)} cm<small>λ = 340 m/s ÷ f</small>`;
+      $('sound-wavelength-badge').innerHTML = `波長 ${(wavelength * 100).toFixed(0)} cm<small>${math('\\lambda=v/f')}；聲速約 340 m/s</small>`;
       $('sound-delay-badge').innerHTML = `延遲 ${(delay * 1000).toFixed(1)} ms<small>空氣疏密傳播到麥克風所需時間</small>`;
       $('sound-voltage-badge').innerHTML = `麥克風 ${(microphoneVoltage * 1000).toFixed(0)} mV<small>理想動圈模型：訊號與振膜速度有關</small>`;
       ctx.fillStyle = '#f4f8f9'; ctx.fillRect(0, 0, w, h);
@@ -2770,7 +2767,7 @@
       setText('dop-vs-out', `${vsRaw.toFixed(1)} m/s`);
       setText('dop-vo-out', `${voRaw.toFixed(1)} m/s`);
       setText('dop-speed-out', `${number('dop-speed').toFixed(2)}x`);
-      $('dop-lambda').innerHTML = `原波長 = ${lambda.toFixed(2)} m<small>λ = v / f</small>`;
+      $('dop-lambda').innerHTML = `原波長 = ${lambda.toFixed(2)} m<small>${math('\\lambda=v/f')}</small>`;
       $('dop-observed').innerHTML = sonic
         ? '觀察頻率：震波前緣<small>波源追上自己的波面</small>'
         : `觀察頻率 = ${fObserved.toFixed(2)} Hz<small>${approaching ? '接近時音調變高' : '遠離時音調變低'}</small>`;
@@ -3087,15 +3084,15 @@
       setText('rip-phase-out', `${phaseDeg.toFixed(0)}°`);
       setText('rip-speed-out', `${number('rip-speed').toFixed(2)}x`);
       $('rip-lambda').innerHTML = `波長 = ${lambda.toFixed(0)} px<small>每一圈波峰的間距</small>`;
-      $('rip-ratio').innerHTML = `d/λ = ${(sourceDistance / lambda).toFixed(2)}<small>比值越大，節線與腹線越多</small>`;
+      $('rip-ratio').innerHTML = `${math('d/\\lambda')} = ${(sourceDistance / lambda).toFixed(2)}<small>比值越大，節線與腹線越多</small>`;
       $('rip-phase').innerHTML = `相位差 = ${phaseDeg.toFixed(0)}°<small>${phaseDeg === 0 ? '兩個波源同時到達波峰' : '兩組波峰錯開前進'}</small>`;
       const nearestAxialOrder = Math.round(sourceDistance / lambda);
       const axialOrderError = Math.abs(sourceDistance / lambda - nearestAxialOrder);
       if (phaseDeg === 0 && axialOrderError < 0.001) {
-        $('rip-status').innerHTML = `中央與左右軸皆為腹線<small>Δr = d = ${nearestAxialOrder}λ</small>`;
+        $('rip-status').innerHTML = `中央與左右軸皆為腹線<small>${math(`\\Delta r=d=${nearestAxialOrder}\\lambda`)}</small>`;
       } else if (phaseDeg === 0 && axialOrderError <= 0.08) {
         const exactDistance = nearestAxialOrder * lambda;
-        $('rip-status').innerHTML = `左右軸向為近腹區<small>d ≈ ${nearestAxialOrder}λ；調成 ${exactDistance.toFixed(0)} px 才是精確腹線</small>`;
+        $('rip-status').innerHTML = `左右軸向為近腹區<small>${math(`d\\approx${nearestAxialOrder}\\lambda`)}；調成 ${exactDistance.toFixed(0)} px 才是精確腹線</small>`;
       } else {
         $('rip-status').innerHTML = phaseDeg === 0
           ? '亮峰、暗谷、腹節線<small>淺藍腹線振幅最大，灰色節線振幅為零</small>'
@@ -3292,9 +3289,9 @@
       setText('dbl-D-out', `${screenM.toFixed(2)} m`);
       setText('dbl-a-out', `${aMm.toFixed(2)} mm`);
       setText('dbl-speed-out', `${number('dbl-speed').toFixed(2)}x`);
-      $('dbl-lambda').innerHTML = `λ = ${lambdaNm.toFixed(0)} nm<small>${lambdaNm > 610 ? '偏紅光' : (lambdaNm < 480 ? '偏藍光' : '可見光')}</small>`;
-      $('dbl-spacing').innerHTML = `條紋間距 = ${fringeMm.toFixed(2)} mm<small>相鄰亮紋中心距離</small>`;
-      $('dbl-ratio').innerHTML = `實際 d/λ = ${(dM / lambdaM).toFixed(0)}<small>畫面以同一路徑差模型放大示意</small>`;
+      $('dbl-lambda').innerHTML = `${math('\\lambda')} = ${lambdaNm.toFixed(0)} nm<small>${lambdaNm > 610 ? '偏紅光' : (lambdaNm < 480 ? '偏藍光' : '可見光')}</small>`;
+      $('dbl-spacing').innerHTML = `條紋間距 = ${fringeMm.toFixed(2)} mm<small>${math('\\Delta y=\\lambda D/d')}；相鄰亮紋中心距離</small>`;
+      $('dbl-ratio').innerHTML = `實際 ${math('d/\\lambda')} = ${(dM / lambdaM).toFixed(0)}<small>畫面以同一路徑差模型放大示意</small>`;
       $('dbl-status').innerHTML = envelopeEnabled
         ? '有限縫寬模型<small>亮紋受單縫包絡調制，外側逐漸變暗</small>'
         : '理想雙狹縫<small>亮紋等距、等寬、等亮</small>';
@@ -3523,10 +3520,10 @@
       setText('sgl-a-out', `${slitMm.toFixed(2)} mm`);
       setText('sgl-D-out', `${screenM.toFixed(2)} m`);
       setText('sgl-speed-out', `${number('sgl-speed').toFixed(2)}x`);
-      $('sgl-lambda').innerHTML = `λ = ${lambdaNm.toFixed(0)} nm<small>${lambdaNm > 610 ? '偏紅光，繞射角較大' : (lambdaNm < 480 ? '偏藍光，繞射角較小' : '可見光')}</small>`;
-      $('sgl-ratio').innerHTML = `a/λ = ${ratio.toFixed(0)}<small>實際尺度；畫面將角度放大呈現</small>`;
-      $('sgl-angle').innerHTML = `第一暗紋 θ₁ = ${(firstAngle * 180 / Math.PI).toFixed(3)}°<small>sin θ₁ = λ/a</small>`;
-      $('sgl-width').innerHTML = `中央亮紋寬 = ${centralWidthMm.toFixed(1)} mm<small>2D tan θ₁；兩側亮紋較窄且較暗</small>`;
+      $('sgl-lambda').innerHTML = `${math('\\lambda')} = ${lambdaNm.toFixed(0)} nm<small>${lambdaNm > 610 ? '偏紅光，繞射角較大' : (lambdaNm < 480 ? '偏藍光，繞射角較小' : '可見光')}</small>`;
+      $('sgl-ratio').innerHTML = `${math('a/\\lambda')} = ${ratio.toFixed(0)}<small>實際尺度；畫面將角度放大呈現</small>`;
+      $('sgl-angle').innerHTML = `第一暗紋 ${math('\\theta_1')} = ${(firstAngle * 180 / Math.PI).toFixed(3)}°<small>${math('\\sin\\theta_1=\\lambda/a')}</small>`;
+      $('sgl-width').innerHTML = `中央亮紋寬 = ${centralWidthMm.toFixed(1)} mm<small>${math('2D\\tan\\theta_1')}；兩側亮紋較窄且較暗</small>`;
 
       ctx.fillStyle = '#050d1a';
       ctx.fillRect(0, 0, w, h);
@@ -3676,7 +3673,7 @@
       setText('huy-count-out', `${count.toFixed(0)} 個`);
       setText('huy-speed-out', `${number('huy-speed').toFixed(2)}x`);
       setText('huy-progress-out', `${progress}%`);
-      $('huy-lambda').innerHTML = `r = ${radius.toFixed(0)} px<small>相同 Δt 的次波半徑相同：r = vΔt</small>`;
+      $('huy-lambda').innerHTML = `${math('r')} = ${radius.toFixed(0)} px<small>相同 ${math('\\Delta t')} 的次波半徑相同：${math('r=v\\Delta t')}</small>`;
       $('huy-aperture').innerHTML = mode === 'plane' ? '完整波前<small>沒有遮擋；新波前仍是直線</small>' : `開口 = ${aperture.toFixed(0)} px<small>${mode === 'slit' ? '開口以外的波前被擋住' : '上半部被擋住'}</small>`;
       $('huy-points').innerHTML = `次波源 = ${count.toFixed(0)} 個<small>點越多，包絡越平滑</small>`;
       $('huy-status').innerHTML = stage === 1 ? '波前抵達<small>同一波前上的點同時開始受擾動</small>' : stage === 2 ? '次波展開<small>每個點以相同速度向前傳播</small>' : '新波前形成<small>取所有次波前緣的外包絡</small>';
@@ -6311,10 +6308,10 @@
       setText('circ-period-out', `${period.toFixed(1)} s`);
       setText('circ-phase-out', `${phaseDeg.toFixed(0)}°`);
       setText('circ-speed-out', `${number('circ-speed').toFixed(2)}x`);
-      $('circ-omega').innerHTML = `角速度 ω = ${omega.toFixed(2)} rad/s<small>每秒轉過的角度</small>`;
-      $('circ-period-badge').innerHTML = `週期 T = ${period.toFixed(1)} s<small>圓周與投影週期相同</small>`;
-      $('circ-position-x').innerHTML = `水平 x = ${(xRatio * amplitude).toFixed(2)}<small>x = A cos θ</small>`;
-      $('circ-position-y').innerHTML = `鉛直 y = ${(yRatio * amplitude).toFixed(2)}<small>y = A sin θ</small>`;
+      $('circ-omega').innerHTML = `角速度 ${math('\\omega')} = ${omega.toFixed(2)} rad/s<small>每秒轉過的角度</small>`;
+      $('circ-period-badge').innerHTML = `週期 ${math('T')} = ${period.toFixed(1)} s<small>圓周與投影週期相同</small>`;
+      $('circ-position-x').innerHTML = `水平 ${math('x')} = ${(xRatio * amplitude).toFixed(2)}<small>${math('x=A\\cos\\theta')}</small>`;
+      $('circ-position-y').innerHTML = `鉛直 ${math('y')} = ${(yRatio * amplitude).toFixed(2)}<small>${math('y=A\\sin\\theta')}</small>`;
       const nearXEnd = Math.abs(xRatio) > .94;
       const nearYEnd = Math.abs(yRatio) > .94;
       $('circ-state').innerHTML = nearXEnd || nearYEnd
@@ -6515,14 +6512,16 @@
     }
 
     function updateAngularCopy(mode) {
+      if ($('angular-title').dataset.mode === mode) return;
       const helicopter = mode === 'helicopter';
+      $('angular-title').dataset.mode = mode;
       $('angular-title').textContent = helicopter ? '直升機主旋翼與反扭矩' : '陀螺進動與角動量方向改變';
-      $('angular-copy').textContent = helicopter
+      $('angular-copy').innerHTML = helicopter
         ? '主旋翼加速轉動時，機身會受到方向相反的反作用扭矩；尾旋翼在長力臂處提供側向推力，抵銷機身偏航。'
-        : '重力矩不直接把高速旋轉的陀螺壓倒，而是持續在角動量旁邊加上 ΔL，使轉軸方向繞鉛直方向改變。';
+        : `重力矩不直接把高速旋轉的陀螺壓倒，而是持續在角動量旁邊加上 ${math('\\Delta L')}，使轉軸方向繞鉛直方向改變。`;
       $('angular-teacher').innerHTML = helicopter
         ? '<p><strong>講法：</strong>先保持尾旋翼運作，主旋翼與機身的反向扭矩互相平衡，機鼻大致固定。再取消尾旋翼，灰色初始航向不動、機身會向主旋翼反方向偏航。</p><p><strong>強調：</strong>尾旋翼不是把直升機往前推；它在機尾施加側向力，利用長力臂產生反扭矩。失去尾旋翼反扭矩時，機身會持續旋轉，飛行员難以維持航向。</p>'
-        : '<p><strong>講法：</strong>先看實物圖：藍色 L 永遠沿著轉軸。再看右側向量框，紅色 ΔL 加在 L 的側面，得到新的 L′；連續重複後，轉軸才沿綠色範圍進動。</p><p><strong>強調：</strong>重力提供的是外力矩，所以陀螺本身的 L 方向會改變；轉得越快，L 越大，同樣的 ΔL 每秒只能讓方向改變較小角度，進動反而較慢。</p>';
+        : `<p><strong>講法：</strong>先看實物圖：藍色 ${math('L')} 永遠沿著轉軸。再看右側向量框，紅色 ${math('\\Delta L')} 加在 ${math('L')} 的側面，得到新的 ${math("L'")}；連續重複後，轉軸才沿綠色範圍進動。</p><p><strong>強調：</strong>重力提供的是外力矩，所以陀螺本身的 ${math('L')} 方向會改變；轉得越快，${math('L')} 越大，同樣的 ${math('\\Delta L')} 每秒只能讓方向改變較小角度，進動反而較慢。</p>`;
     }
 
     function drawGyroscopeCase(ctx, w, h) {
@@ -6544,9 +6543,9 @@
       setText('prec-mass-out', `${mass.toFixed(1)} kg`);
       setText('prec-arm-out', `${arm.toFixed(2)} m`);
       setText('prec-tilt-out', `${tiltDeg.toFixed(0)}°`);
-      $('prec-L').innerHTML = `角動量 L = ${angularMomentum.toFixed(2)} kg·m²/s<small>L = Iω，方向沿轉軸</small>`;
-      $('prec-torque').innerHTML = `重力矩 τ = ${torque.toFixed(2)} N·m<small>每一小段時間產生 ΔL = τΔt</small>`;
-      $('prec-omega').innerHTML = `進動角速度 Ω = ${precessionOmega.toFixed(2)} rad/s<small>Ω = mgr/L</small>`;
+      $('prec-L').innerHTML = `角動量 ${math('L')} = ${angularMomentum.toFixed(2)} kg·m²/s<small>${math('L=I\\omega')}，方向沿轉軸</small>`;
+      $('prec-torque').innerHTML = `重力矩 ${math('\\tau')} = ${torque.toFixed(2)} N·m<small>每一小段時間產生 ${math('\\Delta L=\\tau\\Delta t')}</small>`;
+      $('prec-omega').innerHTML = `進動角速度 ${math('\\Omega')} = ${precessionOmega.toFixed(2)} rad/s<small>${math('\\Omega=mgr/L')}</small>`;
       $('prec-period').innerHTML = `進動週期 = ${precessionPeriod.toFixed(2)} s<small>自轉越快，進動越慢</small>`;
 
       const sceneRight = compact ? w : w * .62;
@@ -6674,8 +6673,8 @@
       const yaw = tailEnabled ? .015 * Math.sin(time * .9) : -time * 1.1 * reaction;
       const rotorAngle = time * rpm * .12;
       setText('heli-main-rpm-out', `${rpm.toFixed(0)} rpm`);
-      $('prec-L').innerHTML = `主旋翼角動量 L<small>從上方看，主旋翼逆時針轉</small>`;
-      $('prec-torque').innerHTML = `機身反作用扭矩 ∝ ${reaction.toFixed(2)}<small>機身傾向往相反方向旋轉</small>`;
+      $('prec-L').innerHTML = `主旋翼角動量 ${math('L')}<small>從上方看，主旋翼逆時針轉</small>`;
+      $('prec-torque').innerHTML = `機身反作用扭矩 ${math('\\propto')} ${reaction.toFixed(2)}<small>機身傾向往相反方向旋轉</small>`;
       $('prec-omega').innerHTML = tailEnabled
         ? '尾旋翼反扭矩：啟用<small>尾端側向力 × 長力臂</small>'
         : '尾旋翼反扭矩：0<small>沒有抵銷主旋翼反作用扭矩</small>';
@@ -7850,13 +7849,13 @@
       setText('ref-angle-out', `${angleDeg.toFixed(1)}°`);
       setText('ref-play-speed-out', `${number('ref-play-speed').toFixed(2)}x`);
       $('ref-angles').innerHTML = state.tir
-        ? `θ₁ = ${angleDeg.toFixed(1)}°；無折射角<small>θc = ${critDeg.toFixed(1)}°，目前已超過臨界角</small>`
-        : `θ₁ = ${angleDeg.toFixed(1)}°；θ₂ = ${theta2Deg.toFixed(1)}°<small>n₁ sinθ₁ = n₂ sinθ₂</small>`;
-      $('ref-speed').innerHTML = `v₂/v₁ = ${(state.n1 / state.n2).toFixed(2)}<small>λ₂/λ₁ 同樣為 ${(state.n1 / state.n2).toFixed(2)}；頻率不變</small>`;
+        ? `${math('\\theta_1')} = ${angleDeg.toFixed(1)}°；無折射角<small>${math('\\theta_c')} = ${critDeg.toFixed(1)}°，目前已超過臨界角</small>`
+        : `${math('\\theta_1')} = ${angleDeg.toFixed(1)}°；${math('\\theta_2')} = ${theta2Deg.toFixed(1)}°<small>${math('n_1\\sin\\theta_1=n_2\\sin\\theta_2')}</small>`;
+      $('ref-speed').innerHTML = `${math('v_2/v_1')} = ${(state.n1 / state.n2).toFixed(2)}<small>${math('\\lambda_2/\\lambda_1')} 同樣為 ${(state.n1 / state.n2).toFixed(2)}；頻率不變</small>`;
       $('ref-energy').innerHTML = state.tir
         ? '反射 100%｜透射 0%<small>理想介面忽略吸收；下方只剩倏逝場</small>'
         : `反射 ${(state.reflectance * 100).toFixed(1)}%｜透射 ${(state.transmittance * 100).toFixed(1)}%<small>線條亮度依 Fresnel 比例呈現</small>`;
-      if (state.tir) $('ref-status').innerHTML = `全反射<small>n₁ > n₂ 且 θ₁ > θc=${critDeg.toFixed(1)}°</small>`;
+      if (state.tir) $('ref-status').innerHTML = `全反射<small>${math('n_1>n_2')} 且 ${math('\\theta_1>\\theta_c')}=${critDeg.toFixed(1)}°</small>`;
       else if (state.critical && Math.abs(angleDeg - critDeg) < .5) $('ref-status').innerHTML = `接近臨界角<small>折射光沿著介面前進</small>`;
       else if (state.n2 > state.n1) $('ref-status').innerHTML = '向法線偏折<small>進入高折射率介質，速度與波長變小</small>';
       else if (state.n2 < state.n1) $('ref-status').innerHTML = '離法線偏折<small>進入低折射率介質，速度與波長變大</small>';
@@ -10113,7 +10112,7 @@
       setText('brewster-n1-out', n1.toFixed(2));
       setText('brewster-n2-out', n2.toFixed(2));
       setText('brewster-incidence-out', `${number('brewster-incidence').toFixed(1)}°`);
-      $('brewster-angle-badge').innerHTML = `布魯斯特角 θB = ${(brewster * 180 / Math.PI).toFixed(1)}°<small>tan θB = n₂ / n₁</small>`;
+      $('brewster-angle-badge').innerHTML = `布魯斯特角 ${math('\\theta_B')} = ${(brewster * 180 / Math.PI).toFixed(1)}°<small>${math('\\tan\\theta_B=n_2/n_1')}</small>`;
       $('brewster-rs').innerHTML = `s 反射率 = ${(rs * 100).toFixed(1)}%<small>電場垂直入射面</small>`;
       $('brewster-rp').innerHTML = `p 反射率 = ${(rp * 100).toFixed(2)}%<small>電場平行入射面</small>`;
       $('brewster-status').innerHTML = transmitted === null ? '全反射<small>兩種偏振的反射率皆為 100%</small>'
@@ -11260,7 +11259,7 @@
         });
         if (selected) {
           drawLine([{ x: selected.x, y: selected.y - 38 }, { x: selected.x, y: selected.y + 38 }], '#556e79', 1.3, true);
-          $('mirage-index').innerHTML = `第 ${selected.index} 層：${selected.n1.toFixed(3)} → ${selected.n2.toFixed(3)}<small>n₁sinθ₁ = ${p.toFixed(3)}，每一道界面重新計算</small>`;
+          $('mirage-index').innerHTML = `第 ${selected.index} 層：${selected.n1.toFixed(3)} → ${selected.n2.toFixed(3)}<small>${math('n_1\\sin\\theta_1')} = ${p.toFixed(3)}，每一道界面重新計算</small>`;
           $('mirage-turn').innerHTML = selected.total
             ? `全反射：θ₁ ${(selected.thetaI * 180 / Math.PI).toFixed(1)}°<small>臨界角 θc = ${(selected.critical * 180 / Math.PI).toFixed(1)}°；θ₁ &gt; θc</small>`
             : `折射：${(selected.thetaI * 180 / Math.PI).toFixed(1)}° → ${(selected.thetaT * 180 / Math.PI).toFixed(1)}°<small>角度均相對鉛直法線</small>`;
@@ -11521,9 +11520,9 @@
       const radius = Math.min(w * (compact ? .29 : .23), h * .31);
       setText('skater-arms-out', `${Math.round(extension * 100)}%`);
       setText('skater-speed-out', `${number('skater-speed').toFixed(2)}x`);
-      $('skater-inertia').innerHTML = `轉動慣量 I = ${inertia.toFixed(2)} kg·m²<small>手臂越靠近轉軸，I 越小</small>`;
-      $('skater-omega').innerHTML = `角速度 ω = ${omega.toFixed(2)} rad/s<small>收手前為 1.80 rad/s</small>`;
-      $('skater-angular').innerHTML = `角動量 L = ${angularMomentum.toFixed(2)} kg·m²/s<small>外力矩近似為零，L 不變</small>`;
+      $('skater-inertia').innerHTML = `轉動慣量 ${math('I')} = ${inertia.toFixed(2)} kg·m²<small>手臂越靠近轉軸，${math('I')} 越小</small>`;
+      $('skater-omega').innerHTML = `角速度 ${math('\\omega')} = ${omega.toFixed(2)} rad/s<small>收手前為 1.80 rad/s</small>`;
+      $('skater-angular').innerHTML = `角動量 ${math('L')} = ${angularMomentum.toFixed(2)} kg·m²/s<small>外力矩近似為零，${math('L')} 不變</small>`;
       $('skater-period').innerHTML = `轉一圈需 ${(2 * Math.PI / omega).toFixed(2)} s<small>收手前為 3.49 s</small>`;
       ctx.fillStyle = '#f3f8fb'; ctx.fillRect(0, 0, w, h);
       ctx.strokeStyle = '#cbd5e1'; ctx.lineWidth = 2;
@@ -11600,10 +11599,10 @@
       ctx.moveTo(selectorLeft, entranceY + 54); ctx.lineTo(selectorRight, entranceY + 54); ctx.stroke();
       for (let x = selectorLeft + 20; x < selectorRight - 5; x += 34) drawBareFieldCross(ctx, x, entranceY, 4, '#5286b9', .65);
       drawSceneLabel(ctx, selectorLeft + 6, entranceY - 94,
-        compact ? '電力 ↓、磁力 ↑' : '選速：qE ↓ 與 qvB ↑ 抵銷');
+        compact ? '電力 ↓、磁力 ↑' : '選速：電力與磁力互相抵銷');
       ctx.fillStyle = 'rgba(71,149,184,.08)'; ctx.fillRect(entranceX, fieldTop, w - entranceX - 18, entranceY - fieldTop + 15);
       for (let x = entranceX + 24; x < w - 20; x += 48) for (let y = fieldTop + 24; y < entranceY - 12; y += 46) drawBareFieldCross(ctx, x, y, 4, '#3776b7', .45);
-      if (!compact) drawSceneLabel(ctx, Math.min(w - 190, entranceX + 110), fieldTop + 8, '磁分析室 B₂：叉叉進入紙面');
+      if (!compact) drawSceneLabel(ctx, Math.min(w - 190, entranceX + 110), fieldTop + 8, '磁分析室：磁場進入紙面');
       ctx.strokeStyle = '#657780'; ctx.lineWidth = 8;
       ctx.beginPath(); ctx.moveTo(entranceX, fieldTop); ctx.lineTo(entranceX, entranceY - 9); ctx.moveTo(entranceX, entranceY + 9); ctx.lineTo(entranceX, h - 30); ctx.stroke();
       ctx.save(); ctx.strokeStyle = '#aabcc6'; ctx.setLineDash([5, 5]); ctx.beginPath(); ctx.moveTo(selectorLeft, entranceY); ctx.lineTo(entranceX, entranceY); ctx.stroke(); ctx.restore();
@@ -11614,10 +11613,20 @@
         ctx.strokeStyle = color; ctx.lineWidth = compact ? 3 : 4; ctx.beginPath();
         for (let j = 0; j <= 90; j += 1) { const theta = Math.PI / 2 - Math.PI * j / 90; const x = entranceX + r * Math.cos(theta); const y = entranceY - r + r * Math.sin(theta); if (!j) ctx.moveTo(x, y); else ctx.lineTo(x, y); }
         ctx.stroke();
-        const theta = Math.PI / 2 - Math.PI * Math.min(1, cycle * massU / mass);
-        instrumentParticle(ctx, entranceX + r * Math.cos(theta), entranceY - r + r * Math.sin(theta), color, 6);
+        const progress = cycle * massU / mass;
+        const theta = Math.PI / 2 - Math.PI * Math.min(1, progress);
+        if (progress < 1) instrumentParticle(ctx, entranceX + r * Math.cos(theta), entranceY - r + r * Math.sin(theta), color, 6);
         const detectorY = entranceY - 2 * r;
-        ctx.fillStyle = color; ctx.fillRect(entranceX - 7, detectorY - 4, 14, 8);
+        ctx.fillStyle = '#344b56'; ctx.fillRect(entranceX - 10, detectorY - 7, 10, 14);
+        ctx.fillStyle = color; ctx.fillRect(entranceX - 4, detectorY - 5, 8, 10);
+        if (progress >= 1) {
+          ctx.save();
+          ctx.strokeStyle = color;
+          ctx.globalAlpha = Math.max(.15, 1 - (progress - 1) * 7);
+          ctx.lineWidth = 2.5;
+          ctx.beginPath(); ctx.arc(entranceX + 2, detectorY, 8 + (progress - 1) * 70, 0, 2 * Math.PI); ctx.stroke();
+          ctx.restore();
+        }
         drawSceneLabel(ctx, entranceX + 13, detectorY - (index ? 15 : -12), `${mass} u`);
       });
       drawSceneLabel(ctx, 20, h - 36, '質量較大 → r 較大 → 擊中較遠處');
