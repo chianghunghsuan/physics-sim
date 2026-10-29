@@ -1975,7 +1975,7 @@
             <div class="control"><label for="cyc-detune">射頻偏差：<span id="cyc-detune-out">0%</span></label><input id="cyc-detune" type="range" min="-12" max="12" step="0.5" value="0"></div>
             <div class="control"><label for="cyc-speed">播放速度：<span id="cyc-speed-out">0.35x</span></label><input id="cyc-speed" type="range" min="0.1" max="1.5" step="0.05" value="0.35"></div>
           </div>
-          <div class="checks"><label class="check"><input id="cyc-show-trail" type="checkbox" checked>顯示歷程軌跡</label><label class="check"><input id="cyc-show-field" type="checkbox" checked>顯示磁場與電場</label></div>
+          <div class="checks"><label class="check"><input id="cyc-show-trail" type="checkbox" checked>顯示歷程軌跡</label><label class="check"><input id="cyc-show-field" type="checkbox" checked>顯示磁場與電場</label><label class="check"><input id="cyc-show-velocity" type="checkbox" checked>顯示切線速度</label><label class="check"><input id="cyc-show-intervals" type="checkbox">顯示等時間位置</label></div>
         </div>
 
         <div id="em-view-selector" class="em-view">
@@ -10694,6 +10694,8 @@
         }
         if (inGap || exiting) ctx.lineTo(cx + point.x * scale, cy + point.y * scale);
         ctx.stroke();
+      }
+      if ($('cyc-show-intervals').checked) {
         ctx.fillStyle = '#205f62';
         ctx.strokeStyle = 'rgba(255,255,255,.95)';
         ctx.lineWidth = 1.3;
@@ -10704,13 +10706,23 @@
       }
       const particleX = cx + point.x * scale, particleY = cy + point.y * scale;
       ctx.restore();
+      if ($('cyc-show-velocity').checked) {
+        const tangent = exiting ? { x: 0, y: arcs.at(-1).direction }
+          : inGap ? { x: -arc.direction, y: 0 }
+            : { x: arc.direction * Math.cos(angle), y: arc.direction * Math.sin(angle) };
+        const maxSpeed = arcs.at(-1).speed;
+        const speedRatio = Math.max(0, Math.min(1, (speedNow - arcs[0].speed) / Math.max(1, maxSpeed - arcs[0].speed)));
+        const length = (compact ? 20 : 26) + (compact ? 17 : 29) * speedRatio;
+        drawArrow(ctx, particleX + tangent.x * 12, particleY + tangent.y * 12,
+          particleX + tangent.x * length, particleY + tangent.y * length, '#b64b35');
+      }
       instrumentParticle(ctx, particleX, particleY, '#147f75', compact ? 7 : 10);
       ctx.fillStyle = '#345965'; ctx.font = `700 ${compact ? 12 : 15}px "Times New Roman", "DFKai-SB", serif`; ctx.textAlign = 'center';
       ctx.fillText('D', cx - outer * .5, cy - outer * .48);
       ctx.fillText('D', cx + outer * .5, cy - outer * .48);
       ctx.fillStyle = '#637e85'; ctx.font = `12px "Times New Roman", "DFKai-SB", serif`;
       ctx.fillText('磁場朝向紙外：點記號', cx, cy + outer + 31);
-      ctx.fillText('軌道小點：相等時間間隔', cx, cy + outer + 48);
+      ctx.fillText($('cyc-show-intervals').checked ? '軌道小點：相等時間間隔' : '紅色箭頭：切線速度', cx, cy + outer + 48);
       const chart = compact
         ? { x: w * .08, y: h * .74, width: w * .84, height: h * .17 }
         : { x: w * .67, y: h * .25, width: w * .27, height: h * .46 };
