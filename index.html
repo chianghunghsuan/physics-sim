@@ -10510,6 +10510,9 @@
       ctx.restore();
     }
 
+    const cyclotronPhaseRate = 2.4;
+    const cyclotronArcPortion = .68;
+
     function cyclotronPath(B, voltage, detune) {
       const q = 1.602176634e-19;
       const m = 1.67262192369e-27;
@@ -10524,7 +10527,7 @@
         const speed = Math.sqrt(2 * energy * 1e6 * q / m);
         const radius = m * speed / (q * B);
         const direction = i % 2 === 0 ? 1 : -1;
-        if (Math.hypot(radius + gap / 2, y + direction * radius) > maxRadius && arcs.length) break;
+        if (Math.hypot(gap / 2, y + direction * radius) + radius > maxRadius && arcs.length) break;
         arcs.push({ energy, speed, radius, direction, y, gain });
         y += direction * 2 * radius;
       }
@@ -10657,23 +10660,28 @@
       const voltage = number('cyc-voltage');
       const detune = number('cyc-detune');
       const arcs = cyclotronPath(B, voltage, detune);
-      const phase = positiveModulo(time * 5.4, arcs.length + .65);
+      const phase = positiveModulo(time * cyclotronPhaseRate, arcs.length + .65);
+      document.querySelectorAll('.cyc-jump').forEach(button => {
+        button.disabled = Number(button.dataset.crossing) >= arcs.length;
+        button.title = button.disabled ? `目前設定最多只能完成 ${arcs.length} 次穿隙` : '';
+      });
       const index = Math.min(arcs.length - 1, Math.floor(phase));
       const arc = arcs[index];
       const fraction = phase - index;
-      const exitAt = arcs.length - 1 + .45;
+      const exitAt = arcs.length - 1 + cyclotronArcPortion / 2;
       const exiting = phase >= exitAt;
-      const inGap = !exiting && fraction > .9 && index < arcs.length - 1;
-      const angle = exiting ? Math.PI / 2 : Math.PI * Math.min(1, fraction / .9);
+      const inGap = !exiting && fraction > cyclotronArcPortion && index < arcs.length - 1;
+      const gapProgress = inGap ? (fraction - cyclotronArcPortion) / (1 - cyclotronArcPortion) : 0;
+      const angle = exiting ? Math.PI / 2 : Math.PI * Math.min(1, fraction / cyclotronArcPortion);
       const exitStart = cyclotronPoint(arcs.at(-1), Math.PI / 2);
       const exitEnd = { x: exitStart.x, y: arcs.at(-1).direction * .82 };
       const exitFraction = exiting ? Math.min(1, (phase - exitAt) / (arcs.length + .65 - exitAt)) : 0;
       const point = exiting
         ? { x: exitStart.x, y: exitStart.y + (exitEnd.y - exitStart.y) * exitFraction }
         : inGap
-          ? { x: arc.direction * .03 * (1 - 2 * (fraction - .9) / .1), y: arc.y + arc.direction * 2 * arc.radius }
+          ? { x: arc.direction * .03 * (1 - 2 * gapProgress), y: arc.y + arc.direction * 2 * arc.radius }
           : cyclotronPoint(arc, angle);
-      const energyNow = inGap ? arc.energy + (arcs[index + 1].energy - arc.energy) * (fraction - .9) / .1 : arc.energy;
+      const energyNow = inGap ? arc.energy + (arcs[index + 1].energy - arc.energy) * gapProgress : arc.energy;
       const speedNow = Math.sqrt(2 * energyNow * 1e6 * 1.602176634e-19 / 1.67262192369e-27);
       const fc = 1.602176634e-19 * B / (2 * Math.PI * 1.67262192369e-27) / 1e6;
       setText('cyc-field-out', `${B.toFixed(2)} T`);
@@ -10787,7 +10795,7 @@
       ctx.beginPath(); ctx.moveTo(chart.x, chart.y); ctx.lineTo(chart.x, chart.y + chart.height);
       ctx.lineTo(chart.x + chart.width, chart.y + chart.height); ctx.stroke();
       const limit = Math.min(arcs.length, compact ? 12 : 16);
-      const first = Math.max(0, Math.min(index - limit + 1, arcs.length - limit));
+      const first = Math.max(0, Math.min(index - limit + (inGap ? 2 : 1), arcs.length - limit));
       const speedCeiling = Math.max(5e6, Math.ceil(Math.max(...arcs.map(item => item.speed)) / 5e6) * 5e6);
       const stepWidth = chart.width / limit;
       ctx.strokeStyle = '#d7e1e2'; ctx.lineWidth = 1;
@@ -10797,7 +10805,7 @@
       }
       ctx.strokeStyle = '#177d75'; ctx.lineWidth = 2.4; ctx.lineJoin = 'miter';
       ctx.beginPath();
-      for (let i = 0; i < limit; i += 1) {
+      for (let i = 0; i <= index - first; i += 1) {
         const y = chart.y + chart.height * (1 - arcs[first + i].speed / speedCeiling);
         const left = chart.x + i * stepWidth, right = left + stepWidth;
         if (i === 0) ctx.moveTo(left, y); else ctx.lineTo(left, y);
@@ -10805,8 +10813,15 @@
       }
       ctx.stroke();
       const markerIndex = Math.min(index - first, limit - 1);
-      const markerX = chart.x + (markerIndex + .5) * stepWidth;
-      const markerY = chart.y + chart.height * (1 - arcs[first + markerIndex].speed / speedCeiling);
+      const markerX = chart.x + (markerIndex + 1 + gapProgress) * stepWidth;
+      const markerY = chart.y + chart.height * (1 - speedNow / speedCeiling);
+      if (inGap) {
+        ctx.strokeStyle = '#b64b35'; ctx.lineWidth = 3;
+        ctx.beginPath();
+        ctx.moveTo(chart.x + (markerIndex + 1) * stepWidth,
+          chart.y + chart.height * (1 - arc.speed / speedCeiling));
+        ctx.lineTo(markerX, markerY); ctx.stroke();
+      }
       ctx.fillStyle = '#d35b43'; ctx.beginPath(); ctx.arc(markerX, markerY, compact ? 4 : 5, 0, 2 * Math.PI); ctx.fill();
       ctx.fillStyle = '#425f68'; ctx.font = `700 ${compact ? 11 : 14}px "Times New Roman", "DFKai-SB", serif`; ctx.textAlign = 'left';
       ctx.fillText(`目前 ${(speedNow / 1e6).toFixed(1)} × 10⁶ m/s`, chart.x, chart.y - 33);
@@ -10844,7 +10859,7 @@
         ctx.strokeStyle = '#16776f'; ctx.lineWidth = 3;
         ctx.beginPath(); ctx.moveTo(leftEdge + 4, trackY); ctx.lineTo(rightEdge - 4, trackY); ctx.stroke();
         if (inGap) {
-          const progress = (fraction - .9) / .1;
+          const progress = gapProgress;
           const particleX = crossingDirection > 0
             ? leftEdge + 4 + progress * (rightEdge - leftEdge - 8)
             : rightEdge - 4 - progress * (rightEdge - leftEdge - 8);
@@ -12051,7 +12066,7 @@
       button.addEventListener('click', () => {
         const arcs = cyclotronPath(number('cyc-field'), number('cyc-voltage'), number('cyc-detune'));
         const crossing = Math.min(Number(button.dataset.crossing), arcs.length - 1);
-        time = (crossing + .14) / 5.4;
+        time = (crossing + .14) / cyclotronPhaseRate;
         running = false;
         $('global-play').textContent = '播放';
         last = performance.now();
