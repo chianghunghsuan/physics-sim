@@ -406,8 +406,8 @@
     .em-stage { position: relative; width: 100%; height: min(80vh, 720px); min-height: 620px; overflow: hidden; background: #f2f6f5; touch-action: none; }
     .em-stage canvas { display: block; width: 100%; height: 100%; }
     .em-stage:fullscreen { height: 100vh !important; min-height: 0 !important; }
-    .generator-apparatus #generator-three { height: min(78vh, 680px); min-height: 600px; }
-    #generator-phase-canvas { height: 330px; min-height: 330px; }
+    .generator-apparatus { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr); gap: 12px; align-items: start; }
+    .generator-apparatus #generator-three, #generator-phase-canvas { height: min(70vh, 600px); min-height: 520px; }
     [hidden] { display: none !important; }
     #cyclotron-canvas, #selector-canvas { height: min(76vh, 650px); min-height: 550px; }
     #prism-canvas, #brewster-canvas, #aberration-canvas, #film-canvas {
@@ -516,6 +516,9 @@
       .controls { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .boundary-setup { grid-template-columns: 1fr 1fr; }
       .boundary-summary { grid-column: 1 / -1; }
+      .generator-apparatus { display: block; }
+      .generator-apparatus #generator-three { height: 520px; min-height: 500px; }
+      #generator-phase-canvas { height: 330px; min-height: 330px; }
     }
     @media (max-width: 640px) {
       main { width: calc(100% - 16px); margin-top: 8px; }
@@ -1288,8 +1291,8 @@
           <div class="module-head"><div><h2>相機對焦：鏡頭移動、感光元件固定</h2><p class="module-copy">人靠近時，依薄透鏡公式算出的像距增加；鏡頭需往物體方向移動，讓實像重新落在固定的感光元件上。左右距離與像高採不同圖示比例，數值計算仍用相同單位。</p></div></div>
           <div class="values"><div class="badge" id="camera-image-distance">理論像距</div><div class="badge" id="camera-lens-position">鏡頭到感光元件</div><div class="badge" id="camera-blur">散焦圈直徑</div><div class="badge" id="camera-status">對焦狀態</div></div>
           <div class="plot-wrap"><canvas id="camera-canvas" role="img" aria-label="剖面相機內固定的感光元件與可移動鏡頭；多條光線從人物頂端通過光圈，在焦平面會聚或於感光元件形成散焦圈。"></canvas></div>
-          <div class="controls"><div class="control"><label for="camera-object">人物距鏡頭：<span id="camera-object-out">2.00 m</span></label><input id="camera-object" type="range" min="0.35" max="5" step="0.05" value="2"></div><div class="control"><label for="camera-focus">鏡頭到感光元件：<span id="camera-focus-out">51.3 mm</span></label><input id="camera-focus" type="range" min="50" max="59" step="0.1" value="51.3"></div><div class="control"><label for="camera-aperture">光圈直徑：<span id="camera-aperture-out">20 mm</span></label><input id="camera-aperture" type="range" min="5" max="28" step="1" value="20"></div></div>
-          <div class="presets"><button type="button" class="preset" id="camera-autofocus">對焦到人物</button><button type="button" class="preset" id="camera-far">遠景</button><button type="button" class="preset" id="camera-near">近景</button></div>
+          <div class="controls"><div class="control"><label for="camera-object">人物距鏡頭：<span id="camera-object-out">2.00 m</span></label><input id="camera-object" type="range" min="0.35" max="5" step="0.005" value="2"></div><div class="control"><label for="camera-focus">鏡頭到感光元件：<span id="camera-focus-out">51.3 mm</span></label><input id="camera-focus" type="range" min="50" max="59" step="0.1" value="51.3"></div><div class="control"><label for="camera-aperture">光圈直徑：<span id="camera-aperture-out">20 mm</span></label><input id="camera-aperture" type="range" min="5" max="28" step="1" value="20"></div></div>
+          <div class="presets"><button type="button" class="preset" id="camera-track" aria-pressed="false">播放追蹤對焦</button><button type="button" class="preset" id="camera-autofocus">對焦到人物</button><button type="button" class="preset" id="camera-far">遠景</button><button type="button" class="preset" id="camera-near">近景</button></div>
         </div>
 
         <div id="optics-view-eye" class="optics-view">
@@ -2115,6 +2118,8 @@
     let running = true;
     let time = 0;
     let generatorAngle = Math.PI / 2;
+    let cameraTracking = false;
+    let cameraTrackPhase = 0;
     let skaterPhase = 0;
     let skaterArmCurrent = 1;
     const motorDynamics = { angle: .20, omega: 0, current: 0 };
@@ -5918,7 +5923,9 @@
       $('camera-lens-position').innerHTML = `鏡頭距感光元件 ${sensorDistance.toFixed(1)} mm<small>感光元件固定，鏡頭沿光軸移動</small>`;
       $('camera-blur').innerHTML = `散焦圈 ${circleMm.toFixed(2)} mm<small>光圈越大，同樣離焦量越顯著</small>`;
       $('camera-status').innerHTML = focused
-        ? '已對焦<small>光束在感光元件附近會聚</small>'
+        ? cameraTracking
+          ? `追蹤對焦中<small>人物${Math.sin(cameraTrackPhase) >= 0 ? '靠近；鏡頭遠離感光元件' : '遠離；鏡頭靠近感光元件'}</small>`
+          : '已對焦<small>光束在感光元件附近會聚</small>'
         : sensorDistance < imageMm
           ? '焦點在感光元件後<small>鏡頭需往物體方向移動</small>'
           : '焦點在感光元件前<small>鏡頭需往感光元件方向移動</small>';
@@ -6014,21 +6021,67 @@
         drawSceneLabel(ctx, personX - 24, axis + 29, '人物');
         drawSceneLabel(ctx, sensorX + 26, axis - 36, '感光元件');
       }
-      const preview = { x: w * .09, y: h * .76, w: w * .82, h: h * .21 };
+      if (!compact) {
+        const graph = { x: w * .08, y: h * .76, w: w * .47, h: h * .21 };
+        const gx = graph.x + 40, gy = graph.y + 24;
+        const gw = graph.w - 58, gh = graph.h - 50;
+        ctx.save();
+        ctx.strokeStyle = '#b6c6cb'; ctx.lineWidth = 1.3;
+        ctx.beginPath(); ctx.moveTo(gx, gy); ctx.lineTo(gx, gy + gh);
+        ctx.lineTo(gx + gw, gy + gh); ctx.stroke();
+        ctx.fillStyle = '#415b67'; ctx.font = '12px "Times New Roman", "DFKai-SB", serif';
+        ctx.textAlign = 'left'; ctx.fillText('像距（mm）', graph.x, graph.y + 12);
+        ctx.textAlign = 'right'; ctx.fillText('物距（m）', gx + gw, graph.y + 12);
+        for (const [distance, label] of [[.35, '0.35'], [2, '2'], [5, '5']]) {
+          const x = gx + (distance - .35) / 4.65 * gw;
+          ctx.strokeStyle = '#d2dee1'; ctx.beginPath(); ctx.moveTo(x, gy + gh); ctx.lineTo(x, gy + gh + 4); ctx.stroke();
+          ctx.textAlign = 'center'; ctx.fillText(label, x, gy + gh + 16);
+        }
+        for (const value of [51, 55, 59]) {
+          const y = gy + gh - (value - 50) / 9 * gh;
+          ctx.strokeStyle = '#e2ebed'; ctx.beginPath(); ctx.moveTo(gx, y); ctx.lineTo(gx + gw, y); ctx.stroke();
+          ctx.textAlign = 'right'; ctx.fillText(String(value), gx - 6, y + 4);
+        }
+        ctx.strokeStyle = '#167b76'; ctx.lineWidth = 2.5; ctx.beginPath();
+        for (let step = 0; step <= 240; step += 1) {
+          const distance = .35 + 4.65 * step / 240;
+          const imageDistance = 50 * distance * 1000 / (distance * 1000 - 50);
+          const x = gx + gw * step / 240;
+          const y = gy + gh - (imageDistance - 50) / 9 * gh;
+          if (step) ctx.lineTo(x, y); else ctx.moveTo(x, y);
+        }
+        ctx.stroke();
+        const markerX = gx + (objectMeters - .35) / 4.65 * gw;
+        const markerY = gy + gh - (imageMm - 50) / 9 * gh;
+        ctx.fillStyle = '#c55d3b'; ctx.strokeStyle = '#fff'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(markerX, markerY, 5.5, 0, 2 * Math.PI); ctx.fill(); ctx.stroke();
+        ctx.restore();
+      }
+      const preview = compact
+        ? { x: w * .09, y: h * .76, w: w * .82, h: h * .21 }
+        : { x: w * .63, y: h * .76, w: w * .29, h: h * .21 };
       const previewGradient = ctx.createLinearGradient(0, preview.y, 0, preview.y + preview.h);
       previewGradient.addColorStop(0, '#172a36'); previewGradient.addColorStop(1, '#2c4958');
       ctx.fillStyle = previewGradient; ctx.beginPath(); ctx.roundRect(preview.x, preview.y, preview.w, preview.h, 5); ctx.fill();
       ctx.strokeStyle = '#a3b5ba'; ctx.lineWidth = 2; ctx.strokeRect(preview.x + 2, preview.y + 2, preview.w - 4, preview.h - 4);
+      ctx.save(); ctx.strokeStyle = 'rgba(209,232,233,.16)'; ctx.lineWidth = 1;
+      for (const part of [1, 2]) {
+        ctx.beginPath(); ctx.moveTo(preview.x + preview.w * part / 3, preview.y + 3);
+        ctx.lineTo(preview.x + preview.w * part / 3, preview.y + preview.h - 3); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(preview.x + 3, preview.y + preview.h * part / 3);
+        ctx.lineTo(preview.x + preview.w - 3, preview.y + preview.h * part / 3); ctx.stroke();
+      }
+      ctx.restore();
       const previewX = preview.x + preview.w * .5;
       const baselineImageMm = focal * 2000 / (2000 - focal);
       const relativeMagnification = (imageMm / objectMm) / (baselineImageMm / 2000);
-      const previewHeight = (preview.h - 14) * Math.min(3.2, Math.max(.35, relativeMagnification));
+      const previewHeight = (preview.h - 14) * .7 * relativeMagnification;
       ctx.save(); ctx.beginPath(); ctx.rect(preview.x + 5, preview.y + 5, preview.w - 10, preview.h - 10); ctx.clip();
       ctx.filter = `blur(${Math.min(14, circleMm * (compact ? 9 : 12)).toFixed(1)}px)`;
       drawCameraPerson(ctx, previewX, preview.y + preview.h / 2 - previewHeight / 2, previewHeight, true);
       ctx.restore();
       ctx.fillStyle = '#e7f4f4'; ctx.font = `700 ${compact ? 10 : 12}px "Times New Roman", "DFKai-SB", serif`;
-      ctx.fillText('感光元件放大預覽（倒立）', preview.x + 12, preview.y + 19);
+      ctx.fillText(previewHeight > preview.h - 12 ? '感光元件預覽（倒立；近距離裁切）' : '感光元件放大預覽（倒立）', preview.x + 12, preview.y + 19);
     }
 
     function drawEyeLeader(ctx, anchor, labelPoint, label, align = 'left') {
@@ -12243,6 +12296,11 @@
 
     $('global-reset').addEventListener('click', () => {
       time = 0;
+      if (activeModule === 'optics' && activeOptics === 'camera' && cameraTracking) {
+        cameraTrackPhase = 0;
+        $('camera-object').value = '5';
+        $('camera-focus').value = '50.5';
+      }
       if (activeModule === 'electromagnetism' && activeElectromagnetism === 'generator') {
         generatorAngle = Math.PI / 2;
         document.querySelectorAll('.gen-phase-jump').forEach(button => {
@@ -12281,12 +12339,34 @@
     $('skater-out').addEventListener('click', () => { $('skater-arms').value = '100'; drawActive(); });
     $('skater-in').addEventListener('click', () => { $('skater-arms').value = '0'; drawActive(); });
     $('camera-autofocus').addEventListener('click', () => {
+      stopCameraTracking();
       const objectMm = number('camera-object') * 1000;
       $('camera-focus').value = String(Math.round(10 * 50 * objectMm / (objectMm - 50)) / 10);
       drawActive();
     });
-    $('camera-far').addEventListener('click', () => { $('camera-object').value = '5'; drawActive(); });
-    $('camera-near').addEventListener('click', () => { $('camera-object').value = '0.35'; drawActive(); });
+    function stopCameraTracking() {
+      cameraTracking = false;
+      $('camera-track').classList.remove('active');
+      $('camera-track').setAttribute('aria-pressed', 'false');
+      $('camera-track').textContent = '播放追蹤對焦';
+    }
+    $('camera-track').addEventListener('click', () => {
+      cameraTracking = !cameraTracking;
+      $('camera-track').classList.toggle('active', cameraTracking);
+      $('camera-track').setAttribute('aria-pressed', String(cameraTracking));
+      $('camera-track').textContent = cameraTracking ? '停止追蹤對焦' : '播放追蹤對焦';
+      if (cameraTracking) {
+        const distanceFraction = (number('camera-object') - 1.4) / 3.6;
+        cameraTrackPhase = Math.acos(Math.max(-1, Math.min(1, 2 * distanceFraction - 1)));
+        running = true;
+        $('global-play').textContent = '暫停';
+      }
+      last = performance.now();
+      drawActive();
+    });
+    for (const id of ['camera-object', 'camera-focus']) $(id).addEventListener('input', stopCameraTracking);
+    $('camera-far').addEventListener('click', () => { stopCameraTracking(); $('camera-object').value = '5'; drawActive(); });
+    $('camera-near').addEventListener('click', () => { stopCameraTracking(); $('camera-object').value = '0.35'; drawActive(); });
 
     function frame(now) {
       const elapsed = Math.max(0, Math.min(0.05, (now - last) / 1000));
@@ -12299,6 +12379,13 @@
         time += scaled;
         if (activeModule === 'electromagnetism' && activeElectromagnetism === 'generator') {
           generatorAngle += 2 * Math.PI * number('gen-rpm') / 60 * scaled;
+        }
+        if (activeModule === 'optics' && activeOptics === 'camera' && cameraTracking) {
+          cameraTrackPhase += scaled * 2;
+          const distance = 1.4 + 3.6 * (1 + Math.cos(cameraTrackPhase)) / 2;
+          $('camera-object').value = String(distance);
+          const objectMm = number('camera-object') * 1000;
+          $('camera-focus').value = String(Math.round(10 * 50 * objectMm / (objectMm - 50)) / 10);
         }
         if (activeModule === 'electromagnetism' && activeElectromagnetism === 'bell') advanceBell(scaled);
         if (activeModule === 'electromagnetism' && activeElectromagnetism === 'motor') advanceMotor(scaled);
