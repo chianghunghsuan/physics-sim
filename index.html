@@ -9438,7 +9438,7 @@
       if (emRenderView.motor === 'apparatus' && window.emThree) window.emThree.renderMotor({
         angle: state.angle, halfTurn: state.halfTurn, current: state.current, maxCurrent: 3,
         turns: state.turns, B: state.B, time,
-        showCurrent, showElectrons, showField, showForce
+        showCurrent, showElectrons, showField, showForce, showTorque, stalled: state.stalled
       });
     }
 

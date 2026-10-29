@@ -361,6 +361,22 @@ function createStage(host, kind) {
   if (kind === 'motor') for (let i = 0; i < 2; i += 1) {
     forceArrows.push(solidArrow(scene, new THREE.Vector3(0, 0, 1), [0, 0, 0], .74, '#c94a48', .052));
   }
+  let torqueArrow = null;
+  if (kind === 'motor') {
+    torqueArrow = new THREE.Group();
+    const radius = 1.16, height = 1.63, start = -.35, sweep = Math.PI * 1.55;
+    const point = angle => new THREE.Vector3(radius * Math.cos(angle), height, -radius * Math.sin(angle));
+    const points = Array.from({ length: 49 }, (_, index) => point(start + sweep * index / 48));
+    const material = new THREE.MeshStandardMaterial({ color: '#0f766e', roughness: .35 });
+    torqueArrow.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points), 64, .035, 10, false), material));
+    const head = new THREE.Mesh(new THREE.ConeGeometry(.11, .24, 16), material);
+    head.position.copy(points[points.length - 1]);
+    head.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0),
+      points[points.length - 1].clone().sub(points[points.length - 2]).normalize());
+    torqueArrow.add(head);
+    torqueArrow.visible = false;
+    scene.add(torqueArrow);
+  }
 
   const control = { azimuth: .65, elevation: .39, distance: kind === 'generator' ? 11.3 : 10.4,
     targetY: -.60, targetZ: 0, dragging: false, x: 0, y: 0 };
@@ -402,7 +418,7 @@ function createStage(host, kind) {
     event.preventDefault(); control.distance = THREE.MathUtils.clamp(control.distance + event.deltaY * .008, 4.5, 13);
   }, { passive: false });
 
-  const stage = { kind, host, renderer, scene, camera, rotor, pathCurve, windingLoops, currentMarkers, currentArrows, electronMarkers, externalPaths, externalMarkers, fieldArrows, forceArrows, bulb, bulbLight, filament, meter, control, chargePhase: 0, supplyPhase: 0, lastTime: NaN, lastState: null };
+  const stage = { kind, host, renderer, scene, camera, rotor, pathCurve, windingLoops, currentMarkers, currentArrows, electronMarkers, externalPaths, externalMarkers, fieldArrows, forceArrows, torqueArrow, bulb, bulbLight, filament, meter, control, chargePhase: 0, supplyPhase: 0, lastTime: NaN, lastState: null };
   stages.set(kind, stage);
   return stage;
 }
@@ -418,7 +434,7 @@ function render(kind, state) {
     console.warn('WebGL unavailable', error);
     return;
   }
-  const { renderer, scene, camera, rotor, pathCurve, windingLoops, currentMarkers, currentArrows, electronMarkers, externalPaths, externalMarkers, fieldArrows, forceArrows, bulb, bulbLight, filament, meter, control } = stage;
+  const { renderer, scene, camera, rotor, pathCurve, windingLoops, currentMarkers, currentArrows, electronMarkers, externalPaths, externalMarkers, fieldArrows, forceArrows, torqueArrow, bulb, bulbLight, filament, meter, control } = stage;
   stage.lastState = state;
   const width = host.clientWidth, height = host.clientHeight;
   if (!width || !height) return;
@@ -483,6 +499,7 @@ function render(kind, state) {
     arrow.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, 0, sign));
     arrow.visible = state.showForce && state.B > .001 && Math.abs(state.current) > .01;
   }
+  if (torqueArrow) torqueArrow.visible = state.showTorque && !state.stalled && state.B > .001 && Math.abs(state.current) > .01;
   if (bulb) {
     const brightness = Math.min(1, Math.abs(state.current) / Math.max(.001, state.maxCurrent));
     bulb.material.color.set(brightness > .08 ? '#f4c26b' : '#cbd8d9');
