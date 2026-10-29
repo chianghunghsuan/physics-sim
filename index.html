@@ -7,6 +7,34 @@
   <link rel="stylesheet" href="vendor/katex.min.css">
   <style>
     @font-face {
+      font-family: "Tinos";
+      src: url("assets/fonts/Tinos-Regular-site.woff2") format("woff2");
+      font-style: normal;
+      font-weight: 400;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: "Tinos";
+      src: url("assets/fonts/Tinos-Bold-site.woff2") format("woff2");
+      font-style: normal;
+      font-weight: 700;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: "Tinos";
+      src: url("assets/fonts/Tinos-Italic-site.woff2") format("woff2");
+      font-style: italic;
+      font-weight: 400;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: "Tinos";
+      src: url("assets/fonts/Tinos-BoldItalic-site.woff2") format("woff2");
+      font-style: italic;
+      font-weight: 700;
+      font-display: swap;
+    }
+    @font-face {
       font-family: "DFKai-SB";
       src: local("DFKai-SB"), local("標楷體"), local("BiauKai"),
         url("assets/fonts/TW-Kai-site-subset.woff2") format("woff2");
@@ -36,7 +64,7 @@
     * { box-sizing: border-box; }
     body {
       margin: 0;
-      font-family: "Times New Roman", "DFKai-SB", "標楷體", "BiauKai", serif;
+      font-family: "Times New Roman", "Tinos", "DFKai-SB", "標楷體", "BiauKai", serif;
       color: var(--ink);
       background: var(--bg);
       line-height: 1.65;
@@ -347,7 +375,7 @@
       border-radius: 4px;
       background: rgba(255, 255, 255, .92);
       color: #24414d;
-      font: 700 12px "Times New Roman", "DFKai-SB", serif;
+      font: 700 12px "Times New Roman", "Tinos", "DFKai-SB", serif;
     }
     .stage-views button[aria-pressed="true"] { background: #0f766e; border-color: #0f766e; color: #fff; }
     .stage-expand:focus-visible, button:focus-visible, select:focus-visible, input:focus-visible {
@@ -2079,7 +2107,7 @@
         </section>
       </section>
     </div>
-    <footer class="font-credit">字型來源：<a href="https://www.cns11643.gov.tw/pageView.jsp?ID=59&amp;SN=&amp;la=0&amp;lang=tw" target="_blank" rel="noopener noreferrer">數位發展部 CNS11643 中文標準交換碼全字庫</a></footer>
+    <footer class="font-credit">字型來源：<a href="https://www.cns11643.gov.tw/pageView.jsp?ID=59&amp;SN=&amp;la=0&amp;lang=tw" target="_blank" rel="noopener noreferrer">數位發展部 CNS11643 中文標準交換碼全字庫</a>；<a href="assets/fonts/OFL-Tinos.txt">Tinos (OFL)</a></footer>
   </main>
 
   <script src="vendor/katex.min.js"></script>
@@ -2190,7 +2218,7 @@
     function drawCenteredText(ctx, text, x, y, color = css('--muted'), fontSize = 14) {
       ctx.save();
       ctx.fillStyle = color;
-      ctx.font = `${fontSize}px "Times New Roman", "DFKai-SB", serif`;
+      ctx.font = `${fontSize}px "Times New Roman", "Tinos", "DFKai-SB", serif`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText(text, x, y);
@@ -2644,7 +2672,7 @@
       };
       drawTrace(.31, '#f6a85e', 0, 1);
       drawTrace(.70, '#65c9da', k * (right - left) + Math.PI / 2, Math.min(1.6, f / 440));
-      ctx.fillStyle = '#ebf5f7'; ctx.font = `700 ${compact ? 10 : 12}px "Times New Roman", "DFKai-SB", serif`;
+      ctx.fillStyle = '#ebf5f7'; ctx.font = `700 ${compact ? 10 : 12}px "Times New Roman", "Tinos", "DFKai-SB", serif`;
       ctx.fillText('橘：驅動電流', scope.x + 14, scope.y + 16);
       ctx.fillText('青：麥克風電壓', scope.x + 14, scope.y + scope.h - 8);
     }
@@ -2706,7 +2734,7 @@
         ctx.lineTo(px, base + h * 0.34);
         ctx.stroke();
         ctx.fillStyle = css('--muted');
-        ctx.font = '14px "Times New Roman", "DFKai-SB", serif';
+        ctx.font = '14px "Times New Roman", "Tinos", "DFKai-SB", serif';
         ctx.textAlign = align;
         ctx.fillText(text, px, base + h * 0.38);
         ctx.restore();
@@ -2868,7 +2896,7 @@
         ctx.fill();
       });
       ctx.globalAlpha = 1;
-      ctx.font = '700 12px "Times New Roman", "DFKai-SB", serif';
+      ctx.font = '700 12px "Times New Roman", "Tinos", "DFKai-SB", serif';
       ctx.textAlign = 'center';
       ctx.fillStyle = '#a45737';
       if (emissions.length) ctx.fillText(sourceMoves ? '橘點保留每次發波的位置' : '固定發波位置', w * .50, h - 18);
@@ -3840,7 +3868,7 @@
 
     function drawSceneLabel(ctx, x, y, text, align = 'left') {
       ctx.save();
-      ctx.font = '700 13px "Times New Roman", "DFKai-SB", serif';
+      ctx.font = '700 13px "Times New Roman", "Tinos", "DFKai-SB", serif';
       const width = ctx.measureText(text).width + 20;
       const left = align === 'right' ? x - width : x;
       ctx.fillStyle = 'rgba(255,255,255,.86)';
@@ -3892,7 +3920,7 @@
       ctx.lineTo(w - 42, axis);
       ctx.stroke();
       ctx.fillStyle = css('--muted');
-      ctx.font = '13px "Times New Roman", "DFKai-SB", serif';
+      ctx.font = '13px "Times New Roman", "Tinos", "DFKai-SB", serif';
       ctx.textAlign = 'right';
       ctx.fillText('主軸', w - 46, axis - 10);
       ctx.restore();
@@ -3949,7 +3977,7 @@
 
       ctx.setLineDash([]);
       ctx.fillStyle = color;
-      ctx.font = '700 14px "Times New Roman", "DFKai-SB", serif';
+      ctx.font = '700 14px "Times New Roman", "Tinos", "DFKai-SB", serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = heightPx >= 0 ? 'bottom' : 'top';
       ctx.fillText(label, x, tipY + (heightPx >= 0 ? -10 : 10));
@@ -3968,7 +3996,7 @@
       ctx.beginPath();
       ctx.arc(x, axis, 3.5, 0, Math.PI * 2);
       ctx.fill();
-      ctx.font = '700 13px "Times New Roman", "DFKai-SB", serif';
+      ctx.font = '700 13px "Times New Roman", "Tinos", "DFKai-SB", serif';
       ctx.textAlign = 'center';
       ctx.fillText(label, x, axis + 28);
       ctx.restore();
@@ -3980,7 +4008,7 @@
       ctx.beginPath();
       ctx.arc(x, axis, 4.4, 0, Math.PI * 2);
       ctx.fill();
-      ctx.font = '700 13px "Times New Roman", "DFKai-SB", serif';
+      ctx.font = '700 13px "Times New Roman", "Tinos", "DFKai-SB", serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.lineWidth = 4;
@@ -4014,7 +4042,7 @@
       ctx.beginPath();
       ctx.arc(centerX, axis, 4.2, 0, Math.PI * 2);
       ctx.fill();
-      ctx.font = '700 13px "Times New Roman", "DFKai-SB", serif';
+      ctx.font = '700 13px "Times New Roman", "Tinos", "DFKai-SB", serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'alphabetic';
       ctx.lineWidth = 4;
@@ -4038,7 +4066,7 @@
       ctx.moveTo(x2, y - 6);
       ctx.lineTo(x2, y + 6);
       ctx.stroke();
-      ctx.font = '700 12px "Times New Roman", "DFKai-SB", serif';
+      ctx.font = '700 12px "Times New Roman", "Tinos", "DFKai-SB", serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'bottom';
       ctx.lineWidth = 4;
@@ -4087,7 +4115,7 @@
         ctx.stroke();
       }
       ctx.fillStyle = css('--muted');
-      ctx.font = '700 13px "Times New Roman", "DFKai-SB", serif';
+      ctx.font = '700 13px "Times New Roman", "Tinos", "DFKai-SB", serif';
       ctx.textAlign = 'center';
       ctx.fillText(type === 'concave' ? '球面凹面鏡' : '球面凸面鏡', mirrorX, axis + aperture + 25);
       ctx.restore();
@@ -4132,7 +4160,7 @@
       const middle = start + delta / 2;
       const labelX = point.x + Math.cos(middle) * (radius + 11);
       const labelY = point.y + Math.sin(middle) * (radius + 11);
-      ctx.font = '700 12px "Times New Roman", "DFKai-SB", serif';
+      ctx.font = '700 12px "Times New Roman", "Tinos", "DFKai-SB", serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.lineWidth = 4;
@@ -4224,7 +4252,7 @@
         ctx.stroke();
       }
       ctx.fillStyle = css('--muted');
-      ctx.font = '700 13px "Times New Roman", "DFKai-SB", serif';
+      ctx.font = '700 13px "Times New Roman", "Tinos", "DFKai-SB", serif';
       ctx.textAlign = 'center';
       ctx.fillText(type === 'plane' ? '平面鏡' : (type === 'concave' ? '凹面鏡' : '凸面鏡'), mirrorX, bottom + 22);
       ctx.restore();
@@ -4242,7 +4270,7 @@
       ctx.lineTo(x - direction * 5, clampedY + 9);
       ctx.closePath();
       ctx.fill();
-      ctx.font = '700 13px "Times New Roman", "DFKai-SB", serif';
+      ctx.font = '700 13px "Times New Roman", "Tinos", "DFKai-SB", serif';
       ctx.textAlign = side === 'left' ? 'left' : 'right';
       ctx.textBaseline = 'bottom';
       ctx.fillText(text, side === 'left' ? 28 : w - 28, clampedY - 12);
@@ -4291,7 +4319,7 @@
       ctx.arc(lensX, axis, 3.5, 0, Math.PI * 2);
       ctx.fill();
       ctx.fillStyle = css('--muted');
-      ctx.font = '700 13px "Times New Roman", "DFKai-SB", serif';
+      ctx.font = '700 13px "Times New Roman", "Tinos", "DFKai-SB", serif';
       ctx.textAlign = 'center';
       ctx.fillText(type === 'convex' ? '凸透鏡' : '凹透鏡', lensX, bottom + 22);
       ctx.restore();
@@ -4315,7 +4343,7 @@
 
     function drawConstructionLabel(ctx, text, x, y, color) {
       ctx.save();
-      ctx.font = '700 13px "Times New Roman", "DFKai-SB", serif';
+      ctx.font = '700 13px "Times New Roman", "Tinos", "DFKai-SB", serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.lineWidth = 5;
@@ -4878,7 +4906,7 @@
       const segments = digitalSegments[character];
       if (!segments) {
         ctx.save();
-        ctx.font = `800 ${size * 0.82}px "Times New Roman", "DFKai-SB", serif`;
+        ctx.font = `800 ${size * 0.82}px "Times New Roman", "Tinos", "DFKai-SB", serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(character, x + width / 2, y);
@@ -4919,7 +4947,7 @@
         width = digitalTextWidth(text, preferredSize);
       } else {
         ctx.save();
-        ctx.font = `800 ${preferredSize}px "Times New Roman", "DFKai-SB", serif`;
+        ctx.font = `800 ${preferredSize}px "Times New Roman", "Tinos", "DFKai-SB", serif`;
         width = ctx.measureText(text).width;
         ctx.restore();
       }
@@ -4942,7 +4970,7 @@
           cursor += digitalCharacterWidth(character, size) + spacing;
         }
       } else {
-        ctx.font = `800 ${size}px "Times New Roman", "DFKai-SB", serif`;
+        ctx.font = `800 ${size}px "Times New Roman", "Tinos", "DFKai-SB", serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(text, 0, 0);
@@ -5039,7 +5067,7 @@
           ctx.strokeStyle = 'rgba(15,118,110,.82)';
           ctx.fillStyle = 'rgba(15,118,110,.9)';
           ctx.lineWidth = 2;
-          ctx.font = '700 12px "Times New Roman", "DFKai-SB", serif';
+          ctx.font = '700 12px "Times New Roman", "Tinos", "DFKai-SB", serif';
           ctx.textAlign = 'center';
           [objectX, mirrorX, imageX].forEach(markX => {
             ctx.beginPath();
@@ -5073,7 +5101,7 @@
           ctx.strokeStyle = 'rgba(15,118,110,.82)';
           ctx.fillStyle = 'rgba(15,118,110,.9)';
           ctx.lineWidth = 2;
-          ctx.font = '700 12px "Times New Roman", "DFKai-SB", serif';
+          ctx.font = '700 12px "Times New Roman", "Tinos", "DFKai-SB", serif';
           ctx.textAlign = 'right';
           [objectY, surfaceY, imageY].forEach(markY => {
             ctx.beginPath();
@@ -5175,7 +5203,7 @@
       ctx.stroke();
       ctx.setLineDash([]);
       if (label) {
-        ctx.font = '700 12px "Times New Roman", "DFKai-SB", serif';
+        ctx.font = '700 12px "Times New Roman", "Tinos", "DFKai-SB", serif';
         ctx.textAlign = 'center';
         ctx.textBaseline = 'top';
         ctx.fillText(label, point.x, point.y + 14);
@@ -5400,7 +5428,7 @@
       drawPersonSymbol(ctx, screenPerson, css('--orange'), '人物');
       ctx.save();
       ctx.fillStyle = css('--muted');
-      ctx.font = `700 ${w < 500 ? 11 : 13}px "Times New Roman", "DFKai-SB", serif`;
+      ctx.font = `700 ${w < 500 ? 11 : 13}px "Times New Roman", "Tinos", "DFKai-SB", serif`;
       ctx.textAlign = 'center';
       screenMirrors.forEach(mirror => {
         const midpoint = { x: (mirror.a.x + mirror.b.x) / 2, y: (mirror.a.y + mirror.b.y) / 2 };
@@ -5410,7 +5438,7 @@
         const legendOrders = Math.min(maxOrder, 6);
         ctx.textAlign = 'left';
         ctx.textBaseline = 'middle';
-        ctx.font = `700 ${w < 500 ? 10 : 12}px "Times New Roman", "DFKai-SB", serif`;
+        ctx.font = `700 ${w < 500 ? 10 : 12}px "Times New Roman", "Tinos", "DFKai-SB", serif`;
         for (let order = 1; order <= legendOrders; order += 1) {
           const x = 24 + (order - 1) * (w < 500 ? 54 : 70);
           ctx.fillStyle = mirrorDepthColor(order);
@@ -5449,7 +5477,7 @@
       ctx.closePath();
       if (dashed) ctx.stroke();
       else ctx.fill();
-      ctx.font = '700 13px "Times New Roman", "DFKai-SB", serif';
+      ctx.font = '700 13px "Times New Roman", "Tinos", "DFKai-SB", serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = height >= 0 ? 'bottom' : 'top';
       ctx.fillText(label, x, tipY + (height >= 0 ? -9 : 9));
@@ -5471,7 +5499,7 @@
       ctx.fill();
       ctx.stroke();
       ctx.fillStyle = css('--muted');
-      ctx.font = '700 13px "Times New Roman", "DFKai-SB", serif';
+      ctx.font = '700 13px "Times New Roman", "Tinos", "DFKai-SB", serif';
       ctx.textAlign = 'center';
       ctx.fillText(label, x, bottom + 22);
       ctx.restore();
@@ -5639,7 +5667,7 @@
       ctx.fill();
       ctx.stroke();
       ctx.fillStyle = '#334155';
-      ctx.font = '700 12px "Times New Roman", "DFKai-SB", serif';
+      ctx.font = '700 12px "Times New Roman", "Tinos", "DFKai-SB", serif';
       ctx.textAlign = 'left';
       ctx.textBaseline = 'middle';
       ctx.fillText(label, axisX + half + 10, y);
@@ -5665,7 +5693,7 @@
       ctx.stroke();
       if (label) {
         ctx.fillStyle = '#334155';
-        ctx.font = '700 11px "Times New Roman", "DFKai-SB", serif';
+        ctx.font = '700 11px "Times New Roman", "Tinos", "DFKai-SB", serif';
         ctx.textAlign = 'center';
         ctx.fillText(label, x, bottom + 16);
       }
@@ -5691,7 +5719,7 @@
       ctx.lineTo(tipX - direction * 10, y + 6);
       ctx.closePath();
       dashed ? ctx.stroke() : ctx.fill();
-      ctx.font = '700 12px "Times New Roman", "DFKai-SB", serif';
+      ctx.font = '700 12px "Times New Roman", "Tinos", "DFKai-SB", serif';
       ctx.textAlign = width >= 0 ? 'left' : 'right';
       ctx.textBaseline = 'bottom';
       ctx.fillText(label, tipX + direction * 6, y - 7);
@@ -5789,7 +5817,7 @@
       ctx.arc(supportX + 3, stageY - 44, compact ? 7 : 11, 0, 2 * Math.PI); ctx.stroke();
       ctx.fillStyle = '#f3e6ba'; ctx.beginPath(); ctx.ellipse(axisX, stageY + 27, compact ? 18 : 23, 7, 0, 0, 2 * Math.PI); ctx.fill();
       ctx.fillStyle = '#0f172a';
-      ctx.font = '700 12px "Times New Roman", "DFKai-SB", serif';
+      ctx.font = '700 12px "Times New Roman", "Tinos", "DFKai-SB", serif';
       ctx.textAlign = 'right';
       if (!compact) ctx.fillText('載物台與玻片', axisX - 146, stageY + 6);
       ctx.restore();
@@ -5855,7 +5883,7 @@
         ctx.fillStyle = '#618ba0'; ctx.beginPath(); ctx.arc(px + 2, py - 1, 2.5, 0, 2 * Math.PI); ctx.fill();
       }
       ctx.restore();
-      ctx.fillStyle = '#e8f4f3'; ctx.font = `700 ${compact ? 10 : 12}px "Times New Roman", "DFKai-SB", serif`;
+      ctx.fillStyle = '#e8f4f3'; ctx.font = `700 ${compact ? 10 : 12}px "Times New Roman", "Tinos", "DFKai-SB", serif`;
       ctx.fillText('目鏡視野', view.x + 8, view.y + 15);
     }
 
@@ -6029,7 +6057,7 @@
         ctx.strokeStyle = '#b6c6cb'; ctx.lineWidth = 1.3;
         ctx.beginPath(); ctx.moveTo(gx, gy); ctx.lineTo(gx, gy + gh);
         ctx.lineTo(gx + gw, gy + gh); ctx.stroke();
-        ctx.fillStyle = '#415b67'; ctx.font = '12px "Times New Roman", "DFKai-SB", serif';
+        ctx.fillStyle = '#415b67'; ctx.font = '12px "Times New Roman", "Tinos", "DFKai-SB", serif';
         ctx.textAlign = 'left'; ctx.fillText('像距（mm）', graph.x, graph.y + 12);
         ctx.textAlign = 'right'; ctx.fillText('物距（m）', gx + gw, graph.y + 12);
         for (const [distance, label] of [[.35, '0.35'], [2, '2'], [5, '5']]) {
@@ -6080,7 +6108,7 @@
       ctx.filter = `blur(${Math.min(14, circleMm * (compact ? 9 : 12)).toFixed(1)}px)`;
       drawCameraPerson(ctx, previewX, preview.y + preview.h / 2 - previewHeight / 2, previewHeight, true);
       ctx.restore();
-      ctx.fillStyle = '#e7f4f4'; ctx.font = `700 ${compact ? 10 : 12}px "Times New Roman", "DFKai-SB", serif`;
+      ctx.fillStyle = '#e7f4f4'; ctx.font = `700 ${compact ? 10 : 12}px "Times New Roman", "Tinos", "DFKai-SB", serif`;
       ctx.fillText(previewHeight > preview.h - 12 ? '感光元件預覽（倒立；近距離裁切）' : '感光元件放大預覽（倒立）', preview.x + 12, preview.y + 19);
     }
 
@@ -6095,7 +6123,7 @@
       ctx.lineTo(labelPoint.x, labelPoint.y);
       ctx.stroke();
       ctx.fillStyle = '#334155';
-      ctx.font = '700 12px "Times New Roman", "DFKai-SB", serif';
+      ctx.font = '700 12px "Times New Roman", "Tinos", "DFKai-SB", serif';
       ctx.textAlign = align;
       ctx.textBaseline = 'bottom';
       ctx.fillText(label, labelPoint.x, labelPoint.y - 3);
@@ -6340,7 +6368,7 @@
       drawArrow(ctx, from.x, from.y, to.x, to.y, color);
       ctx.save();
       ctx.fillStyle = color;
-      ctx.font = `700 ${width > 2.5 ? 15 : 13}px "Times New Roman", "DFKai-SB", serif`;
+      ctx.font = `700 ${width > 2.5 ? 15 : 13}px "Times New Roman", "Tinos", "DFKai-SB", serif`;
       ctx.textAlign = 'left';
       ctx.textBaseline = 'bottom';
       ctx.fillText(label, to.x + 5, to.y - 4);
@@ -6517,7 +6545,7 @@
           }
           ctx.stroke();
           ctx.fillStyle = series.color;
-          ctx.font = '700 12px "Times New Roman", "DFKai-SB", serif';
+          ctx.font = '700 12px "Times New Roman", "Tinos", "DFKai-SB", serif';
           ctx.fillText(series.label, graphLeft + 5, series.mid - graphAmp - 8);
           ctx.beginPath();
           ctx.arc(graphRight, series.mid - series.fn(theta) * graphAmp, 5.5, 0, Math.PI * 2);
@@ -6559,7 +6587,7 @@
       ctx.closePath();
       ctx.fill();
       if (label) {
-        ctx.font = '700 13px "Times New Roman", "DFKai-SB", serif';
+        ctx.font = '700 13px "Times New Roman", "Tinos", "DFKai-SB", serif';
         ctx.textAlign = 'center';
         ctx.fillText(label, cx, cy - radius - 10);
       }
@@ -7062,7 +7090,7 @@
       ctx.fillStyle = css('--orange');
       ctx.fillRect(loadX - 42, loadY, 84, 52);
       ctx.fillStyle = '#ffffff';
-      ctx.font = '700 16px "Times New Roman", "DFKai-SB", serif';
+      ctx.font = '700 16px "Times New Roman", "Tinos", "DFKai-SB", serif';
       ctx.textAlign = 'center';
       ctx.fillText(`${mass.toFixed(0)} kg`, loadX, loadY + 31);
       ctx.restore();
@@ -7260,7 +7288,7 @@
       ctx.fillStyle = css('--orange');
       ctx.fillRect(loadX - (compact ? 34 : 42), loadTop, compact ? 68 : 84, compact ? 42 : 50);
       ctx.fillStyle = '#ffffff';
-      ctx.font = `700 ${compact ? 13 : 16}px "Times New Roman", "DFKai-SB", serif`;
+      ctx.font = `700 ${compact ? 13 : 16}px "Times New Roman", "Tinos", "DFKai-SB", serif`;
       ctx.textAlign = 'center';
       ctx.fillText(`${mass.toFixed(0)} kg`, loadX, loadTop + (compact ? 26 : 31));
       ctx.restore();
@@ -7279,13 +7307,13 @@
       ctx.stroke();
       ctx.restore();
       if (!compact) {
-        ctx.fillStyle = '#0f766e'; ctx.font = '700 12px "Times New Roman", "DFKai-SB", serif';
+        ctx.fillStyle = '#0f766e'; ctx.font = '700 12px "Times New Roman", "Tinos", "DFKai-SB", serif';
         ctx.fillText('繩端', Math.min(w - 46, freeX + 12), Math.min(h - 18, freeY + 10));
       }
 
       if ($('pulley-show-segments').checked && strands > 1) {
         const midY = (topY + lowerY) / 2;
-        ctx.fillStyle = '#3d6271'; ctx.font = '700 13px "Times New Roman", "DFKai-SB", serif';
+        ctx.fillStyle = '#3d6271'; ctx.font = '700 13px "Times New Roman", "Tinos", "DFKai-SB", serif';
         ctx.fillText(`${strands} 股支撐`, 15, midY);
       }
 
@@ -7769,7 +7797,7 @@
       ctx.arc(center.x, center.y, radius, from, to, to < from);
       ctx.stroke();
       const mid = (from + to) / 2;
-      ctx.font = '700 13px "Times New Roman", "DFKai-SB", serif';
+      ctx.font = '700 13px "Times New Roman", "Tinos", "DFKai-SB", serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText(label, center.x + Math.cos(mid) * (radius + 16), center.y + Math.sin(mid) * (radius + 16));
@@ -7802,7 +7830,7 @@
       ctx.stroke();
       ctx.setLineDash([]);
       ctx.fillStyle = '#dbeafe';
-      ctx.font = '700 12px "Times New Roman", "DFKai-SB", serif';
+      ctx.font = '700 12px "Times New Roman", "Tinos", "DFKai-SB", serif';
       ctx.fillText('光纖：反覆全反射把光留在芯層', left + 13, top + boxH - 10);
       ctx.restore();
     }
@@ -7998,7 +8026,7 @@
           ctx.beginPath(); ctx.moveTo(x, scene.y + 32); ctx.lineTo(x, scene.y + scene.h - 32); ctx.stroke();
         }
       }
-      ctx.fillStyle = '#cbd5e1'; ctx.font = '700 13px "Times New Roman", "DFKai-SB", serif';
+      ctx.fillStyle = '#cbd5e1'; ctx.font = '700 13px "Times New Roman", "Tinos", "DFKai-SB", serif';
       ctx.fillText('固定星點', star.x - 20, scene.y + 29);
       ctx.fillText('擾動空氣', atmosphereX, scene.y + 29);
       ctx.fillText('固定瞳孔', pupil.x - 32, scene.y + 29);
@@ -8034,15 +8062,15 @@
         ctx.fillStyle = '#fef3c7';
         ctx.beginPath(); ctx.arc(pupil.x + aperture + 13, pupil.y, 4 + brightness * 7, 0, Math.PI * 2); ctx.fill();
       }
-      ctx.fillStyle = '#cbd5e1'; ctx.font = '700 12px "Times New Roman", "DFKai-SB", serif';
+      ctx.fillStyle = '#cbd5e1'; ctx.font = '700 12px "Times New Roman", "Tinos", "DFKai-SB", serif';
       ctx.fillText('光束中心偏移（圖上放大）', scene.x + 14, scene.y + scene.h - 42);
       ctx.fillText('灰線未進瞳孔；黃線進入', scene.x + 14, scene.y + scene.h - 20);
 
       const gx = graph.x + 18, gy = graph.y + (compact ? 70 : 120);
       const gw = graph.w - 36, gh = compact ? graph.h - 95 : graph.h * .38;
-      ctx.fillStyle = '#e2e8f0'; ctx.font = '700 14px "Times New Roman", "DFKai-SB", serif';
+      ctx.fillStyle = '#e2e8f0'; ctx.font = '700 14px "Times New Roman", "Tinos", "DFKai-SB", serif';
       ctx.fillText('固定瞳孔的相對進光量', gx, graph.y + 28);
-      ctx.font = '800 24px "Times New Roman", "DFKai-SB", serif';
+      ctx.font = '800 24px "Times New Roman", "Tinos", "DFKai-SB", serif';
       ctx.fillStyle = brightness < threshold ? '#fb7185' : '#fde68a';
       ctx.fillText((brightness * 100).toFixed(0) + '%', gx, graph.y + 58);
       ctx.strokeStyle = '#475569'; ctx.strokeRect(gx, gy, gw, gh);
@@ -8058,10 +8086,10 @@
         if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
       }
       ctx.stroke();
-      ctx.fillStyle = '#fda4af'; ctx.font = '600 11px "Times New Roman", "DFKai-SB", serif';
+      ctx.fillStyle = '#fda4af'; ctx.font = '600 11px "Times New Roman", "Tinos", "DFKai-SB", serif';
       ctx.fillText('示意辨識門檻', gx, Math.min(graph.y + graph.h - 10, thresholdY + 18));
       if (!compact) {
-        ctx.fillStyle = '#cbd5e1'; ctx.font = '600 12px "Times New Roman", "DFKai-SB", serif';
+        ctx.fillStyle = '#cbd5e1'; ctx.font = '600 12px "Times New Roman", "Tinos", "DFKai-SB", serif';
         ctx.fillText('星點位置固定；亮度會起伏', gx, gy + gh + 35);
         ctx.fillText('亂流偏折與聚焦使進光量改變', gx, gy + gh + 56);
       }
@@ -8100,7 +8128,7 @@
       const cloudW = w * (.25 + density * .035), cloudH = h * (.48 + density * .06);
       const eye = { x: w * .87, y: h * .48 };
       ctx.fillStyle = '#e2e8f0';
-      ctx.font = '700 ' + (compact ? 12 : 15) + 'px "Times New Roman", "DFKai-SB", serif';
+      ctx.font = '700 ' + (compact ? 12 : 15) + 'px "Times New Roman", "Tinos", "DFKai-SB", serif';
       ctx.fillText('低角度直射光', 18, 34);
       ctx.fillText('周圍天空散射光', 18, h * .58);
       ctx.fillStyle = sunlightColor; ctx.beginPath();
@@ -8125,18 +8153,18 @@
       }
       ctx.fillStyle = '#0b1723'; ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 3;
       ctx.beginPath(); ctx.arc(eye.x, eye.y, compact ? 15 : 23, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
-      ctx.fillStyle = '#1f3744'; ctx.font = '700 ' + (compact ? 11 : 13) + 'px "Times New Roman", "DFKai-SB", serif';
+      ctx.fillStyle = '#1f3744'; ctx.font = '700 ' + (compact ? 11 : 13) + 'px "Times New Roman", "Tinos", "DFKai-SB", serif';
       ctx.fillText('含冰水的厚雲', cloudX + 8, cloudY + 26);
       ctx.fillStyle = '#e2e8f0';
       ctx.fillText('觀看方向', eye.x - 34, eye.y + 42);
       ctx.strokeStyle = '#94a3b8'; ctx.setLineDash([5, 5]); ctx.lineWidth = 2;
       ctx.beginPath(); ctx.moveTo(cloudX + cloudW, cloudY + cloudH * .5); ctx.lineTo(eye.x - 24, eye.y); ctx.stroke();
       ctx.setLineDash([]);
-      ctx.fillStyle = '#cbd5e1'; ctx.font = '700 ' + (compact ? 11 : 14) + 'px "Times New Roman", "DFKai-SB", serif';
+      ctx.fillStyle = '#cbd5e1'; ctx.font = '700 ' + (compact ? 11 : 14) + 'px "Times New Roman", "Tinos", "DFKai-SB", serif';
       ctx.fillText('？', cloudX + cloudW + (eye.x - cloudX - cloudW) * .45, eye.y - 12);
       const infoY = h * .83;
       ctx.fillText(compact ? '紫霞：紅色晚霞與藍色散射光' : '紫色晚霞：偏紅的低角度照明與較短波散射光、氣膠條件可能共同作用', 18, infoY);
-      ctx.fillStyle = '#94a3b8'; ctx.font = '600 ' + (compact ? 10 : 12) + 'px "Times New Roman", "DFKai-SB", serif';
+      ctx.fillStyle = '#94a3b8'; ctx.font = '600 ' + (compact ? 10 : 12) + 'px "Times New Roman", "Tinos", "DFKai-SB", serif';
       ctx.fillText(compact ? '綠雲：冰水雲假說仍有爭議' : '綠色暴風天空與冰水豐富的雲有關的假說仍有爭議；不能用單一公式定色。', 18, infoY + 25);
       ctx.fillText(compact ? '雲色不能當龍捲風警報' : '綠色或紫色都不是龍捲風警報；圖示只給出可能的入射照明。', 18, infoY + 49);
       $('scatter-path').innerHTML = '太陽仰角 ' + elevation.toFixed(0) + '°<small>決定直射光的相對路徑</small>';
@@ -8173,7 +8201,7 @@
       ctx.globalAlpha = rayleigh ? .23 : .13;
       ctx.fillStyle = skyGradient; ctx.fillRect(0, 0, w, beamY);
       ctx.globalAlpha = 1;
-      ctx.fillStyle = '#e2e8f0'; ctx.font = '700 ' + (compact ? 12 : 15) + 'px "Times New Roman", "DFKai-SB", serif';
+      ctx.fillStyle = '#e2e8f0'; ctx.font = '700 ' + (compact ? 12 : 15) + 'px "Times New Roman", "Tinos", "DFKai-SB", serif';
       ctx.fillText('同一束入射白光', left, 30);
       ctx.fillText('側面看天空：散出的光', left, compact ? 67 : 71);
       ctx.fillStyle = skyColor;
@@ -8181,7 +8209,7 @@
       const tracks = colors.map((channel, index) => ({ ...channel, y: beamY + (index - 1) * (compact ? 15 : 20) }));
       tracks.forEach(channel => {
         ctx.fillStyle = channel.color;
-        ctx.font = '800 13px "Times New Roman", "DFKai-SB", serif';
+        ctx.font = '800 13px "Times New Roman", "Tinos", "DFKai-SB", serif';
         ctx.fillText(channel.label, left - 23, channel.y + 4);
         for (let j = 0; j < 36; j += 1) {
           const a = j / 36, b = (j + 1) / 36;
@@ -8224,7 +8252,7 @@
         ctx.globalAlpha = 1;
       }
       const directColor = wavelengthRgb(transmission);
-      ctx.fillStyle = '#e2e8f0'; ctx.font = '700 ' + (compact ? 11 : 14) + 'px "Times New Roman", "DFKai-SB", serif';
+      ctx.fillStyle = '#e2e8f0'; ctx.font = '700 ' + (compact ? 11 : 14) + 'px "Times New Roman", "Tinos", "DFKai-SB", serif';
       ctx.fillText('直射方向剩下的光', left, beamY + (compact ? 57 : 69));
       ctx.fillStyle = directColor;
       ctx.beginPath(); ctx.arc(right - 13, beamY + (compact ? 54 : 65), compact ? 9 : 13, 0, Math.PI * 2); ctx.fill();
@@ -8237,7 +8265,7 @@
           const x = left + step * columnW;
           const barW = Math.max(20, columnW - (compact ? 11 : 22));
           ctx.fillStyle = '#cbd5e1';
-          ctx.font = '700 ' + (compact ? 10 : 13) + 'px "Times New Roman", "DFKai-SB", serif';
+          ctx.font = '700 ' + (compact ? 10 : 13) + 'px "Times New Roman", "Tinos", "DFKai-SB", serif';
           ctx.fillText(step === 0 ? '入射' : step === 3 ? '到眼睛' : step + '/3', x, tableY);
           colors.forEach((channel, index) => {
             const y = tableY + 20 + index * (compact ? 31 : 39);
@@ -8245,14 +8273,14 @@
             ctx.fillStyle = '#223649'; ctx.fillRect(x, y, barW, compact ? 12 : 15);
             ctx.fillStyle = channel.color; ctx.fillRect(x, y, barW * amount, compact ? 12 : 15);
             if (!compact) {
-              ctx.fillStyle = '#cbd5e1'; ctx.font = '600 10px "Times New Roman", "DFKai-SB", serif';
+              ctx.fillStyle = '#cbd5e1'; ctx.font = '600 10px "Times New Roman", "Tinos", "DFKai-SB", serif';
               ctx.fillText(Math.round(amount * 100) + '%', x, y + 28);
             }
           });
         }
       }
       const noteY = h - 33;
-      ctx.fillStyle = '#cbd5e1'; ctx.font = '600 ' + (compact ? 10 : 12) + 'px "Times New Roman", "DFKai-SB", serif';
+      ctx.fillStyle = '#cbd5e1'; ctx.font = '600 ' + (compact ? 10 : 12) + 'px "Times New Roman", "Tinos", "DFKai-SB", serif';
       ctx.fillText('光點等速；亮度與色彩代表剩餘通量，非傳播速度', left, noteY);
       setText('scatter-elevation-out', elevation.toFixed(0) + '°');
       setText('scatter-density-out', density.toFixed(2) + 'x');
@@ -8419,7 +8447,7 @@
         ctx.fill();
         ctx.stroke();
         ctx.fillStyle = active ? colors[index] : '#94a3b8';
-        ctx.font = `700 ${compact ? 9 : 11}px "Times New Roman", "DFKai-SB", serif`;
+        ctx.font = `700 ${compact ? 9 : 11}px "Times New Roman", "Tinos", "DFKai-SB", serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(label, x + boxW / 2, y + 16);
@@ -8443,7 +8471,7 @@
       ctx.stroke();
       ctx.shadowBlur = 0;
       ctx.fillStyle = '#ffffff';
-      ctx.font = `800 ${Math.min(30, height * .48)}px "Times New Roman", "DFKai-SB", serif`;
+      ctx.font = `800 ${Math.min(30, height * .48)}px "Times New Roman", "Tinos", "DFKai-SB", serif`;
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
       ctx.fillText(label, x + width / 2, y + height / 2);
@@ -8461,7 +8489,7 @@
       ctx.fill();
       ctx.stroke();
       ctx.fillStyle = '#e2e8f0';
-      ctx.font = `700 ${compact ? 12 : 14}px "Times New Roman", "DFKai-SB", serif`;
+      ctx.font = `700 ${compact ? 12 : 14}px "Times New Roman", "Tinos", "DFKai-SB", serif`;
       ctx.fillText('局部追蹤：同一塊金屬往下穿越磁區', rect.x + 13, rect.y + 23);
 
       const trackX = rect.x + rect.w * .27;
@@ -8480,7 +8508,7 @@
         ctx.setLineDash([]);
       }
       ctx.fillStyle = '#93c5fd';
-      ctx.font = `700 ${compact ? 10 : 12}px "Times New Roman", "DFKai-SB", serif`;
+      ctx.font = `700 ${compact ? 10 : 12}px "Times New Roman", "Tinos", "DFKai-SB", serif`;
       ctx.fillText('外加 B ⊗（進入紙面）', fieldRect.x + 8, fieldRect.y + 17);
       drawArrow(ctx, trackX - 38, top + 4, trackX - 38, top + 46, '#e2e8f0');
       ctx.fillStyle = '#e2e8f0';
@@ -8517,7 +8545,7 @@
       if (showForce && hasInduction) {
         drawArrow(ctx, trackX + loopRadius + 16, centerY + 22, trackX + loopRadius + 16, centerY - 24, '#fb7185');
         ctx.fillStyle = '#fb7185';
-        ctx.font = `700 ${compact ? 10 : 12}px "Times New Roman", "DFKai-SB", serif`;
+        ctx.font = `700 ${compact ? 10 : 12}px "Times New Roman", "Tinos", "DFKai-SB", serif`;
         ctx.fillText('F 磁力', trackX + loopRadius + 22, centerY - 9);
       }
 
@@ -8529,7 +8557,7 @@
             ? '完全位於均勻磁區：Φ 不變 → I = 0'
             : '磁區外：Φ = 0 → I = 0';
       ctx.fillStyle = change === 0 ? '#cbd5e1' : '#fbbf24';
-      ctx.font = `700 ${compact ? 10 : 12}px "Times New Roman", "DFKai-SB", serif`;
+      ctx.font = `700 ${compact ? 10 : 12}px "Times New Roman", "Tinos", "DFKai-SB", serif`;
       ctx.fillText(stateLabel, rect.x + 13, rect.y + rect.h - 18);
 
       const graphX = rect.x + rect.w * .59;
@@ -8560,7 +8588,7 @@
       ctx.arc(graphDotX, graphDotY, 4.5, 0, Math.PI * 2);
       ctx.fill();
       ctx.fillStyle = '#bfdbfe';
-      ctx.font = `700 ${compact ? 10 : 11}px "Times New Roman", "DFKai-SB", serif`;
+      ctx.font = `700 ${compact ? 10 : 11}px "Times New Roman", "Tinos", "DFKai-SB", serif`;
       ctx.fillText('磁通 Φ', graphX, graphTop - 8);
 
       const rows = [
@@ -8623,7 +8651,7 @@
       if (label) {
         const labelPoint = p((x0 + x1) / 2, (y0 + y1) / 2, z0 - .02);
         ctx.fillStyle = '#ffffff';
-        ctx.font = `900 ${Math.max(12, Math.min(24, scale * .34))}px "Times New Roman", "DFKai-SB", serif`;
+        ctx.font = `900 ${Math.max(12, Math.min(24, scale * .34))}px "Times New Roman", "Tinos", "DFKai-SB", serif`;
         ctx.textAlign = 'center';
         ctx.textBaseline = 'middle';
         ctx.fillText(label, labelPoint.x, labelPoint.y);
@@ -8638,7 +8666,7 @@
       drawArrow(ctx, a.x, a.y, b.x, b.y, color);
       if (label) {
         ctx.fillStyle = color;
-        ctx.font = '800 11px "Times New Roman", "DFKai-SB", serif';
+        ctx.font = '800 11px "Times New Roman", "Tinos", "DFKai-SB", serif';
         ctx.textAlign = 'left';
         ctx.fillText(label, b.x + 5, b.y - 5);
       }
@@ -8742,7 +8770,7 @@
       ctx.fill();
       ctx.stroke();
       ctx.fillStyle = '#e2e8f0';
-      ctx.font = `800 ${compact ? 12 : 14}px "Times New Roman", "DFKai-SB", serif`;
+      ctx.font = `800 ${compact ? 12 : 14}px "Times New Roman", "Tinos", "DFKai-SB", serif`;
       ctx.fillText('減速實測：同時刻與無磁場參考比較', rect.x + 14, rect.y + 24);
 
       const graph = { x: rect.x + 38, y: rect.y + 48, w: rect.w - 58, h: Math.min(compact ? 96 : 150, rect.h * .38) };
@@ -8781,7 +8809,7 @@
       ctx.arc(dotX, dotY, 5, 0, Math.PI * 2);
       ctx.fill();
       ctx.fillStyle = '#cbd5e1';
-      ctx.font = '700 10px "Times New Roman", "DFKai-SB", serif';
+      ctx.font = '700 10px "Times New Roman", "Tinos", "DFKai-SB", serif';
       ctx.fillText('ω', graph.x - 18, graph.y + 6);
       ctx.fillText('時間 →', graph.x + graph.w - 40, graph.y + graph.h + 16);
       ctx.fillStyle = '#94a3b8';
@@ -8791,7 +8819,7 @@
 
       const localY = graph.y + graph.h + 38;
       ctx.fillStyle = '#e2e8f0';
-      ctx.font = `800 ${compact ? 11 : 13}px "Times New Roman", "DFKai-SB", serif`;
+      ctx.font = `800 ${compact ? 11 : 13}px "Times New Roman", "Tinos", "DFKai-SB", serif`;
       ctx.fillText('導體局部：電流只在磁通改變處形成閉合迴路', rect.x + 14, localY);
       const localOrigin = { x: rect.x + rect.w * .50, y: rect.y + rect.h * .80 };
       const localScale = Math.min(rect.w / 6.2, (rect.h - (localY - rect.y)) / 3.0);
@@ -8817,7 +8845,7 @@
       }
       const currentPoint = isoPoint(localOrigin, -.05, .78, -.06, localScale);
       ctx.fillStyle = '#fdba74';
-      ctx.font = '800 10px "Times New Roman", "DFKai-SB", serif';
+      ctx.font = '800 10px "Times New Roman", "Tinos", "DFKai-SB", serif';
       ctx.textAlign = 'center';
       ctx.fillText('橘色＝渦電流 I', currentPoint.x, currentPoint.y);
     }
@@ -8923,7 +8951,7 @@
 
       const legendY = scene.y + scene.h - 58;
       ctx.fillStyle = '#475569';
-      ctx.font = `700 ${compact ? 10 : 12}px "Times New Roman", "DFKai-SB", serif`;
+      ctx.font = `700 ${compact ? 10 : 12}px "Times New Roman", "Tinos", "DFKai-SB", serif`;
       ctx.textAlign = 'left';
       ctx.fillText('橘／綠閉合圈：圓盤導體內的渦電流', scene.x + 14, legendY);
       ctx.fillText('藍箭頭：穿過圓盤厚度的磁場', scene.x + 14, legendY + 20);
@@ -8939,7 +8967,7 @@
         ctx.fillStyle = heatGradient;
         ctx.fillRect(barX, barY, barW * clampValue(state.heat, 0, 1), 10);
         ctx.fillStyle = '#475569';
-        ctx.font = '700 10px "Times New Roman", "DFKai-SB", serif';
+        ctx.font = '700 10px "Times New Roman", "Tinos", "DFKai-SB", serif';
         ctx.fillText(`動能轉熱 ${(state.heat * 100).toFixed(0)}%`, barX, barY - 7);
       }
 
@@ -9040,7 +9068,7 @@
       ctx.fillRect(center.x - radius - 34, center.y - 9, 26, 18);
       ctx.fillRect(center.x + radius + 8, center.y - 9, 26, 18);
       ctx.fillStyle = '#f8fafc';
-      ctx.font = '700 11px "Times New Roman", "DFKai-SB", serif';
+      ctx.font = '700 11px "Times New Roman", "Tinos", "DFKai-SB", serif';
       ctx.textAlign = 'center';
       ctx.fillText('電刷', center.x - radius - 21, center.y - 16);
       ctx.fillText('電刷', center.x + radius + 21, center.y - 16);
@@ -9082,10 +9110,10 @@
       ctx.fill();
       ctx.stroke();
       ctx.fillStyle = '#f8fafc';
-      ctx.font = '800 12px "Times New Roman", "DFKai-SB", serif';
+      ctx.font = '800 12px "Times New Roman", "Tinos", "DFKai-SB", serif';
       ctx.textAlign = 'left';
       ctx.fillText('右手定則：F = N I ℓ × B', x + 13, y + 22);
-      ctx.font = '700 13px "Times New Roman", "DFKai-SB", serif';
+      ctx.font = '700 13px "Times New Roman", "Tinos", "DFKai-SB", serif';
       if (compact) {
         ctx.fillStyle = '#f8fafc';
         ctx.fillText(`左：I${leftCurrentUp ? '↑' : '↓'} × B→ = F${leftForce}`, x + 13, y + 46);
@@ -9105,7 +9133,7 @@
         ctx.fillText(`= F${rightForce}`, x + width - 67, y + 78);
       }
       ctx.fillStyle = '#cbd5e1';
-      ctx.font = '600 10px "Times New Roman", "DFKai-SB", serif';
+      ctx.font = '600 10px "Times New Roman", "Tinos", "DFKai-SB", serif';
       ctx.fillText('±z 是線圈前後方向；兩力形成力偶', x + 13, y + (compact ? 87 : 102));
       ctx.restore();
     }
@@ -9135,7 +9163,7 @@
         fill.addColorStop(0, '#54636b'); fill.addColorStop(1, color);
         ctx.fillStyle = fill; ctx.fillRect(x, cy - magnetHeight / 2, magnetWidth, magnetHeight);
         ctx.fillStyle = color; ctx.fillRect(x + (text === 'N' ? magnetWidth - 10 : 0), cy - magnetHeight / 2 + 8, 10, magnetHeight - 16);
-        ctx.fillStyle = '#fff'; ctx.font = `700 ${compact ? 20 : 28}px "Times New Roman", serif`;
+        ctx.fillStyle = '#fff'; ctx.font = `700 ${compact ? 20 : 28}px "Times New Roman", "Tinos", serif`;
         ctx.textAlign = 'center'; ctx.fillText(text, x + magnetWidth / 2, cy + 9);
       };
       drawPole(magnetLeft, '#a84f4a', 'N');
@@ -9159,7 +9187,7 @@
         const up = index === 0 ? currentUpA : !currentUpA;
         ctx.fillStyle = '#fff9f1'; ctx.strokeStyle = '#a65a2e'; ctx.lineWidth = 3;
         ctx.beginPath(); ctx.arc(point.x, point.y, compact ? 12 : 16, 0, 2 * Math.PI); ctx.fill(); ctx.stroke();
-        ctx.fillStyle = '#263d46'; ctx.font = `700 ${compact ? 11 : 13}px "Times New Roman", serif`;
+        ctx.fillStyle = '#263d46'; ctx.font = `700 ${compact ? 11 : 13}px "Times New Roman", "Tinos", serif`;
         ctx.textAlign = 'center';
         ctx.fillText(index === 0 ? 'A' : 'B', point.x, point.y - (compact ? 19 : 24));
         if (currentOn) {
@@ -9186,7 +9214,7 @@
         ctx.strokeStyle = side ? '#cf8a53' : '#9f562d'; ctx.lineWidth = 9; ctx.lineCap = 'butt';
         ctx.beginPath(); ctx.arc(cx, ringY, ringR, alpha + Math.PI / 2 + .08 + side * Math.PI, alpha + 3 * Math.PI / 2 - .08 + side * Math.PI); ctx.stroke();
       }
-      ctx.fillStyle = '#865330'; ctx.font = `700 ${compact ? 10 : 12}px "Times New Roman", serif`; ctx.textAlign = 'center';
+      ctx.fillStyle = '#865330'; ctx.font = `700 ${compact ? 10 : 12}px "Times New Roman", "Tinos", serif`; ctx.textAlign = 'center';
       for (let side = 0; side < 2; side += 1) {
         const mid = alpha + Math.PI + side * Math.PI;
         ctx.fillText(side ? 'B' : 'A', cx + (ringR + 13) * Math.cos(mid), ringY + (ringR + 13) * Math.sin(mid) + 4);
@@ -9200,9 +9228,9 @@
       ctx.moveTo(cx + ringR + 25, ringY); ctx.lineTo(cx + ringR + 45, ringY); ctx.lineTo(cx + ringR + 45, h - 30);
       ctx.lineTo(cx + 42, h - 30); ctx.stroke();
       ctx.fillStyle = '#283a43'; ctx.fillRect(cx - 42, h - 42, 84, 25);
-      ctx.fillStyle = '#f9f4eb'; ctx.font = '700 14px "Times New Roman", serif'; ctx.textAlign = 'center';
+      ctx.fillStyle = '#f9f4eb'; ctx.font = '700 14px "Times New Roman", "Tinos", serif'; ctx.textAlign = 'center';
       ctx.fillText(`+  ${state.voltage.toFixed(1)} V  −`, cx, h - 25);
-      ctx.fillStyle = '#52636b'; ctx.font = `700 ${compact ? 11 : 13}px "Times New Roman", "DFKai-SB", serif`;
+      ctx.fillStyle = '#52636b'; ctx.font = `700 ${compact ? 11 : 13}px "Times New Roman", "Tinos", "DFKai-SB", serif`;
       ctx.textAlign = 'left'; ctx.fillText('俯視轉子', 13, 24);
       ctx.fillText('⊙ 向外　⊗ 向內', 13, 44);
       if (!compact) { ctx.textAlign = 'right'; ctx.fillText('每半轉，分裂環交換電刷接點', w - 18, h - 28); }
@@ -9274,7 +9302,7 @@
       drawArrow(ctx, triad.x, triad.y, triad.x + 40, triad.y + 23, '#2563eb');
       drawArrow(ctx, triad.x, triad.y, triad.x, triad.y - 45, '#0f766e');
       drawArrow(ctx, triad.x, triad.y, triad.x - 40, triad.y + 23, '#7c3aed');
-      ctx.font = '800 10px "Times New Roman", "DFKai-SB", serif';
+      ctx.font = '800 10px "Times New Roman", "Tinos", "DFKai-SB", serif';
       ctx.fillStyle = '#2563eb';
       ctx.fillText('+x（B）', triad.x + 43, triad.y + 26);
       ctx.fillStyle = '#0f766e';
@@ -9337,7 +9365,7 @@
       const rightMid = pointOnSegment(topB, bottomB, .5);
       if (showCurrent) {
         ctx.save();
-        ctx.font = `800 ${compact ? 11 : 13}px "Times New Roman", "DFKai-SB", serif`;
+        ctx.font = `800 ${compact ? 11 : 13}px "Times New Roman", "Tinos", "DFKai-SB", serif`;
         ctx.fillStyle = '#c2410c';
         ctx.textAlign = 'right';
         ctx.fillText(`I${leftCurrentUp ? '↑' : '↓'}`, leftMid.x - 13, leftMid.y - 24);
@@ -9389,7 +9417,7 @@
       ctx.fillStyle = '#334155';
       ctx.fillRect(batteryX, batteryY, 68, 24);
       ctx.fillStyle = '#f8fafc';
-      ctx.font = '800 14px "Times New Roman", "DFKai-SB", serif';
+      ctx.font = '800 14px "Times New Roman", "Tinos", "DFKai-SB", serif';
       ctx.textAlign = 'center';
       ctx.fillText(`+  ${state.voltage.toFixed(1)} V  −`, origin.x, batteryY + 17);
       if (!compact) drawSceneLabel(ctx, commutatorCenter.x + 54, commutatorCenter.y - 18, '分裂環：每半圈換向', 'left');
@@ -9477,7 +9505,7 @@
         g.addColorStop(0, color); g.addColorStop(1, label === 'N' ? '#f08080' : '#6a9df3');
         ctx.fillStyle = g; ctx.fillRect(x, magnetY, magnetW, magnetH);
         ctx.fillStyle = '#9ba7aa'; ctx.fillRect(x + magnetW * .16, magnetY + magnetH, magnetW * .68, top - magnetY - magnetH);
-        ctx.fillStyle = '#fff'; ctx.font = `800 ${compact ? 22 : 32}px "Times New Roman", "DFKai-SB", serif`;
+        ctx.fillStyle = '#fff'; ctx.font = `800 ${compact ? 22 : 32}px "Times New Roman", "Tinos", "DFKai-SB", serif`;
         ctx.textAlign = 'center'; ctx.fillText(label, x + magnetW / 2, magnetY + magnetH * .56);
       };
       magnet(leftX, '#ad3939', 'N'); magnet(rightX, '#2e5bad', 'S');
@@ -9550,7 +9578,7 @@
       for (const mid of [fluxMid, emfMid]) {
         ctx.beginPath(); ctx.moveTo(chart.x, mid); ctx.lineTo(chart.x + chart.w, mid); ctx.stroke();
       }
-      ctx.fillStyle = '#677882'; ctx.font = `11px "Times New Roman", "DFKai-SB", serif`;
+      ctx.fillStyle = '#677882'; ctx.font = `11px "Times New Roman", "Tinos", "DFKai-SB", serif`;
       ctx.textAlign = 'center';
       for (let i = 0; i <= 4; i += 1) {
         const x = chart.x + chart.w * i / 4;
@@ -9577,7 +9605,7 @@
       };
       marker(fluxMid - Math.cos(theta) * chart.h * .19, '#3a739a');
       marker(emfMid - Math.sin(theta) * chart.h * .19, '#b35a3e');
-      ctx.font = `700 ${compact ? 10 : 12}px "Times New Roman", "DFKai-SB", serif`;
+      ctx.font = `700 ${compact ? 10 : 12}px "Times New Roman", "Tinos", "DFKai-SB", serif`;
       ctx.textAlign = 'left';
       ctx.fillStyle = '#3a739a'; ctx.fillText('磁通', chart.x + chart.w + 4, fluxMid + 4);
       ctx.fillStyle = '#b35a3e'; ctx.fillText('電壓', chart.x + chart.w + 4, emfMid + 4);
@@ -9597,7 +9625,7 @@
       const cy = compact ? h * .28 : h * .52;
       const radius = compact ? Math.min(w * .23, h * .17) : Math.min(w * .13, h * .31);
       ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, h);
-      ctx.fillStyle = '#344a55'; ctx.font = `700 ${compact ? 13 : 16}px "Times New Roman", "DFKai-SB", serif`;
+      ctx.fillStyle = '#344a55'; ctx.font = `700 ${compact ? 13 : 16}px "Times New Roman", "Tinos", "DFKai-SB", serif`;
       ctx.textAlign = 'left'; ctx.fillText('沿轉軸看線圈', compact ? 15 : 24, 30);
       if (!compact) ctx.fillText('感應電壓隨轉角變化', w * .49, 30);
       const poleY = cy - radius * .68, poleH = radius * 1.36;
@@ -9605,7 +9633,7 @@
       for (const [side, fill, name] of [[-1, '#a94a47', 'N'], [1, '#407692', 'S']]) {
         const x = cx + side * (radius + poleW * .76) - poleW / 2;
         ctx.fillStyle = fill; ctx.fillRect(x, poleY, poleW, poleH);
-        ctx.fillStyle = '#fff'; ctx.font = `700 ${compact ? 16 : 20}px "Times New Roman", serif`;
+        ctx.fillStyle = '#fff'; ctx.font = `700 ${compact ? 16 : 20}px "Times New Roman", "Tinos", serif`;
         ctx.textAlign = 'center'; ctx.fillText(name, x + poleW / 2, cy + 6);
       }
       if ($('gen-show-field').checked) for (const offset of [-.48, 0, .48]) {
@@ -9628,7 +9656,7 @@
             y - sign * Math.sin(theta) * (compact ? 21 : 29), '#488574');
         }
       }
-      ctx.fillStyle = '#65737a'; ctx.font = `12px "Times New Roman", "DFKai-SB", serif`;
+      ctx.fillStyle = '#65737a'; ctx.font = `12px "Times New Roman", "Tinos", "DFKai-SB", serif`;
       ctx.textAlign = 'center';
       ctx.fillText('兩側導線的速度方向相反', cx, cy + radius + (compact ? 22 : 27));
       const plot = compact
@@ -9659,7 +9687,7 @@
       ctx.moveTo(markerX, plot.y); ctx.lineTo(markerX, plot.y + plot.height); ctx.stroke(); ctx.setLineDash([]);
       ctx.fillStyle = '#fff'; ctx.strokeStyle = '#a84b39'; ctx.lineWidth = 3;
       ctx.beginPath(); ctx.arc(markerX, markerY, compact ? 5 : 6, 0, 2 * Math.PI); ctx.fill(); ctx.stroke();
-      ctx.fillStyle = '#465b65'; ctx.font = `12px "Times New Roman", "DFKai-SB", serif`;
+      ctx.fillStyle = '#465b65'; ctx.font = `12px "Times New Roman", "Tinos", "DFKai-SB", serif`;
       ctx.textAlign = 'center';
       ctx.fillText('0', plot.x, plot.y + plot.height + 16);
       ctx.fillText('半圈', plot.x + plot.width * .25, plot.y + plot.height + 16);
@@ -9798,7 +9826,7 @@
       ctx.moveTo(contactX + 10, contactY); ctx.lineTo(w * .93, contactY); ctx.lineTo(w * .93, circuitY); ctx.lineTo(w * .62, circuitY);
       ctx.moveTo(w * .49, circuitY); ctx.lineTo(w * .28, circuitY); ctx.stroke();
       ctx.fillStyle = '#364d55'; ctx.fillRect(w * .14, circuitY - 11, w * .14, 22);
-      ctx.fillStyle = '#edf2f2'; ctx.font = `700 ${compact ? 10 : 13}px "Times New Roman", "DFKai-SB", serif`; ctx.textAlign = 'center';
+      ctx.fillStyle = '#edf2f2'; ctx.font = `700 ${compact ? 10 : 13}px "Times New Roman", "Tinos", "DFKai-SB", serif`; ctx.textAlign = 'center';
       ctx.fillText(`${voltage.toFixed(1)} V`, w * .21, circuitY + 4);
       ctx.strokeStyle = bell.power ? '#169080' : '#677a80'; ctx.lineWidth = 4;
       ctx.beginPath(); ctx.moveTo(w * .49, circuitY); ctx.lineTo(w * .62, circuitY + (bell.power ? 0 : -13)); ctx.stroke();
@@ -9832,7 +9860,7 @@
       };
       drawHistory('current', .43, .3, '#f0a46e');
       drawHistory('x', .91, .34, '#73c9d5');
-      ctx.fillStyle = '#f2b281'; ctx.font = `700 ${compact ? 10 : 12}px "Times New Roman", "DFKai-SB", serif`; ctx.textAlign = 'left';
+      ctx.fillStyle = '#f2b281'; ctx.font = `700 ${compact ? 10 : 12}px "Times New Roman", "Tinos", "DFKai-SB", serif`; ctx.textAlign = 'left';
       ctx.fillStyle = '#18313d'; ctx.fillRect(chart.x + 5, chart.y + 3, compact ? 78 : 98, 18);
       ctx.fillRect(chart.x + 5, chart.y + chart.height * .63 - 13, compact ? 78 : 98, 18);
       ctx.fillStyle = '#f2b281';
@@ -10449,7 +10477,7 @@
           const glow = ctx.createRadialGradient(x, y, 0, x, y, blur);
           glow.addColorStop(0, '#ffffff'); glow.addColorStop(.15, 'rgba(188,225,255,.9)'); glow.addColorStop(1, 'rgba(85,172,237,0)');
           ctx.fillStyle = glow; ctx.beginPath(); ctx.arc(x, y, blur, 0, 2 * Math.PI); ctx.fill();
-          ctx.fillStyle = '#dceef8'; ctx.font = `700 ${compact ? 10 : 13}px "Times New Roman", "DFKai-SB", serif`;
+          ctx.fillStyle = '#dceef8'; ctx.font = `700 ${compact ? 10 : 13}px "Times New Roman", "Tinos", "DFKai-SB", serif`;
           ctx.textAlign = 'center'; ctx.fillText(label, x, inset.y + 22);
         });
         ctx.strokeStyle = '#6b8896'; ctx.beginPath(); ctx.moveTo(inset.x + inset.w / 2, inset.y + 10); ctx.lineTo(inset.x + inset.w / 2, inset.y + inset.h - 10); ctx.stroke();
@@ -10479,10 +10507,10 @@
       }
       ctx.fillStyle = '#18343e';
       ctx.textAlign = 'left';
-      ctx.font = '700 17px "Times New Roman", "DFKai-SB", serif';
+      ctx.font = '700 17px "Times New Roman", "Tinos", "DFKai-SB", serif';
       ctx.fillText(title, 22, 31);
       ctx.fillStyle = '#617982';
-      ctx.font = '12px "Times New Roman", "DFKai-SB", serif';
+      ctx.font = '12px "Times New Roman", "Tinos", "DFKai-SB", serif';
       const lines = [];
       let line = '';
       for (const character of subtitle) {
@@ -10607,7 +10635,7 @@
         for (let yy = cy - outer * .52; yy <= cy + outer * .52; yy += outer * .30) {
           drawArrow(ctx, cx - fieldSign * gap * .28, yy, cx + fieldSign * gap * .28, yy, '#db6b2c');
         }
-        ctx.fillStyle = '#b34d1e'; ctx.font = '700 15px "Times New Roman", "DFKai-SB", serif'; ctx.textAlign = 'center';
+        ctx.fillStyle = '#b34d1e'; ctx.font = '700 15px "Times New Roman", "Tinos", "DFKai-SB", serif'; ctx.textAlign = 'center';
         ctx.fillText(fieldSign > 0 ? '+    E→    −' : '−    ←E    +', cx, cy - outer - 25);
       }
       ctx.restore();
@@ -10640,14 +10668,14 @@
       ctx.stroke();
       instrumentParticle(ctx, cx + point.x * scale, cy + point.y * scale, '#00a58c', compact ? 5 : 7);
       ctx.restore();
-      ctx.fillStyle = '#1e4853'; ctx.textAlign = 'center'; ctx.font = '700 13px "Times New Roman", "DFKai-SB", serif';
+      ctx.fillStyle = '#1e4853'; ctx.textAlign = 'center'; ctx.font = '700 13px "Times New Roman", "Tinos", "DFKai-SB", serif';
       ctx.fillText('D 電極', cx - outer * .55, cy - outer * .45);
       ctx.fillText('D 電極', cx + outer * .55, cy - outer * .45);
-      ctx.fillStyle = '#436775'; ctx.font = '12px "Times New Roman", "DFKai-SB", serif';
+      ctx.fillStyle = '#436775'; ctx.font = '12px "Times New Roman", "Tinos", "DFKai-SB", serif';
       ctx.fillText('磁場朝向觀察者 ⊙', cx, Math.min(h - 35, cy + outer + 34));
       const readX = compact ? 20 : w - 245;
       const readY = compact ? h - 92 : 114;
-      ctx.textAlign = 'left'; ctx.fillStyle = '#254954'; ctx.font = '700 13px "Times New Roman", "DFKai-SB", serif';
+      ctx.textAlign = 'left'; ctx.fillStyle = '#254954'; ctx.font = '700 13px "Times New Roman", "Tinos", "DFKai-SB", serif';
       ctx.fillText(`跨越間隙：${arcIndex + 1} 次`, readX, readY);
       ctx.fillText(`目前變化：${arc.gain >= 0 ? '+' : ''}${arc.gain.toFixed(3)} MeV`, readX, readY + 24);
       ctx.fillText(`速率：${(arc.speed / 1e6).toFixed(1)} × 10⁶ m/s`, readX, readY + 48);
@@ -10782,10 +10810,10 @@
           particleX + tangent.x * length, particleY + tangent.y * length, '#b64b35');
       }
       instrumentParticle(ctx, particleX, particleY, '#147f75', compact ? 7 : 10);
-      ctx.fillStyle = '#345965'; ctx.font = `700 ${compact ? 12 : 15}px "Times New Roman", "DFKai-SB", serif`; ctx.textAlign = 'center';
+      ctx.fillStyle = '#345965'; ctx.font = `700 ${compact ? 12 : 15}px "Times New Roman", "Tinos", "DFKai-SB", serif`; ctx.textAlign = 'center';
       ctx.fillText('D', cx - outer * .5, cy - outer * .48);
       ctx.fillText('D', cx + outer * .5, cy - outer * .48);
-      ctx.fillStyle = '#637e85'; ctx.font = `12px "Times New Roman", "DFKai-SB", serif`;
+      ctx.fillStyle = '#637e85'; ctx.font = `12px "Times New Roman", "Tinos", "DFKai-SB", serif`;
       ctx.fillText('磁場朝向紙外：點記號', cx, cy + outer + 31);
       ctx.fillText($('cyc-show-intervals').checked ? '軌道小點：相等時間間隔' : '紅色箭頭：切線速度', cx, cy + outer + 48);
       const chart = compact
@@ -10823,10 +10851,10 @@
         ctx.lineTo(markerX, markerY); ctx.stroke();
       }
       ctx.fillStyle = '#d35b43'; ctx.beginPath(); ctx.arc(markerX, markerY, compact ? 4 : 5, 0, 2 * Math.PI); ctx.fill();
-      ctx.fillStyle = '#425f68'; ctx.font = `700 ${compact ? 11 : 14}px "Times New Roman", "DFKai-SB", serif`; ctx.textAlign = 'left';
+      ctx.fillStyle = '#425f68'; ctx.font = `700 ${compact ? 11 : 14}px "Times New Roman", "Tinos", "DFKai-SB", serif`; ctx.textAlign = 'left';
       ctx.fillText(`目前 ${(speedNow / 1e6).toFixed(1)} × 10⁶ m/s`, chart.x, chart.y - 33);
       ctx.fillText('每次穿隙後的速率（固定刻度）', chart.x, chart.y - 15);
-      ctx.font = `11px "Times New Roman", "DFKai-SB", serif`;
+      ctx.font = `11px "Times New Roman", "Tinos", "DFKai-SB", serif`;
       ctx.fillText(`${(speedCeiling / 1e6).toFixed(0)} × 10⁶ m/s`, chart.x + 4, chart.y + 13);
       ctx.fillText('0', chart.x + 4, chart.y + chart.height - 5);
       if (!compact) {
@@ -10838,7 +10866,7 @@
         ctx.strokeStyle = '#a6bac0'; ctx.lineWidth = 1.5;
         ctx.strokeRect(inset.x, inset.y, inset.width, inset.height);
         ctx.textAlign = 'left'; ctx.fillStyle = '#31545e';
-        ctx.font = '700 13px "Times New Roman", "DFKai-SB", serif';
+        ctx.font = '700 13px "Times New Roman", "Tinos", "DFKai-SB", serif';
         ctx.fillText('電極間隙放大', inset.x + 12, inset.y + 22);
         const leftEdge = inset.x + inset.width * .37;
         const rightEdge = inset.x + inset.width * .63;
@@ -10865,7 +10893,7 @@
             : rightEdge - 4 - progress * (rightEdge - leftEdge - 8);
           instrumentParticle(ctx, particleX, trackY, '#147f75', 6);
         }
-        ctx.fillStyle = '#4d6a72'; ctx.font = '12px "Times New Roman", "DFKai-SB", serif';
+        ctx.fillStyle = '#4d6a72'; ctx.font = '12px "Times New Roman", "Tinos", "DFKai-SB", serif';
         ctx.fillText(`穿隙前 ${(arc.speed / 1e6).toFixed(1)}`, inset.x + 12, inset.y + inset.height - 12);
         ctx.textAlign = 'right';
         ctx.fillText(`穿隙後 ${(next.speed / 1e6).toFixed(1)} × 10⁶ m/s`, inset.x + inset.width - 12, inset.y + inset.height - 12);
@@ -10999,21 +11027,21 @@
       ctx.fillStyle = metal;
       ctx.fillRect(left - 3, center - half - 11, right - left + 6, 11);
       ctx.fillRect(left - 3, center + half, right - left + 6, 11);
-      ctx.fillStyle = '#bd5337'; ctx.font = '700 19px "Times New Roman", "DFKai-SB", serif'; ctx.textAlign = 'center';
+      ctx.fillStyle = '#bd5337'; ctx.font = '700 19px "Times New Roman", "Tinos", "DFKai-SB", serif'; ctx.textAlign = 'center';
       ctx.fillText('+', left + 20, center - half - 19);
       ctx.fillStyle = '#2b698e'; ctx.fillText('−', left + 20, center + half + 29);
       ctx.fillStyle = '#2c5561';
       ctx.fillRect(right, center - half, compact ? 9 : 13, half - 12);
       ctx.fillRect(right, center + 12, compact ? 9 : 13, half - 12);
-      ctx.fillStyle = '#53727b'; ctx.font = '700 12px "Times New Roman", "DFKai-SB", serif';
+      ctx.fillStyle = '#53727b'; ctx.font = '700 12px "Times New Roman", "Tinos", "DFKai-SB", serif';
       ctx.fillText('出口狹縫', right - (compact ? 25 : 0), center + half + 39);
       ctx.fillStyle = '#326778'; ctx.fillRect(left - 10, center - 16, 10, 32);
       instrumentParticle(ctx, left - 10, center, '#087a70', 4);
-      ctx.fillStyle = '#345460'; ctx.textAlign = 'left'; ctx.font = '700 13px "Times New Roman", "DFKai-SB", serif';
+      ctx.fillStyle = '#345460'; ctx.textAlign = 'left'; ctx.font = '700 13px "Times New Roman", "Tinos", "DFKai-SB", serif';
       ctx.fillText('E ↓', left + 12, center - half + 26);
       ctx.fillText('B × 進入畫面', left + 12, center - half + 47);
       const labelY = Math.min(h - 49, center + half + 55);
-      ctx.fillStyle = '#6f858d'; ctx.font = '12px "Times New Roman", "DFKai-SB", serif';
+      ctx.fillStyle = '#6f858d'; ctx.font = '12px "Times New Roman", "Tinos", "DFKai-SB", serif';
       ctx.fillText('同一裝置 · 不同入射速率', 20, labelY);
       if (!compact) {
         ctx.fillStyle = '#d27747'; ctx.fillText('慢：電場力佔優勢', 20, labelY + 23);
@@ -11065,7 +11093,7 @@
       drawArrow(ctx, inX, inY, cx, cy, '#087a85');
       drawArrow(ctx, cx, cy, endX, endY, interfaceData.total ? '#cc5c4b' : '#087a85');
       ctx.fillStyle = '#294b59';
-      ctx.font = '700 ' + (compact ? 11 : 13) + 'px "Times New Roman", "DFKai-SB", serif';
+      ctx.font = '700 ' + (compact ? 11 : 13) + 'px "Times New Roman", "Tinos", "DFKai-SB", serif';
       ctx.fillText('原方向', Math.min(w - 52, endX + 5), Math.min(diagramBottom - 8, straightY + 4));
       ctx.fillStyle = interfaceData.total ? '#a4493b' : '#086f73';
       ctx.fillText(interfaceData.total ? '反射' : '折射', Math.min(w - 42, endX + 5), endY - 7);
@@ -11080,14 +11108,14 @@
         interfaceData.total ? '紅線向上；虛線是假設未折射' : shift
       ];
       ctx.fillStyle = '#254855';
-      ctx.font = '700 ' + (compact ? 11 : 14) + 'px "Times New Roman", "DFKai-SB", serif';
+      ctx.font = '700 ' + (compact ? 11 : 14) + 'px "Times New Roman", "Tinos", "DFKai-SB", serif';
       if (compact) {
         lines.forEach((line, i) => ctx.fillText(line, 12, diagramBottom + 25 + i * 25));
       } else {
         lines.forEach((line, i) => ctx.fillText(line, w * .70, 53 + i * 43));
       }
       ctx.fillStyle = '#4f6b78';
-      ctx.font = '700 ' + (compact ? 11 : 13) + 'px "Times New Roman", "DFKai-SB", serif';
+      ctx.font = '700 ' + (compact ? 11 : 13) + 'px "Times New Roman", "Tinos", "DFKai-SB", serif';
       ctx.fillText('第 ' + interfaceData.index + ' 道界面', 12, 24);
       if (!compact) ctx.fillText('虛線是未偏折參考；青／紅線是目前光路', 12, h - 20);
     }
@@ -11209,7 +11237,7 @@
         ctx.fillStyle = colors[source]; ctx.beginPath(); ctx.arc(extraX, viewY(ray), 4, 0, Math.PI * 2); ctx.fill();
       }));
       ctx.restore();
-      ctx.fillStyle = '#315463'; ctx.font = `700 ${compact ? 10 : 12}px "Times New Roman", "DFKai-SB", serif`;
+      ctx.fillStyle = '#315463'; ctx.font = `700 ${compact ? 10 : 12}px "Times New Roman", "Tinos", "DFKai-SB", serif`;
       ctx.fillText('眼中視野', view.x + 10, view.y + 19);
       const apparentY = ray => eye.y + (eye.x - shipX) * Math.tan(ray.angle);
       [direct[0], direct[2]].filter(Boolean).forEach(ray => {
@@ -11330,7 +11358,7 @@
             ctx.fillRect(0, bandY, w, dy);
             drawLine([{ x: 0, y: bandY }, { x: w, y: bandY }], 'rgba(80,107,117,.28)', 1);
             if (!compact && dy > 13) {
-              ctx.font = '11px "Times New Roman", "DFKai-SB", serif'; ctx.fillStyle = '#54707d';
+              ctx.font = '11px "Times New Roman", "Tinos", "DFKai-SB", serif'; ctx.fillStyle = '#54707d';
               ctx.fillText(`${i + 1}  n=${indexAt(i).toFixed(3)}`, 8, bandY + dy * .7);
             }
           }
@@ -11495,7 +11523,7 @@
           if (showDirect && mirageTreeCache.direct.every(Boolean)) {
             drawTree(fraction => ({ x: viewX, y: horizonY - 3 - angularHeight * fraction }), compact ? 8 : 12, .65);
           }
-          ctx.fillStyle = '#315463'; ctx.font = `700 ${compact ? 10 : 12}px "Times New Roman", "DFKai-SB", serif`;
+          ctx.fillStyle = '#315463'; ctx.font = `700 ${compact ? 10 : 12}px "Times New Roman", "Tinos", "DFKai-SB", serif`;
           ctx.fillText('眼中視野', view.x + 10, view.y + 18);
           $('mirage-status').innerHTML = '倒立的實像<small>同一物點的小光束在眼前會聚；眼睛接收會聚後的光</small>';
         } else {
@@ -11516,10 +11544,10 @@
           ctx.beginPath();
           ctx.moveTo(eye.x + 4, eye.y - pupil); ctx.lineTo(eye.x + 54, eye.y);
           ctx.moveTo(eye.x + 4, eye.y + pupil); ctx.lineTo(eye.x + 54, eye.y); ctx.stroke();
-          ctx.fillStyle = '#315463'; ctx.font = '700 11px "Times New Roman", "DFKai-SB", serif';
+          ctx.fillStyle = '#315463'; ctx.font = '700 11px "Times New Roman", "Tinos", "DFKai-SB", serif';
           ctx.fillText('視網膜', eye.x + 36, eye.y + 37);
         }
-        ctx.fillStyle = '#264b57'; ctx.font = `700 ${compact ? 11 : 13}px "Times New Roman", "DFKai-SB", serif`;
+        ctx.fillStyle = '#264b57'; ctx.font = `700 ${compact ? 11 : 13}px "Times New Roman", "Tinos", "DFKai-SB", serif`;
         ctx.fillText(compact ? '青：樹底　橘：樹頂' : '青：樹底　橘：樹頂　同色細線會聚後仍進眼', 16, 24);
         if (image) {
           ctx.fillStyle = '#e8f3f0';
