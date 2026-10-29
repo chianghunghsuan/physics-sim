@@ -102,6 +102,29 @@ function label(parent, text, position, width = .5) {
   parent.add(mesh);
 }
 
+function rotorSideTag(parent, text, position) {
+  const canvas = document.createElement('canvas');
+  canvas.width = canvas.height = 128;
+  const context = canvas.getContext('2d');
+  context.fillStyle = 'rgba(255,255,255,.96)';
+  context.strokeStyle = '#684a36';
+  context.lineWidth = 6;
+  context.beginPath();
+  context.arc(64, 64, 48, 0, Math.PI * 2);
+  context.fill(); context.stroke();
+  context.fillStyle = '#543927';
+  context.font = 'bold 72px "Times New Roman", "Tinos", serif';
+  context.textAlign = 'center'; context.textBaseline = 'middle';
+  context.fillText(text, 64, 70);
+  const texture = new THREE.CanvasTexture(canvas);
+  texture.colorSpace = THREE.SRGBColorSpace;
+  const sprite = new THREE.Sprite(new THREE.SpriteMaterial({ map: texture, transparent: true, depthWrite: false }));
+  sprite.position.set(...position);
+  sprite.scale.set(.38, .38, 1);
+  parent.add(sprite);
+  return sprite;
+}
+
 function ammeter(scene, housingMaterial) {
   bevelBox(scene, [.96, .74, .29], [1.12, -1.57, 1.55], housingMaterial, .045);
   for (const x of [.75, 1.49]) {
@@ -267,6 +290,10 @@ function createStage(host, kind) {
   }
   const currentArrows = [-1, 1].map(side =>
     solidArrow(rotor, new THREE.Vector3(0, 1, 0), [side * (halfWidth - .18), -.36, .29], .72, '#ef6b30', .05));
+  const rotorSideTags = kind === 'motor' ? [
+    rotorSideTag(rotor, 'A', [-.86, .75, .24]),
+    rotorSideTag(rotor, 'B', [.86, .75, .24])
+  ] : [];
 
   const brushes = [];
   const rings = [];
@@ -428,7 +455,7 @@ function createStage(host, kind) {
     event.preventDefault(); control.distance = THREE.MathUtils.clamp(control.distance + event.deltaY * .008, 4.5, 13);
   }, { passive: false });
 
-  const stage = { kind, host, renderer, scene, camera, rotor, pathCurve, windingLoops, currentMarkers, currentArrows, electronMarkers, externalPaths, externalMarkers, externalArrows, fieldArrows, forceArrows, torqueArrow, bulb, bulbLight, filament, meter, control, chargePhase: 0, supplyPhase: 0, lastTime: NaN, lastState: null };
+  const stage = { kind, host, renderer, scene, camera, rotor, rotorSideTags, pathCurve, windingLoops, currentMarkers, currentArrows, electronMarkers, externalPaths, externalMarkers, externalArrows, fieldArrows, forceArrows, torqueArrow, bulb, bulbLight, filament, meter, control, chargePhase: 0, supplyPhase: 0, lastTime: NaN, lastState: null };
   stages.set(kind, stage);
   return stage;
 }
@@ -444,7 +471,7 @@ function render(kind, state) {
     console.warn('WebGL unavailable', error);
     return;
   }
-  const { renderer, scene, camera, rotor, pathCurve, windingLoops, currentMarkers, currentArrows, electronMarkers, externalPaths, externalMarkers, externalArrows, fieldArrows, forceArrows, torqueArrow, bulb, bulbLight, filament, meter, control } = stage;
+  const { renderer, scene, camera, rotor, rotorSideTags, pathCurve, windingLoops, currentMarkers, currentArrows, electronMarkers, externalPaths, externalMarkers, externalArrows, fieldArrows, forceArrows, torqueArrow, bulb, bulbLight, filament, meter, control } = stage;
   stage.lastState = state;
   const width = host.clientWidth, height = host.clientHeight;
   if (!width || !height) return;
@@ -455,6 +482,7 @@ function render(kind, state) {
     camera.updateProjectionMatrix();
   }
   const distance = control.distance * (width < 620 ? (kind === 'generator' ? .88 : .94) : 1);
+  for (const tag of rotorSideTags) tag.scale.set(width < 620 ? .56 : .38, width < 620 ? .56 : .38, 1);
   camera.position.set(Math.sin(control.azimuth) * Math.cos(control.elevation) * distance,
     control.targetY + Math.sin(control.elevation) * distance,
     control.targetZ + Math.cos(control.azimuth) * Math.cos(control.elevation) * distance);

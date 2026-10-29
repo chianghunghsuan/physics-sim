@@ -256,6 +256,8 @@
     .law-step > strong, .law-step > span { display: block; }
     .law-step > strong { color: #0f766e; font-size: 14px; }
     .law-step > span { color: var(--muted); font-size: 13px; line-height: 1.45; }
+    .motor-vector-proof { display: flex; flex-wrap: wrap; gap: 10px 20px; padding: 12px 4px; border-bottom: 1px solid var(--line); }
+    .motor-vector-proof > span { flex: 1 1 220px; min-width: 0; }
     button.preset {
       background: #e2e8f0;
       color: #1f2933;
@@ -1916,6 +1918,7 @@
             <button type="button" class="motor-layer" data-motor-layer="force" aria-pressed="false">2 判斷 <span data-latex="\boldsymbol\ell\times\mathbf B"></span></button>
             <button type="button" class="motor-layer" data-motor-layer="torque" aria-pressed="false">3 合成力矩</button>
           </div>
+          <div class="presets" role="group" aria-label="換向前後停格"><button type="button" class="preset motor-phase-jump" data-angle="75" aria-pressed="false">換向前 <span data-latex="\theta=75^\circ"></span></button><button type="button" class="preset motor-phase-jump" data-angle="105" aria-pressed="false">換向後 <span data-latex="\theta=105^\circ"></span></button></div>
           <div class="presets" role="group" aria-label="馬達視圖"><button type="button" class="preset em-render active" data-em-render="motor" data-view="apparatus" aria-pressed="true">3D 裝置</button><button type="button" class="preset em-render" data-em-render="motor" data-view="diagram" aria-pressed="false">2D 因果圖</button></div>
           <div class="plot-wrap" id="motor-diagram" hidden>
             <canvas id="motor-canvas" role="img" aria-label="包含磁極、線圈、電流粒子、受力方向、分裂環換向器與電刷的直流馬達動畫。"></canvas>
@@ -1927,6 +1930,7 @@
             <div class="law-step"><strong>3 受力</strong><span id="motor-proof-force"><span data-latex="\mathbf F=I\boldsymbol\ell\times\mathbf B"></span>，兩側力相反</span></div>
             <div class="law-step"><strong>4 力矩</strong><span id="motor-proof-torque">力偶使線圈繼續轉動</span></div>
           </div>
+          <div class="motor-vector-proof" id="motor-vector-proof" aria-label="馬達受力向量驗證" hidden><span data-latex="\mathbf B\parallel+\hat{\mathbf x},\quad\mathbf F=I\boldsymbol\ell\times\mathbf B"></span><span id="motor-vector-a"></span><span id="motor-vector-b"></span></div>
           <div class="controls">
             <div class="control">
               <label for="motor-voltage">電壓：<span id="motor-voltage-out">9.0 V</span></label>
@@ -9027,13 +9031,24 @@
       const area = .008;
       const angle = motorDynamics.angle;
       const omega = motorDynamics.omega;
-      const current = motorDynamics.current;
+      const current = Math.max(0, (voltage - turns * B * area * omega * Math.abs(Math.cos(angle))) / 3.6);
+      motorDynamics.current = current;
       const torque = turns * current * B * area * Math.abs(Math.cos(angle));
       const activeLength = .12;
       const sideForce = turns * current * activeLength * B;
       const halfTurn = ((Math.floor((angle + Math.PI / 2) / Math.PI) % 2) + 2) % 2;
       const stalled = omega < .05 && torque < load;
       return { voltage, B, turns, load, area, activeLength, sideForce, omega, angle, current, torque, halfTurn, stalled };
+    }
+
+    function updateMotorVectorProof(state) {
+      const proof = $('motor-vector-proof');
+      proof.hidden = !$('motor-show-vector').checked;
+      if (proof.hidden || proof.dataset.halfTurn === String(state.halfTurn)) return;
+      const aUp = state.halfTurn === 1;
+      $('motor-vector-a').innerHTML = math(`\\boldsymbol\\ell_A\\parallel ${aUp ? '+' : '-'}\\hat{\\mathbf y},\\quad\\mathbf F_A\\parallel ${aUp ? '-' : '+'}\\hat{\\mathbf z}`);
+      $('motor-vector-b').innerHTML = math(`\\boldsymbol\\ell_B\\parallel ${aUp ? '-' : '+'}\\hat{\\mathbf y},\\quad\\mathbf F_B\\parallel ${aUp ? '+' : '-'}\\hat{\\mathbf z}`);
+      proof.dataset.halfTurn = String(state.halfTurn);
     }
 
     function advanceMotor(dt) {
@@ -9094,47 +9109,6 @@
           ctx.fill();
         }
       }
-      ctx.restore();
-    }
-
-    function drawMotorVectorProof(ctx, x, y, width, leftCurrentUp, compact) {
-      const height = compact ? 98 : 116;
-      const leftForce = leftCurrentUp ? '−z' : '+z';
-      const rightForce = leftCurrentUp ? '+z' : '−z';
-      ctx.save();
-      ctx.fillStyle = 'rgba(15,23,42,.94)';
-      ctx.strokeStyle = '#64748b';
-      ctx.lineWidth = 1.2;
-      ctx.beginPath();
-      ctx.roundRect(x, y, width, height, 8);
-      ctx.fill();
-      ctx.stroke();
-      ctx.fillStyle = '#f8fafc';
-      ctx.font = '800 12px "Times New Roman", "Tinos", "DFKai-SB", serif';
-      ctx.textAlign = 'left';
-      ctx.fillText('右手定則：F = N I ℓ × B', x + 13, y + 22);
-      ctx.font = '700 13px "Times New Roman", "Tinos", "DFKai-SB", serif';
-      if (compact) {
-        ctx.fillStyle = '#f8fafc';
-        ctx.fillText(`左：I${leftCurrentUp ? '↑' : '↓'} × B→ = F${leftForce}`, x + 13, y + 46);
-        ctx.fillText(`右：I${leftCurrentUp ? '↓' : '↑'} × B→ = F${rightForce}`, x + 13, y + 68);
-      } else {
-        ctx.fillStyle = '#fb923c';
-        ctx.fillText(`左導線  I${leftCurrentUp ? '↑' : '↓'}`, x + 13, y + 50);
-        ctx.fillStyle = '#93c5fd';
-        ctx.fillText('× B→', x + 116, y + 50);
-        ctx.fillStyle = '#fb7185';
-        ctx.fillText(`= F${leftForce}`, x + width - 67, y + 50);
-        ctx.fillStyle = '#fb923c';
-        ctx.fillText(`右導線  I${leftCurrentUp ? '↓' : '↑'}`, x + 13, y + 78);
-        ctx.fillStyle = '#93c5fd';
-        ctx.fillText('× B→', x + 116, y + 78);
-        ctx.fillStyle = '#fb7185';
-        ctx.fillText(`= F${rightForce}`, x + width - 67, y + 78);
-      }
-      ctx.fillStyle = '#cbd5e1';
-      ctx.font = '600 10px "Times New Roman", "Tinos", "DFKai-SB", serif';
-      ctx.fillText('±z 是線圈前後方向；兩力形成力偶', x + 13, y + (compact ? 87 : 102));
       ctx.restore();
     }
 
@@ -9250,17 +9224,17 @@
     }
 
     function drawMotor() {
+      const state = motorState();
+      updateMotorVectorProof(state);
       if (emRenderView.motor === 'diagram') return drawMotorDiagram();
       const canvas = $('motor-canvas');
       const { ctx, w, h } = resizeCanvas(canvas);
-      const state = motorState();
       const compact = w < 720;
       const showField = $('motor-show-field').checked;
       const showCurrent = $('motor-show-current').checked && ['all', 'current', 'force', 'torque'].includes(activeMotorLayer);
       const showElectrons = $('motor-show-electrons').checked && showCurrent;
       const showForce = $('motor-show-force').checked && ['all', 'force', 'torque'].includes(activeMotorLayer);
       const showTorque = ['all', 'torque'].includes(activeMotorLayer);
-      const showVector = $('motor-show-vector').checked && ['all', 'force', 'torque'].includes(activeMotorLayer);
       const background = ctx.createLinearGradient(0, 0, 0, h);
       background.addColorStop(0, '#f8fafc');
       background.addColorStop(1, '#e7edf2');
@@ -9445,11 +9419,6 @@
         drawSceneLabel(ctx, w * .5, compact ? 65 : 22, state.stalled ? '負載過大：無法啟動' : '兩側 F 形成繞軸力矩', 'center');
       }
 
-      if (showVector) {
-        const proofWidth = compact ? w - 24 : Math.min(330, w * .31);
-        drawMotorVectorProof(ctx, compact ? 12 : w - proofWidth - 16, compact ? h - 112 : h - 132, proofWidth, leftCurrentUp, compact);
-      }
-
       setText('motor-voltage-out', `${state.voltage.toFixed(1)} V`);
       setText('motor-field-out', `${state.B.toFixed(2)} T`);
       setText('motor-turns-out', state.turns.toFixed(0));
@@ -9461,7 +9430,7 @@
       $('motor-commutator').innerHTML = `換向器：${state.halfTurn === 0 ? 'A 接正極' : 'B 接正極'}<small>跨過半圈時交換線圈電流方向</small>`;
       $('motor-proof-current').innerHTML = `A 側 ${math('I')}${leftCurrentUp ? '↑' : '↓'}；B 側 ${math('I')}${leftCurrentUp ? '↓' : '↑'}（每半圈換向）`;
       $('motor-proof-field').innerHTML = `${math('B')} = ${state.B.toFixed(2)} T，由 N → S（向右）`;
-      $('motor-proof-force').innerHTML = `左 ${math('F')}${leftOut}；右 ${math('F')}${rightOut}；每側約 ${state.sideForce.toFixed(2)} N`;
+      $('motor-proof-force').innerHTML = `A 側 ${math('F_A')}${leftOut}；B 側 ${math('F_B')}${rightOut}；每側約 ${state.sideForce.toFixed(2)} N`;
       $('motor-proof-torque').innerHTML = `兩力形成力偶；${math('\\tau')} = ${state.torque.toFixed(3)} N·m`;
       if (emRenderView.motor === 'apparatus' && window.emThree) window.emThree.renderMotor({
         angle: state.angle, halfTurn: state.halfTurn, current: state.current, maxCurrent: 3,
@@ -11884,6 +11853,7 @@
     function setElectromagnetismMode(name) {
       if (name === 'motor' && activeElectromagnetism !== 'motor') {
         Object.assign(motorDynamics, { angle: .20, omega: 0, current: number('motor-voltage') / 3.6 });
+        clearMotorPhasePreset();
       }
       activeElectromagnetism = name;
       document.querySelectorAll('.em-mode').forEach(btn => {
@@ -11917,6 +11887,13 @@
         button.setAttribute('aria-pressed', active ? 'true' : 'false');
       });
       requestAnimationFrame(drawActive);
+    }
+
+    function clearMotorPhasePreset() {
+      document.querySelectorAll('.motor-phase-jump').forEach(button => {
+        button.classList.remove('active');
+        button.setAttribute('aria-pressed', 'false');
+      });
     }
 
     function setMechanicsMode(name) {
@@ -12109,6 +12086,22 @@
           choice.classList.toggle('active', selected);
           choice.setAttribute('aria-pressed', String(selected));
         });
+        running = false;
+        $('global-play').textContent = '播放';
+        last = performance.now();
+        drawActive();
+      });
+    });
+    document.querySelectorAll('.motor-phase-jump').forEach(button => {
+      button.addEventListener('click', () => {
+        Object.assign(motorDynamics, {
+          angle: Number(button.dataset.angle) * Math.PI / 180,
+          omega: 0,
+          current: number('motor-voltage') / 3.6
+        });
+        clearMotorPhasePreset();
+        button.classList.add('active');
+        button.setAttribute('aria-pressed', 'true');
         running = false;
         $('global-play').textContent = '播放';
         last = performance.now();
@@ -12326,6 +12319,7 @@
 
     $('global-play').addEventListener('click', () => {
       running = !running;
+      if (running && activeModule === 'electromagnetism' && activeElectromagnetism === 'motor') clearMotorPhasePreset();
       if (running && activeModule === 'electromagnetism' && activeElectromagnetism === 'generator') {
         document.querySelectorAll('.gen-phase-jump').forEach(button => {
           button.classList.remove('active');
@@ -12353,6 +12347,7 @@
       }
       if (activeModule === 'electromagnetism' && activeElectromagnetism === 'motor') {
         Object.assign(motorDynamics, { angle: .20, omega: 0, current: number('motor-voltage') / 3.6 });
+        clearMotorPhasePreset();
       }
       last = performance.now();
       drawActive();
