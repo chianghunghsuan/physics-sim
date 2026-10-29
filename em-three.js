@@ -260,11 +260,13 @@ function createStage(host, kind) {
   }
   const currentMarkers = [];
   const electronMarkers = [];
-  for (let index = 0; index < 12; index += 1) {
+  for (let index = 0; index < 8; index += 1) {
     const current = new THREE.Mesh(new THREE.SphereGeometry(.066, 14, 10), new THREE.MeshBasicMaterial({ color: '#f26a27' }));
     const electron = new THREE.Mesh(new THREE.SphereGeometry(.039, 10, 8), new THREE.MeshBasicMaterial({ color: '#7951cb' }));
     rotor.add(current, electron); currentMarkers.push(current); electronMarkers.push(electron);
   }
+  const currentArrows = [-1, 1].map(side =>
+    solidArrow(rotor, new THREE.Vector3(0, 1, 0), [side * (halfWidth - .18), -.36, .29], .72, '#ef6b30', .05));
 
   const brushes = [];
   const rings = [];
@@ -400,7 +402,7 @@ function createStage(host, kind) {
     event.preventDefault(); control.distance = THREE.MathUtils.clamp(control.distance + event.deltaY * .008, 4.5, 13);
   }, { passive: false });
 
-  const stage = { kind, host, renderer, scene, camera, rotor, pathCurve, windingLoops, currentMarkers, electronMarkers, externalPaths, externalMarkers, fieldArrows, forceArrows, bulb, bulbLight, filament, meter, control, chargePhase: 0, supplyPhase: 0, lastTime: NaN, lastState: null };
+  const stage = { kind, host, renderer, scene, camera, rotor, pathCurve, windingLoops, currentMarkers, currentArrows, electronMarkers, externalPaths, externalMarkers, fieldArrows, forceArrows, bulb, bulbLight, filament, meter, control, chargePhase: 0, supplyPhase: 0, lastTime: NaN, lastState: null };
   stages.set(kind, stage);
   return stage;
 }
@@ -416,7 +418,7 @@ function render(kind, state) {
     console.warn('WebGL unavailable', error);
     return;
   }
-  const { renderer, scene, camera, rotor, pathCurve, windingLoops, currentMarkers, electronMarkers, externalPaths, externalMarkers, fieldArrows, forceArrows, bulb, bulbLight, filament, meter, control } = stage;
+  const { renderer, scene, camera, rotor, pathCurve, windingLoops, currentMarkers, currentArrows, electronMarkers, externalPaths, externalMarkers, fieldArrows, forceArrows, bulb, bulbLight, filament, meter, control } = stage;
   stage.lastState = state;
   const width = host.clientWidth, height = host.clientHeight;
   if (!width || !height) return;
@@ -448,6 +450,12 @@ function render(kind, state) {
   }
   stage.lastTime = state.time;
   const signedCurrent = kind === 'motor' && reverse ? -state.current : state.current;
+  for (const [index, arrow] of currentArrows.entries()) {
+    const direction = Math.sign(signedCurrent) * (index ? -1 : 1);
+    arrow.position.y = direction < 0 ? .36 : -.36;
+    arrow.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), new THREE.Vector3(0, direction || 1, 0));
+    arrow.visible = state.showCurrent && Math.abs(state.current) > .01;
+  }
   stage.chargePhase += elapsed * .42 * signedCurrent / Math.max(.001, state.maxCurrent);
   stage.supplyPhase += elapsed * .42 * Math.abs(state.current) / Math.max(.001, state.maxCurrent);
   for (let i = 0; i < currentMarkers.length; i += 1) {

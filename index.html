@@ -1926,15 +1926,16 @@
             <label class="check"><input type="checkbox" id="motor-show-vector">顯示 <span data-latex="\boldsymbol\ell\times\mathbf B"></span> 向量驗證</label>
           </div>
           <section class="teacher-note">
-            <p><strong>講法：</strong>先暫停，沿著橘色粒子找出線圈兩側電流，再用 <span data-latex="d\mathbf F=I\,d\boldsymbol\ell\times\mathbf B"></span> 判斷紅色受力。播放後盯著下方分裂環：每跨過半圈，刷子接觸的銅片交換，線圈電流反向，但轉動力矩仍維持同向。</p>
+            <p><strong>講法：</strong>先暫停，沿著線圈兩側的橘色箭頭找出電流方向，再用 <span data-latex="d\mathbf F=I\,d\boldsymbol\ell\times\mathbf B"></span> 判斷紅色受力。播放後盯著下方分裂環：每跨過半圈，刷子接觸的銅片交換，線圈電流反向，但轉動力矩仍維持同向。</p>
             <p><strong>強調：</strong>電能先進入線圈，再由磁力做機械功；電壓、磁場或匝數增加會提高可用力矩，負載太大則無法啟動。</p>
           </section>
         </div>
 
         <div id="em-view-generator" class="em-view">
-          <div class="module-head"><div><h2>交流發電機：轉動線圈產生電壓</h2><p class="module-copy">外力帶動線圈在 N、S 磁極之間旋轉；磁通鏈結 <span data-latex="N\Phi=NBA\cos\theta"></span> 改變，產生感應電動勢 <span data-latex="\varepsilon=NBA\omega\sin\theta"></span>。兩個完整滑環使電路保持連接，輸出每半圈反向；它不是直流馬達的分裂環。</p></div></div>
+          <div class="module-head"><div><h2>交流發電機：轉動線圈產生電壓</h2><p class="module-copy">外力帶動線圈在 N、S 磁極之間旋轉；磁通鏈結 <span data-latex="N\Phi=NBA\cos\theta"></span> 改變，產生感應電動勢 <span data-latex="\varepsilon=NBA\omega\sin\theta"></span>。兩個完整滑環使電路保持連接，輸出每半圈反向；它不是直流馬達的分裂環。</p></div><div class="legend"><span class="blue"><i class="dot"></i>磁場 <span data-latex="B"></span></span><span class="orange"><i class="dot"></i>感應電流 <span data-latex="I"></span></span></div></div>
           <div class="values"><div class="badge" id="gen-flux">磁通量</div><div class="badge" id="gen-emf">感應電動勢</div><div class="badge" id="gen-power">負載功率</div><div class="badge" id="gen-speed-badge">轉速</div></div>
           <div class="presets" role="group" aria-label="發電機視圖"><button type="button" class="preset em-render active" data-em-render="generator" data-view="apparatus" aria-pressed="true">3D 裝置</button><button type="button" class="preset em-render" data-em-render="generator" data-view="diagram" aria-pressed="false">2D 磁通與電壓</button></div>
+          <div class="presets" role="group" aria-label="發電機相位停格"><button type="button" class="preset gen-phase-jump" data-phase="0" aria-pressed="false"><span data-latex="\theta=0^\circ"></span> 磁通正最大</button><button type="button" class="preset gen-phase-jump" data-phase="1" aria-pressed="false"><span data-latex="\theta=90^\circ"></span> 電壓正最大</button><button type="button" class="preset gen-phase-jump" data-phase="2" aria-pressed="false"><span data-latex="\theta=180^\circ"></span> 磁通負最大</button><button type="button" class="preset gen-phase-jump" data-phase="3" aria-pressed="false"><span data-latex="\theta=270^\circ"></span> 電壓負最大</button></div>
           <div class="plot-wrap" id="generator-diagram" hidden><canvas id="generator-canvas" role="img" aria-label="磁極間旋轉線圈、兩個滑環、電刷和負載燈；下方同步顯示磁通量與感應電動勢的時間曲線。"></canvas></div>
           <div class="generator-apparatus" id="generator-apparatus">
             <div class="em-stage" id="generator-three" title="拖曳旋轉視角；滾輪縮放" aria-label="可拖曳旋轉檢視的發電機立體裝置：磁極、轉子線圈、兩個滑環、電刷與負載燈。"></div>
@@ -2113,6 +2114,7 @@
     let mirrorParallelMode = 'single';
     let running = true;
     let time = 0;
+    let generatorAngle = Math.PI / 2;
     let skaterPhase = 0;
     let skaterArmCurrent = 1;
     const motorDynamics = { angle: .20, omega: 0, current: 0 };
@@ -9392,11 +9394,13 @@
       const compact = w < 620;
       const B = number('gen-field'), turns = number('gen-turns');
       const rpm = number('gen-rpm'), resistance = number('gen-resistance');
-      const omega = 2 * Math.PI * rpm / 60, theta = omega * time + Math.PI / 2;
+      const omega = 2 * Math.PI * rpm / 60, theta = generatorAngle;
       const fluxMax = turns * B * .01;
-      const flux = fluxMax * Math.cos(theta);
+      const fluxRaw = fluxMax * Math.cos(theta);
+      const flux = Math.abs(fluxRaw) < 1e-9 ? 0 : fluxRaw;
       const emfMax = fluxMax * omega;
-      const emf = emfMax * Math.sin(theta);
+      const emfRaw = emfMax * Math.sin(theta);
+      const emf = Math.abs(emfRaw) < 1e-9 ? 0 : emfRaw;
       const power = emf * emf / resistance;
       setText('gen-field-out', `${B.toFixed(2)} T`);
       setText('gen-turns-out', String(turns));
@@ -12001,6 +12005,20 @@
         drawActive();
       });
     });
+    document.querySelectorAll('.gen-phase-jump').forEach(button => {
+      button.addEventListener('click', () => {
+        generatorAngle = Number(button.dataset.phase) * Math.PI / 2;
+        document.querySelectorAll('.gen-phase-jump').forEach(choice => {
+          const selected = choice === button;
+          choice.classList.toggle('active', selected);
+          choice.setAttribute('aria-pressed', String(selected));
+        });
+        running = false;
+        $('global-play').textContent = '播放';
+        last = performance.now();
+        drawActive();
+      });
+    });
     $('bell-power').addEventListener('click', () => { bell.power = !bell.power; drawActive(); });
     $('bell-audio').addEventListener('change', () => {
       if ($('bell-audio').checked) {
@@ -12212,6 +12230,12 @@
 
     $('global-play').addEventListener('click', () => {
       running = !running;
+      if (running && activeModule === 'electromagnetism' && activeElectromagnetism === 'generator') {
+        document.querySelectorAll('.gen-phase-jump').forEach(button => {
+          button.classList.remove('active');
+          button.setAttribute('aria-pressed', 'false');
+        });
+      }
       $('global-play').textContent = running ? '暫停' : '播放';
       last = performance.now();
       drawActive();
@@ -12219,6 +12243,13 @@
 
     $('global-reset').addEventListener('click', () => {
       time = 0;
+      if (activeModule === 'electromagnetism' && activeElectromagnetism === 'generator') {
+        generatorAngle = Math.PI / 2;
+        document.querySelectorAll('.gen-phase-jump').forEach(button => {
+          button.classList.remove('active');
+          button.setAttribute('aria-pressed', 'false');
+        });
+      }
       if (activeModule === 'electromagnetism' && activeElectromagnetism === 'motor') {
         Object.assign(motorDynamics, { angle: .20, omega: 0, current: number('motor-voltage') / 3.6 });
       }
@@ -12266,6 +12297,9 @@
       if (running) {
         const scaled = elapsed * playback();
         time += scaled;
+        if (activeModule === 'electromagnetism' && activeElectromagnetism === 'generator') {
+          generatorAngle += 2 * Math.PI * number('gen-rpm') / 60 * scaled;
+        }
         if (activeModule === 'electromagnetism' && activeElectromagnetism === 'bell') advanceBell(scaled);
         if (activeModule === 'electromagnetism' && activeElectromagnetism === 'motor') advanceMotor(scaled);
         if (activeModule === 'mechanics' && activeMechanics === 'skater') {
