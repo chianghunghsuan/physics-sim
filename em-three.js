@@ -125,6 +125,51 @@ function rotorSideTag(parent, text, position) {
   return sprite;
 }
 
+function paintCommutatorInset(canvas, state) {
+  const size = canvas.clientWidth;
+  if (!size) return;
+  const pixels = Math.round(size * Math.min(2, window.devicePixelRatio || 1));
+  if (canvas.width !== pixels || canvas.height !== pixels) {
+    canvas.width = canvas.height = pixels;
+  }
+  const ctx = canvas.getContext('2d');
+  ctx.setTransform(pixels / 240, 0, 0, pixels / 240, 0, 0);
+  ctx.clearRect(0, 0, 240, 240);
+  ctx.fillStyle = '#f8faf9'; ctx.fillRect(0, 0, 240, 240);
+  ctx.fillStyle = '#2d414a';
+  ctx.font = '700 17px "Times New Roman", "Tinos", "DFKai-SB", serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('換向器俯視', 12, 25);
+  const cx = 120, cy = 116, radius = 55;
+  ctx.strokeStyle = '#293942'; ctx.lineWidth = 19;
+  ctx.beginPath(); ctx.arc(cx, cy, radius, 0, Math.PI * 2); ctx.stroke();
+  for (const [start, color] of [[Math.PI / 2 + .10, '#a85f38'], [3 * Math.PI / 2 + .10, '#d08c54']]) {
+    ctx.strokeStyle = color; ctx.lineWidth = 15; ctx.lineCap = 'butt';
+    ctx.beginPath();
+    for (let i = 0; i <= 48; i += 1) {
+      const angle = start + (Math.PI - .20) * i / 48 - state.angle;
+      const x = cx + radius * Math.cos(angle), y = cy - radius * Math.sin(angle);
+      if (i) ctx.lineTo(x, y); else ctx.moveTo(x, y);
+    }
+    ctx.stroke();
+  }
+  ctx.fillStyle = '#35454d';
+  ctx.beginPath(); ctx.arc(cx, cy, 21, 0, Math.PI * 2); ctx.fill();
+  ctx.fillRect(cx - radius - 28, cy - 13, 21, 26);
+  ctx.fillRect(cx + radius + 7, cy - 13, 21, 26);
+  ctx.font = '700 21px "Times New Roman", "Tinos", serif';
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#ae4d3b'; ctx.fillText('+', cx - radius - 18, cy + 41);
+  ctx.fillStyle = '#334b62'; ctx.fillText('−', cx + radius + 18, cy + 41);
+  for (const [name, angle, color] of [['A', Math.PI - state.angle, '#70412c'], ['B', 2 * Math.PI - state.angle, '#8c5635']]) {
+    ctx.fillStyle = color;
+    ctx.fillText(name, cx + 37 * Math.cos(angle), cy - 37 * Math.sin(angle) + 7);
+  }
+  ctx.fillStyle = '#3b5059';
+  ctx.font = '700 16px "Times New Roman", "Tinos", "DFKai-SB", serif';
+  ctx.fillText(!state.contact ? '絕緣縫：電流暫斷' : state.halfTurn ? 'B 接 +　A 接 −' : 'A 接 +　B 接 −', cx, 215);
+}
+
 function ammeter(scene, housingMaterial) {
   bevelBox(scene, [.96, .74, .29], [1.12, -1.57, 1.55], housingMaterial, .045);
   for (const x of [.75, 1.49]) {
@@ -306,7 +351,7 @@ function createStage(host, kind) {
     for (const side of [-1, 1]) {
       const points = [];
       for (let i = 0; i <= 30; i += 1) {
-        const a = Math.PI / 2 + (side < 0 ? .16 : Math.PI + .16) + (Math.PI - .32) * i / 30;
+        const a = Math.PI / 2 + (side < 0 ? .10 : Math.PI + .10) + (Math.PI - .20) * i / 30;
         points.push([.34 * Math.cos(a), -1.47, .34 * Math.sin(a)]);
       }
       tube(rotor, points, .06, side < 0 ? copper : brightCopper);
@@ -416,7 +461,7 @@ function createStage(host, kind) {
   }
 
   const control = { azimuth: .65, elevation: .39, distance: kind === 'generator' ? 11.3 : 10.4,
-    targetY: -.60, targetZ: 0, dragging: false, x: 0, y: 0 };
+    targetY: -.60, targetZ: 0, dragging: false, x: 0, y: 0, viewIndex: 0 };
   const viewBar = document.createElement('div');
   viewBar.className = 'stage-views';
   viewBar.setAttribute('role', 'group');
@@ -434,12 +479,20 @@ function createStage(host, kind) {
     button.setAttribute('aria-pressed', index === 0 ? 'true' : 'false');
     button.addEventListener('click', () => {
       for (const key of ['distance', 'targetY', 'targetZ', 'azimuth', 'elevation']) control[key] = view[key];
+      control.viewIndex = index;
       for (const sibling of viewBar.children) sibling.setAttribute('aria-pressed', sibling === button ? 'true' : 'false');
       if (stage.lastState) render(kind, stage.lastState);
     });
     viewBar.appendChild(button);
   }
   host.appendChild(viewBar);
+  const commutatorInset = kind === 'motor' ? document.createElement('canvas') : null;
+  if (commutatorInset) {
+    commutatorInset.className = 'commutator-inset';
+    commutatorInset.setAttribute('aria-label', '分裂環與兩個固定電刷的同步俯視圖');
+    commutatorInset.hidden = true;
+    host.appendChild(commutatorInset);
+  }
   renderer.domElement.addEventListener('pointerdown', event => {
     control.dragging = true; control.x = event.clientX; control.y = event.clientY;
     renderer.domElement.setPointerCapture(event.pointerId);
@@ -455,7 +508,7 @@ function createStage(host, kind) {
     event.preventDefault(); control.distance = THREE.MathUtils.clamp(control.distance + event.deltaY * .008, 4.5, 13);
   }, { passive: false });
 
-  const stage = { kind, host, renderer, scene, camera, rotor, rotorSideTags, pathCurve, windingLoops, currentMarkers, currentArrows, electronMarkers, externalPaths, externalMarkers, externalArrows, fieldArrows, forceArrows, torqueArrow, bulb, bulbLight, filament, meter, control, chargePhase: 0, supplyPhase: 0, lastTime: NaN, lastState: null };
+  const stage = { kind, host, renderer, scene, camera, rotor, rotorSideTags, pathCurve, windingLoops, currentMarkers, currentArrows, electronMarkers, externalPaths, externalMarkers, externalArrows, fieldArrows, forceArrows, torqueArrow, commutatorInset, bulb, bulbLight, filament, meter, control, chargePhase: 0, supplyPhase: 0, lastTime: NaN, lastState: null };
   stages.set(kind, stage);
   return stage;
 }
@@ -471,7 +524,7 @@ function render(kind, state) {
     console.warn('WebGL unavailable', error);
     return;
   }
-  const { renderer, scene, camera, rotor, rotorSideTags, pathCurve, windingLoops, currentMarkers, currentArrows, electronMarkers, externalPaths, externalMarkers, externalArrows, fieldArrows, forceArrows, torqueArrow, bulb, bulbLight, filament, meter, control } = stage;
+  const { renderer, scene, camera, rotor, rotorSideTags, pathCurve, windingLoops, currentMarkers, currentArrows, electronMarkers, externalPaths, externalMarkers, externalArrows, fieldArrows, forceArrows, torqueArrow, commutatorInset, bulb, bulbLight, filament, meter, control } = stage;
   stage.lastState = state;
   const width = host.clientWidth, height = host.clientHeight;
   if (!width || !height) return;
@@ -551,6 +604,10 @@ function render(kind, state) {
     filament.visible = brightness > .06;
     bulbLight.intensity = brightness * brightness * 4;
     paintAmmeter(meter, state.current / Math.max(.001, state.maxCurrent));
+  }
+  if (commutatorInset) {
+    commutatorInset.hidden = control.viewIndex !== 2;
+    if (!commutatorInset.hidden) paintCommutatorInset(commutatorInset, state);
   }
   renderer.render(scene, camera);
 }

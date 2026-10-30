@@ -380,6 +380,7 @@
       font: 700 12px "Times New Roman", "Tinos", "DFKai-SB", serif;
     }
     .stage-views button[aria-pressed="true"] { background: #0f766e; border-color: #0f766e; color: #fff; }
+    .em-stage canvas.commutator-inset { position: absolute; right: 16px; bottom: 16px; width: 230px; height: auto; min-height: 0; aspect-ratio: 1; border: 1px solid #b9c8ca; border-radius: 4px; background: #f8faf9; box-shadow: 0 4px 16px rgba(31, 49, 56, .13); pointer-events: none; }
     .stage-expand:focus-visible, button:focus-visible, select:focus-visible, input:focus-visible {
       outline: 3px solid #f59e0b;
       outline-offset: 2px;
@@ -551,6 +552,7 @@
       #generator-phase-canvas { height: 330px; min-height: 330px; }
     }
     @media (max-width: 640px) {
+      .em-stage canvas.commutator-inset { width: 150px; right: 8px; bottom: 8px; }
       main { width: calc(100% - 16px); margin-top: 8px; }
       header, .content { padding-left: 18px; padding-right: 18px; }
       .values, .controls { grid-template-columns: 1fr; }
@@ -1918,7 +1920,7 @@
             <button type="button" class="motor-layer" data-motor-layer="force" aria-pressed="false">2 判斷 <span data-latex="\boldsymbol\ell\times\mathbf B"></span></button>
             <button type="button" class="motor-layer" data-motor-layer="torque" aria-pressed="false">3 合成力矩</button>
           </div>
-          <div class="presets" role="group" aria-label="換向前後停格"><button type="button" class="preset motor-phase-jump" data-angle="75" aria-pressed="false">換向前 <span data-latex="\theta=75^\circ"></span></button><button type="button" class="preset motor-phase-jump" data-angle="105" aria-pressed="false">換向後 <span data-latex="\theta=105^\circ"></span></button></div>
+          <div class="presets" role="group" aria-label="換向前後停格"><button type="button" class="preset motor-phase-jump" data-angle="75" aria-pressed="false">換向前 <span data-latex="\theta=75^\circ"></span></button><button type="button" class="preset motor-phase-jump" data-angle="90" aria-pressed="false">絕緣縫 <span data-latex="\theta=90^\circ"></span></button><button type="button" class="preset motor-phase-jump" data-angle="105" aria-pressed="false">換向後 <span data-latex="\theta=105^\circ"></span></button></div>
           <div class="presets" role="group" aria-label="馬達視圖"><button type="button" class="preset em-render active" data-em-render="motor" data-view="apparatus" aria-pressed="true">3D 裝置</button><button type="button" class="preset em-render" data-em-render="motor" data-view="diagram" aria-pressed="false">2D 因果圖</button></div>
           <div class="plot-wrap" id="motor-diagram" hidden>
             <canvas id="motor-canvas" role="img" aria-label="包含磁極、線圈、電流粒子、受力方向、分裂環換向器與電刷的直流馬達動畫。"></canvas>
@@ -6047,6 +6049,13 @@
       ctx.beginPath(); ctx.moveTo(sensorX + 12, hits[0].y); ctx.lineTo(sensorX + 12, hits.at(-1).y); ctx.stroke();
       ctx.fillStyle = focused ? '#0e807b' : '#b64a43';
       ctx.beginPath(); ctx.arc(sensorX, hits[2].y, Math.max(3, hitRange / 2), 0, 2 * Math.PI); ctx.globalAlpha = .25; ctx.fill(); ctx.globalAlpha = 1;
+      const sensorFigureHeight = Math.max(8, Math.abs(hits[2].y - axis));
+      ctx.save();
+      ctx.beginPath(); ctx.rect(sensorX - 40, bodyTop + 14, 44, bodyBottom - bodyTop - 28); ctx.clip();
+      ctx.globalAlpha = focused ? .82 : .5;
+      ctx.filter = `blur(${Math.min(7, circleMm * 8).toFixed(1)}px)`;
+      drawCameraPerson(ctx, sensorX - 9, axis, sensorFigureHeight, true);
+      ctx.restore();
       drawCameraPerson(ctx, personX, head.y, personHeight + 16);
       drawSceneLabel(ctx, compact ? 8 : 18, 14, '物體 → 可移動鏡頭 → 固定感光元件');
       if (!compact) {
@@ -9023,6 +9032,8 @@
       ctx.restore();
     }
 
+    const motorCommutatorGap = .10;
+
     function motorState() {
       const voltage = number('motor-voltage');
       const B = number('motor-field');
@@ -9031,24 +9042,32 @@
       const area = .008;
       const angle = motorDynamics.angle;
       const omega = motorDynamics.omega;
-      const current = Math.max(0, (voltage - turns * B * area * omega * Math.abs(Math.cos(angle))) / 3.6);
+      const contact = Math.abs(Math.cos(angle)) > Math.sin(motorCommutatorGap);
+      const current = contact ? Math.max(0, (voltage - turns * B * area * omega * Math.abs(Math.cos(angle))) / 3.6) : 0;
       motorDynamics.current = current;
       const torque = turns * current * B * area * Math.abs(Math.cos(angle));
       const activeLength = .12;
       const sideForce = turns * current * activeLength * B;
       const halfTurn = ((Math.floor((angle + Math.PI / 2) / Math.PI) % 2) + 2) % 2;
       const stalled = omega < .05 && torque < load;
-      return { voltage, B, turns, load, area, activeLength, sideForce, omega, angle, current, torque, halfTurn, stalled };
+      return { voltage, B, turns, load, area, activeLength, sideForce, omega, angle, current, torque, halfTurn, contact, stalled };
     }
 
     function updateMotorVectorProof(state) {
       const proof = $('motor-vector-proof');
       proof.hidden = !$('motor-show-vector').checked;
-      if (proof.hidden || proof.dataset.halfTurn === String(state.halfTurn)) return;
+      const key = `${state.halfTurn}:${state.contact}`;
+      if (proof.hidden || proof.dataset.halfTurn === key) return;
+      if (!state.contact) {
+        $('motor-vector-a').innerHTML = math('I_A=0,\\quad\\mathbf F_A=\\mathbf 0');
+        $('motor-vector-b').innerHTML = math('I_B=0,\\quad\\mathbf F_B=\\mathbf 0');
+        proof.dataset.halfTurn = key;
+        return;
+      }
       const aUp = state.halfTurn === 1;
       $('motor-vector-a').innerHTML = math(`\\boldsymbol\\ell_A\\parallel ${aUp ? '+' : '-'}\\hat{\\mathbf y},\\quad\\mathbf F_A\\parallel ${aUp ? '-' : '+'}\\hat{\\mathbf z}`);
       $('motor-vector-b').innerHTML = math(`\\boldsymbol\\ell_B\\parallel ${aUp ? '-' : '+'}\\hat{\\mathbf y},\\quad\\mathbf F_B\\parallel ${aUp ? '+' : '-'}\\hat{\\mathbf z}`);
-      proof.dataset.halfTurn = String(state.halfTurn);
+      proof.dataset.halfTurn = key;
     }
 
     function advanceMotor(dt) {
@@ -9059,7 +9078,8 @@
       for (let i = 0; i < steps; i += 1) {
         const step = dt / steps;
         const coupling = Math.abs(Math.cos(motorDynamics.angle));
-        motorDynamics.current = Math.max(0, (voltage - k * motorDynamics.omega * coupling) / 3.6);
+        motorDynamics.current = coupling > Math.sin(motorCommutatorGap)
+          ? Math.max(0, (voltage - k * motorDynamics.omega * coupling) / 3.6) : 0;
         const torque = k * motorDynamics.current * coupling;
         const angularAcceleration = (torque - load - .012 * motorDynamics.omega) / .03;
         motorDynamics.omega = Math.max(0, motorDynamics.omega + angularAcceleration * step);
@@ -9116,7 +9136,7 @@
       const { ctx, w, h } = resizeCanvas($('motor-canvas'));
       const state = motorState();
       const compact = w < 620;
-      const currentOn = $('motor-show-current').checked;
+      const currentOn = $('motor-show-current').checked && state.contact;
       const electronsOn = $('motor-show-electrons').checked && currentOn;
       const fieldOn = $('motor-show-field').checked;
       const forceOn = $('motor-show-force').checked && ['all', 'force', 'torque'].includes(activeMotorLayer);
@@ -9186,7 +9206,7 @@
       ctx.beginPath(); ctx.moveTo(cx, cy + 20); ctx.lineTo(cx, ringY - ringR - 8); ctx.stroke();
       for (let side = 0; side < 2; side += 1) {
         ctx.strokeStyle = side ? '#cf8a53' : '#9f562d'; ctx.lineWidth = 9; ctx.lineCap = 'butt';
-        ctx.beginPath(); ctx.arc(cx, ringY, ringR, alpha + Math.PI / 2 + .08 + side * Math.PI, alpha + 3 * Math.PI / 2 - .08 + side * Math.PI); ctx.stroke();
+        ctx.beginPath(); ctx.arc(cx, ringY, ringR, alpha + Math.PI / 2 + motorCommutatorGap + side * Math.PI, alpha + 3 * Math.PI / 2 - motorCommutatorGap + side * Math.PI); ctx.stroke();
       }
       ctx.fillStyle = '#865330'; ctx.font = `700 ${compact ? 10 : 12}px "Times New Roman", "Tinos", serif`; ctx.textAlign = 'center';
       for (let side = 0; side < 2; side += 1) {
@@ -9213,13 +9233,13 @@
       setText('motor-turns-out', state.turns.toFixed(0));
       setText('motor-load-out', `${state.load.toFixed(2)} N·m`);
       setText('motor-speed-out', `${number('motor-speed').toFixed(2)}x`);
-      $('motor-current').innerHTML = `線圈電流 ${math('I')} = ${state.current.toFixed(2)} A<small>${math('I=(V-\\varepsilon_{\\rm back})/R')}；反電動勢隨轉速變化</small>`;
+      $('motor-current').innerHTML = `線圈電流 ${math('I')} = ${state.current.toFixed(2)} A<small>${state.contact ? `${math('I=(V-\\varepsilon_{\\rm back})/R')}；反電動勢隨轉速變化` : '電刷跨絕緣縫，暫時斷電'}</small>`;
       $('motor-torque').innerHTML = `電磁力矩 ${math('\\tau')} = ${state.torque.toFixed(2)} N·m<small>${math('\\tau=NIAB|\\cos\\theta|')}；負載 ${state.load.toFixed(2)} N·m</small>`;
       $('motor-speed-badge').innerHTML = `轉速 ${(state.omega * 60 / (2 * Math.PI)).toFixed(0)} rpm<small>${state.stalled ? '力矩不足，轉子停止' : '電磁力矩扣除負載與阻力後加速'}</small>`;
-      $('motor-commutator').innerHTML = `換向器：${state.halfTurn ? 'B' : 'A'} 接正極<small>在力矩趨零處交換線圈電流方向</small>`;
-      setText('motor-proof-current', `A 側 ${currentUpA ? '⊙' : '⊗'}；B 側 ${currentUpA ? '⊗' : '⊙'}（俯視）`);
+      $('motor-commutator').innerHTML = state.contact ? `換向器：${state.halfTurn ? 'B' : 'A'} 接正極<small>在力矩趨零處交換線圈電流方向</small>` : '換向器：電刷位於絕緣縫<small>電流暫斷；轉子靠慣性越過</small>';
+      setText('motor-proof-current', state.contact ? `A 側 ${currentUpA ? '⊙' : '⊗'}；B 側 ${currentUpA ? '⊗' : '⊙'}（俯視）` : '兩側導線暫無電流');
       $('motor-proof-field').innerHTML = `磁場 ${math('B')} = ${state.B.toFixed(2)} T，由 N → S`;
-      $('motor-proof-force').innerHTML = `兩側受力相反；每側 ${math('F')} ≈ ${state.sideForce.toFixed(2)} N`;
+      $('motor-proof-force').innerHTML = state.contact ? `兩側受力相反；每側 ${math('F')} ≈ ${state.sideForce.toFixed(2)} N` : '兩側磁力皆為零';
       $('motor-proof-torque').innerHTML = `電磁力矩 ${math('\\tau')} = ${state.torque.toFixed(3)} N·m`;
     }
 
@@ -9231,10 +9251,10 @@
       const { ctx, w, h } = resizeCanvas(canvas);
       const compact = w < 720;
       const showField = $('motor-show-field').checked;
-      const showCurrent = $('motor-show-current').checked && ['all', 'current', 'force', 'torque'].includes(activeMotorLayer);
+      const showCurrent = $('motor-show-current').checked && state.contact && ['all', 'current', 'force', 'torque'].includes(activeMotorLayer);
       const showElectrons = $('motor-show-electrons').checked && showCurrent;
-      const showForce = $('motor-show-force').checked && ['all', 'force', 'torque'].includes(activeMotorLayer);
-      const showTorque = ['all', 'torque'].includes(activeMotorLayer);
+      const showForce = $('motor-show-force').checked && state.current > .01 && ['all', 'force', 'torque'].includes(activeMotorLayer);
+      const showTorque = state.current > .01 && ['all', 'torque'].includes(activeMotorLayer);
       const background = ctx.createLinearGradient(0, 0, 0, h);
       background.addColorStop(0, '#f8fafc');
       background.addColorStop(1, '#e7edf2');
@@ -9424,18 +9444,18 @@
       setText('motor-turns-out', state.turns.toFixed(0));
       setText('motor-load-out', `${state.load.toFixed(2)} N·m`);
       setText('motor-speed-out', `${number('motor-speed').toFixed(2)}x`);
-      $('motor-current').innerHTML = `線圈電流 ${math('I')} = ${state.current.toFixed(2)} A<small>${math('I=(V-\\varepsilon_{\\rm back})/R')}；橘色為傳統電流</small>`;
+      $('motor-current').innerHTML = `線圈電流 ${math('I')} = ${state.current.toFixed(2)} A<small>${state.contact ? `${math('I=(V-\\varepsilon_{\\rm back})/R')}；橘色為傳統電流` : '電刷跨絕緣縫，暫時斷電'}</small>`;
       $('motor-torque').innerHTML = `電磁力矩 ${math('\\tau')} = ${state.torque.toFixed(2)} N·m<small>${math('\\tau=NIAB|\\cos\\theta|')}；負載 ${state.load.toFixed(2)} N·m</small>`;
       $('motor-speed-badge').innerHTML = `轉速 = ${(state.omega * 60 / (Math.PI * 2)).toFixed(0)} rpm<small>${state.stalled ? '電磁力矩不足以克服負載' : '電壓、反電動勢與負載共同決定'}</small>`;
-      $('motor-commutator').innerHTML = `換向器：${state.halfTurn === 0 ? 'A 接正極' : 'B 接正極'}<small>跨過半圈時交換線圈電流方向</small>`;
-      $('motor-proof-current').innerHTML = `A 側 ${math('I')}${leftCurrentUp ? '↑' : '↓'}；B 側 ${math('I')}${leftCurrentUp ? '↓' : '↑'}（每半圈換向）`;
+      $('motor-commutator').innerHTML = state.contact ? `換向器：${state.halfTurn === 0 ? 'A 接正極' : 'B 接正極'}<small>跨過半圈時交換線圈電流方向</small>` : '換向器：電刷位於絕緣縫<small>電流暫斷；轉子靠慣性越過</small>';
+      $('motor-proof-current').innerHTML = state.contact ? `A 側 ${math('I')}${leftCurrentUp ? '↑' : '↓'}；B 側 ${math('I')}${leftCurrentUp ? '↓' : '↑'}（每半圈換向）` : '兩側導線暫無電流';
       $('motor-proof-field').innerHTML = `${math('B')} = ${state.B.toFixed(2)} T，由 N → S（向右）`;
-      $('motor-proof-force').innerHTML = `A 側 ${math('F_A')}${leftOut}；B 側 ${math('F_B')}${rightOut}；每側約 ${state.sideForce.toFixed(2)} N`;
+      $('motor-proof-force').innerHTML = state.contact ? `A 側 ${math('F_A')}${leftOut}；B 側 ${math('F_B')}${rightOut}；每側約 ${state.sideForce.toFixed(2)} N` : '兩側磁力皆為零';
       $('motor-proof-torque').innerHTML = `兩力形成力偶；${math('\\tau')} = ${state.torque.toFixed(3)} N·m`;
       if (emRenderView.motor === 'apparatus' && window.emThree) window.emThree.renderMotor({
         angle: state.angle, halfTurn: state.halfTurn, current: state.current, maxCurrent: 3,
         turns: state.turns, B: state.B, time,
-        showCurrent, showElectrons, showField, showForce, showTorque, stalled: state.stalled
+        showCurrent, showElectrons, showField, showForce, showTorque, stalled: state.stalled, contact: state.contact
       });
     }
 
@@ -12094,9 +12114,10 @@
     });
     document.querySelectorAll('.motor-phase-jump').forEach(button => {
       button.addEventListener('click', () => {
+        const angle = Number(button.dataset.angle);
         Object.assign(motorDynamics, {
-          angle: Number(button.dataset.angle) * Math.PI / 180,
-          omega: 0,
+          angle: angle * Math.PI / 180,
+          omega: angle === 90 ? 3 : 0,
           current: number('motor-voltage') / 3.6
         });
         clearMotorPhasePreset();
