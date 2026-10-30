@@ -1976,7 +1976,7 @@
           <div class="plot-wrap" id="generator-diagram" hidden><canvas id="generator-canvas" role="img" aria-label="磁極間旋轉線圈、兩個滑環、電刷和負載燈；下方同步顯示磁通量與感應電動勢的時間曲線。"></canvas></div>
           <div class="generator-apparatus" id="generator-apparatus">
             <div class="em-stage" id="generator-three" title="拖曳旋轉視角；滾輪縮放" aria-label="可拖曳旋轉檢視的發電機立體裝置：磁極、轉子線圈、兩個滑環、電刷與負載燈。"></div>
-            <div class="plot-wrap"><canvas id="generator-phase-canvas" role="img" aria-label="沿轉軸觀看線圈旋轉和磁場方向，右側同步顯示正負交替的感應電壓與目前時刻。"></canvas></div>
+            <div class="plot-wrap"><canvas id="generator-phase-canvas" role="img" aria-label="沿轉軸觀看線圈旋轉和磁場方向，下方兩圖同步顯示磁通鏈結與感應電壓；共用垂直虛線標出目前轉角。"></canvas></div>
           </div>
           <div class="controls"><div class="control"><label for="gen-field">磁場 <span data-latex="B"></span>：<span id="gen-field-out">0.20 T</span></label><input id="gen-field" type="range" min="0" max="0.6" step="0.01" value="0.2"></div><div class="control"><label for="gen-turns">線圈匝數 <span data-latex="N"></span>：<span id="gen-turns-out">200</span></label><input id="gen-turns" type="range" min="20" max="400" step="10" value="200"></div><div class="control"><label for="gen-rpm">轉速：<span id="gen-rpm-out">30 rpm</span></label><input id="gen-rpm" type="range" min="0" max="120" step="1" value="30"></div><div class="control"><label for="gen-resistance">負載電阻 <span data-latex="R"></span>：<span id="gen-resistance-out">10 <span data-latex="\Omega"></span></span></label><input id="gen-resistance" type="range" min="2" max="40" step="1" value="10"></div></div>
           <div class="checks"><label class="check"><input id="gen-show-field" type="checkbox" checked>顯示磁場方向</label><label class="check"><input id="gen-show-current" type="checkbox" checked>顯示電流與電刷</label></div>
@@ -2013,7 +2013,7 @@
             <div class="control"><label for="cyc-detune">射頻偏差：<span id="cyc-detune-out">0%</span></label><input id="cyc-detune" type="range" min="-12" max="12" step="0.5" value="0"></div>
             <div class="control"><label for="cyc-speed">播放速度：<span id="cyc-speed-out">0.35x</span></label><input id="cyc-speed" type="range" min="0.1" max="1.5" step="0.05" value="0.35"></div>
           </div>
-          <div class="checks"><label class="check"><input id="cyc-show-trail" type="checkbox" checked>顯示歷程軌跡</label><label class="check"><input id="cyc-show-field" type="checkbox" checked>顯示磁場與電場</label><label class="check"><input id="cyc-show-velocity" type="checkbox" checked>顯示切線速度</label><label class="check"><input id="cyc-show-intervals" type="checkbox">顯示等時間位置</label></div>
+          <div class="checks"><label class="check"><input id="cyc-show-trail" type="checkbox" checked>顯示歷程軌跡</label><label class="check"><input id="cyc-show-field" type="checkbox" checked>顯示磁場與電場</label><label class="check"><input id="cyc-show-velocity" type="checkbox" checked>顯示切線速度</label><label class="check"><input id="cyc-show-intervals" type="checkbox" checked>顯示半圈等時間點</label></div>
         </div>
 
         <div id="em-view-selector" class="em-view">
@@ -9603,10 +9603,10 @@
         showCurrent: $('gen-show-current').checked, showElectrons: false,
         showField: $('gen-show-field').checked, showForce: false
       });
-      if (emRenderView.generator === 'apparatus') drawGeneratorPhase(theta, emf, emfMax, rpm);
+      if (emRenderView.generator === 'apparatus') drawGeneratorPhase(theta, flux, fluxMax, emf, emfMax, rpm);
     }
 
-    function drawGeneratorPhase(theta, emf, emfMax, rpm) {
+    function drawGeneratorPhase(theta, flux, fluxMax, emf, emfMax, rpm) {
       const { ctx, w, h } = resizeCanvas($('generator-phase-canvas'));
       if (!w || !h) return;
       const compact = w < 700;
@@ -9616,7 +9616,7 @@
       ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, h);
       ctx.fillStyle = '#344a55'; ctx.font = `700 ${compact ? 13 : 16}px "Times New Roman", "Tinos", "DFKai-SB", serif`;
       ctx.textAlign = 'left'; ctx.fillText('沿轉軸看線圈', compact ? 15 : 24, 30);
-      if (!compact) ctx.fillText('感應電壓隨轉角變化', w * .49, 30);
+      if (!compact) ctx.fillText('磁通與感應電壓', w * .49, 30);
       const poleY = cy - radius * .68, poleH = radius * 1.36;
       const poleW = compact ? 26 : 40;
       for (const [side, fill, name] of [[-1, '#a94a47', 'N'], [1, '#407692', 'S']]) {
@@ -9649,41 +9649,51 @@
       ctx.textAlign = 'center';
       ctx.fillText('兩側導線的速度方向相反', cx, cy + radius + (compact ? 22 : 27));
       const plot = compact
-        ? { x: w * .10, y: h * .61, width: w * .80, height: h * .27 }
-        : { x: w * .49, y: h * .24, width: w * .45, height: h * .55 };
-      const mid = plot.y + plot.height / 2;
-      ctx.strokeStyle = '#aab9c0'; ctx.lineWidth = 1.5;
-      ctx.beginPath(); ctx.moveTo(plot.x, plot.y); ctx.lineTo(plot.x, plot.y + plot.height);
-      ctx.lineTo(plot.x + plot.width, plot.y + plot.height);
-      ctx.moveTo(plot.x, mid); ctx.lineTo(plot.x + plot.width, mid); ctx.stroke();
-      ctx.strokeStyle = '#d9e1e5'; ctx.lineWidth = 1;
-      for (let i = 1; i <= 4; i += 1) {
-        const x = plot.x + plot.width * i / 4;
-        ctx.beginPath(); ctx.moveTo(x, plot.y); ctx.lineTo(x, plot.y + plot.height); ctx.stroke();
-      }
-      const wave = phase => rpm ? Math.sin(phase) : 0;
-      ctx.strokeStyle = '#b45d43'; ctx.lineWidth = compact ? 2.3 : 3;
-      ctx.beginPath();
-      for (let i = 0; i <= 240; i += 1) {
-        const x = plot.x + plot.width * i / 240;
-        const y = mid - wave(i / 240 * 4 * Math.PI) * plot.height * .40;
-        if (i) ctx.lineTo(x, y); else ctx.moveTo(x, y);
-      }
-      ctx.stroke();
+        ? { x: w * .10, y: h * .57, width: w * .80, height: h * .36 }
+        : { x: w * .49, y: h * .19, width: w * .45, height: h * .68 };
+      const rowGap = compact ? 13 : 22;
+      const rowHeight = (plot.height - rowGap - 20) / 2;
       const markerX = plot.x + plot.width * positiveModulo(theta, 4 * Math.PI) / (4 * Math.PI);
-      const markerY = mid - (emfMax ? emf / emfMax : 0) * plot.height * .40;
-      ctx.strokeStyle = '#8b9da5'; ctx.setLineDash([4, 4]); ctx.beginPath();
-      ctx.moveTo(markerX, plot.y); ctx.lineTo(markerX, plot.y + plot.height); ctx.stroke(); ctx.setLineDash([]);
-      ctx.fillStyle = '#fff'; ctx.strokeStyle = '#a84b39'; ctx.lineWidth = 3;
-      ctx.beginPath(); ctx.arc(markerX, markerY, compact ? 5 : 6, 0, 2 * Math.PI); ctx.fill(); ctx.stroke();
-      ctx.fillStyle = '#465b65'; ctx.font = `12px "Times New Roman", "Tinos", "DFKai-SB", serif`;
+      const rows = [
+        { title: '磁通鏈結', value: fluxMax ? flux / fluxMax : 0, unit: 'Wb·turn', actual: flux, color: '#18766f', wave: phase => fluxMax ? Math.cos(phase) : 0 },
+        { title: '感應電壓', value: emfMax ? emf / emfMax : 0, unit: 'V', actual: emf, color: '#b45d43', wave: phase => rpm ? Math.sin(phase) : 0 }
+      ];
+      rows.forEach((row, index) => {
+        const top = plot.y + index * (rowHeight + rowGap + 10) + 16;
+        const mid = top + rowHeight / 2;
+        ctx.fillStyle = '#3d5961'; ctx.font = `700 ${compact ? 11 : 13}px "Times New Roman", "Tinos", "DFKai-SB", serif`;
+        ctx.textAlign = 'left'; ctx.fillText(row.title, plot.x, top - 5);
+        ctx.fillStyle = row.color; ctx.textAlign = 'right';
+        ctx.fillText(`${row.actual >= 0 ? '+' : ''}${row.actual.toFixed(2)} ${row.unit}`, plot.x + plot.width, top - 5);
+        ctx.strokeStyle = '#aab9c0'; ctx.lineWidth = 1.2;
+        ctx.beginPath(); ctx.moveTo(plot.x, top); ctx.lineTo(plot.x, top + rowHeight);
+        ctx.lineTo(plot.x + plot.width, top + rowHeight);
+        ctx.moveTo(plot.x, mid); ctx.lineTo(plot.x + plot.width, mid); ctx.stroke();
+        ctx.strokeStyle = '#d9e1e5'; ctx.lineWidth = 1;
+        for (let i = 1; i <= 4; i += 1) {
+          const x = plot.x + plot.width * i / 4;
+          ctx.beginPath(); ctx.moveTo(x, top); ctx.lineTo(x, top + rowHeight); ctx.stroke();
+        }
+        ctx.strokeStyle = row.color; ctx.lineWidth = compact ? 2.1 : 2.7;
+        ctx.beginPath();
+        for (let i = 0; i <= 240; i += 1) {
+          const x = plot.x + plot.width * i / 240;
+          const y = mid - row.wave(i / 240 * 4 * Math.PI) * rowHeight * .43;
+          if (i) ctx.lineTo(x, y); else ctx.moveTo(x, y);
+        }
+        ctx.stroke();
+        ctx.strokeStyle = '#83979d'; ctx.setLineDash([4, 4]); ctx.beginPath();
+        ctx.moveTo(markerX, top); ctx.lineTo(markerX, top + rowHeight); ctx.stroke(); ctx.setLineDash([]);
+        ctx.fillStyle = '#fff'; ctx.strokeStyle = row.color; ctx.lineWidth = 2.5;
+        ctx.beginPath(); ctx.arc(markerX, mid - row.value * rowHeight * .43, compact ? 4 : 5, 0, 2 * Math.PI); ctx.fill(); ctx.stroke();
+      });
+      ctx.fillStyle = '#465b65'; ctx.font = `11px "Times New Roman", "Tinos", "DFKai-SB", serif`;
       ctx.textAlign = 'center';
-      ctx.fillText('0', plot.x, plot.y + plot.height + 16);
-      ctx.fillText('半圈', plot.x + plot.width * .25, plot.y + plot.height + 16);
-      ctx.fillText('一圈', plot.x + plot.width * .5, plot.y + plot.height + 16);
-      ctx.fillText('一圈半', plot.x + plot.width * .75, plot.y + plot.height + 16);
-      ctx.fillStyle = '#9a503c'; ctx.textAlign = 'left';
-      ctx.fillText(`${emf >= 0 ? '+' : ''}${emf.toFixed(2)} V`, plot.x + 4, plot.y - 9);
+      const bottom = plot.y + 2 * (rowHeight + rowGap + 10) - rowGap - 10 + 30;
+      ctx.fillText('0', plot.x, bottom);
+      ctx.fillText('半圈', plot.x + plot.width * .25, bottom);
+      ctx.fillText('一圈', plot.x + plot.width * .5, bottom);
+      ctx.fillText('一圈半', plot.x + plot.width * .75, bottom);
     }
 
     function playBellTone() {
@@ -10763,16 +10773,29 @@
       }
       ctx.save(); ctx.beginPath(); ctx.arc(cx, cy, outer - 2, 0, 2 * Math.PI); ctx.clip();
       if ($('cyc-show-trail').checked) {
-        ctx.strokeStyle = 'rgba(26,119,112,.58)'; ctx.lineWidth = compact ? 2.1 : 2.6;
+        ctx.strokeStyle = 'rgba(42,116,112,.36)'; ctx.lineWidth = compact ? 1.8 : 2.2;
         ctx.beginPath(); let started = false;
-        for (let i = 0; i <= index; i += 1) {
-          const limit = i === index ? angle : Math.PI;
-          const samples = Math.max(1, Math.ceil(limit / .035));
+        for (let i = 0; i < index; i += 1) {
+          const samples = Math.ceil(Math.PI / .035);
           for (let j = 0; j <= samples; j += 1) {
-            const p = cyclotronPoint(arcs[i], limit * j / samples);
+            const p = cyclotronPoint(arcs[i], Math.PI * j / samples);
             if (!started) { ctx.moveTo(cx + p.x * scale, cy + p.y * scale); started = true; }
             else ctx.lineTo(cx + p.x * scale, cy + p.y * scale);
           }
+        }
+        ctx.stroke();
+        const start = cyclotronPoint(arc, 0);
+        ctx.strokeStyle = '#127d74'; ctx.lineWidth = compact ? 2.8 : 3.5;
+        ctx.beginPath();
+        if (index > 0) {
+          const previous = cyclotronPoint(arcs[index - 1], Math.PI);
+          ctx.moveTo(cx + previous.x * scale, cy + previous.y * scale);
+          ctx.lineTo(cx + start.x * scale, cy + start.y * scale);
+        } else ctx.moveTo(cx + start.x * scale, cy + start.y * scale);
+        const samples = Math.max(1, Math.ceil(angle / .035));
+        for (let j = 1; j <= samples; j += 1) {
+          const p = cyclotronPoint(arc, angle * j / samples);
+          ctx.lineTo(cx + p.x * scale, cy + p.y * scale);
         }
         if (inGap || exiting) ctx.lineTo(cx + point.x * scale, cy + point.y * scale);
         ctx.stroke();
@@ -10804,7 +10827,7 @@
       ctx.fillText('D', cx + outer * .5, cy - outer * .48);
       ctx.fillStyle = '#637e85'; ctx.font = `12px "Times New Roman", "Tinos", "DFKai-SB", serif`;
       ctx.fillText('磁場朝向紙外：點記號', cx, cy + outer + 31);
-      ctx.fillText($('cyc-show-intervals').checked ? '軌道小點：相等時間間隔' : '紅色箭頭：切線速度', cx, cy + outer + 48);
+      ctx.fillText($('cyc-show-intervals').checked ? '每個半圈內：小點等時間間隔' : '紅色箭頭：切線速度', cx, cy + outer + 48);
       const chart = compact
         ? { x: w * .08, y: h * .74, width: w * .84, height: h * .17 }
         : { x: w * .67, y: h * .25, width: w * .27, height: h * .46 };
