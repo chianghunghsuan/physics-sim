@@ -170,6 +170,43 @@ function paintCommutatorInset(canvas, state) {
   ctx.fillText(!state.contact ? '絕緣縫：電流暫斷' : state.halfTurn ? 'B 接 +　A 接 −' : 'A 接 +　B 接 −', cx, 215);
 }
 
+function paintSlipRingInset(canvas, state) {
+  const size = canvas.clientWidth;
+  if (!size) return;
+  const pixels = Math.round(size * Math.min(2, window.devicePixelRatio || 1));
+  if (canvas.width !== pixels || canvas.height !== pixels) canvas.width = canvas.height = pixels;
+  const ctx = canvas.getContext('2d');
+  ctx.setTransform(pixels / 240, 0, 0, pixels / 240, 0, 0);
+  ctx.clearRect(0, 0, 240, 240);
+  ctx.fillStyle = '#f8faf9'; ctx.fillRect(0, 0, 240, 240);
+  ctx.fillStyle = '#2d414a'; ctx.font = '700 17px "Times New Roman", "Tinos", "DFKai-SB", serif';
+  ctx.textAlign = 'left'; ctx.fillText('滑環側視', 12, 25);
+  const cx = 120;
+  ctx.fillStyle = '#35454d'; ctx.fillRect(cx - 17, 42, 34, 151);
+  for (const [ringY, color, label, brushSide] of [[89, '#b47042', 'A', -1], [151, '#d0915d', 'B', 1]]) {
+    ctx.strokeStyle = '#27343b'; ctx.lineWidth = 20;
+    ctx.beginPath(); ctx.ellipse(cx, ringY, 55, 14, 0, 0, 2 * Math.PI); ctx.stroke();
+    ctx.strokeStyle = color; ctx.lineWidth = 14;
+    ctx.beginPath(); ctx.ellipse(cx, ringY, 55, 14, 0, 0, 2 * Math.PI); ctx.stroke();
+    const brushX = cx + brushSide * 59;
+    ctx.fillStyle = '#35454d'; ctx.fillRect(brushSide < 0 ? brushX - 27 : brushX - 2, ringY - 11, 29, 22);
+    ctx.strokeStyle = '#35454d'; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.moveTo(brushX + brushSide * 26, ringY); ctx.lineTo(brushX + brushSide * 45, ringY); ctx.stroke();
+    const markerPhase = state.angle + Math.PI / 2;
+    const markerX = cx + 55 * Math.cos(markerPhase);
+    const markerY = ringY + 14 * Math.sin(markerPhase);
+    ctx.fillStyle = '#f5f9f8'; ctx.strokeStyle = '#704c36'; ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.arc(markerX, markerY, 4, 0, 2 * Math.PI); ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#fff'; ctx.font = '700 16px "Times New Roman", "Tinos", serif';
+    ctx.textAlign = 'center'; ctx.fillText(label, cx, ringY + 6);
+  }
+  ctx.font = '700 18px "Times New Roman", "Tinos", serif';
+  ctx.fillStyle = '#ae4d3b'; ctx.fillText(state.current > .01 ? '+' : state.current < -.01 ? '−' : '0', 25, 96);
+  ctx.fillStyle = '#334b62'; ctx.fillText(state.current < -.01 ? '+' : state.current > .01 ? '−' : '0', 215, 158);
+  ctx.fillStyle = '#3b5059'; ctx.font = '700 15px "Times New Roman", "Tinos", "DFKai-SB", serif';
+  ctx.fillText(Math.abs(state.current) <= .01 ? '兩環仍接觸；瞬時輸出為零' : '完整環持續接觸；輸出極性翻轉', cx, 216);
+}
+
 function ammeter(scene, housingMaterial) {
   bevelBox(scene, [.96, .74, .29], [1.12, -1.57, 1.55], housingMaterial, .045);
   for (const x of [.75, 1.49]) {
@@ -376,6 +413,8 @@ function createStage(host, kind) {
     for (const [index, y] of [-1.37, -1.64].entries()) {
       const ring = new THREE.Mesh(new THREE.TorusGeometry(.33, .055, 10, 64), index ? brightCopper : copper);
       ring.rotation.x = Math.PI / 2; ring.position.y = y; rotor.add(ring); rings.push(ring);
+      const ringMarker = new THREE.Mesh(new THREE.SphereGeometry(.052, 12, 9), metal('#f5f9f8', .36, .05));
+      ringMarker.position.set(.33, y, 0); rotor.add(ringMarker);
       const side = index ? 1 : -1;
       box(scene, [.29, .18, .23], [side * .46, y, 0], metal('#303e47', .79, .29));
       const supportHeight = y + 1.93;
@@ -486,10 +525,10 @@ function createStage(host, kind) {
     viewBar.appendChild(button);
   }
   host.appendChild(viewBar);
-  const commutatorInset = kind === 'motor' ? document.createElement('canvas') : null;
+  const commutatorInset = document.createElement('canvas');
   if (commutatorInset) {
     commutatorInset.className = 'commutator-inset';
-    commutatorInset.setAttribute('aria-label', '分裂環與兩個固定電刷的同步俯視圖');
+    commutatorInset.setAttribute('aria-label', kind === 'motor' ? '分裂環與兩個固定電刷的同步俯視圖' : '兩個完整滑環與固定電刷的同步側視圖');
     commutatorInset.hidden = true;
     host.appendChild(commutatorInset);
   }
@@ -607,7 +646,10 @@ function render(kind, state) {
   }
   if (commutatorInset) {
     commutatorInset.hidden = control.viewIndex !== 2;
-    if (!commutatorInset.hidden) paintCommutatorInset(commutatorInset, state);
+    if (!commutatorInset.hidden) {
+      if (kind === 'motor') paintCommutatorInset(commutatorInset, state);
+      else paintSlipRingInset(commutatorInset, state);
+    }
   }
   renderer.render(scene, camera);
 }
