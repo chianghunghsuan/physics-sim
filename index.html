@@ -174,7 +174,7 @@
       color: #ffffff;
     }
     button.tab { padding: 8px 13px; white-space: nowrap; }
-    .optics-switch, .topic-switch, .phenomenon-switch {
+    .optics-switch, .topic-switch, .phenomenon-switch, .camera-path-switch {
       display: flex;
       flex-wrap: wrap;
       width: fit-content;
@@ -195,6 +195,9 @@
       color: #ffffff;
       box-shadow: 0 2px 7px rgba(15, 118, 110, .2);
     }
+    .camera-path-switch { margin: 0 0 14px; }
+    button.camera-path-mode { background: transparent; color: var(--ink); min-width: 110px; }
+    button.camera-path-mode.active { background: var(--accent); color: #ffffff; }
     .mirror-lesson-switch, .angular-switch {
       display: flex;
       flex-wrap: wrap;
@@ -1371,9 +1374,13 @@
         </div>
 
         <div id="optics-view-camera" class="optics-view">
-          <div class="module-head"><div><h2>相機對焦：鏡頭移動、感光元件固定</h2><p class="module-copy">人靠近時，鏡頭需往物體方向移動才能重新對焦。固定快門與感光度時，光圈開口越大，進光量越多；失焦光斑也會越大。圖中距離與像高採不同示意比例。</p></div></div>
+          <div class="module-head"><div><h2>單眼相機：取景、曝光與對焦</h2><p class="module-copy">取景時，反光鏡把光送往對焦屏與觀景窗；曝光時抬起，光才到感光元件。為比較進光量，取景也套用所選光圈（景深預覽）；亮度以快門、感光度固定計算。折疊光路非等比例。</p></div></div>
+          <div class="camera-path-switch" role="group" aria-label="相機光路">
+            <button type="button" class="camera-path-mode active" data-camera-path="viewfinder" aria-pressed="true">光學取景</button>
+            <button type="button" class="camera-path-mode" data-camera-path="exposure" aria-pressed="false">曝光成像</button>
+          </div>
           <div class="values"><div class="badge" id="camera-image-distance">理論像距</div><div class="badge" id="camera-lens-position">鏡頭到感光元件</div><div class="badge" id="camera-blur">散焦圈直徑</div><div class="badge" id="camera-status">對焦狀態</div></div>
-          <div class="plot-wrap"><canvas id="camera-canvas" role="img" aria-label="剖面相機內固定的感光元件與可移動鏡頭；多條光線從人物頂端通過光圈，在焦平面會聚或於感光元件形成散焦圈。"></canvas></div>
+          <div class="plot-wrap"><canvas id="camera-canvas" role="img" aria-label="單眼相機剖面。可切換反光鏡落下的觀景窗光路與反光鏡抬起的感光元件光路。"></canvas></div>
           <div class="controls"><div class="control"><label for="camera-object">人物距鏡頭：<span id="camera-object-out">2.00 m</span></label><input id="camera-object" type="range" min="0.35" max="5" step="0.005" value="2"></div><div class="control"><label for="camera-focus">鏡頭到感光元件：<span id="camera-focus-out">51.3 mm</span></label><input id="camera-focus" type="range" min="50" max="59" step="0.1" value="51.3"></div><div class="control"><label for="camera-aperture">光圈直徑：<span id="camera-aperture-out">20 mm</span></label><input id="camera-aperture" type="range" min="5" max="28" step="1" value="20"></div></div>
           <div class="presets"><button type="button" class="preset" id="camera-track" aria-pressed="false">播放追蹤對焦</button><button type="button" class="preset" id="camera-autofocus">對焦到人物</button><button type="button" class="preset" id="camera-far">遠景</button><button type="button" class="preset" id="camera-near">近景</button></div>
         </div>
@@ -1382,7 +1389,7 @@
           <div class="module-head">
             <div>
               <h2>眼睛、晶狀體與視網膜成像</h2>
-              <p class="module-copy">改變觀看距離時，物體在左側移動、視角及入射光束跟著改變；晶狀體的調節決定光線是否恰好在視網膜上會聚。</p>
+              <p class="module-copy">先看近視／遠視的焦點落在視網膜哪一側，再分別加上凹／凸透鏡。鏡片彎折角度為放大示意；焦點依眼球與眼鏡的屈光力計算。</p>
             </div>
             <div class="legend" aria-label="眼睛成像圖例">
               <span class="blue"><i class="dot"></i>入射光</span>
@@ -1406,7 +1413,7 @@
               <input id="eye-object-distance" type="range" min="15" max="200" step="5" value="80">
             </div>
             <div class="control">
-              <label for="eye-accommodation">晶狀體調節：<span id="eye-accommodation-out">自動</span></label>
+              <label for="eye-accommodation">晶狀體調節：<span id="eye-accommodation-out">55%</span></label>
               <input id="eye-accommodation" type="range" min="0" max="100" step="1" value="55">
             </div>
             <div class="control">
@@ -1425,6 +1432,13 @@
                 <option value="convex">凸透鏡（遠視矯正）</option>
               </select>
             </div>
+          </div>
+          <div class="presets" role="group" aria-label="視力矯正對照">
+            <button type="button" class="preset eye-case active" data-eye-condition="normal" data-eye-correction="none" aria-pressed="true">正視眼</button>
+            <button type="button" class="preset eye-case" data-eye-condition="myopia" data-eye-correction="none" aria-pressed="false">近視未矯正</button>
+            <button type="button" class="preset eye-case" data-eye-condition="myopia" data-eye-correction="concave" aria-pressed="false">近視＋凹透鏡</button>
+            <button type="button" class="preset eye-case" data-eye-condition="hyperopia" data-eye-correction="none" aria-pressed="false">遠視未矯正</button>
+            <button type="button" class="preset eye-case" data-eye-condition="hyperopia" data-eye-correction="convex" aria-pressed="false">遠視＋凸透鏡</button>
           </div>
           <div class="checks">
             <label class="check"><input type="checkbox" id="eye-show-labels" checked>顯示眼球構造標示</label>
@@ -2213,6 +2227,7 @@
     let time = 0;
     let generatorAngle = Math.PI / 2;
     let cameraTracking = false;
+    let cameraPath = 'viewfinder';
     let cameraTrackPhase = 0;
     let skaterPhase = 0;
     let skaterArmCurrent = 1;
@@ -5790,10 +5805,13 @@
         : sensorDistance < imageMm
           ? '焦點在感光元件後<small>鏡頭需往物體方向移動</small>'
           : '焦點在感光元件前<small>鏡頭需往感光元件方向移動</small>';
+      if (cameraPath === 'viewfinder') {
+        $('camera-status').innerHTML = `光學取景 · ${focused ? '清晰' : '失焦'}<small>反光鏡落下，感光元件尚未曝光</small>`;
+      }
       ctx.fillStyle = '#f4f7f8'; ctx.fillRect(0, 0, w, h);
       const axis = h * .47;
       const sensorX = w * (compact ? .84 : .83);
-      const lensX = sensorX - w * (.15 + (sensorDistance - 50) / 9 * .11);
+      const lensX = sensorX - w * (.22 + (sensorDistance - 50) / 9 * .11);
       const personX = w * (.10 + .16 * (1 - objectMeters / 5));
       const personHeight = Math.min(h * .34, h * (.20 + .15 / Math.sqrt(objectMeters)));
       const head = { x: personX, y: axis - personHeight };
@@ -5805,12 +5823,16 @@
       ctx.beginPath(); ctx.moveTo(w * .04, axis); ctx.lineTo(w * .96, axis); ctx.stroke(); ctx.setLineDash([]);
       ctx.fillStyle = '#d8e2e4'; ctx.fillRect(w * .03, axis + 5, lensX - w * .03, 3);
       const bodyTop = h * .16, bodyBottom = h * .71;
+      const mirrorX = sensorX - w * .13;
+      const screenY = axis + mirrorX - sensorX;
+      const prismY = bodyTop - 27;
+      const viewfinderX = Math.min(w - 32, sensorX + 36);
       ctx.fillStyle = '#263b49';
       ctx.beginPath();
-      ctx.moveTo(lensX + 21, bodyTop + 3);
-      ctx.lineTo(lensX + 43, bodyTop - 28);
-      ctx.lineTo(lensX + 83, bodyTop - 28);
-      ctx.lineTo(lensX + 104, bodyTop + 3);
+      ctx.moveTo(mirrorX - 52, bodyTop + 3);
+      ctx.lineTo(mirrorX - 29, bodyTop - 39);
+      ctx.lineTo(mirrorX + 27, bodyTop - 39);
+      ctx.lineTo(mirrorX + 54, bodyTop + 3);
       ctx.closePath(); ctx.fill();
       const chamber = ctx.createLinearGradient(0, bodyTop, 0, bodyBottom);
       chamber.addColorStop(0, '#243844'); chamber.addColorStop(.15, '#405560');
@@ -5819,6 +5841,11 @@
       ctx.fillStyle = '#eaf1f0'; ctx.fillRect(lensX + 12, bodyTop + 20, sensorX - lensX - 13, bodyBottom - bodyTop - 40);
       ctx.strokeStyle = '#6e858f'; ctx.lineWidth = 2;
       ctx.strokeRect(lensX + 12, bodyTop + 20, sensorX - lensX - 13, bodyBottom - bodyTop - 40);
+      ctx.fillStyle = '#cfdee4'; ctx.strokeStyle = '#6d8490'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(mirrorX - 34, bodyTop - 32); ctx.lineTo(mirrorX + 24, bodyTop - 32);
+      ctx.lineTo(mirrorX + 40, bodyTop - 6); ctx.lineTo(mirrorX - 42, bodyTop - 6); ctx.closePath(); ctx.fill(); ctx.stroke();
+      ctx.strokeStyle = '#a7c1c8'; ctx.lineWidth = 5;
+      ctx.beginPath(); ctx.moveTo(mirrorX - 62, screenY); ctx.lineTo(mirrorX + 58, screenY); ctx.stroke();
       ctx.fillStyle = '#1d3543';
       ctx.beginPath(); ctx.roundRect(lensX - 40, axis - h * .145, 37, h * .29, 5); ctx.fill();
       ctx.fillStyle = '#667e89';
@@ -5847,49 +5874,97 @@
       ctx.fillStyle = '#1d3445';
       ctx.fillRect(lensX - 17, bodyTop + 1, 34, Math.max(0, axis - aperturePx - bodyTop - 1));
       ctx.fillRect(lensX - 17, axis + aperturePx, 34, Math.max(0, bodyBottom - axis - aperturePx - 1));
-      if (Math.abs(imageX - sensorX) > 8 && imageX > lensX + 10 && imageX < sensorX + 25) {
+      ctx.save();
+      ctx.strokeStyle = '#456675'; ctx.lineWidth = compact ? 6 : 8; ctx.lineCap = 'round';
+      const mirrorHalf = compact ? 36 : 59;
+      ctx.beginPath();
+      if (cameraPath === 'viewfinder') {
+        ctx.moveTo(mirrorX - mirrorHalf, axis + mirrorHalf); ctx.lineTo(mirrorX + mirrorHalf, axis - mirrorHalf);
+      } else {
+        ctx.moveTo(mirrorX - 49, bodyTop + 51); ctx.lineTo(mirrorX + 42, bodyTop + 51);
+      }
+      ctx.stroke();
+      ctx.strokeStyle = '#d4e5e8'; ctx.lineWidth = 2;
+      ctx.stroke(); ctx.restore();
+      if (cameraPath === 'exposure' && Math.abs(imageX - sensorX) > 8 && imageX > lensX + 10 && imageX < sensorX + 25) {
         ctx.save(); ctx.strokeStyle = 'rgba(15,118,110,.72)'; ctx.lineWidth = 1.5; ctx.setLineDash([5, 5]);
         ctx.beginPath(); ctx.moveTo(imageX, bodyTop + 24); ctx.lineTo(imageX, bodyBottom - 24); ctx.stroke(); ctx.restore();
       }
       const hits = [];
-      const rayCount = aperture < 10 ? 3 : aperture < 21 ? 5 : 7;
+      const rayCount = cameraPath === 'viewfinder' ? 3 : aperture < 10 ? 3 : aperture < 21 ? 5 : 7;
       Array.from({ length: rayCount }, (_, index) => -1 + 2 * index / (rayCount - 1)).forEach((fraction, index) => {
-        const atLens = { x: lensX, y: axis + fraction * aperturePx };
+        const rayAperture = cameraPath === 'viewfinder' ? Math.min(aperturePx * .65, compact ? 35 : aperturePx) : aperturePx;
+        const atLens = { x: lensX, y: axis + fraction * rayAperture };
         const t = (sensorX - lensX) / (imageX - lensX);
         const hit = { x: sensorX, y: atLens.y + (imageTip.y - atLens.y) * t };
         hits.push(hit);
         ctx.strokeStyle = index === Math.floor(rayCount / 2) ? '#1c7293' : 'rgba(39,111,146,.68)';
         ctx.lineWidth = index === Math.floor(rayCount / 2) ? 2.6 : 1.8; ctx.beginPath();
         ctx.moveTo(head.x, head.y); ctx.lineTo(atLens.x, atLens.y); ctx.stroke();
-        ctx.strokeStyle = index === Math.floor(rayCount / 2) ? '#b85044' : 'rgba(185,80,68,.72)';
-        ctx.beginPath(); ctx.moveTo(atLens.x, atLens.y); ctx.lineTo(hit.x, hit.y); ctx.stroke();
+        const path = [head, atLens];
+        if (cameraPath === 'viewfinder') {
+          const slope = (imageTip.y - atLens.y) / (imageX - lensX);
+          const mirrorHitX = (axis + mirrorX - atLens.y + slope * lensX) / (slope + 1);
+          const mirrorHit = { x: mirrorHitX, y: axis - (mirrorHitX - mirrorX) };
+          const screenHit = { x: mirrorHit.x + slope * (screenY - mirrorHit.y), y: screenY };
+          strokeSegment(ctx, atLens, mirrorHit, '#b85044', index === Math.floor(rayCount / 2) ? 2.6 : 1.8);
+          strokeSegment(ctx, mirrorHit, screenHit, '#0f766e', 2);
+          path.push(mirrorHit, screenHit);
+        } else {
+          ctx.strokeStyle = index === Math.floor(rayCount / 2) ? '#b85044' : 'rgba(185,80,68,.72)';
+          ctx.beginPath(); ctx.moveTo(atLens.x, atLens.y); ctx.lineTo(hit.x, hit.y); ctx.stroke();
+          path.push(hit);
+        }
         const travel = positiveModulo(time * .65 + index * .2, 1);
-        const start = travel < .55 ? head : atLens;
-        const end = travel < .55 ? atLens : hit;
-        const portion = travel < .55 ? travel / .55 : (travel - .55) / .45;
+        const progress = travel * (path.length - 1);
+        const segment = Math.min(path.length - 2, Math.floor(progress));
+        const start = path[segment];
+        const end = path[segment + 1];
+        const portion = progress - segment;
         instrumentParticle(ctx, start.x + (end.x - start.x) * portion, start.y + (end.y - start.y) * portion, '#fff8d6', compact ? 2.5 : 3.5);
       });
-      if (imageX > lensX + 5 && imageX < sensorX + 25) {
+      if (cameraPath === 'viewfinder') {
+        const upper = { x: mirrorX - 8, y: prismY };
+        const turn = { x: mirrorX + 25, y: prismY - 8 };
+        const ocular = { x: viewfinderX, y: prismY - 8 };
+        strokeSegment(ctx, { x: mirrorX - 8, y: screenY }, upper, '#0f766e', 2.4);
+        strokeSegment(ctx, upper, turn, '#0f766e', 2.4);
+        strokeSegment(ctx, turn, ocular, '#0f766e', 2.4);
+        ctx.strokeStyle = '#2f4d59'; ctx.lineWidth = 5;
+        ctx.beginPath(); ctx.moveTo(viewfinderX - 5, prismY - 20); ctx.lineTo(viewfinderX - 5, prismY + 5); ctx.stroke();
+        ctx.fillStyle = '#f8fafc'; ctx.strokeStyle = '#24485c'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.ellipse(viewfinderX + 9, prismY - 8, 11, 8, 0, 0, 2 * Math.PI); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = '#24485c'; ctx.beginPath(); ctx.arc(viewfinderX + 9, prismY - 8, 3, 0, 2 * Math.PI); ctx.fill();
+      }
+      if (cameraPath === 'exposure' && imageX > lensX + 5 && imageX < sensorX + 25) {
         ctx.fillStyle = '#0f766e'; ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.5;
         ctx.beginPath(); ctx.arc(imageX, imageTip.y, 4.5, 0, 2 * Math.PI); ctx.fill(); ctx.stroke();
       }
-      const hitRange = Math.max(...hits.map(point => point.y)) - Math.min(...hits.map(point => point.y));
-      ctx.strokeStyle = focused ? '#10817d' : '#b64a43'; ctx.lineWidth = 3;
-      ctx.beginPath(); ctx.moveTo(sensorX + 12, hits[0].y); ctx.lineTo(sensorX + 12, hits.at(-1).y); ctx.stroke();
-      ctx.fillStyle = focused ? '#0e807b' : '#b64a43';
-      ctx.beginPath(); ctx.arc(sensorX, hits[Math.floor(rayCount / 2)].y, Math.max(3, hitRange / 2), 0, 2 * Math.PI); ctx.globalAlpha = .25; ctx.fill(); ctx.globalAlpha = 1;
-      const sensorFigureHeight = Math.max(8, Math.abs(hits[Math.floor(rayCount / 2)].y - axis));
-      ctx.save();
-      ctx.beginPath(); ctx.rect(sensorX - 40, bodyTop + 14, 44, bodyBottom - bodyTop - 28); ctx.clip();
-      ctx.globalAlpha = (focused ? .82 : .5) * previewLight;
-      ctx.filter = `blur(${Math.min(7, circleMm * 8).toFixed(1)}px)`;
-      drawCameraPerson(ctx, sensorX - 9, axis, sensorFigureHeight, true);
-      ctx.restore();
+      if (cameraPath === 'exposure') {
+        const hitRange = Math.max(...hits.map(point => point.y)) - Math.min(...hits.map(point => point.y));
+        ctx.strokeStyle = focused ? '#10817d' : '#b64a43'; ctx.lineWidth = 3;
+        ctx.beginPath(); ctx.moveTo(sensorX + 12, hits[0].y); ctx.lineTo(sensorX + 12, hits.at(-1).y); ctx.stroke();
+        ctx.fillStyle = focused ? '#0e807b' : '#b64a43';
+        ctx.beginPath(); ctx.arc(sensorX, hits[Math.floor(rayCount / 2)].y, Math.max(3, hitRange / 2), 0, 2 * Math.PI); ctx.globalAlpha = .25; ctx.fill(); ctx.globalAlpha = 1;
+        const sensorFigureHeight = Math.max(8, Math.abs(hits[Math.floor(rayCount / 2)].y - axis));
+        ctx.save();
+        ctx.beginPath(); ctx.rect(sensorX - 40, bodyTop + 14, 44, bodyBottom - bodyTop - 28); ctx.clip();
+        ctx.globalAlpha = (focused ? .82 : .5) * previewLight;
+        ctx.filter = `blur(${Math.min(7, circleMm * 8).toFixed(1)}px)`;
+        drawCameraPerson(ctx, sensorX - 9, axis, sensorFigureHeight, true);
+        ctx.restore();
+      }
       drawCameraPerson(ctx, personX, head.y, personHeight + 16);
-      drawSceneLabel(ctx, compact ? 8 : 18, 14, '物體 → 可移動鏡頭 → 固定感光元件');
+      drawSceneLabel(ctx, compact ? 8 : 18, 14, cameraPath === 'viewfinder' ? '鏡頭 → 反光鏡 → 觀景窗' : '鏡頭 → 感光元件');
       if (!compact) {
         drawSceneLabel(ctx, personX - 24, axis + 29, '人物');
-        drawSceneLabel(ctx, sensorX + 26, axis - 36, '感光元件');
+        drawSceneLabel(ctx, sensorX + 26, axis - 36, cameraPath === 'viewfinder' ? '感光元件未曝光' : '感光元件');
+        if (cameraPath === 'viewfinder') {
+          drawSceneLabel(ctx, mirrorX - 45, axis + 94, '反光鏡');
+          drawSceneLabel(ctx, mirrorX - 46, bodyTop - 61, '五稜鏡');
+          drawSceneLabel(ctx, mirrorX - 63, screenY + 20, '對焦屏');
+          drawSceneLabel(ctx, viewfinderX + 13, prismY - 11, '觀景窗');
+        }
       }
       if (!compact) {
         const graph = { x: w * .08, y: h * .76, w: w * .47, h: h * .21 };
@@ -5948,12 +6023,14 @@
       const previewHeight = (preview.h - 14) * .7 * relativeMagnification;
       ctx.save(); ctx.beginPath(); ctx.rect(preview.x + 5, preview.y + 5, preview.w - 10, preview.h - 10); ctx.clip();
       ctx.filter = `blur(${Math.min(14, circleMm * (compact ? 9 : 12)).toFixed(1)}px)`;
-      drawCameraPerson(ctx, previewX, preview.y + preview.h / 2 - previewHeight / 2, previewHeight, true);
+      drawCameraPerson(ctx, previewX, preview.y + preview.h / 2 - previewHeight / 2, previewHeight, cameraPath === 'exposure');
       ctx.restore();
       ctx.fillStyle = `rgba(3,12,18,${(1 - previewLight) * .84})`;
       ctx.fillRect(preview.x + 4, preview.y + 4, preview.w - 8, preview.h - 8);
       ctx.fillStyle = '#e7f4f4'; ctx.font = `700 ${compact ? 10 : 12}px "Times New Roman", "Tinos", "DFKai-SB", serif`;
-      ctx.fillText(previewHeight > preview.h - 12 ? '感光元件預覽（倒立；近距離裁切）' : '感光元件放大預覽（倒立）', preview.x + 12, preview.y + 19);
+      ctx.fillText(cameraPath === 'viewfinder'
+        ? '觀景窗所見（正立）'
+        : previewHeight > preview.h - 12 ? '感光元件預覽（倒立；近距離裁切）' : '感光元件放大預覽（倒立）', preview.x + 12, preview.y + 19);
       ctx.fillText(`進光 ${relativeLight.toFixed(2)}×`, preview.x + 12, preview.y + preview.h - 11);
     }
 
@@ -5987,10 +6064,12 @@
       const axis = h * .54;
       const normalRetinaDistance = 1.72;
       const retinaDistance = condition === 'myopia' ? 1.88 : (condition === 'hyperopia' ? 1.56 : normalRetinaDistance);
-      let focal = 2.02 - accommodation * .006;
-      if (correction === 'concave') focal += .11;
-      if (correction === 'convex') focal -= .11;
-      const imageDistance = 1 / (1 / focal - 1 / objectDistance);
+      const focal = 2.02 - accommodation * .006;
+      const spectaclePower = correction === 'concave' ? -.05 : correction === 'convex' ? .06 : 0;
+      const spectacleToEye = 1.2;
+      const vergenceAtGlasses = -1 / (objectDistance - spectacleToEye) + spectaclePower;
+      const vergenceAtEye = vergenceAtGlasses / (1 - spectacleToEye * vergenceAtGlasses);
+      const imageDistance = 1 / (1 / focal + vergenceAtEye);
       const focusError = imageDistance - retinaDistance;
       const stateName = condition === 'myopia' ? '近視眼' : (condition === 'hyperopia' ? '遠視眼' : '正視眼');
       const conditionText = condition === 'myopia' ? '眼軸偏長，未矯正時焦點常落在視網膜前' : (condition === 'hyperopia' ? '眼軸偏短，未調節時焦點常落在視網膜後' : '眼軸長度正常');
@@ -5998,12 +6077,12 @@
       setText('eye-object-distance-out', `${objectDistance.toFixed(0)} cm`);
       setText('eye-accommodation-out', `${accommodation.toFixed(0)}%`);
       $('eye-object-badge').innerHTML = `物距 = ${objectDistance.toFixed(0)} cm<small>${objectDistance > 100 ? '遠物入射光近似平行' : '近物入射光較發散'}</small>`;
-      $('eye-power-badge').innerHTML = `等效焦距 = ${focal.toFixed(2)} cm<small>調節越強，焦距越短、會聚力越大</small>`;
+      $('eye-power-badge').innerHTML = `眼球等效焦距 = ${focal.toFixed(2)} cm<small>${correction === 'none' ? '未使用矯正鏡片' : `${correction === 'concave' ? '凹' : '凸'}透鏡：${spectaclePower > 0 ? '+' : ''}${(spectaclePower * 100).toFixed(0)} D`}</small>`;
       $('eye-focus-badge').classList.toggle('warning', Math.abs(focusError) > .055);
       $('eye-focus-badge').innerHTML = Math.abs(focusError) <= .055
         ? '焦點落在視網膜<small>形成清楚倒立實像</small>'
         : `焦點落在視網膜${focusError < 0 ? '前' : '後'}<small>相差 ${Math.abs(focusError).toFixed(2)} cm，影像模糊</small>`;
-      $('eye-state-badge').innerHTML = `${stateName}<small>${conditionText}</small>`;
+      $('eye-state-badge').innerHTML = `${stateName}${correction === 'none' ? '' : `＋${correction === 'concave' ? '凹' : '凸'}透鏡`}<small>${conditionText}</small>`;
 
       const eyeCenter = { x: w * (compact ? .64 : .69), y: axis };
       const eyeRx = Math.min(w * (compact ? .31 : .27), 265);
@@ -6017,7 +6096,7 @@
       const retinaX = backX - 19;
       const focusX = lensX + (imageDistance / retinaDistance) * (retinaX - lensX);
       const distanceFraction = Math.log(objectDistance / 15) / Math.log(200 / 15);
-      const objectX = Math.max(22, frontX - (compact ? 35 : 65) - distanceFraction * (compact ? 55 : 290));
+      const objectX = Math.max(22, frontX - (compact ? 52 : 85) - distanceFraction * (compact ? 48 : 265));
       const objectHeight = Math.min(90, h * .21) * (1 - .5 * distanceFraction);
       const objectTip = { x: objectX, y: axis - objectHeight };
       const focus = { x: focusX, y: axis + objectHeight * .23 };
@@ -6146,7 +6225,7 @@
       ctx.restore();
 
       if (correction !== 'none') {
-        drawCompactLens(ctx, frontX - 30, axis, eyeRy * 1.05, correction === 'concave' ? 'concave' : 'convex', '矯正鏡片');
+        drawCompactLens(ctx, frontX - 30, axis, eyeRy * 1.05, correction === 'concave' ? 'concave' : 'convex', correction === 'concave' ? '凹透鏡' : '凸透鏡');
       }
 
       // A concrete object and its inverted retinal image.
@@ -6172,11 +6251,17 @@
       pupilPoints.forEach((pupilY, index) => {
         const atCornea = { x: corneaX + 2, y: pupilY + (index - 1) * 4 };
         const atLens = { x: lensX, y: pupilY + (index - 1) * 7 };
+        const glassesX = frontX - 30;
+        const atGlasses = { x: glassesX, y: objectTip.y + (atCornea.y - objectTip.y) * (glassesX - objectX) / (atCornea.x - objectX) };
+        if (correction !== 'none') atCornea.y -= (atGlasses.y - axis) * spectaclePower * 3.2;
         const fraction = (retinaX - lensX) / (focusX - lensX);
         const atRetina = { x: retinaX, y: atLens.y + (focus.y - atLens.y) * fraction };
         retinalHits.push(atRetina.y);
         if ($('eye-show-rays').checked) {
-          strokeSegment(ctx, objectTip, atCornea, css('--blue'), 1.7);
+          if (correction !== 'none') {
+            strokeSegment(ctx, objectTip, atGlasses, css('--blue'), 1.7);
+            strokeSegment(ctx, atGlasses, atCornea, css('--blue'), 1.7);
+          } else strokeSegment(ctx, objectTip, atCornea, css('--blue'), 1.7);
           strokeSegment(ctx, atCornea, atLens, '#0ea5e9', 1.9);
           strokeSegment(ctx, atLens, atRetina, css('--green'), 2.2);
         }
@@ -12389,6 +12474,35 @@
 
     $('skater-out').addEventListener('click', () => { $('skater-arms').value = '100'; drawActive(); });
     $('skater-in').addEventListener('click', () => { $('skater-arms').value = '0'; drawActive(); });
+    document.querySelectorAll('.camera-path-mode').forEach(button => {
+      button.addEventListener('click', () => {
+        cameraPath = button.dataset.cameraPath;
+        document.querySelectorAll('.camera-path-mode').forEach(choice => {
+          const active = choice === button;
+          choice.classList.toggle('active', active);
+          choice.setAttribute('aria-pressed', String(active));
+        });
+        drawActive();
+      });
+    });
+    function syncEyeCases() {
+      document.querySelectorAll('.eye-case').forEach(button => {
+        const active = button.dataset.eyeCondition === $('eye-condition').value && button.dataset.eyeCorrection === $('eye-correction').value;
+        button.classList.toggle('active', active);
+        button.setAttribute('aria-pressed', String(active));
+      });
+    }
+    document.querySelectorAll('.eye-case').forEach(button => {
+      button.addEventListener('click', () => {
+        $('eye-condition').value = button.dataset.eyeCondition;
+        $('eye-correction').value = button.dataset.eyeCorrection;
+        $('eye-object-distance').value = '80';
+        $('eye-accommodation').value = '55';
+        syncEyeCases();
+        drawActive();
+      });
+    });
+    for (const id of ['eye-condition', 'eye-correction']) $(id).addEventListener('change', syncEyeCases);
     $('camera-autofocus').addEventListener('click', () => {
       stopCameraTracking();
       const objectMm = number('camera-object') * 1000;
