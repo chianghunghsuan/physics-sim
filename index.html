@@ -438,7 +438,13 @@
     .em-stage canvas { display: block; width: 100%; height: 100%; }
     .em-stage:fullscreen { height: 100vh !important; min-height: 0 !important; }
     .generator-apparatus { display: grid; grid-template-columns: minmax(0, 1.65fr) minmax(0, 1fr); gap: 12px; align-items: start; }
-    .generator-apparatus #generator-three, #generator-phase-canvas { height: min(70vh, 600px); min-height: 520px; }
+    .generator-left { display: grid; grid-template-rows: minmax(0, 1fr) 176px; gap: 10px; height: min(70vh, 600px); min-height: 520px; }
+    .generator-left #generator-three { height: 100%; min-height: 0; }
+    .generator-apparatus #generator-phase-canvas { height: min(70vh, 600px); min-height: 520px; }
+    .generator-circuit { position: relative; border: 1px solid #b9cad0; border-radius: 4px; background: #fff; overflow: hidden; }
+    .generator-circuit-head { position: absolute; z-index: 1; top: 8px; left: 12px; right: 12px; display: flex; justify-content: space-between; align-items: baseline; gap: 8px; font-size: 13px; font-weight: 700; color: #31515c; }
+    .generator-circuit-head span:last-child { text-align: right; color: #a34f39; }
+    #generator-circuit-canvas { height: 100%; min-height: 0; }
     [hidden] { display: none !important; }
     #cyclotron-canvas, #selector-canvas { height: min(76vh, 650px); min-height: 550px; }
     #prism-canvas, #brewster-canvas, #aberration-canvas, #film-canvas {
@@ -548,7 +554,7 @@
       .boundary-setup { grid-template-columns: 1fr 1fr; }
       .boundary-summary { grid-column: 1 / -1; }
       .generator-apparatus { display: block; }
-      .generator-apparatus #generator-three { height: 520px; min-height: 500px; }
+      .generator-left { grid-template-rows: 500px 176px; height: auto; min-height: 0; }
       #generator-phase-canvas { height: 330px; min-height: 330px; }
     }
     @media (max-width: 640px) {
@@ -577,7 +583,7 @@
       #brake-canvas { height: 860px; min-height: 810px; }
       #motor-canvas { height: 570px; min-height: 540px; }
       .em-stage { height: 380px; min-height: 360px; }
-      .generator-apparatus #generator-three { height: 490px; min-height: 470px; }
+      .generator-left { grid-template-rows: 460px 176px; }
       #generator-phase-canvas { height: 440px; min-height: 440px; }
       #cyclotron-canvas, #selector-canvas { height: 590px; min-height: 550px; }
       #prism-canvas, #brewster-canvas, #aberration-canvas, #film-canvas { height: 540px; min-height: 500px; }
@@ -1975,7 +1981,13 @@
           <div class="presets" role="group" aria-label="發電機相位停格"><button type="button" class="preset gen-phase-jump" data-phase="0" aria-pressed="false"><span data-latex="\theta=0^\circ"></span> 磁通正最大</button><button type="button" class="preset gen-phase-jump" data-phase="1" aria-pressed="false"><span data-latex="\theta=90^\circ"></span> 電壓正最大</button><button type="button" class="preset gen-phase-jump" data-phase="2" aria-pressed="false"><span data-latex="\theta=180^\circ"></span> 磁通負最大</button><button type="button" class="preset gen-phase-jump" data-phase="3" aria-pressed="false"><span data-latex="\theta=270^\circ"></span> 電壓負最大</button></div>
           <div class="plot-wrap" id="generator-diagram" hidden><canvas id="generator-canvas" role="img" aria-label="磁極間旋轉線圈、兩個滑環、電刷和負載燈；下方同步顯示磁通量與感應電動勢的時間曲線。"></canvas></div>
           <div class="generator-apparatus" id="generator-apparatus">
-            <div class="em-stage" id="generator-three" title="拖曳旋轉視角；滾輪縮放" aria-label="可拖曳旋轉檢視的發電機立體裝置：磁極、轉子線圈、兩個滑環、電刷與負載燈。"></div>
+            <div class="generator-left">
+              <div class="em-stage" id="generator-three" title="拖曳旋轉視角；滾輪縮放" aria-label="可拖曳旋轉檢視的發電機立體裝置：磁極、轉子線圈、兩個滑環、電刷與負載燈。"></div>
+              <div class="generator-circuit">
+                <div class="generator-circuit-head"><span>外部電路 <span data-latex="I=\varepsilon/R"></span></span><span id="generator-circuit-current">0.00 A</span></div>
+                <canvas id="generator-circuit-canvas" role="img" aria-label="發電機的兩個固定電刷、電流表與串聯燈泡；橘色粒子代表傳統電流，正負半週時方向反轉。"></canvas>
+              </div>
+            </div>
             <div class="plot-wrap"><canvas id="generator-phase-canvas" role="img" aria-label="沿轉軸觀看線圈旋轉和磁場方向，下方兩圖同步顯示磁通鏈結與感應電壓；共用垂直虛線標出目前轉角。"></canvas></div>
           </div>
           <div class="controls"><div class="control"><label for="gen-field">磁場 <span data-latex="B"></span>：<span id="gen-field-out">0.20 T</span></label><input id="gen-field" type="range" min="0" max="0.6" step="0.01" value="0.2"></div><div class="control"><label for="gen-turns">線圈匝數 <span data-latex="N"></span>：<span id="gen-turns-out">200</span></label><input id="gen-turns" type="range" min="20" max="400" step="10" value="200"></div><div class="control"><label for="gen-rpm">轉速：<span id="gen-rpm-out">30 rpm</span></label><input id="gen-rpm" type="range" min="0" max="120" step="1" value="30"></div><div class="control"><label for="gen-resistance">負載電阻 <span data-latex="R"></span>：<span id="gen-resistance-out">10 <span data-latex="\Omega"></span></span></label><input id="gen-resistance" type="range" min="2" max="40" step="1" value="10"></div></div>
@@ -9605,7 +9617,66 @@
         showCurrent: $('gen-show-current').checked, showElectrons: false,
         showField: $('gen-show-field').checked, showForce: false
       });
-      if (emRenderView.generator === 'apparatus') drawGeneratorPhase(theta, flux, fluxMax, emf, emfMax, rpm);
+      if (emRenderView.generator === 'apparatus') {
+        drawGeneratorPhase(theta, flux, fluxMax, emf, emfMax, rpm);
+        drawGeneratorCircuit(emf / resistance);
+      }
+    }
+
+    function drawGeneratorCircuit(current) {
+      const { ctx, w, h } = resizeCanvas($('generator-circuit-canvas'));
+      if (!w || !h) return;
+      const ax = w * .15, bx = w * .85, meterX = w * .39, lampX = w * .66;
+      const topY = h * .34, bottomY = h * .69;
+      const compact = w < 500;
+      const lit = Math.min(1, Math.abs(current) / .25);
+      setText('generator-circuit-current', `${current > .005 ? '+' : ''}${current.toFixed(2)} A`);
+      ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, w, h);
+      ctx.strokeStyle = '#41677b'; ctx.lineWidth = 2.4; ctx.lineCap = 'round';
+      ctx.beginPath(); ctx.moveTo(ax, topY); ctx.lineTo(ax, bottomY);
+      ctx.lineTo(bx, bottomY); ctx.lineTo(bx, topY); ctx.stroke();
+      for (const [x, name] of [[ax, 'A'], [bx, 'B']]) {
+        ctx.fillStyle = '#bd774b'; ctx.strokeStyle = '#6d4c39'; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.arc(x, topY, 5, 0, 2 * Math.PI); ctx.fill(); ctx.stroke();
+        ctx.fillStyle = '#52636d'; ctx.font = '700 12px "Times New Roman", "Tinos", serif';
+        ctx.textAlign = 'center'; ctx.fillText(name, x, topY - 12);
+      }
+      if (Math.abs(current) > .005) {
+        ctx.fillStyle = '#ae513b'; ctx.font = '700 17px "Times New Roman", "Tinos", serif';
+        ctx.fillText(current > 0 ? '+' : '−', ax - 16, topY + 5);
+        ctx.fillText(current > 0 ? '−' : '+', bx + 16, topY + 5);
+        const direction = Math.sign(current);
+        const middle = (meterX + lampX) / 2;
+        drawArrow(ctx, middle - direction * 16, bottomY - 17,
+          middle + direction * 16, bottomY - 17, '#b75a39', .65);
+      }
+      ctx.fillStyle = '#fff'; ctx.strokeStyle = '#405867'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(meterX, bottomY, compact ? 15 : 17, 0, 2 * Math.PI); ctx.fill(); ctx.stroke();
+      ctx.fillStyle = '#354b58'; ctx.font = `700 ${compact ? 14 : 16}px "Times New Roman", "Tinos", serif`;
+      ctx.fillText('A', meterX, bottomY + 5);
+      ctx.save(); ctx.shadowColor = '#f4bb62'; ctx.shadowBlur = 26 * lit; ctx.fillStyle = `rgba(253,209,118,${.12 + .6 * lit})`;
+      ctx.beginPath(); ctx.arc(lampX, bottomY, compact ? 17 : 20, 0, 2 * Math.PI); ctx.fill(); ctx.restore();
+      ctx.fillStyle = '#fff'; ctx.strokeStyle = '#6d5c43'; ctx.lineWidth = 2;
+      const bulbR = compact ? 14 : 16;
+      ctx.beginPath(); ctx.arc(lampX, bottomY, bulbR, 0, 2 * Math.PI); ctx.fill(); ctx.stroke();
+      ctx.strokeStyle = lit > .03 ? '#be7532' : '#677980'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(lampX - 6, bottomY - 6); ctx.lineTo(lampX + 6, bottomY + 6);
+      ctx.moveTo(lampX + 6, bottomY - 6); ctx.lineTo(lampX - 6, bottomY + 6); ctx.stroke();
+      if ($('gen-show-current').checked && Math.abs(current) > .005) {
+        const vertical = bottomY - topY;
+        const horizontal = bx - ax;
+        const length = 2 * vertical + horizontal;
+        const motion = time * (.22 + .45 * Math.min(1, Math.abs(current) / .25)) * Math.sign(current);
+        ctx.fillStyle = '#df7944';
+        for (let i = 0; i < 14; i += 1) {
+          const along = positiveModulo(i / 14 + motion, 1) * length;
+          const x = along < vertical ? ax : along < vertical + horizontal ? ax + along - vertical : bx;
+          const y = along < vertical ? topY + along : along < vertical + horizontal ? bottomY : bottomY - (along - vertical - horizontal);
+          ctx.beginPath(); ctx.arc(x, y, compact ? 2.6 : 3, 0, 2 * Math.PI); ctx.fill();
+        }
+      }
+      ctx.fillStyle = '#5e747d'; ctx.font = `12px "Times New Roman", "Tinos", "DFKai-SB", serif`;
+      ctx.fillText('電流表', meterX, h - 13); ctx.fillText('燈泡', lampX, h - 13);
     }
 
     function drawGeneratorPhase(theta, flux, fluxMax, emf, emfMax, rpm) {
