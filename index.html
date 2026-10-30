@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>高中物理現象模擬器</title>
+  <title>科學現象實驗室</title>
   <link rel="stylesheet" href="vendor/katex.min.css">
   <style>
     @font-face {
@@ -79,16 +79,37 @@
       box-shadow: 0 14px 34px rgba(15, 23, 42, .09);
     }
     header {
-      padding: 24px 30px 18px;
+      padding: 18px 30px;
       border-bottom: 1px solid var(--line);
-      background: linear-gradient(180deg, #ffffff, #f7fafc);
+      background: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
     }
     h1 {
       margin: 0;
-      font-size: clamp(24px, 3vw, 34px);
+      font-size: 26px;
       line-height: 1.35;
       letter-spacing: 0;
     }
+    .site-nav { display: flex; flex-wrap: wrap; gap: 4px; }
+    .site-nav button { background: transparent; color: var(--muted); border-radius: 4px; padding: 8px 15px; }
+    .site-nav button.active { color: var(--accent); background: var(--accent-soft); }
+    .site-nav button:hover, .directory-link:hover { background: #e9f1f2; color: #075e56; }
+    .directory-title { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+    .directory-title h2 { font-size: 22px; }
+    .directory-search { width: min(310px, 100%); padding: 10px 12px; border: 1px solid var(--line); border-radius: 6px; background: white; color: var(--ink); }
+    .directory-group { padding: 18px 0; border-top: 1px solid var(--line); }
+    .directory-group h3 { font-size: 18px; margin: 0 0 10px; }
+    .directory-list { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+    .directory-link { width: 100%; text-align: left; color: var(--ink); background: var(--soft); border: 1px solid var(--line); border-radius: 6px; font-weight: 400; min-height: 48px; }
+    .directory-link::after { content: '›'; float: right; color: var(--accent); font-family: Arial, sans-serif; }
+    .directory-empty { color: var(--muted); }
+    .chemistry-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+    .chemistry-list span { padding: 8px 12px; border: 1px solid var(--line); border-radius: 6px; background: var(--soft); }
+    .chemistry-note { color: var(--muted); margin: 0; }
+    .topbar[hidden], #catalog[hidden], #chemistry-view[hidden] { display: none; }
     h2 {
       margin: 0;
       font-size: 22px;
@@ -558,6 +579,13 @@
       #generator-phase-canvas { height: 330px; min-height: 330px; }
     }
     @media (max-width: 640px) {
+      header { align-items: flex-start; flex-direction: column; gap: 8px; }
+      h1 { font-size: 23px; }
+      .site-nav { width: 100%; }
+      .site-nav button { flex: 1; }
+      .directory-title { align-items: stretch; flex-direction: column; }
+      .directory-search { width: 100%; }
+      .directory-list { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       .em-stage canvas.commutator-inset { width: 170px; right: 8px; bottom: 8px; }
       main { width: calc(100% - 16px); margin-top: 8px; }
       header, .content { padding-left: 18px; padding-right: 18px; }
@@ -600,12 +628,29 @@
 <body>
   <main>
     <header>
-      <h1>高中物理現象模擬器</h1>
-      <p class="subtitle">把課堂上最需要「看見過程」的物理現象放在同一頁：波動、光學、力學、電磁學與行星運動都能調參數、暫停與慢速播放，方便在電子白板上逐步打開重點。</p>
+      <h1>科學現象實驗室</h1>
+      <nav class="site-nav" aria-label="網站主導覽">
+        <button type="button" data-site-view="catalog" class="active" aria-current="page">總覽</button>
+        <button type="button" data-site-view="physics">物理</button>
+        <button type="button" data-site-view="chemistry">化學</button>
+      </nav>
     </header>
 
     <div class="content">
-      <div class="topbar">
+      <section id="catalog" aria-label="物理實驗總覽">
+        <div class="directory-title">
+          <h2>互動實驗</h2>
+          <input id="directory-search" class="directory-search" type="search" placeholder="搜尋現象或實驗" aria-label="搜尋實驗">
+        </div>
+        <div id="directory-groups"></div>
+        <p id="directory-empty" class="directory-empty" hidden>找不到符合的實驗。</p>
+      </section>
+      <section id="chemistry-view" hidden aria-label="化學實驗">
+        <h2>化學</h2>
+        <p class="chemistry-note">化學互動實驗尚在規劃中。</p>
+        <div class="chemistry-list" aria-label="預定主題"><span>電解反應</span><span>氣體製備</span></div>
+      </section>
+      <div class="topbar" hidden>
         <div class="tabs" role="tablist" aria-label="物理主題">
           <button type="button" class="tab active" data-category="wave" role="tab" aria-selected="true">波動</button>
           <button type="button" class="tab" data-category="refraction" role="tab" aria-selected="false">折射</button>
@@ -627,7 +672,7 @@
         </div>
       </div>
 
-      <section id="panel-standing" class="panel active" role="tabpanel">
+      <section id="panel-standing" class="panel" role="tabpanel">
         <div class="module-head">
           <div>
             <h2>駐波疊加</h2>
@@ -2159,6 +2204,7 @@
       electromagnetism: [['brake', '磁煞車'], ['motor', '直流馬達'], ['generator', '交流發電機'], ['bell', '自斷電電鈴'], ['selector', '速度選擇器'], ['spectrometer', '質譜儀'], ['cyclotron', '粒子加速器（迴旋）']],
       astronomy: [['retrograde', '行星逆行']]
     };
+    const categoryNames = { wave: '波動', refraction: '折射', physical: '物理光學', imaging: '成像', mechanics: '力學', electromagnetism: '電磁', astronomy: '天文' };
     const lastLabByCategory = {};
     let activeCategory = 'wave';
     let mirrorLesson = 'image';
@@ -11895,6 +11941,50 @@
       requestAnimationFrame(drawActive);
     }
 
+    function setSiteView(view, updateUrl = true) {
+      const labOpen = view === 'physics';
+      $('catalog').hidden = view !== 'catalog';
+      $('chemistry-view').hidden = view !== 'chemistry';
+      document.querySelector('.topbar').hidden = !labOpen;
+      document.querySelectorAll('.panel').forEach(panel => panel.classList.toggle('active', labOpen && panel.id === `panel-${activeModule}`));
+      document.querySelectorAll('[data-site-view]').forEach(button => {
+        const active = button.dataset.siteView === view;
+        button.classList.toggle('active', active);
+        if (active) button.setAttribute('aria-current', 'page');
+        else button.removeAttribute('aria-current');
+      });
+      if (updateUrl) history.replaceState(null, '', `${location.pathname}${location.search}#${view === 'physics' ? `lab=${lastLabByCategory[activeCategory] || categoryLabs[activeCategory][0][0]}` : view}`);
+    }
+
+    function renderDirectory(query = '') {
+      const needle = query.trim().toLocaleLowerCase();
+      const groups = $('directory-groups');
+      groups.replaceChildren();
+      let matches = 0;
+      Object.entries(categoryLabs).forEach(([category, labs]) => {
+        const visible = labs.filter(([, label]) => !needle || `${categoryNames[category]} ${label}`.toLocaleLowerCase().includes(needle));
+        if (!visible.length) return;
+        matches += visible.length;
+        const section = document.createElement('section');
+        section.className = 'directory-group';
+        const title = document.createElement('h3');
+        title.textContent = categoryNames[category];
+        const list = document.createElement('div');
+        list.className = 'directory-list';
+        visible.forEach(([id, label]) => {
+          const button = document.createElement('button');
+          button.type = 'button';
+          button.className = 'directory-link';
+          button.textContent = label;
+          button.addEventListener('click', () => navigateLab(id));
+          list.append(button);
+        });
+        section.append(title, list);
+        groups.append(section);
+      });
+      $('directory-empty').hidden = matches > 0;
+    }
+
     function navigateLab(lab, updateUrl = true) {
       const category = Object.keys(categoryLabs).find(key => categoryLabs[key].some(([id]) => id === lab));
       if (!category) return;
@@ -11921,6 +12011,7 @@
       else if (category === 'electromagnetism') { setTab('electromagnetism'); setElectromagnetismMode(lab); }
       else if (lab === 'refraction' || lab === 'atmosphere') { setTab('light'); setLightMode(lab === 'refraction' ? 'refraction' : 'scattering'); }
       else setTab(lab);
+      setSiteView('physics', false);
       if (updateUrl) history.replaceState(null, '', `${location.pathname}${location.search}#lab=${lab}`);
     }
 
@@ -12085,6 +12176,15 @@
       requestAnimationFrame(drawActive);
     }
 
+    document.querySelectorAll('[data-site-view]').forEach(button => {
+      button.addEventListener('click', () => {
+        if (button.dataset.siteView === 'physics') navigateLab(lastLabByCategory[activeCategory] || categoryLabs[activeCategory][0][0]);
+        else setSiteView(button.dataset.siteView);
+      });
+    });
+    $('directory-search').addEventListener('input', event => renderDirectory(event.target.value));
+    renderDirectory();
+
     document.querySelectorAll('.tab').forEach(btn => {
       btn.addEventListener('click', () => {
         const category = btn.dataset.category;
@@ -12092,7 +12192,10 @@
       });
     });
     $('lab-select').addEventListener('change', event => navigateLab(event.target.value));
-    window.addEventListener('hashchange', () => navigateLab(location.hash.replace(/^#lab=/, ''), false));
+    window.addEventListener('hashchange', () => {
+      if (location.hash.startsWith('#lab=')) navigateLab(location.hash.slice(5), false);
+      else setSiteView(location.hash === '#chemistry' ? 'chemistry' : 'catalog', false);
+    });
 
     document.querySelectorAll('.optics-mode').forEach(btn => {
       btn.addEventListener('click', () => setOpticsMode(btn.dataset.optics));
@@ -12570,7 +12673,8 @@
       requestAnimationFrame(frame);
     }
 
-    navigateLab(location.hash.replace(/^#lab=/, '') || 'standing', false);
+    if (location.hash.startsWith('#lab=')) navigateLab(location.hash.slice(5), false);
+    else setSiteView(location.hash === '#chemistry' ? 'chemistry' : 'catalog', false);
     drawActive();
     requestAnimationFrame(frame);
   </script>
