@@ -1327,7 +1327,7 @@
           <div class="module-head">
             <div>
               <h2>複式顯微鏡成像</h2>
-              <p class="module-copy">依序追蹤標本、物鏡形成的中間像，以及目鏡形成的最終像。調整鏡筒長度與焦距，可比較虛像、實像及正倒立的變化。</p>
+              <p class="module-copy">依序追蹤標本、物鏡形成的中間像，以及目鏡形成的最終像。標本位置在圖中展開顯示；下方 F 的方向與大小會隨兩級放大率改變。</p>
             </div>
             <div class="legend" aria-label="顯微鏡圖例">
               <span class="blue"><i class="dot"></i>物鏡前光線</span>
@@ -1371,7 +1371,7 @@
         </div>
 
         <div id="optics-view-camera" class="optics-view">
-          <div class="module-head"><div><h2>相機對焦：鏡頭移動、感光元件固定</h2><p class="module-copy">人靠近時，依薄透鏡公式算出的像距增加；鏡頭需往物體方向移動，讓實像重新落在固定的感光元件上。左右距離與像高採不同圖示比例，數值計算仍用相同單位。</p></div></div>
+          <div class="module-head"><div><h2>相機對焦：鏡頭移動、感光元件固定</h2><p class="module-copy">人靠近時，鏡頭需往物體方向移動才能重新對焦。固定快門與感光度時，光圈開口越大，進光量越多；失焦光斑也會越大。圖中距離與像高採不同示意比例。</p></div></div>
           <div class="values"><div class="badge" id="camera-image-distance">理論像距</div><div class="badge" id="camera-lens-position">鏡頭到感光元件</div><div class="badge" id="camera-blur">散焦圈直徑</div><div class="badge" id="camera-status">對焦狀態</div></div>
           <div class="plot-wrap"><canvas id="camera-canvas" role="img" aria-label="剖面相機內固定的感光元件與可移動鏡頭；多條光線從人物頂端通過光圈，在焦平面會聚或於感光元件形成散焦圈。"></canvas></div>
           <div class="controls"><div class="control"><label for="camera-object">人物距鏡頭：<span id="camera-object-out">2.00 m</span></label><input id="camera-object" type="range" min="0.35" max="5" step="0.005" value="2"></div><div class="control"><label for="camera-focus">鏡頭到感光元件：<span id="camera-focus-out">51.3 mm</span></label><input id="camera-focus" type="range" min="50" max="59" step="0.1" value="51.3"></div><div class="control"><label for="camera-aperture">光圈直徑：<span id="camera-aperture-out">20 mm</span></label><input id="camera-aperture" type="range" min="5" max="28" step="1" value="20"></div></div>
@@ -1382,7 +1382,7 @@
           <div class="module-head">
             <div>
               <h2>眼睛、晶狀體與視網膜成像</h2>
-              <p class="module-copy">光先經角膜折射，穿過瞳孔，再由晶狀體調節會聚能力；清楚視物時，光線必須正好在視網膜上形成倒立實像。</p>
+              <p class="module-copy">改變觀看距離時，物體在左側移動、視角及入射光束跟著改變；晶狀體的調節決定光線是否恰好在視網膜上會聚。</p>
             </div>
             <div class="legend" aria-label="眼睛成像圖例">
               <span class="blue"><i class="dot"></i>入射光</span>
@@ -5596,10 +5596,11 @@
       const virtual = finalFinite && di2 < 0;
       const compact = w < 620;
       const axis = h * .37;
-      const objectiveX = w * (compact ? .27 : .30);
-      const eyepieceX = w * (compact ? .68 : .69);
+      const objectiveX = w * (compact ? .27 : .28);
+      const eyepieceX = objectiveX + w * (.33 + .13 * (length - 12) / 18);
       const scale = (eyepieceX - objectiveX) / length;
-      const objectX = objectiveX - do1 * scale;
+      const objectFraction = (do1 - 1.2) / 4.8;
+      const objectX = objectiveX - w * (.06 + .17 * objectFraction);
       const image1X = objectiveX + di1 * scale;
       const objectHeight = firstFinite ? Math.min(compact ? 30 : 47, 68 / Math.max(1, Math.abs(m1))) : 30;
       const image1Height = m1 * objectHeight;
@@ -5617,10 +5618,10 @@
         : '中間像在無限遠<small>標本位於物鏡焦點</small>';
       $('micro-eye-object').innerHTML = secondValid
         ? `目鏡物距 = ${do2.toFixed(1)} cm<small>中間像在目鏡${do2 < f2 ? '焦內' : do2 > f2 ? '焦外' : '焦點'}</small>`
-        : '目鏡未接到中間實像<small>調整標本距離或鏡筒長度</small>';
+        : '中間實像不在兩鏡間<small>目前只顯示物鏡階段的光路</small>';
       $('micro-final').innerHTML = finalFinite
         ? `最終${virtual ? '虛' : '實'}像距 = ${di2.toFixed(1)} cm<small>${virtual ? '目鏡左側；反向延長線交會' : '目鏡右側；實際光線交會'}</small>`
-        : secondValid ? '最終像在無限遠<small>中間像位於目鏡焦點附近</small>' : '最終像未形成<small>先讓中間實像落在兩鏡之間</small>';
+        : secondValid ? '最終像在無限遠<small>中間像位於目鏡焦點附近</small>' : '未顯示目鏡成像<small>本圖聚焦常規的兩鏡間中間實像</small>';
       $('micro-mag').innerHTML = finalFinite
         ? `總放大率 = ${Math.abs(totalM).toFixed(1)}×<small>相對原標本${totalM < 0 ? '倒立' : '正立'}，${virtual ? '虛像' : '實像'}</small>`
         : '總放大率未定<small>改變參數以形成有限距離的像</small>';
@@ -5634,15 +5635,16 @@
       ctx.strokeStyle = '#cbd5dc'; ctx.lineWidth = 1; ctx.setLineDash([5, 5]);
       ctx.beginPath(); ctx.moveTo(16, axis); ctx.lineTo(w - 16, axis); ctx.stroke(); ctx.setLineDash([]);
       ctx.fillStyle = '#475569'; ctx.font = `700 ${compact ? 12 : 14}px ${font}`;
-      ctx.textAlign = 'left'; ctx.fillText('光沿主軸向右傳播', 18, 26);
+      ctx.textAlign = 'left'; ctx.fillText(compact ? '標本移動 · 兩次成像' : '光沿主軸向右傳播 · 標本距離展開顯示', 18, 26);
 
       ctx.save();
       ctx.beginPath(); ctx.rect(0, 32, w, diagramBottom - 32); ctx.clip();
       if ($('micro-show-objective').checked) {
         for (const lensY of [axis - 25, axis + 1, axis + 26]) {
           const atLens = { x: objectiveX, y: lensY };
-          const slopeIn = (lensY - objectTip.y) / (objectiveX - objectX);
-          const slopeOut = slopeIn - (lensY - axis) / (f1 * scale);
+          const slopeOut = firstFinite
+            ? (image1Tip.y - lensY) / (image1X - objectiveX)
+            : objectHeight / (f1 * scale);
           const endX = secondValid ? image1X : eyepieceX - 7;
           strokeSegment(ctx, objectTip, atLens, css('--blue'), 1.8);
           strokeSegment(ctx, atLens, { x: endX, y: lensY + slopeOut * (endX - objectiveX) }, css('--green'), 2);
@@ -5689,9 +5691,9 @@
       const previewTop = diagramBottom + 13;
       const column = w / 3;
       const stages = [
-        { title: '標本', detail: '正立 · 物體', color: css('--orange'), sign: 1, ready: true },
-        { title: '物鏡形成', detail: firstFinite ? `${m1 < 0 ? '倒立' : '正立'} · ${di1 > 0 ? '實像' : '虛像'}` : '像在無限遠', color: css('--green'), sign: m1, ready: firstFinite },
-        { title: '目鏡形成', detail: finalFinite ? `${totalM < 0 ? '倒立' : '正立'} · ${virtual ? '虛像' : '實像'}` : '未形成有限像', color: css('--image'), sign: totalM, ready: finalFinite }
+        { title: '標本', detail: '正立 · 物體', color: css('--orange'), sign: 1, magnification: 1, ready: true },
+        { title: '物鏡形成', detail: firstFinite ? `${m1 < 0 ? '倒立' : '正立'} · ${di1 > 0 ? '實像' : '虛像'}` : '像在無限遠', color: css('--green'), sign: m1, magnification: m1, ready: firstFinite },
+        { title: '目鏡形成', detail: finalFinite ? `${totalM < 0 ? '倒立' : '正立'} · ${virtual ? '虛像' : '實像'}` : '未形成有限像', color: css('--image'), sign: totalM, magnification: totalM, ready: finalFinite }
       ];
       stages.forEach((stage, index) => {
         const left = index * column;
@@ -5705,7 +5707,8 @@
         if (stage.ready) {
           ctx.save(); ctx.translate(left + column / 2, iconY + (compact ? 32 : 42));
           if (stage.sign < 0) ctx.rotate(Math.PI);
-          ctx.fillStyle = stage.color; ctx.font = `700 ${compact ? 55 : 70}px Arial, sans-serif`;
+          const iconSize = Math.max(28, Math.min(compact ? 70 : 88, 34 + 9 * Math.log2(Math.abs(stage.magnification) + 1)));
+          ctx.fillStyle = stage.color; ctx.font = `700 ${iconSize}px Arial, sans-serif`;
           ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText('F', 0, 0); ctx.restore();
         } else {
           ctx.fillStyle = '#94a3b8'; ctx.font = `700 28px ${font}`; ctx.fillText('—', left + column / 2, iconY + 48);
@@ -5771,13 +5774,15 @@
       const objectMm = objectMeters * 1000;
       const imageMm = focal * objectMm / (objectMm - focal);
       const circleMm = aperture * Math.abs(1 - sensorDistance / imageMm);
+      const relativeLight = (aperture / 20) ** 2;
+      const previewLight = .12 + .88 * (aperture / 28) ** 2;
       const focused = circleMm < .12;
       setText('camera-object-out', `${objectMeters.toFixed(2)} m`);
       setText('camera-focus-out', `${sensorDistance.toFixed(1)} mm`);
       setText('camera-aperture-out', `${aperture} mm`);
       $('camera-image-distance').innerHTML = `理論像距 ${imageMm.toFixed(2)} mm<small>${math('\\frac{1}{f}=\\frac{1}{d_o}+\\frac{1}{d_i}')}；${math('f=50\\,\\mathrm{mm}')}</small>`;
       $('camera-lens-position').innerHTML = `鏡頭距感光元件 ${sensorDistance.toFixed(1)} mm<small>感光元件固定，鏡頭沿光軸移動</small>`;
-      $('camera-blur').innerHTML = `散焦圈 ${circleMm.toFixed(2)} mm<small>光圈越大，同樣離焦量越顯著</small>`;
+      $('camera-blur').innerHTML = `散焦圈 ${circleMm.toFixed(2)} mm<small>相對進光 ${relativeLight.toFixed(2)}× · f/${(focal / aperture).toFixed(1)}</small>`;
       $('camera-status').innerHTML = focused
         ? cameraTracking
           ? `追蹤對焦中<small>人物${Math.sin(cameraTrackPhase) >= 0 ? '靠近；鏡頭遠離感光元件' : '遠離；鏡頭靠近感光元件'}</small>`
@@ -5847,15 +5852,16 @@
         ctx.beginPath(); ctx.moveTo(imageX, bodyTop + 24); ctx.lineTo(imageX, bodyBottom - 24); ctx.stroke(); ctx.restore();
       }
       const hits = [];
-      [-1, -.5, 0, .5, 1].forEach((fraction, index) => {
+      const rayCount = aperture < 10 ? 3 : aperture < 21 ? 5 : 7;
+      Array.from({ length: rayCount }, (_, index) => -1 + 2 * index / (rayCount - 1)).forEach((fraction, index) => {
         const atLens = { x: lensX, y: axis + fraction * aperturePx };
         const t = (sensorX - lensX) / (imageX - lensX);
         const hit = { x: sensorX, y: atLens.y + (imageTip.y - atLens.y) * t };
         hits.push(hit);
-        ctx.strokeStyle = index === 2 ? '#1c7293' : 'rgba(39,111,146,.68)';
-        ctx.lineWidth = index === 2 ? 2.6 : 1.8; ctx.beginPath();
+        ctx.strokeStyle = index === Math.floor(rayCount / 2) ? '#1c7293' : 'rgba(39,111,146,.68)';
+        ctx.lineWidth = index === Math.floor(rayCount / 2) ? 2.6 : 1.8; ctx.beginPath();
         ctx.moveTo(head.x, head.y); ctx.lineTo(atLens.x, atLens.y); ctx.stroke();
-        ctx.strokeStyle = index === 2 ? '#b85044' : 'rgba(185,80,68,.72)';
+        ctx.strokeStyle = index === Math.floor(rayCount / 2) ? '#b85044' : 'rgba(185,80,68,.72)';
         ctx.beginPath(); ctx.moveTo(atLens.x, atLens.y); ctx.lineTo(hit.x, hit.y); ctx.stroke();
         const travel = positiveModulo(time * .65 + index * .2, 1);
         const start = travel < .55 ? head : atLens;
@@ -5871,11 +5877,11 @@
       ctx.strokeStyle = focused ? '#10817d' : '#b64a43'; ctx.lineWidth = 3;
       ctx.beginPath(); ctx.moveTo(sensorX + 12, hits[0].y); ctx.lineTo(sensorX + 12, hits.at(-1).y); ctx.stroke();
       ctx.fillStyle = focused ? '#0e807b' : '#b64a43';
-      ctx.beginPath(); ctx.arc(sensorX, hits[2].y, Math.max(3, hitRange / 2), 0, 2 * Math.PI); ctx.globalAlpha = .25; ctx.fill(); ctx.globalAlpha = 1;
-      const sensorFigureHeight = Math.max(8, Math.abs(hits[2].y - axis));
+      ctx.beginPath(); ctx.arc(sensorX, hits[Math.floor(rayCount / 2)].y, Math.max(3, hitRange / 2), 0, 2 * Math.PI); ctx.globalAlpha = .25; ctx.fill(); ctx.globalAlpha = 1;
+      const sensorFigureHeight = Math.max(8, Math.abs(hits[Math.floor(rayCount / 2)].y - axis));
       ctx.save();
       ctx.beginPath(); ctx.rect(sensorX - 40, bodyTop + 14, 44, bodyBottom - bodyTop - 28); ctx.clip();
-      ctx.globalAlpha = focused ? .82 : .5;
+      ctx.globalAlpha = (focused ? .82 : .5) * previewLight;
       ctx.filter = `blur(${Math.min(7, circleMm * 8).toFixed(1)}px)`;
       drawCameraPerson(ctx, sensorX - 9, axis, sensorFigureHeight, true);
       ctx.restore();
@@ -5944,8 +5950,11 @@
       ctx.filter = `blur(${Math.min(14, circleMm * (compact ? 9 : 12)).toFixed(1)}px)`;
       drawCameraPerson(ctx, previewX, preview.y + preview.h / 2 - previewHeight / 2, previewHeight, true);
       ctx.restore();
+      ctx.fillStyle = `rgba(3,12,18,${(1 - previewLight) * .84})`;
+      ctx.fillRect(preview.x + 4, preview.y + 4, preview.w - 8, preview.h - 8);
       ctx.fillStyle = '#e7f4f4'; ctx.font = `700 ${compact ? 10 : 12}px "Times New Roman", "Tinos", "DFKai-SB", serif`;
       ctx.fillText(previewHeight > preview.h - 12 ? '感光元件預覽（倒立；近距離裁切）' : '感光元件放大預覽（倒立）', preview.x + 12, preview.y + 19);
+      ctx.fillText(`進光 ${relativeLight.toFixed(2)}×`, preview.x + 12, preview.y + preview.h - 11);
     }
 
     function drawEyeLeader(ctx, anchor, labelPoint, label, align = 'left') {
@@ -6007,8 +6016,9 @@
       const lensX = frontX + eyeRx * .43;
       const retinaX = backX - 19;
       const focusX = lensX + (imageDistance / retinaDistance) * (retinaX - lensX);
-      const objectX = Math.max(30, frontX - (compact ? 72 : 175));
-      const objectHeight = Math.min(82, h * .2);
+      const distanceFraction = Math.log(objectDistance / 15) / Math.log(200 / 15);
+      const objectX = Math.max(22, frontX - (compact ? 35 : 65) - distanceFraction * (compact ? 55 : 290));
+      const objectHeight = Math.min(90, h * .21) * (1 - .5 * distanceFraction);
       const objectTip = { x: objectX, y: axis - objectHeight };
       const focus = { x: focusX, y: axis + objectHeight * .23 };
 
