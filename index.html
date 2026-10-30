@@ -1793,7 +1793,7 @@
             <p><strong>參考：</strong><a href="https://pr.ntnu.edu.tw/ntnunews/index.php?id=14816&amp;mode=data&amp;type_id=74" target="_blank" rel="noopener noreferrer">臺師大物理系解說</a> · <a href="https://www.astro.yale.edu/vdbosch/Physical_Processes_in_Astronomy.pdf" target="_blank" rel="noopener noreferrer">耶魯大學天文物理講義</a> · <a href="https://scied.ucar.edu/activity/blue-skies-and-red-sunsets" target="_blank" rel="noopener noreferrer">UCAR 藍天與夕陽實驗</a></p>
             <p><strong>星光：</strong>亂流折射率變化讓固定瞳孔收到的光量起伏；微弱星點在示意的偵測門檻以下可暫時看不見。單條光線偏出瞳孔只是直觀模型，實際閃爍還涉及波前聚焦與散焦，不能以圖上的百分比預測某一顆星。</p>
             <p><strong>真實影像與界線：</strong><a href="https://www.noaa.gov/jetstream/clouds/color-of-clouds" target="_blank" rel="noopener noreferrer">NOAA 雲色照片</a>展示雲會反映其所受的照明；<a href="https://www.weather.gov/lub/news-20080827volcanicsunsets" target="_blank" rel="noopener noreferrer">美國氣象局紫色晚霞照片</a>與氣膠條件有關。綠色暴風天空與大量冰水雲的關聯仍有爭議，<a href="https://www.nssl.noaa.gov/education/svrwx101/hail/faq/" target="_blank" rel="noopener noreferrer">NOAA 並未認定單一成因</a>，顏色也不是龍捲風判據。此頁只比較入射照明，不宣稱由它預測雲色。</p>
-            <p><a href="https://science.nasa.gov/earth/earth-observatory/crepuscular-rays-and-light-scattering-150090/" target="_blank" rel="noopener noreferrer">NASA 夕陽與雲光實拍</a> · <a href="https://starchild.gsfc.nasa.gov/docs/StarChild/questions/question26.html" target="_blank" rel="noopener noreferrer">NASA 星光閃爍說明</a></p>
+            <p><a href="https://science.nasa.gov/earth/earth-observatory/crepuscular-rays-and-light-scattering-150090/" target="_blank" rel="noopener noreferrer">NASA 夕陽與雲光實拍</a> · <a href="https://www.hyperphysics.gsu.edu/hbase/atmos/blusky.html" target="_blank" rel="noopener noreferrer">Georgia State University：霧滴的前向散射</a> · <a href="https://supernova.eso.org/germany/exhibition/0818/?lang=en" target="_blank" rel="noopener noreferrer">ESO：大氣擾動與星光閃爍</a></p>
           </section>
         </div>
       </section>
@@ -7952,9 +7952,15 @@
 
     function scintillationSample(t, elevation, turbulence) {
       const airMass = Math.min(7, 1 / (Math.sin(elevation * Math.PI / 180) + .08));
-      const drift = (Math.sin(t * 3.3) * .7 + Math.sin(t * 5.7 + 1.3) * .34 + Math.sin(t * 8.1 + .4) * .15);
-      const offset = drift * turbulence * (6 + airMass * 3.1);
-      return { offset, light: Math.exp(-.5 * Math.pow(offset / 8.5, 2)) };
+      const scale = turbulence * (6 + airMass * 3.1);
+      const kicks = [
+        Math.sin(t * 3.3) * .62,
+        Math.sin(t * 5.7 + 1.3) * .30,
+        Math.sin(t * 8.1 + .4) * .16,
+        Math.sin(t * 4.1 + 2.1) * .19
+      ].map(value => value * scale);
+      const offset = kicks.reduce((sum, value) => sum + value, 0);
+      return { kicks, offset, light: Math.exp(-.5 * Math.pow(offset / 8.5, 2)) };
     }
 
     function drawScintillationModel(ctx, w, h, elevation, density, turbulence) {
@@ -7972,19 +7978,34 @@
       const star = { x: scene.x + scene.w * .12, y: scene.y + scene.h * .49 };
       const pupil = { x: scene.x + scene.w * .84, y: star.y };
       const atmosphereX = scene.x + scene.w * .42;
+      const layerXs = Array.from({ length: 4 }, (_, i) => atmosphereX + (i + .5) * scene.w * .072);
       if ($('scatter-show-layers').checked) {
-        ctx.fillStyle = 'rgba(56,189,248,.08)';
-        ctx.fillRect(atmosphereX, scene.y + 28, scene.w * .29, scene.h - 56);
-        for (let i = 0; i < 4; i += 1) {
-          const x = atmosphereX + i * scene.w * .095;
-          ctx.strokeStyle = 'rgba(125,211,252,.24)';
-          ctx.beginPath(); ctx.moveTo(x, scene.y + 32); ctx.lineTo(x, scene.y + scene.h - 32); ctx.stroke();
+        ctx.fillStyle = 'rgba(56,189,248,.11)';
+        ctx.fillRect(atmosphereX, scene.y + 28, scene.w * .35, scene.h - 56);
+        ctx.save();
+        ctx.beginPath(); ctx.rect(atmosphereX, scene.y + 28, scene.w * .35, scene.h - 56); ctx.clip();
+        layerXs.forEach((baseX, i) => {
+          ctx.strokeStyle = `rgba(125,211,252,${.36 + .13 * Math.sin(time * (1.4 + i * .3) * turbulence) * Math.min(1, turbulence)})`;
+          ctx.lineWidth = compact ? 1.7 : 2.4;
+          ctx.beginPath();
+          for (let y = scene.y + 30; y <= scene.y + scene.h - 30; y += 4) {
+            const x = baseX + (compact ? 5 : 10) * turbulence * Math.sin(y * .038 + time * (1.4 + i * .3) * turbulence + i * .7);
+            if (y === scene.y + 30) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+          }
+          ctx.stroke();
+        });
+        for (let i = 0; i < 38; i += 1) {
+          const x = atmosphereX + positiveModulo(i * 23 + time * turbulence * (13 + i % 4 * 3), scene.w * .35);
+          const y = scene.y + 36 + positiveModulo(i * 47, scene.h - 72);
+          ctx.fillStyle = `rgba(173,223,238,${.14 + .18 * (1 + Math.sin(time * 2.8 * turbulence + i)) / 2})`;
+          ctx.beginPath(); ctx.arc(x, y, i % 5 === 0 ? 2.2 : 1.2, 0, 2 * Math.PI); ctx.fill();
         }
+        ctx.restore();
       }
       ctx.fillStyle = '#cbd5e1'; ctx.font = '700 13px "Times New Roman", "Tinos", "DFKai-SB", serif';
       ctx.fillText('固定星點', star.x - 20, scene.y + 29);
       ctx.fillText('擾動空氣', atmosphereX, scene.y + 29);
-      ctx.fillText('固定瞳孔', pupil.x - 32, scene.y + 29);
+      ctx.fillText('固定瞳孔', pupil.x - 32, compact ? pupil.y + 56 : scene.y + 29);
       drawStarShape(ctx, star.x, star.y, 11, 4, '#f8fafc', 1);
       const aperture = compact ? 13 : 17;
       ctx.strokeStyle = '#f8fafc'; ctx.lineWidth = 5;
@@ -7997,18 +8018,24 @@
         const rayOffset = (i - 4) * (compact ? 3.4 : 4.6);
         const endY = pupil.y + sample.offset + rayOffset * .45;
         const hit = Math.abs(endY - pupil.y) < aperture;
+        const rayStartX = star.x + 12;
+        const rayY = x => star.y + rayOffset * .4
+          + rayOffset * .05 * (x - rayStartX) / (pupil.x - rayStartX)
+          + sample.kicks.reduce((sum, kick, index) => sum + kick * Math.max(0, Math.min(1, (x - layerXs[index]) / (pupil.x - layerXs[index]))), 0);
         if ($('scatter-show-rays').checked) {
           ctx.strokeStyle = hit ? 'rgba(250,204,21,.72)' : 'rgba(148,163,184,.38)';
           ctx.lineWidth = hit ? 2 : 1.2;
-          ctx.beginPath(); ctx.moveTo(star.x + 12, star.y + rayOffset * .4);
-          ctx.lineTo(atmosphereX, star.y + rayOffset * .4);
-          ctx.quadraticCurveTo(atmosphereX + scene.w * .15, star.y + rayOffset * .4 + sample.offset * .6, pupil.x, endY);
+          ctx.beginPath(); ctx.moveTo(rayStartX, rayY(rayStartX));
+          for (let step = 1; step <= 48; step += 1) {
+            const x = rayStartX + (pupil.x - rayStartX) * step / 48;
+            ctx.lineTo(x, rayY(x));
+          }
           ctx.stroke();
         }
         if ($('scatter-show-packets').checked) {
           const phase = (time * .27 + i / rayCount) % 1;
-          const px = star.x + 12 + (pupil.x - star.x - 12) * phase;
-          const py = star.y + rayOffset * .4 + (endY - star.y - rayOffset * .4) * Math.max(0, (phase - .35) / .65);
+          const px = rayStartX + (pupil.x - rayStartX) * phase;
+          const py = rayY(px);
           ctx.fillStyle = hit ? '#fde68a' : '#94a3b8';
           ctx.beginPath(); ctx.arc(px, py, 2.5, 0, Math.PI * 2); ctx.fill();
         }
@@ -8270,49 +8297,134 @@
 
     function drawScatteringObserver(ctx, w, h, state, elevation) {
       const compact = w < 720;
-      const sun = { x: w * .12, y: h * (.13 + .42 * (80 - elevation) / 80) };
-      const observer = { x: w * .84, y: h * .57 };
-      const scatter = { x: w * .56, y: h * (.25 + .15 * (80 - elevation) / 80) };
+      const topY = h * .14, groundY = h * .63;
+      const observer = { x: w * .86, y: groundY - 13 };
+      const radians = elevation * Math.PI / 180;
+      const visibleRun = Math.min(w * .78, (observer.y - topY) / Math.tan(radians));
+      const sun = { x: observer.x - visibleRun, y: observer.y - visibleRun * Math.tan(radians) };
+      const skyEntry = { x: sun.x, y: sun.y - h * .10 };
+      const scatter = { x: skyEntry.x + visibleRun * .62, y: skyEntry.y + (observer.y - sun.y) * .62 };
       const direct = state.directColor, sky = state.skyColor;
       ctx.fillStyle = '#071827'; ctx.fillRect(0, 0, w, h);
+      ctx.fillStyle = '#12334a'; ctx.globalAlpha = .60;
+      ctx.fillRect(0, topY, w, groundY - topY);
+      ctx.globalAlpha = 1;
+      ctx.strokeStyle = '#395e72'; ctx.lineWidth = 1; ctx.setLineDash([5, 7]);
+      ctx.beginPath(); ctx.moveTo(0, topY); ctx.lineTo(w, topY); ctx.stroke(); ctx.setLineDash([]);
       ctx.fillStyle = '#dce7ec'; ctx.font = `700 ${compact ? 11 : 16}px "Times New Roman", "Tinos", "DFKai-SB", serif`;
-      ctx.fillText(elevation < 15 ? '夕陽：長路徑' : '正午：短路徑', compact ? 15 : 44, 30);
-      ctx.strokeStyle = '#637e87'; ctx.lineWidth = 1;
-      ctx.beginPath(); ctx.moveTo(0, h * .67); ctx.lineTo(w, h * .67); ctx.stroke();
-      ctx.fillStyle = direct; ctx.shadowColor = direct; ctx.shadowBlur = 17;
-      ctx.beginPath(); ctx.arc(sun.x, sun.y, compact ? 17 : 29, 0, 2 * Math.PI); ctx.fill(); ctx.shadowBlur = 0;
+      ctx.fillText(`太陽仰角 ${elevation.toFixed(0)}°　相對路徑 ${state.airMass.toFixed(1)} 倍`, compact ? 15 : 44, 30);
+      ctx.fillStyle = '#aac8d3'; ctx.font = `600 ${compact ? 10 : 12}px "Times New Roman", "Tinos", "DFKai-SB", serif`;
+      ctx.fillText('大氣上界', compact ? 14 : 44, topY - 12);
+      ctx.fillStyle = '#172b38'; ctx.fillRect(0, groundY, w, h - groundY);
+      ctx.strokeStyle = '#75909a'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.moveTo(0, groundY); ctx.lineTo(w, groundY); ctx.stroke();
+      ctx.save(); ctx.strokeStyle = '#8aa9b7'; ctx.lineWidth = 1.5; ctx.setLineDash([5, 5]);
+      ctx.beginPath(); ctx.moveTo(observer.x, observer.y); ctx.lineTo(observer.x, topY); ctx.stroke(); ctx.restore();
+      ctx.fillStyle = '#aac8d3'; ctx.fillText(compact ? '虛線：垂直路' : '虛線：垂直穿越參考路徑', compact ? 14 : 44, topY + 20);
+      ctx.fillStyle = '#e9edf0'; ctx.shadowColor = '#ffffff'; ctx.shadowBlur = 14;
+      ctx.beginPath(); ctx.arc(sun.x, sun.y, compact ? 15 : 24, 0, 2 * Math.PI); ctx.fill(); ctx.shadowBlur = 0;
+      ctx.fillStyle = '#d9e9ee'; ctx.font = `600 ${compact ? 10 : 12}px "Times New Roman", "Tinos", "DFKai-SB", serif`;
+      ctx.fillText(compact ? '入射白光' : '入射太陽光：近白色', sun.x + 14, Math.max(44, sun.y - 19));
+      ctx.fillStyle = '#e9edf0'; ctx.beginPath(); ctx.arc(skyEntry.x, skyEntry.y, compact ? 3 : 5, 0, 2 * Math.PI); ctx.fill();
+      const distance = Math.hypot(observer.x - sun.x, observer.y - sun.y);
+      const nx = -(observer.y - sun.y) / distance, ny = (observer.x - sun.x) / distance;
+      const skyAt = fraction => Object.fromEntries(state.channels.map(channel => [channel.key,
+        fraction < 1 ? state.transmit(channel, fraction) : state.factor(channel) * state.transmit(channel, 1) * state.transmit(channel, .55 * (fraction - 1))]));
+      if (!state.rayleigh && $('scatter-show-rays').checked) {
+        ctx.save(); ctx.strokeStyle = 'rgba(229,239,237,.14)'; ctx.lineWidth = compact ? 27 : 47;
+        ctx.lineCap = 'round'; ctx.beginPath(); ctx.moveTo(sun.x, sun.y); ctx.lineTo(observer.x, observer.y); ctx.stroke(); ctx.restore();
+      }
       if ($('scatter-show-rays').checked) {
-        ctx.strokeStyle = direct; ctx.lineWidth = compact ? 3 : 5; ctx.globalAlpha = .83;
-        ctx.beginPath(); ctx.moveTo(sun.x, sun.y); ctx.lineTo(observer.x, observer.y); ctx.stroke();
-        ctx.strokeStyle = sky; ctx.lineWidth = compact ? 3 : 5; ctx.globalAlpha = .8;
-        ctx.beginPath(); ctx.moveTo(sun.x, sun.y); ctx.lineTo(scatter.x, scatter.y); ctx.lineTo(observer.x, observer.y); ctx.stroke();
+        for (const [index, channel] of state.channels.entries()) {
+          const offset = (index - 1) * (compact ? 5 : 8);
+          for (let segment = 0; segment < 30; segment += 1) {
+            const a = segment / 30, b = (segment + 1) / 30;
+            ctx.strokeStyle = channel.color;
+            ctx.globalAlpha = .15 + .85 * state.transmit(channel, (a + b) / 2);
+            ctx.lineWidth = compact ? 2.5 : 4;
+            ctx.beginPath();
+            ctx.moveTo(sun.x + (observer.x - sun.x) * a + nx * offset, sun.y + (observer.y - sun.y) * a + ny * offset);
+            ctx.lineTo(sun.x + (observer.x - sun.x) * b + nx * offset, sun.y + (observer.y - sun.y) * b + ny * offset);
+            ctx.stroke();
+          }
+        }
+        for (const [a, b, startFraction] of [[skyEntry, scatter, 0], [scatter, observer, 1]]) {
+          for (let segment = 0; segment < 24; segment += 1) {
+            const t0 = segment / 24, t1 = (segment + 1) / 24;
+            ctx.strokeStyle = wavelengthRgb(skyAt(startFraction + (t0 + t1) / 2));
+            ctx.lineWidth = compact ? 3 : 5;
+            ctx.globalAlpha = .82;
+            ctx.beginPath(); ctx.moveTo(a.x + (b.x - a.x) * t0, a.y + (b.y - a.y) * t0);
+            ctx.lineTo(a.x + (b.x - a.x) * t1, a.y + (b.y - a.y) * t1); ctx.stroke();
+          }
+        }
         ctx.globalAlpha = 1;
       }
-      for (let i = 0; i < 14; i += 1) {
-        const fraction = (i + .5) / 14;
-        const x = sun.x + (scatter.x - sun.x) * fraction;
-        const y = sun.y + (scatter.y - sun.y) * fraction;
-        ctx.fillStyle = '#a7c0c9'; ctx.beginPath(); ctx.arc(x, y, compact ? 1.5 : 2.4, 0, 2 * Math.PI); ctx.fill();
+      const particleCount = Math.min(26, Math.round(5 + state.airMass * $('scatter-density').value * .9));
+      for (let i = 0; i < particleCount; i += 1) {
+        const fraction = (i + .5) / particleCount;
+        const x = sun.x + (observer.x - sun.x) * fraction;
+        const y = sun.y + (observer.y - sun.y) * fraction;
+        const radius = state.rayleigh ? compact ? 2 : 3 : compact ? 5 : 8;
+        ctx.fillStyle = state.rayleigh ? '#d7e4e9' : 'rgba(234,242,239,.63)';
+        ctx.beginPath(); ctx.arc(x + nx * (i % 2 ? 12 : -12), y + ny * (i % 2 ? 12 : -12), radius, 0, 2 * Math.PI); ctx.fill();
+        if (i % 3 === 0 && $('scatter-show-rays').checked) {
+          ctx.strokeStyle = state.rayleigh ? '#6bb7ed' : '#d8e2df';
+          ctx.globalAlpha = .18 + .3 * (1 - fraction);
+          ctx.lineWidth = state.rayleigh ? 1.7 : 3.5;
+          ctx.beginPath(); ctx.moveTo(x, y);
+          ctx.lineTo(x + nx * (compact ? 20 : 35), y + ny * (compact ? 20 : 35)); ctx.stroke();
+          ctx.globalAlpha = 1;
+          if (!state.rayleigh) {
+            ctx.save(); ctx.strokeStyle = 'rgba(237,246,242,.43)'; ctx.lineWidth = compact ? 2 : 3;
+            const forward = Math.atan2(observer.y - sun.y, observer.x - sun.x);
+            for (const spread of [-.42, 0, .42]) {
+              const angle = forward + spread;
+              ctx.beginPath(); ctx.moveTo(x, y);
+              ctx.lineTo(x + Math.cos(angle) * (compact ? 28 : 47), y + Math.sin(angle) * (compact ? 28 : 47)); ctx.stroke();
+            }
+            ctx.restore();
+          }
+        }
       }
-      ctx.fillStyle = '#e4f0f2'; ctx.strokeStyle = sky; ctx.lineWidth = 3;
+      if ($('scatter-show-rays').checked) {
+        for (const fraction of [.18, .42, .66, .9]) {
+          const x = sun.x + (observer.x - sun.x) * fraction - nx * (compact ? 15 : 25);
+          const y = sun.y + (observer.y - sun.y) * fraction - ny * (compact ? 15 : 25);
+          const remaining = Object.fromEntries(state.channels.map(channel => [channel.key, state.transmit(channel, fraction)]));
+          ctx.fillStyle = wavelengthRgb(remaining); ctx.strokeStyle = '#dce9ed'; ctx.lineWidth = 1.5;
+          ctx.beginPath(); ctx.arc(x, y, compact ? 5 : 9, 0, 2 * Math.PI); ctx.fill(); ctx.stroke();
+        }
+      }
+      ctx.fillStyle = '#e4f0f2'; ctx.strokeStyle = wavelengthRgb(skyAt(1)); ctx.lineWidth = 3;
       ctx.beginPath(); ctx.arc(scatter.x, scatter.y, compact ? 7 : 11, 0, 2 * Math.PI); ctx.fill(); ctx.stroke();
       ctx.fillStyle = '#e6f0f4'; ctx.strokeStyle = '#bcd5e0'; ctx.lineWidth = 2;
       ctx.beginPath(); ctx.ellipse(observer.x, observer.y, compact ? 14 : 20, compact ? 9 : 13, 0, 0, 2 * Math.PI); ctx.fill(); ctx.stroke();
       ctx.fillStyle = '#183342'; ctx.beginPath(); ctx.arc(observer.x, observer.y, compact ? 5 : 7, 0, 2 * Math.PI); ctx.fill();
+      ctx.strokeStyle = '#b8d4df'; ctx.lineWidth = 1.3;
+      ctx.beginPath(); ctx.arc(observer.x, observer.y, compact ? 24 : 32, Math.PI, Math.PI + radians); ctx.stroke();
+      ctx.fillStyle = '#c6dbe4'; ctx.fillText(`${elevation.toFixed(0)}°`, observer.x - (compact ? 47 : 61), observer.y - 7);
       if ($('scatter-show-packets').checked) {
-        const pulse = positiveModulo(time * .24, 1);
-        for (const [path, color] of [[[sun, observer], direct], [[sun, scatter, observer], sky]]) {
-          const part = pulse * (path.length - 1);
-          const i = Math.min(path.length - 2, Math.floor(part));
-          const a = path[i], b = path[i + 1], t = part - i;
+        for (const path of [[sun, observer], [skyEntry, scatter, observer]]) {
+          const lengths = path.slice(1).map((point, index) => Math.hypot(point.x - path[index].x, point.y - path[index].y));
+          const total = lengths.reduce((sum, value) => sum + value, 0);
+          let travel = positiveModulo(time * 160, total);
+          let segment = 0;
+          while (segment < lengths.length - 1 && travel > lengths[segment]) travel -= lengths[segment++];
+          const a = path[segment], b = path[segment + 1], t = travel / lengths[segment];
+          const color = path.length === 2
+            ? wavelengthRgb(Object.fromEntries(state.channels.map(channel => [channel.key, state.transmit(channel, t)])))
+            : wavelengthRgb(skyAt(segment + t));
           ctx.fillStyle = color; ctx.shadowColor = color; ctx.shadowBlur = 13;
           ctx.beginPath(); ctx.arc(a.x + (b.x - a.x) * t, a.y + (b.y - a.y) * t, compact ? 4 : 6, 0, 2 * Math.PI); ctx.fill();
           ctx.shadowBlur = 0;
         }
       }
       ctx.fillStyle = '#dce7ec'; ctx.font = `700 ${compact ? 11 : 14}px "Times New Roman", "Tinos", "DFKai-SB", serif`;
-      ctx.fillText(state.rayleigh ? compact ? '空氣分子' : '空氣分子使部分光改向' : compact ? '霧滴' : '霧滴使部分光改向', scatter.x - (compact ? 29 : 72), scatter.y - 22);
-      const sampleY = h * .76;
+      ctx.fillText(state.rayleigh ? compact ? '空氣分子：光改向' : '空氣分子：使部分光改向' : compact ? '霧滴／微粒' : '較大微粒使各色都容易散射', compact ? 14 : 44, topY + 48);
+      ctx.fillText(compact ? `穿過 ${particleCount} 個示意粒子` : `光程變長 → 穿過更多粒子；圖上光程已壓縮，實際約 ${state.airMass.toFixed(1)} 倍`, compact ? 13 : 44, groundY + 31);
+      ctx.fillText(compact ? '沿路白光逐漸變色' : '沿路圓點：直射光經過不同長度後的剩餘顏色', compact ? 13 : 44, groundY + (compact ? 50 : 56));
+      const sampleY = h * .78;
       for (const [x, color, label, amount] of [[w * .25, sky, elevation < 15 ? '近太陽天空' : '天空光', state.sky], [w * .68, direct, '直視太陽', state.direct]]) {
         ctx.fillStyle = color; ctx.strokeStyle = '#cfe1e8'; ctx.lineWidth = 2;
         ctx.beginPath(); ctx.arc(x, sampleY, compact ? 18 : 28, 0, 2 * Math.PI); ctx.fill(); ctx.stroke();
@@ -8328,7 +8440,9 @@
       }
       ctx.textAlign = 'left';
       ctx.fillStyle = '#a9beca'; ctx.font = `600 ${compact ? 10 : 12}px "Times New Roman", "Tinos", "DFKai-SB", serif`;
-      ctx.fillText(compact ? '兩個顏色來自不同觀看方向' : '左：散射後進眼的光；右：沒散走、直接進眼的光', compact ? 13 : 44, h - 22);
+      ctx.fillText(state.rayleigh
+        ? compact ? '藍光沿途較易散出；低角度直射剩紅光' : '同一路徑中藍光逐段散出；太陽越低，抵達眼睛的直射光越偏紅'
+        : compact ? '微粒讓各色散開，直射變暗、天空泛白' : '霧滴與懸浮微粒使各色都散開；直射變暗、側向光接近白色，能見度下降', compact ? 13 : 44, topY + 102);
     }
 
     function drawScatteringModel(ctx, w, h, elevation, density) {
