@@ -174,7 +174,7 @@
       color: #ffffff;
     }
     button.tab { padding: 8px 13px; white-space: nowrap; }
-    .optics-switch, .topic-switch, .phenomenon-switch, .camera-path-switch {
+    .optics-switch, .topic-switch, .phenomenon-switch {
       display: flex;
       flex-wrap: wrap;
       width: fit-content;
@@ -195,9 +195,6 @@
       color: #ffffff;
       box-shadow: 0 2px 7px rgba(15, 118, 110, .2);
     }
-    .camera-path-switch { margin: 0 0 14px; }
-    button.camera-path-mode { background: transparent; color: var(--ink); min-width: 110px; }
-    button.camera-path-mode.active { background: var(--accent); color: #ffffff; }
     .mirror-lesson-switch, .angular-switch {
       display: flex;
       flex-wrap: wrap;
@@ -428,6 +425,7 @@
     .mirage-detail { margin-top: 10px; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
     #mirage-detail-canvas { height: 280px; min-height: 280px; }
     #huygens-canvas { height: min(62vh, 520px); min-height: 440px; }
+    #wave2d-canvas { height: min(62vh, 520px); min-height: 400px; }
     #retrograde-canvas { height: min(72vh, 620px); min-height: 500px; }
     #mirror-canvas.parallel-expanded {
       height: min(66vh, 560px);
@@ -1024,9 +1022,9 @@
             <span class="red"><i class="dot"></i>障礙物</span>
           </div>
         </div>
-        <div class="lesson-steps" role="group" aria-label="惠更斯原理觀察步驟"><button class="huy-step" type="button" data-huy-progress="12" aria-pressed="false">1 波前抵達</button><button class="huy-step" type="button" data-huy-progress="56" aria-pressed="false">2 次波展開</button><button class="huy-step" type="button" data-huy-progress="88" aria-pressed="false">3 外包絡形成</button></div>
+        <div class="lesson-steps" role="group" aria-label="惠更斯原理觀察步驟"><button class="huy-step" type="button" data-huy-progress="0" aria-pressed="false">1 波前抵達</button><button class="huy-step" type="button" data-huy-progress="35" aria-pressed="false">2 次波展開</button><button class="huy-step" type="button" data-huy-progress="75" aria-pressed="false">3 後續波前</button></div>
         <div class="values" aria-live="polite">
-          <div class="badge" id="huy-lambda">次波半徑 <span data-latex="r"></span> = 0 px<small>相同時間內 <span data-latex="r=v\Delta t"></span></small></div>
+          <div class="badge" id="huy-lambda">波長 <span data-latex="\lambda"></span> = 46 px<small>相鄰波前的距離</small></div>
           <div class="badge" id="huy-aperture">開口 = 150 px<small>開口越窄，繞射越明顯</small></div>
           <div class="badge" id="huy-points">次波源 = 13 個<small>點越多，包絡越平滑</small></div>
           <div class="badge" id="huy-status">狹縫繞射<small>通過開口的點成為次波源</small></div>
@@ -1073,6 +1071,21 @@
           <p><strong>講法：</strong>依序停在三個步驟：同一波前上的點同時受擾動；經過相同 <span data-latex="\Delta t"></span>，各點的次波有相同半徑 <span data-latex="v\Delta t"></span>；沿著最前方相切的位置連線，就是下一時刻的波前。</p>
           <p><strong>辨別：</strong>這張圖只建構波前，並未計算亮暗干涉條紋。狹縫後的強度分布還需要把各點波動的相位與振幅相加。</p>
         </section>
+      </section>
+
+      <section id="panel-wave2d" class="panel" role="tabpanel">
+        <div class="module-head"><div><h2>二維波動疊加</h2><p class="module-copy">兩個點波源各自向外傳播；同一位置的位移直接相加。可先看單一波，再看兩波與合成波，改變頻率或振幅比較穩定與變動的干涉圖樣。</p></div></div>
+        <div class="values" aria-live="polite"><div class="badge" id="w2-wavelengths">波長</div><div class="badge" id="w2-ratio">頻率比</div><div class="badge" id="w2-probe">觀測點</div><div class="badge" id="w2-status">疊加狀態</div></div>
+        <div class="plot-wrap wave-lab"><canvas id="wave2d-canvas" role="img" aria-label="可調兩個點波源頻率、振幅與相位的二維波動疊加。點擊畫面選擇觀測點。"></canvas></div>
+        <div class="controls">
+          <div class="control"><label for="w2-view">顯示</label><select id="w2-view"><option value="first">只看波源 1</option><option value="second">只看波源 2</option><option value="sum" selected>兩波疊加</option></select></div>
+          <div class="control"><label for="w2-f1">波源 1 頻率：<span id="w2-f1-out">1.00 Hz</span></label><input id="w2-f1" type="range" min="0.4" max="2" step="0.02" value="1"></div>
+          <div class="control"><label for="w2-f2">波源 2 頻率：<span id="w2-f2-out">1.00 Hz</span></label><input id="w2-f2" type="range" min="0.4" max="2" step="0.02" value="1"></div>
+          <div class="control"><label for="w2-a2">波源 2 振幅：<span id="w2-a2-out">1.00 倍</span></label><input id="w2-a2" type="range" min="0" max="2" step="0.05" value="1"></div>
+          <div class="control"><label for="w2-phase">波源 2 初相：<span id="w2-phase-out">0°</span></label><input id="w2-phase" type="range" min="0" max="360" step="5" value="0"></div>
+          <div class="control"><label for="w2-distance">波源間距：<span id="w2-distance-out">160 px</span></label><input id="w2-distance" type="range" min="40" max="300" step="5" value="160"></div>
+          <div class="control"><label for="w2-speed">播放速度：<span id="w2-speed-out">0.35x</span></label><input id="w2-speed" type="range" min="0.1" max="1.5" step="0.05" value="0.35"></div>
+        </div>
       </section>
 
       <section id="panel-optics" class="panel" role="tabpanel">
@@ -1374,15 +1387,11 @@
         </div>
 
         <div id="optics-view-camera" class="optics-view">
-          <div class="module-head"><div><h2>單眼相機：取景、曝光與對焦</h2><p class="module-copy">取景時，反光鏡把光送往對焦屏與觀景窗；曝光時抬起，光才到感光元件。為比較進光量，取景也套用所選光圈（景深預覽）；亮度以快門、感光度固定計算。折疊光路非等比例。</p></div></div>
-          <div class="camera-path-switch" role="group" aria-label="相機光路">
-            <button type="button" class="camera-path-mode active" data-camera-path="viewfinder" aria-pressed="true">光學取景</button>
-            <button type="button" class="camera-path-mode" data-camera-path="exposure" aria-pressed="false">曝光成像</button>
-          </div>
+          <div class="module-head"><div><h2>相機曝光成像</h2><p class="module-copy">頭頂的光在感光元件下方會聚；腳底的光在上方會聚，因此形成倒立實像。鏡頭移動會改變對焦，光圈影響進光量和失焦圈。F、2F 與物距採示意比例；自動光圈是教學預設，不是物距必然決定的值。</p></div></div>
           <div class="values"><div class="badge" id="camera-image-distance">理論像距</div><div class="badge" id="camera-lens-position">鏡頭到感光元件</div><div class="badge" id="camera-blur">散焦圈直徑</div><div class="badge" id="camera-status">對焦狀態</div></div>
-          <div class="plot-wrap"><canvas id="camera-canvas" role="img" aria-label="單眼相機剖面。可切換反光鏡落下的觀景窗光路與反光鏡抬起的感光元件光路。"></canvas></div>
+          <div class="plot-wrap"><canvas id="camera-canvas" role="img" aria-label="頭頂與腳底光線經鏡頭後，在感光元件形成上下顛倒的人像。"></canvas></div>
           <div class="controls"><div class="control"><label for="camera-object">人物距鏡頭：<span id="camera-object-out">2.00 m</span></label><input id="camera-object" type="range" min="0.35" max="5" step="0.005" value="2"></div><div class="control"><label for="camera-focus">鏡頭到感光元件：<span id="camera-focus-out">51.3 mm</span></label><input id="camera-focus" type="range" min="50" max="59" step="0.1" value="51.3"></div><div class="control"><label for="camera-aperture">光圈直徑：<span id="camera-aperture-out">20 mm</span></label><input id="camera-aperture" type="range" min="5" max="28" step="1" value="20"></div></div>
-          <div class="presets"><button type="button" class="preset" id="camera-track" aria-pressed="false">播放追蹤對焦</button><button type="button" class="preset" id="camera-autofocus">對焦到人物</button><button type="button" class="preset" id="camera-far">遠景</button><button type="button" class="preset" id="camera-near">近景</button></div>
+          <div class="presets"><button type="button" class="preset" id="camera-track" aria-pressed="false">播放追蹤對焦</button><button type="button" class="preset" id="camera-autofocus">自動對焦＋光圈</button><button type="button" class="preset" id="camera-far">遠景</button><button type="button" class="preset" id="camera-near">近景</button></div>
         </div>
 
         <div id="optics-view-eye" class="optics-view">
@@ -2210,7 +2219,7 @@
     let activeMotorLayer = 'all';
     let cyclotronView = 'follow';
     const categoryLabs = {
-      wave: [['standing', '駐波疊加'], ['drive', '同源橫波與縱波'], ['sound', '揚聲器與麥克風'], ['doppler', '都卜勒效應'], ['ripple', '水波槽干涉'], ['huygens', '惠更斯原理']],
+      wave: [['standing', '駐波疊加'], ['drive', '同源橫波與縱波'], ['sound', '揚聲器與麥克風'], ['doppler', '都卜勒效應'], ['ripple', '水波槽干涉'], ['wave2d', '二維波動疊加'], ['huygens', '惠更斯原理']],
       refraction: [['refraction', '折射與全反射'], ['mirage', '海市蜃樓'], ['prism', '稜鏡色散'], ['rainbow', '彩虹'], ['brewster', '布魯斯特角'], ['atmosphere', '大氣散射與星光閃爍']],
       physical: [['double', '雙狹縫干涉'], ['single', '單狹縫繞射'], ['film', '薄膜干涉']],
       imaging: [['mirror', '面鏡成像'], ['lens', '透鏡成像'], ['aberration', '球面像差'], ['reflection', '鏡像文字'], ['trifold', '多面鏡'], ['microscope', '顯微鏡'], ['camera', '相機對焦'], ['eye', '眼睛成像']],
@@ -2227,7 +2236,6 @@
     let time = 0;
     let generatorAngle = Math.PI / 2;
     let cameraTracking = false;
-    let cameraPath = 'viewfinder';
     let cameraTrackPhase = 0;
     let skaterPhase = 0;
     let skaterArmCurrent = 1;
@@ -2315,6 +2323,7 @@
       if (activeModule === 'double') return number('dbl-speed');
       if (activeModule === 'single') return number('sgl-speed');
       if (activeModule === 'huygens') return number('huy-speed');
+      if (activeModule === 'wave2d') return number('w2-speed');
       if (activeModule === 'mirage') return number('mirage-speed');
       if (activeModule === 'rainbow') return number('rainbow-speed');
       if (activeModule === 'prism' || activeModule === 'film' || activeModule === 'brewster' || activeModule === 'aberration') return .42;
@@ -3777,22 +3786,20 @@
       const centerY = h / 2;
       const compact = w < 620;
       const auto = $('huy-auto').checked;
-      const phase = auto ? positiveModulo(time * .18, 1) : number('huy-progress') / 100;
+      const phase = auto ? positiveModulo(time * 105 / lambda, 1) : number('huy-progress') / 100;
       const progress = Math.round(phase * 100);
-      const radius = Math.min(w * .38, h * .38) * Math.max(0, Math.min(1, (phase - .2) / .53));
-      const envelopeAlpha = Math.max(0, Math.min(1, (phase - .71) / .12));
-      const sourceActive = phase >= .2;
-      const stage = phase < .2 ? 1 : phase < .71 ? 2 : 3;
+      const offset = phase * lambda;
+      const maxRadius = Math.hypot(w - barrierX, h / 2);
       if (auto) $('huy-progress').value = progress;
       setText('huy-lambda-out', `${lambda.toFixed(0)} px`);
       setText('huy-aperture-out', `${aperture.toFixed(0)} px`);
       setText('huy-count-out', `${count.toFixed(0)} 個`);
       setText('huy-speed-out', `${number('huy-speed').toFixed(2)}x`);
       setText('huy-progress-out', `${progress}%`);
-      $('huy-lambda').innerHTML = `${math('r')} = ${radius.toFixed(0)} px<small>相同 ${math('\\Delta t')} 的次波半徑相同：${math('r=v\\Delta t')}</small>`;
+      $('huy-lambda').innerHTML = `${math('\\lambda')} = ${lambda.toFixed(0)} px<small>相鄰波前相隔一個波長</small>`;
       $('huy-aperture').innerHTML = mode === 'plane' ? '完整波前<small>沒有遮擋；新波前仍是直線</small>' : `開口 = ${aperture.toFixed(0)} px<small>${mode === 'slit' ? '開口以外的波前被擋住' : '上半部被擋住'}</small>`;
       $('huy-points').innerHTML = `次波源 = ${count.toFixed(0)} 個<small>點越多，包絡越平滑</small>`;
-      $('huy-status').innerHTML = stage === 1 ? '波前抵達<small>同一波前上的點同時開始受擾動</small>' : stage === 2 ? '次波展開<small>每個點以相同速度向前傳播</small>' : '新波前形成<small>取所有次波前緣的外包絡</small>';
+      $('huy-status').innerHTML = '連續波列<small>每隔一個週期，下一個波前也抵達開口</small>';
       $('huy-aperture-in').disabled = mode === 'plane';
       $('huy-aperture-in').closest('.control').classList.toggle('is-muted', mode === 'plane');
       document.querySelectorAll('.huy-step').forEach(button => {
@@ -3812,10 +3819,9 @@
         limits.forEach(y => { ctx.beginPath(); ctx.moveTo(barrierX, y); ctx.lineTo(w, y); ctx.stroke(); });
         ctx.restore();
       }
-      const frontX = barrierX - Math.max(0, (.2 - phase) / .2) * Math.min(95, w * .23);
-      for (let x = frontX; x > 4; x -= lambda) {
-        ctx.strokeStyle = x === frontX ? '#2870b8' : 'rgba(40,112,184,.32)';
-        ctx.lineWidth = x === frontX ? 3 : 1.5;
+      for (let x = barrierX - offset, index = 0; x > 4; x -= lambda, index += 1) {
+        ctx.strokeStyle = index === 0 ? '#2870b8' : 'rgba(40,112,184,.55)';
+        ctx.lineWidth = index === 0 ? 3 : 2;
         ctx.beginPath(); ctx.moveTo(x, 35); ctx.lineTo(x, h - 35); ctx.stroke();
       }
       if (!compact) drawArrow(ctx, 18, 69, barrierX - 28, 69, '#2870b8');
@@ -3840,52 +3846,115 @@
         ctx.restore();
       }
       const points = huygensPoints(mode, count, aperture, w, h, barrierX);
-      if (sourceActive && radius > 1 && $('huy-show-wavelets').checked) {
+      if ($('huy-show-wavelets').checked) {
         ctx.save();
         points.forEach(([x, y], index) => {
           const emphasis = index === 0 || index === Math.floor((points.length - 1) / 2) || index === points.length - 1;
           ctx.strokeStyle = emphasis ? 'rgba(214,103,48,.73)' : 'rgba(214,103,48,.22)';
           ctx.lineWidth = emphasis ? 2.2 : 1.2;
-          ctx.beginPath();
-          ctx.arc(x, y, radius, -Math.PI / 2, Math.PI / 2);
-          ctx.stroke();
+          for (let ring = 0; ring < 3; ring += 1) {
+            const radius = offset + ring * lambda;
+            if (radius < 2) continue;
+            ctx.beginPath(); ctx.arc(x, y, radius, -Math.PI / 2, Math.PI / 2); ctx.stroke();
+          }
         });
         ctx.restore();
       }
-      if (sourceActive) {
-        points.forEach(([x, y], index) => {
-          const emphasis = index === 0 || index === Math.floor((points.length - 1) / 2) || index === points.length - 1;
-          ctx.fillStyle = emphasis ? '#c96832' : '#dc9d72';
-          ctx.beginPath(); ctx.arc(x, y, emphasis ? 5 : 3, 0, 2 * Math.PI); ctx.fill();
-        });
-      }
-      if (envelopeAlpha > 0 && $('huy-show-envelope').checked) {
+      points.forEach(([x, y], index) => {
+        const emphasis = index === 0 || index === Math.floor((points.length - 1) / 2) || index === points.length - 1;
+        ctx.fillStyle = emphasis ? '#c96832' : '#dc9d72';
+        ctx.beginPath(); ctx.arc(x, y, emphasis ? 5 : 3, 0, 2 * Math.PI); ctx.fill();
+      });
+      if ($('huy-show-envelope').checked) {
         ctx.save();
         ctx.strokeStyle = '#11856e';
-        ctx.lineWidth = compact ? 4 : 5;
-        ctx.globalAlpha = envelopeAlpha;
+        ctx.lineWidth = compact ? 3 : 3.5;
         ctx.lineCap = 'round';
         const firstY = points[0][1];
         const lastY = points[points.length - 1][1];
-        ctx.beginPath();
-        const yStart = mode === 'plane' ? 35 : Math.max(35, firstY - radius);
-        const yEnd = mode === 'slit' ? Math.min(h - 35, lastY + radius) : h - 35;
-        for (let y = yStart; y <= yEnd; y += 2) {
-          const gap = (mode === 'plane' && (y < firstY || y > lastY)) || (mode === 'edge' && y > lastY)
-            ? 0 : Math.min(...points.map(point => Math.abs(y - point[1])));
-          const x = barrierX + Math.sqrt(Math.max(0, radius * radius - gap * gap));
-          if (y === yStart) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        for (let ring = 0; ring <= Math.ceil(maxRadius / lambda); ring += 1) {
+          const radius = offset + ring * lambda;
+          if (radius < 2) continue;
+          ctx.globalAlpha = ring === 0 ? 1 : .38;
+          ctx.beginPath(); let drawing = false;
+          for (let y = 30; y <= h - 30; y += 2) {
+            const gap = (mode === 'plane' && (y < firstY || y > lastY)) || (mode === 'edge' && y > lastY)
+              ? 0 : Math.max(0, firstY - y, y - lastY);
+            if (gap > radius) { drawing = false; continue; }
+            const x = barrierX + Math.sqrt(radius * radius - gap * gap);
+            if (x > w - 10) { drawing = false; continue; }
+            if (drawing) ctx.lineTo(x, y); else ctx.moveTo(x, y);
+            drawing = true;
+          }
+          ctx.stroke();
         }
-        ctx.stroke();
-        const midY = points[Math.floor((points.length - 1) / 2)][1];
-        ctx.strokeStyle = '#137f72'; ctx.lineWidth = 1.5; ctx.setLineDash([5, 5]);
-        ctx.beginPath(); ctx.moveTo(barrierX, midY); ctx.lineTo(barrierX + radius, midY); ctx.stroke();
-        ctx.setLineDash([]); ctx.fillStyle = '#11856e'; ctx.beginPath(); ctx.arc(barrierX + radius, midY, 5, 0, 2 * Math.PI); ctx.fill();
         ctx.restore();
       }
       drawSceneLabel(ctx, 12, 12, compact ? '入射波前' : '入射波前 →');
-      if (sourceActive) drawSceneLabel(ctx, Math.min(w - (compact ? 92 : 155), barrierX + 12), 12, stage === 3 ? '新波前' : '次波源');
-      if (stage === 3 && mode !== 'plane') drawSceneLabel(ctx, Math.min(w - (compact ? 92 : 180), barrierX + radius + 10), h - 46, compact ? '繞進陰影' : '波前伸進幾何陰影區');
+      drawSceneLabel(ctx, Math.min(w - (compact ? 92 : 155), barrierX + 12), 12, '後續波前持續進入');
+      if (mode !== 'plane') drawSceneLabel(ctx, Math.min(w - (compact ? 92 : 180), barrierX + 25), h - 46, '波會進入原本被擋住的區域');
+    }
+
+    const wave2dProbe = { x: .5, y: .65 };
+
+    function drawWave2D() {
+      const { ctx, w, h } = resizeCanvas($('wave2d-canvas'));
+      const f1 = number('w2-f1'), f2 = number('w2-f2');
+      const a2 = number('w2-a2'), phase = number('w2-phase') * Math.PI / 180;
+      const distance = Math.min(number('w2-distance'), w * .72);
+      const view = $('w2-view').value;
+      const speed = 90;
+      const source1 = { x: w / 2 - distance / 2, y: h / 2 };
+      const source2 = { x: w / 2 + distance / 2, y: h / 2 };
+      const fieldCanvas = drawWave2D.fieldCanvas || (drawWave2D.fieldCanvas = document.createElement('canvas'));
+      const scale = w > 900 ? 4 : 3;
+      const fw = Math.ceil(w / scale), fh = Math.ceil(h / scale);
+      fieldCanvas.width = fw; fieldCanvas.height = fh;
+      const fieldCtx = fieldCanvas.getContext('2d');
+      const image = fieldCtx.createImageData(fw, fh);
+      const displacement = (x, y) => {
+        const r1 = Math.hypot(x - source1.x, y - source1.y);
+        const r2 = Math.hypot(x - source2.x, y - source2.y);
+        const u1 = Math.cos(2 * Math.PI * (r1 * f1 / speed - time * f1));
+        const u2 = a2 * Math.cos(2 * Math.PI * (r2 * f2 / speed - time * f2) + phase);
+        return view === 'first' ? u1 : view === 'second' ? u2 : u1 + u2;
+      };
+      for (let py = 0; py < fh; py += 1) {
+        for (let px = 0; px < fw; px += 1) {
+          const value = displacement((px + .5) * scale, (py + .5) * scale) / (view === 'sum' ? 1 + a2 : view === 'second' ? Math.max(1, a2) : 1);
+          const index = (py * fw + px) * 4;
+          const amount = Math.min(1, Math.abs(value));
+          const target = value >= 0 ? [240, 248, 248] : [10, 27, 43];
+          image.data[index] = 115 + (target[0] - 115) * amount;
+          image.data[index + 1] = 130 + (target[1] - 130) * amount;
+          image.data[index + 2] = 141 + (target[2] - 141) * amount;
+          image.data[index + 3] = 255;
+        }
+      }
+      fieldCtx.putImageData(image, 0, 0);
+      ctx.imageSmoothingEnabled = true;
+      ctx.drawImage(fieldCanvas, 0, 0, w, h);
+      for (const [source, name, color] of [[source1, 'S1', '#135f75'], [source2, 'S2', '#a45229']]) {
+        ctx.fillStyle = color; ctx.strokeStyle = '#fff'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.arc(source.x, source.y, 7, 0, 2 * Math.PI); ctx.fill(); ctx.stroke();
+        drawSceneLabel(ctx, source.x + 12, source.y - 29, name);
+      }
+      const probeX = wave2dProbe.x * w, probeY = wave2dProbe.y * h;
+      ctx.strokeStyle = '#d71f4e'; ctx.lineWidth = 2;
+      ctx.beginPath(); ctx.arc(probeX, probeY, 9, 0, 2 * Math.PI); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(probeX - 15, probeY); ctx.lineTo(probeX + 15, probeY); ctx.moveTo(probeX, probeY - 15); ctx.lineTo(probeX, probeY + 15); ctx.stroke();
+      setText('w2-f1-out', f1.toFixed(2) + ' Hz');
+      setText('w2-f2-out', f2.toFixed(2) + ' Hz');
+      setText('w2-a2-out', a2.toFixed(2) + ' 倍');
+      setText('w2-phase-out', number('w2-phase') + '°');
+      setText('w2-distance-out', number('w2-distance') + ' px');
+      setText('w2-speed-out', number('w2-speed').toFixed(2) + 'x');
+      $('w2-wavelengths').innerHTML = `λ₁ ${(speed / f1).toFixed(0)} px · λ₂ ${(speed / f2).toFixed(0)} px<small>兩波波速同為 ${speed} px/s</small>`;
+      $('w2-ratio').innerHTML = `頻率差 ${Math.abs(f1 - f2).toFixed(2)} Hz<small>頻率不同時，相對相位持續變化</small>`;
+      $('w2-probe').innerHTML = `觀測點位移 ${displacement(probeX, probeY).toFixed(2)}<small>點擊圖面可更換觀測點</small>`;
+      $('w2-status').innerHTML = view !== 'sum' ? '單一波源<small>切換到兩波疊加，才會看到干涉</small>'
+        : Math.abs(f1 - f2) < .001 ? '固定干涉格局<small>同頻波的強弱區位置固定；振幅相等才可能完全相消</small>'
+          : '變動的干涉格局<small>兩頻率不同，沒有長期固定的節線</small>';
     }
 
     function opticalImageDistance(f, objectDistance) {
@@ -5805,9 +5874,6 @@
         : sensorDistance < imageMm
           ? '焦點在感光元件後<small>鏡頭需往物體方向移動</small>'
           : '焦點在感光元件前<small>鏡頭需往感光元件方向移動</small>';
-      if (cameraPath === 'viewfinder') {
-        $('camera-status').innerHTML = `光學取景 · ${focused ? '清晰' : '失焦'}<small>反光鏡落下，感光元件尚未曝光</small>`;
-      }
       ctx.fillStyle = '#f4f7f8'; ctx.fillRect(0, 0, w, h);
       const axis = h * .47;
       const sensorX = w * (compact ? .84 : .83);
@@ -5816,24 +5882,13 @@
       const personHeight = Math.min(h * .34, h * (.20 + .15 / Math.sqrt(objectMeters)));
       const head = { x: personX, y: axis - personHeight };
       const aperturePx = Math.max(10, aperture / 28 * h * .125);
-      const imageHeight = Math.min(h * .18, Math.max(20, personHeight * imageMm / objectMm * 12));
+      const imageHeight = Math.min(h * .20, Math.max(h * .10, personHeight * imageMm / objectMm * 16));
       const imageX = lensX + (sensorX - lensX) * imageMm / sensorDistance;
       const imageTip = { x: imageX, y: axis + imageHeight };
       ctx.strokeStyle = '#b3c3c9'; ctx.lineWidth = 1.5; ctx.setLineDash([6, 5]);
       ctx.beginPath(); ctx.moveTo(w * .04, axis); ctx.lineTo(w * .96, axis); ctx.stroke(); ctx.setLineDash([]);
       ctx.fillStyle = '#d8e2e4'; ctx.fillRect(w * .03, axis + 5, lensX - w * .03, 3);
       const bodyTop = h * .16, bodyBottom = h * .71;
-      const mirrorX = sensorX - w * .13;
-      const screenY = axis + mirrorX - sensorX;
-      const prismY = bodyTop - 27;
-      const viewfinderX = Math.min(w - 32, sensorX + 36);
-      ctx.fillStyle = '#263b49';
-      ctx.beginPath();
-      ctx.moveTo(mirrorX - 52, bodyTop + 3);
-      ctx.lineTo(mirrorX - 29, bodyTop - 39);
-      ctx.lineTo(mirrorX + 27, bodyTop - 39);
-      ctx.lineTo(mirrorX + 54, bodyTop + 3);
-      ctx.closePath(); ctx.fill();
       const chamber = ctx.createLinearGradient(0, bodyTop, 0, bodyBottom);
       chamber.addColorStop(0, '#243844'); chamber.addColorStop(.15, '#405560');
       chamber.addColorStop(.50, '#c7d5d8'); chamber.addColorStop(.85, '#405560'); chamber.addColorStop(1, '#263b49');
@@ -5841,11 +5896,6 @@
       ctx.fillStyle = '#eaf1f0'; ctx.fillRect(lensX + 12, bodyTop + 20, sensorX - lensX - 13, bodyBottom - bodyTop - 40);
       ctx.strokeStyle = '#6e858f'; ctx.lineWidth = 2;
       ctx.strokeRect(lensX + 12, bodyTop + 20, sensorX - lensX - 13, bodyBottom - bodyTop - 40);
-      ctx.fillStyle = '#cfdee4'; ctx.strokeStyle = '#6d8490'; ctx.lineWidth = 1.5;
-      ctx.beginPath(); ctx.moveTo(mirrorX - 34, bodyTop - 32); ctx.lineTo(mirrorX + 24, bodyTop - 32);
-      ctx.lineTo(mirrorX + 40, bodyTop - 6); ctx.lineTo(mirrorX - 42, bodyTop - 6); ctx.closePath(); ctx.fill(); ctx.stroke();
-      ctx.strokeStyle = '#a7c1c8'; ctx.lineWidth = 5;
-      ctx.beginPath(); ctx.moveTo(mirrorX - 62, screenY); ctx.lineTo(mirrorX + 58, screenY); ctx.stroke();
       ctx.fillStyle = '#1d3543';
       ctx.beginPath(); ctx.roundRect(lensX - 40, axis - h * .145, 37, h * .29, 5); ctx.fill();
       ctx.fillStyle = '#667e89';
@@ -5874,97 +5924,57 @@
       ctx.fillStyle = '#1d3445';
       ctx.fillRect(lensX - 17, bodyTop + 1, 34, Math.max(0, axis - aperturePx - bodyTop - 1));
       ctx.fillRect(lensX - 17, axis + aperturePx, 34, Math.max(0, bodyBottom - axis - aperturePx - 1));
-      ctx.save();
-      ctx.strokeStyle = '#456675'; ctx.lineWidth = compact ? 6 : 8; ctx.lineCap = 'round';
-      const mirrorHalf = compact ? 36 : 59;
-      ctx.beginPath();
-      if (cameraPath === 'viewfinder') {
-        ctx.moveTo(mirrorX - mirrorHalf, axis + mirrorHalf); ctx.lineTo(mirrorX + mirrorHalf, axis - mirrorHalf);
-      } else {
-        ctx.moveTo(mirrorX - 49, bodyTop + 51); ctx.lineTo(mirrorX + 42, bodyTop + 51);
-      }
-      ctx.stroke();
-      ctx.strokeStyle = '#d4e5e8'; ctx.lineWidth = 2;
-      ctx.stroke(); ctx.restore();
-      if (cameraPath === 'exposure' && Math.abs(imageX - sensorX) > 8 && imageX > lensX + 10 && imageX < sensorX + 25) {
+      if (Math.abs(imageX - sensorX) > 8 && imageX > lensX + 10 && imageX < sensorX + 25) {
         ctx.save(); ctx.strokeStyle = 'rgba(15,118,110,.72)'; ctx.lineWidth = 1.5; ctx.setLineDash([5, 5]);
         ctx.beginPath(); ctx.moveTo(imageX, bodyTop + 24); ctx.lineTo(imageX, bodyBottom - 24); ctx.stroke(); ctx.restore();
       }
       const hits = [];
-      const rayCount = cameraPath === 'viewfinder' ? 3 : aperture < 10 ? 3 : aperture < 21 ? 5 : 7;
-      Array.from({ length: rayCount }, (_, index) => -1 + 2 * index / (rayCount - 1)).forEach((fraction, index) => {
-        const rayAperture = cameraPath === 'viewfinder' ? Math.min(aperturePx * .65, compact ? 35 : aperturePx) : aperturePx;
-        const atLens = { x: lensX, y: axis + fraction * rayAperture };
-        const t = (sensorX - lensX) / (imageX - lensX);
-        const hit = { x: sensorX, y: atLens.y + (imageTip.y - atLens.y) * t };
-        hits.push(hit);
-        ctx.strokeStyle = index === Math.floor(rayCount / 2) ? '#1c7293' : 'rgba(39,111,146,.68)';
-        ctx.lineWidth = index === Math.floor(rayCount / 2) ? 2.6 : 1.8; ctx.beginPath();
-        ctx.moveTo(head.x, head.y); ctx.lineTo(atLens.x, atLens.y); ctx.stroke();
-        const path = [head, atLens];
-        if (cameraPath === 'viewfinder') {
-          const slope = (imageTip.y - atLens.y) / (imageX - lensX);
-          const mirrorHitX = (axis + mirrorX - atLens.y + slope * lensX) / (slope + 1);
-          const mirrorHit = { x: mirrorHitX, y: axis - (mirrorHitX - mirrorX) };
-          const screenHit = { x: mirrorHit.x + slope * (screenY - mirrorHit.y), y: screenY };
-          strokeSegment(ctx, atLens, mirrorHit, '#b85044', index === Math.floor(rayCount / 2) ? 2.6 : 1.8);
-          strokeSegment(ctx, mirrorHit, screenHit, '#0f766e', 2);
-          path.push(mirrorHit, screenHit);
-        } else {
-          ctx.strokeStyle = index === Math.floor(rayCount / 2) ? '#b85044' : 'rgba(185,80,68,.72)';
-          ctx.beginPath(); ctx.moveTo(atLens.x, atLens.y); ctx.lineTo(hit.x, hit.y); ctx.stroke();
-          path.push(hit);
-        }
-        const travel = positiveModulo(time * .65 + index * .2, 1);
-        const progress = travel * (path.length - 1);
-        const segment = Math.min(path.length - 2, Math.floor(progress));
-        const start = path[segment];
-        const end = path[segment + 1];
-        const portion = progress - segment;
-        instrumentParticle(ctx, start.x + (end.x - start.x) * portion, start.y + (end.y - start.y) * portion, '#fff8d6', compact ? 2.5 : 3.5);
-      });
-      if (cameraPath === 'viewfinder') {
-        const upper = { x: mirrorX - 8, y: prismY };
-        const turn = { x: mirrorX + 25, y: prismY - 8 };
-        const ocular = { x: viewfinderX, y: prismY - 8 };
-        strokeSegment(ctx, { x: mirrorX - 8, y: screenY }, upper, '#0f766e', 2.4);
-        strokeSegment(ctx, upper, turn, '#0f766e', 2.4);
-        strokeSegment(ctx, turn, ocular, '#0f766e', 2.4);
-        ctx.strokeStyle = '#2f4d59'; ctx.lineWidth = 5;
-        ctx.beginPath(); ctx.moveTo(viewfinderX - 5, prismY - 20); ctx.lineTo(viewfinderX - 5, prismY + 5); ctx.stroke();
-        ctx.fillStyle = '#f8fafc'; ctx.strokeStyle = '#24485c'; ctx.lineWidth = 2;
-        ctx.beginPath(); ctx.ellipse(viewfinderX + 9, prismY - 8, 11, 8, 0, 0, 2 * Math.PI); ctx.fill(); ctx.stroke();
-        ctx.fillStyle = '#24485c'; ctx.beginPath(); ctx.arc(viewfinderX + 9, prismY - 8, 3, 0, 2 * Math.PI); ctx.fill();
+      const rayCount = aperture < 10 ? 3 : aperture < 21 ? 5 : 7;
+      for (const [source, target, color] of [[head, imageTip, '#2679ad'], [{ x: personX, y: axis }, { x: imageX, y: axis }, '#b87934']]) {
+        Array.from({ length: rayCount }, (_, index) => -1 + 2 * index / (rayCount - 1)).forEach((fraction, index) => {
+          const atLens = { x: lensX, y: axis + fraction * aperturePx };
+          const t = (sensorX - lensX) / (imageX - lensX);
+          const hit = { x: sensorX, y: atLens.y + (target.y - atLens.y) * t };
+          if (source === head) hits.push(hit);
+          ctx.strokeStyle = color; ctx.globalAlpha = index === Math.floor(rayCount / 2) ? .9 : .28;
+          ctx.lineWidth = index === Math.floor(rayCount / 2) ? 2.5 : 1.3;
+          ctx.beginPath(); ctx.moveTo(source.x, source.y); ctx.lineTo(atLens.x, atLens.y); ctx.lineTo(hit.x, hit.y); ctx.stroke();
+          ctx.globalAlpha = 1;
+          const travel = positiveModulo(time * .65 + index * .17, 1);
+          const path = travel < .5 ? [source, atLens, travel * 2] : [atLens, hit, travel * 2 - 1];
+          instrumentParticle(ctx, path[0].x + (path[1].x - path[0].x) * path[2], path[0].y + (path[1].y - path[0].y) * path[2], color, compact ? 2.5 : 3);
+        });
       }
-      if (cameraPath === 'exposure' && imageX > lensX + 5 && imageX < sensorX + 25) {
+      if (imageX > lensX + 5 && imageX < sensorX + 25) {
         ctx.fillStyle = '#0f766e'; ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.5;
         ctx.beginPath(); ctx.arc(imageX, imageTip.y, 4.5, 0, 2 * Math.PI); ctx.fill(); ctx.stroke();
       }
-      if (cameraPath === 'exposure') {
+      {
         const hitRange = Math.max(...hits.map(point => point.y)) - Math.min(...hits.map(point => point.y));
         ctx.strokeStyle = focused ? '#10817d' : '#b64a43'; ctx.lineWidth = 3;
         ctx.beginPath(); ctx.moveTo(sensorX + 12, hits[0].y); ctx.lineTo(sensorX + 12, hits.at(-1).y); ctx.stroke();
         ctx.fillStyle = focused ? '#0e807b' : '#b64a43';
         ctx.beginPath(); ctx.arc(sensorX, hits[Math.floor(rayCount / 2)].y, Math.max(3, hitRange / 2), 0, 2 * Math.PI); ctx.globalAlpha = .25; ctx.fill(); ctx.globalAlpha = 1;
-        const sensorFigureHeight = Math.max(8, Math.abs(hits[Math.floor(rayCount / 2)].y - axis));
+        const sensorFigureHeight = 1.25 * Math.max(32, Math.abs(hits[Math.floor(rayCount / 2)].y - axis));
         ctx.save();
-        ctx.beginPath(); ctx.rect(sensorX - 40, bodyTop + 14, 44, bodyBottom - bodyTop - 28); ctx.clip();
-        ctx.globalAlpha = (focused ? .82 : .5) * previewLight;
+        ctx.beginPath(); ctx.rect(sensorX - 72, bodyTop + 14, 76, bodyBottom - bodyTop - 28); ctx.clip();
+        ctx.globalAlpha = (focused ? .9 : .58) * (.55 + .45 * previewLight);
         ctx.filter = `blur(${Math.min(7, circleMm * 8).toFixed(1)}px)`;
-        drawCameraPerson(ctx, sensorX - 9, axis, sensorFigureHeight, true);
+        drawCameraPerson(ctx, sensorX - 29, axis, sensorFigureHeight, true);
         ctx.restore();
       }
       drawCameraPerson(ctx, personX, head.y, personHeight + 16);
-      drawSceneLabel(ctx, compact ? 8 : 18, 14, cameraPath === 'viewfinder' ? '鏡頭 → 反光鏡 → 觀景窗' : '鏡頭 → 感光元件');
+      for (const [fraction, minimum, mark] of [[.22, 45, 'F'], [.44, 70, '2F']]) {
+        const x = lensX - Math.min(lensX - personX - 12, Math.max(minimum, (lensX - personX) * fraction));
+        if (x > personX + 7) {
+          ctx.strokeStyle = '#a9bcc3'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(x, axis - 7); ctx.lineTo(x, axis + 7); ctx.stroke();
+          ctx.fillStyle = '#78909a'; ctx.font = '12px sans-serif'; ctx.fillText(mark, x - 6, axis + 22);
+        }
+      }
+      drawSceneLabel(ctx, compact ? 8 : 18, 14, '鏡頭 → 感光元件');
       if (!compact) {
         drawSceneLabel(ctx, personX - 24, axis + 29, '人物');
-        drawSceneLabel(ctx, sensorX + 26, axis - 36, cameraPath === 'viewfinder' ? '感光元件未曝光' : '感光元件');
-        if (cameraPath === 'viewfinder') {
-          drawSceneLabel(ctx, mirrorX - 45, axis + 94, '反光鏡');
-          drawSceneLabel(ctx, mirrorX - 46, bodyTop - 61, '五稜鏡');
-          drawSceneLabel(ctx, mirrorX - 63, screenY + 20, '對焦屏');
-          drawSceneLabel(ctx, viewfinderX + 13, prismY - 11, '觀景窗');
-        }
+        drawSceneLabel(ctx, sensorX + 26, axis - 36, '感光元件');
       }
       if (!compact) {
         const graph = { x: w * .08, y: h * .76, w: w * .47, h: h * .21 };
@@ -6023,14 +6033,12 @@
       const previewHeight = (preview.h - 14) * .7 * relativeMagnification;
       ctx.save(); ctx.beginPath(); ctx.rect(preview.x + 5, preview.y + 5, preview.w - 10, preview.h - 10); ctx.clip();
       ctx.filter = `blur(${Math.min(14, circleMm * (compact ? 9 : 12)).toFixed(1)}px)`;
-      drawCameraPerson(ctx, previewX, preview.y + preview.h / 2 - previewHeight / 2, previewHeight, cameraPath === 'exposure');
+      drawCameraPerson(ctx, previewX, preview.y + preview.h / 2 - previewHeight / 2, previewHeight, true);
       ctx.restore();
       ctx.fillStyle = `rgba(3,12,18,${(1 - previewLight) * .84})`;
       ctx.fillRect(preview.x + 4, preview.y + 4, preview.w - 8, preview.h - 8);
       ctx.fillStyle = '#e7f4f4'; ctx.font = `700 ${compact ? 10 : 12}px "Times New Roman", "Tinos", "DFKai-SB", serif`;
-      ctx.fillText(cameraPath === 'viewfinder'
-        ? '觀景窗所見（正立）'
-        : previewHeight > preview.h - 12 ? '感光元件預覽（倒立；近距離裁切）' : '感光元件放大預覽（倒立）', preview.x + 12, preview.y + 19);
+      ctx.fillText(previewHeight > preview.h - 12 ? '感光元件預覽（倒立；近距離裁切）' : '感光元件放大預覽（倒立）', preview.x + 12, preview.y + 19);
       ctx.fillText(`進光 ${relativeLight.toFixed(2)}×`, preview.x + 12, preview.y + preview.h - 11);
     }
 
@@ -8069,6 +8077,15 @@
       ctx.arc(sun.x, sun.y, compact ? 15 : 24, 0, Math.PI * 2); ctx.fill();
       ctx.fillStyle = skylightColor; ctx.beginPath();
       ctx.arc(skyPoint.x, skyPoint.y, compact ? 13 : 20, 0, Math.PI * 2); ctx.fill();
+      for (const [point, amounts] of [[sun, direct], [skyPoint, sky]]) {
+        const barTop = point.y + (compact ? 25 : 32);
+        const barX = compact ? 18 : 40;
+        for (const [index, key, color] of [[0, 'red', '#fb6b66'], [1, 'green', '#68d69a'], [2, 'blue', '#61bbff']]) {
+          const y = barTop + index * (compact ? 16 : 21);
+          ctx.fillStyle = '#253c4a'; ctx.fillRect(barX, y, compact ? 70 : 110, 10);
+          ctx.fillStyle = color; ctx.fillRect(barX, y, (compact ? 70 : 110) * amounts[key], 10);
+        }
+      }
       ctx.strokeStyle = sunlightColor; ctx.lineWidth = compact ? 5 : 9;
       ctx.beginPath(); ctx.moveTo(sun.x + 25, sun.y); ctx.lineTo(cloudX, cloudY + cloudH * .37); ctx.stroke();
       ctx.strokeStyle = skylightColor; ctx.lineWidth = compact ? 5 : 9;
@@ -8088,19 +8105,33 @@
       ctx.fillStyle = '#0b1723'; ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 3;
       ctx.beginPath(); ctx.arc(eye.x, eye.y, compact ? 15 : 23, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
       ctx.fillStyle = '#1f3744'; ctx.font = '700 ' + (compact ? 11 : 13) + 'px "Times New Roman", "Tinos", "DFKai-SB", serif';
-      ctx.fillText('含冰水的厚雲', cloudX + 8, cloudY + 26);
+      ctx.fillText(compact ? '厚雲' : '厚雲：多次散射與吸收', cloudX + 8, cloudY + 26);
       ctx.fillStyle = '#e2e8f0';
       ctx.fillText('觀看方向', eye.x - 34, eye.y + 42);
       ctx.strokeStyle = '#94a3b8'; ctx.setLineDash([5, 5]); ctx.lineWidth = 2;
       ctx.beginPath(); ctx.moveTo(cloudX + cloudW, cloudY + cloudH * .5); ctx.lineTo(eye.x - 24, eye.y); ctx.stroke();
       ctx.setLineDash([]);
       ctx.fillStyle = '#cbd5e1'; ctx.font = '700 ' + (compact ? 11 : 14) + 'px "Times New Roman", "Tinos", "DFKai-SB", serif';
-      ctx.fillText('？', cloudX + cloudW + (eye.x - cloudX - cloudW) * .45, eye.y - 12);
-      const infoY = h * .83;
-      ctx.fillText(compact ? '紫霞：紅色晚霞與藍色散射光' : '紫色晚霞：偏紅的低角度照明與較短波散射光、氣膠條件可能共同作用', 18, infoY);
-      ctx.fillStyle = '#94a3b8'; ctx.font = '600 ' + (compact ? 10 : 12) + 'px "Times New Roman", "Tinos", "DFKai-SB", serif';
-      ctx.fillText(compact ? '綠雲：冰水雲假說仍有爭議' : '綠色暴風天空與冰水豐富的雲有關的假說仍有爭議；不能用單一公式定色。', 18, infoY + 25);
-      ctx.fillText(compact ? '雲色不能當龍捲風警報' : '綠色或紫色都不是龍捲風警報；圖示只給出可能的入射照明。', 18, infoY + 49);
+      ctx.fillText(compact ? '雲色未定' : '實際雲色取決於雲內結構', compact ? eye.x - 39 : cloudX + cloudW + 5, eye.y - 22);
+      const infoY = h * .79;
+      ctx.fillStyle = '#172d3a'; ctx.fillRect(0, infoY - 13, w, h - infoY + 13);
+      ctx.fillStyle = '#e2e8f0'; ctx.font = '700 ' + (compact ? 11 : 14) + 'px "Times New Roman", "Tinos", "DFKai-SB", serif';
+      ctx.fillText('左側色條：直射剩餘／側向散射的紅綠藍比例', 18, infoY + 9);
+      if (!compact) {
+        for (const [x, color] of [[w * .14, '#e8a775'], [w * .21, '#5d9fe5'], [w * .32, '#a888c4'], [w * .64, '#69a98b']]) {
+          ctx.fillStyle = color; ctx.beginPath(); ctx.arc(x, infoY + 48, 20, 0, 2 * Math.PI); ctx.fill();
+        }
+        ctx.fillStyle = '#e2e8f0'; ctx.fillText('＋', w * .175 - 5, infoY + 53); ctx.fillText('→', w * .26 - 5, infoY + 53);
+        ctx.font = '600 12px "Times New Roman", "Tinos", "DFKai-SB", serif';
+        ctx.fillText('紫色晚霞：暖光、藍色天空光及氣膠可能共同作用', w * .08, infoY + 89);
+        ctx.fillText('綠色暴風天空：可能與厚雲、冰水及照明有關；成因未有定論', w * .55, infoY + 89);
+      } else {
+        ctx.fillStyle = '#b9c9d3'; ctx.font = '600 11px "Times New Roman", "Tinos", "DFKai-SB", serif';
+        ctx.fillText('紫色晚霞：暖光與藍色天空光可能共同作用', 18, infoY + 39);
+        ctx.fillText('綠色暴風天空：成因尚無定論', 18, infoY + 63);
+      }
+      ctx.fillStyle = '#94a3b8'; ctx.font = '600 11px "Times New Roman", "Tinos", "DFKai-SB", serif';
+      ctx.fillText(compact ? '雲色不是龍捲風判據，也不能由此推算。' : '雲色不是龍捲風判據；不能從這張入射光示意圖直接推算雲色。', 18, h - 13);
       $('scatter-path').innerHTML = '太陽仰角 ' + elevation.toFixed(0) + '°<small>決定直射光的相對路徑</small>';
       $('scatter-blue').innerHTML = '雲量設定 ' + density.toFixed(2) + 'x<small>僅表示雲層示意厚度</small>';
       $('scatter-direct').innerHTML = '直射與天空光色不同<small>照明混合不等於雲色預報</small>';
@@ -8136,10 +8167,11 @@
       ctx.fillStyle = skyGradient; ctx.fillRect(0, 0, w, beamY);
       ctx.globalAlpha = 1;
       ctx.fillStyle = '#e2e8f0'; ctx.font = '700 ' + (compact ? 12 : 15) + 'px "Times New Roman", "Tinos", "DFKai-SB", serif';
-      ctx.fillText('同一束入射白光', left, 30);
-      ctx.fillText('側面看天空：散出的光', left, compact ? 67 : 71);
+      ctx.fillText('太陽白光穿越大氣', left, 30);
+      ctx.fillText('視線 A：抬頭看天空（接收側向散射光）', left, compact ? 67 : 71);
       ctx.fillStyle = skyColor;
-      ctx.fillRect(right - (compact ? 33 : 44), compact ? 54 : 55, compact ? 28 : 36, 14);
+      ctx.beginPath(); ctx.arc(right - 18, compact ? 58 : 62, compact ? 11 : 15, 0, 2 * Math.PI); ctx.fill();
+      ctx.strokeStyle = '#d6e7f0'; ctx.lineWidth = 2; ctx.stroke();
       const tracks = colors.map((channel, index) => ({ ...channel, y: beamY + (index - 1) * (compact ? 15 : 20) }));
       tracks.forEach(channel => {
         ctx.fillStyle = channel.color;
@@ -8173,23 +8205,22 @@
           const x = left + (right - left) * fraction;
           tracks.forEach((channel, index) => {
             const lost = transmissionAt(channel, fraction - .06) - transmissionAt(channel, fraction + .06);
-            const rise = compact ? 53 : 75;
+            const eyeX = right - 18, eyeY = compact ? 58 : 62;
             ctx.strokeStyle = channel.color;
-            ctx.globalAlpha = Math.min(.82, .08 + lost * 4.2);
-            ctx.lineWidth = 1.4 + lost * 10;
+            ctx.globalAlpha = Math.min(.85, .05 + lost * 9);
+            ctx.lineWidth = 1.4 + lost * 12;
             ctx.beginPath(); ctx.moveTo(x, channel.y);
-            ctx.lineTo(x + (index - 1) * 5, channel.y - rise); ctx.stroke();
-            ctx.fillStyle = channel.color;
-            ctx.beginPath(); ctx.arc(x + (index - 1) * 5, channel.y - rise, 2.8, 0, Math.PI * 2); ctx.fill();
+            ctx.lineTo(eyeX, eyeY); ctx.stroke();
           });
         }
         ctx.globalAlpha = 1;
       }
       const directColor = wavelengthRgb(transmission);
       ctx.fillStyle = '#e2e8f0'; ctx.font = '700 ' + (compact ? 11 : 14) + 'px "Times New Roman", "Tinos", "DFKai-SB", serif';
-      ctx.fillText('直射方向剩下的光', left, beamY + (compact ? 57 : 69));
+      ctx.fillText('視線 B：直視太陽（接收未散出的光）', left, beamY + (compact ? 57 : 69));
       ctx.fillStyle = directColor;
       ctx.beginPath(); ctx.arc(right - 13, beamY + (compact ? 54 : 65), compact ? 9 : 13, 0, Math.PI * 2); ctx.fill();
+      ctx.strokeStyle = '#d6e7f0'; ctx.lineWidth = 2; ctx.stroke();
       const tableY = h * .57;
       ctx.strokeStyle = '#456176'; ctx.lineWidth = 1;
       ctx.beginPath(); ctx.moveTo(left - 16, tableY - 17); ctx.lineTo(right, tableY - 17); ctx.stroke();
@@ -8200,7 +8231,7 @@
           const barW = Math.max(20, columnW - (compact ? 11 : 22));
           ctx.fillStyle = '#cbd5e1';
           ctx.font = '700 ' + (compact ? 10 : 13) + 'px "Times New Roman", "Tinos", "DFKai-SB", serif';
-          ctx.fillText(step === 0 ? '入射' : step === 3 ? '到眼睛' : step + '/3', x, tableY);
+          ctx.fillText(step === 0 ? '入射' : step === 3 ? '直射剩餘' : step + '/3', x, tableY);
           colors.forEach((channel, index) => {
             const y = tableY + 20 + index * (compact ? 31 : 39);
             const amount = transmissionAt(channel, step / 3);
@@ -8212,6 +8243,16 @@
             }
           });
         }
+        const scatteredY = h * .79;
+        ctx.fillStyle = '#e2e8f0'; ctx.font = '700 13px "Times New Roman", "Tinos", "DFKai-SB", serif';
+        ctx.fillText('離開直射束的比例（抬頭看天空的來源）', left, scatteredY - 15);
+        colors.forEach((channel, index) => {
+          const y = scatteredY + index * (compact ? 30 : 35);
+          ctx.fillStyle = '#cbd5e1'; ctx.fillText(channel.label, left, y + 9);
+          ctx.fillStyle = '#223649'; ctx.fillRect(left + 28, y, right - left - 80, 14);
+          ctx.fillStyle = channel.color; ctx.fillRect(left + 28, y, (right - left - 80) * side[channel.key], 14);
+          ctx.fillStyle = '#cbd5e1'; ctx.fillText(Math.round(side[channel.key] * 100) + '%', right - 42, y + 11);
+        });
       }
       const noteY = h - 33;
       ctx.fillStyle = '#cbd5e1'; ctx.font = '600 ' + (compact ? 10 : 12) + 'px "Times New Roman", "Tinos", "DFKai-SB", serif';
@@ -11751,6 +11792,7 @@
       else if (activeModule === 'double') drawDoubleSlit();
       else if (activeModule === 'single') drawSingleSlit();
       else if (activeModule === 'huygens') drawHuygens();
+      else if (activeModule === 'wave2d') drawWave2D();
       else if (activeModule === 'prism') drawPrism();
       else if (activeModule === 'mirage') drawMirage();
       else if (activeModule === 'rainbow') drawRainbow();
@@ -12249,6 +12291,12 @@
       input.addEventListener('input', drawActive);
       input.addEventListener('change', drawActive);
     });
+    $('wave2d-canvas').addEventListener('pointerdown', event => {
+      const rect = event.currentTarget.getBoundingClientRect();
+      wave2dProbe.x = (event.clientX - rect.left) / rect.width;
+      wave2dProbe.y = (event.clientY - rect.top) / rect.height;
+      drawActive();
+    });
     document.querySelectorAll('.film-mode').forEach(button => button.addEventListener('click', () => {
       filmLightMode = button.dataset.filmMode;
       document.querySelectorAll('.film-mode').forEach(choice => {
@@ -12435,6 +12483,7 @@
         cameraTrackPhase = 0;
         $('camera-object').value = '5';
         $('camera-focus').value = '50.5';
+        $('camera-aperture').value = '22';
       }
       if (activeModule === 'electromagnetism' && activeElectromagnetism === 'generator') {
         generatorAngle = Math.PI / 2;
@@ -12474,17 +12523,6 @@
 
     $('skater-out').addEventListener('click', () => { $('skater-arms').value = '100'; drawActive(); });
     $('skater-in').addEventListener('click', () => { $('skater-arms').value = '0'; drawActive(); });
-    document.querySelectorAll('.camera-path-mode').forEach(button => {
-      button.addEventListener('click', () => {
-        cameraPath = button.dataset.cameraPath;
-        document.querySelectorAll('.camera-path-mode').forEach(choice => {
-          const active = choice === button;
-          choice.classList.toggle('active', active);
-          choice.setAttribute('aria-pressed', String(active));
-        });
-        drawActive();
-      });
-    });
     function syncEyeCases() {
       document.querySelectorAll('.eye-case').forEach(button => {
         const active = button.dataset.eyeCondition === $('eye-condition').value && button.dataset.eyeCorrection === $('eye-correction').value;
@@ -12507,6 +12545,7 @@
       stopCameraTracking();
       const objectMm = number('camera-object') * 1000;
       $('camera-focus').value = String(Math.round(10 * 50 * objectMm / (objectMm - 50)) / 10);
+      $('camera-aperture').value = String(Math.round(12 + 10 * Math.min(1, number('camera-object') / 5)));
       drawActive();
     });
     function stopCameraTracking() {
@@ -12551,6 +12590,7 @@
           $('camera-object').value = String(distance);
           const objectMm = number('camera-object') * 1000;
           $('camera-focus').value = String(Math.round(10 * 50 * objectMm / (objectMm - 50)) / 10);
+          $('camera-aperture').value = String(Math.round(12 + 10 * Math.min(1, distance / 5)));
         }
         if (activeModule === 'electromagnetism' && activeElectromagnetism === 'bell') advanceBell(scaled);
         if (activeModule === 'electromagnetism' && activeElectromagnetism === 'motor') advanceMotor(scaled);
