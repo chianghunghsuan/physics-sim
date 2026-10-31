@@ -1637,6 +1637,10 @@
               <label for="pulley-speed">播放速度：<span id="pulley-speed-out">0.60x</span></label>
               <input id="pulley-speed" type="range" min="0.1" max="1.5" step="0.05" value="0.6">
             </div>
+            <div class="control">
+              <label for="pulley-progress">拉繩進度：<span id="pulley-progress-out">0%</span></label>
+              <input id="pulley-progress" type="range" min="0" max="100" step="1" value="0" aria-label="拖曳拉繩進度並定格滑輪組">
+            </div>
           </div>
           <div class="checks">
             <label class="check"><input type="checkbox" id="pulley-show-force" checked>顯示拉力與重量</label>
@@ -6882,15 +6886,23 @@
 
     function drawPulleyWheel(ctx, x, y, radius, fixed = false) {
       ctx.save();
-      ctx.fillStyle = fixed ? '#e2e8f0' : '#dbeafe';
-      ctx.strokeStyle = '#475569';
-      ctx.lineWidth = 3;
+      const face = ctx.createRadialGradient(x - radius * .3, y - radius * .35, 1, x, y, radius);
+      face.addColorStop(0, '#ffffff');
+      face.addColorStop(1, fixed ? '#cbd5e1' : '#bfdbfe');
+      ctx.fillStyle = face;
+      ctx.strokeStyle = '#334155';
+      ctx.lineWidth = 3.5;
       ctx.beginPath();
       ctx.arc(x, y, radius, 0, Math.PI * 2);
       ctx.fill();
       ctx.stroke();
+      ctx.strokeStyle = fixed ? '#94a3b8' : '#7ca9d2';
+      ctx.lineWidth = 1.5;
       ctx.beginPath();
-      ctx.arc(x, y, 4, 0, Math.PI * 2);
+      ctx.arc(x, y, radius * .72, 0, Math.PI * 2);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.arc(x, y, Math.max(4, radius * .18), 0, Math.PI * 2);
       ctx.fillStyle = '#475569';
       ctx.fill();
       if (fixed) {
@@ -7101,36 +7113,6 @@
       }
     }
 
-    function drawFlowAlongPolyline(ctx, points, phase, color = '#93c5fd') {
-      const lengths = [];
-      let total = 0;
-      for (let index = 1; index < points.length; index += 1) {
-        const length = Math.hypot(points[index].x - points[index - 1].x, points[index].y - points[index - 1].y);
-        lengths.push(length);
-        total += length;
-      }
-      if (total < 1) return;
-      ctx.save();
-      ctx.fillStyle = color;
-      for (let distance = positiveModulo(phase, 34); distance < total; distance += 34) {
-        let remaining = distance;
-        let segment = 0;
-        while (segment < lengths.length - 1 && remaining > lengths[segment]) {
-          remaining -= lengths[segment];
-          segment += 1;
-        }
-        const fraction = lengths[segment] ? remaining / lengths[segment] : 0;
-        const a = points[segment];
-        const b = points[segment + 1];
-        const x = a.x + (b.x - a.x) * fraction;
-        const y = a.y + (b.y - a.y) * fraction;
-        ctx.beginPath();
-        ctx.arc(x, y, 3.2, 0, Math.PI * 2);
-        ctx.fill();
-      }
-      ctx.restore();
-    }
-
     function drawPulleyPhysical() {
       const canvas = $('pulley-canvas');
       const { ctx, w, h } = resizeCanvas(canvas);
@@ -7152,10 +7134,12 @@
       setText('pulley-pull-speed-out', `${pullSpeed.toFixed(2)} m/s`);
       setText('pulley-height-out', `${targetHeight.toFixed(2)} m`);
       setText('pulley-speed-out', `${number('pulley-speed').toFixed(2)}x`);
+      $('pulley-progress').value = Math.round(pulled / pullDistance * 100);
+      setText('pulley-progress-out', `${Math.round(pulled / pullDistance * 100)}%`);
       $('pulley-strands').innerHTML = `支撐繩股 n = ${strands}<small>${strands === 1 ? '定滑輪只改變施力方向' : `動滑輪組由 ${strands} 股同張力繩索支撐`}</small>`;
       $('pulley-force').innerHTML = `理想拉力 F = ${force.toFixed(1)} N<small>${strands}F = mg；忽略繩重與摩擦</small>`;
-      $('pulley-distance').innerHTML = `拉繩距離 s = ${pullDistance.toFixed(2)} m<small>負載上升 h = ${targetHeight.toFixed(2)} m；s = ${strands}h</small>`;
-      $('pulley-time').innerHTML = `完成時間 = ${completionTime.toFixed(2)} s<small>固定拉繩速度 ${pullSpeed.toFixed(2)} m/s</small>`;
+      $('pulley-distance').innerHTML = `已拉 s = ${pulled.toFixed(2)} m<small>負載上升 h = ${rise.toFixed(2)} m；s = ${strands}h</small>`;
+      $('pulley-time').innerHTML = `已用時間 = ${Math.min(localTime, completionTime).toFixed(2)} s<small>完成需 ${completionTime.toFixed(2)} s；固定拉繩速度 ${pullSpeed.toFixed(2)} m/s</small>`;
 
       const beamY = 48;
       const topY = 96;
@@ -7227,7 +7211,6 @@
       ropePoints.forEach((point, index) => index === 0 ? ctx.moveTo(point.x, point.y) : ctx.lineTo(point.x, point.y));
       ctx.stroke();
       ctx.restore();
-      drawFlowAlongPolyline(ctx, ropePoints, time * pullSpeed * 90);
 
       fixedCenters.forEach(center => drawPulleyWheel(ctx, center.x, center.y, strands === 1 ? (compact ? 27 : 33) : (compact ? 17 : 23), true));
       movingCenters.forEach(center => drawPulleyWheel(ctx, center.x, center.y, compact ? 17 : 23, false));
@@ -7279,13 +7262,14 @@
       }
 
       if ($('pulley-show-force').checked) {
-        drawArrow(ctx, freeX + 28, Math.max(topY + 25, freeY - 60), freeX + 28, Math.max(topY + 60, freeY - 15), css('--blue'));
+        const effortX = freeX + (compact ? -20 : 28);
+        drawArrow(ctx, effortX, Math.max(topY + 25, freeY - 60), effortX, Math.max(topY + 60, freeY - 15), css('--blue'));
         if (!compact) drawArrow(ctx, loadX - 53, loadTop + 3, loadX - 53, loadTop + 43, css('--red'));
       }
 
       if ($('pulley-show-rulers').checked) {
-        const x1 = w * (compact ? .78 : .78);
-        const x2 = w * (compact ? .91 : .88);
+        const x1 = w * (compact ? .82 : .78);
+        const x2 = w * (compact ? .94 : .88);
         ctx.save(); ctx.strokeStyle = '#cad7de'; ctx.lineWidth = 2;
         for (const x of [x1, x2]) { ctx.beginPath(); ctx.moveTo(x, 82); ctx.lineTo(x, h - 28); ctx.stroke(); }
         ctx.strokeStyle = css('--green'); ctx.lineWidth = 5;
@@ -12634,6 +12618,21 @@
       time = (Math.min(.999, number('retro-time') / 100) - .5) * eventWindow / .2;
       running = false;
       $('global-play').textContent = '播放';
+      last = performance.now();
+      drawActive();
+    });
+
+    $('pulley-progress').addEventListener('input', () => {
+      const strands = Number($('pulley-mode').value);
+      time = number('pulley-progress') / 100 * strands * number('pulley-height') / number('pulley-pull-speed');
+      running = false;
+      $('global-play').textContent = '播放';
+      last = performance.now();
+      drawActive();
+    });
+
+    $('pulley-mode').addEventListener('change', () => {
+      time = 0;
       last = performance.now();
       drawActive();
     });
