@@ -606,6 +606,7 @@
       #huygens-canvas { height: 430px; min-height: 400px; }
       #mirror-canvas.parallel-expanded { height: 410px; min-height: 380px; }
       #microscope-canvas, #eye-canvas, #circular-canvas, #precession-canvas { height: 470px; min-height: 430px; }
+      #skater-canvas { height: 500px; min-height: 500px; }
       #mechanics-view-circular:has(#circ-show-graph:checked) #circular-canvas { height: 600px; min-height: 600px; }
       #drive-canvas, #sound-canvas, #generator-canvas, #bell-canvas { height: 520px; min-height: 480px; }
       #camera-canvas { height: 610px; min-height: 610px; }
@@ -11983,38 +11984,120 @@
       const inertia = .65 + 1.35 * extension * extension;
       const angularMomentum = 3.6;
       const omega = angularMomentum / inertia;
-      const cx = w * (compact ? .5 : .39);
-      const cy = h * .50;
-      const radius = Math.min(w * (compact ? .29 : .23), h * .31);
+      const cx = w * (compact ? .5 : .36);
+      const cy = h * (compact ? .36 : .51);
+      const radius = Math.min(w * (compact ? .34 : .23), h * (compact ? .25 : .34), compact ? 108 : 155);
       setText('skater-arms-out', `${Math.round(extension * 100)}%`);
       setText('skater-speed-out', `${number('skater-speed').toFixed(2)}x`);
       $('skater-inertia').innerHTML = `轉動慣量 ${math('I')} = ${inertia.toFixed(2)} kg·m²<small>手臂越靠近轉軸，${math('I')} 越小</small>`;
       $('skater-omega').innerHTML = `角速度 ${math('\\omega')} = ${omega.toFixed(2)} rad/s<small>收手前為 1.80 rad/s</small>`;
       $('skater-angular').innerHTML = `角動量 ${math('L')} = ${angularMomentum.toFixed(2)} kg·m²/s<small>外力矩近似為零，${math('L')} 不變</small>`;
       $('skater-period').innerHTML = `轉一圈需 ${(2 * Math.PI / omega).toFixed(2)} s<small>收手前為 3.49 s</small>`;
-      ctx.fillStyle = '#f3f8fb'; ctx.fillRect(0, 0, w, h);
-      ctx.strokeStyle = '#cbd5e1'; ctx.lineWidth = 2;
-      [radius * .40, radius * .78].forEach(r => { ctx.beginPath(); ctx.ellipse(cx, cy, r, r * .75, 0, 0, 2 * Math.PI); ctx.stroke(); });
-      drawSceneLabel(ctx, 20, 16, '俯視：追蹤衣袖亮點的轉動');
-      ctx.save(); ctx.translate(cx, cy); ctx.rotate(skaterPhase);
-      const arm = radius * (.25 + extension * .60);
-      ctx.strokeStyle = '#247d8e'; ctx.lineWidth = 16; ctx.lineCap = 'round';
-      ctx.beginPath(); ctx.moveTo(-arm, -5); ctx.lineTo(arm, -5); ctx.stroke();
-      ctx.strokeStyle = '#203e59'; ctx.lineWidth = 9;
-      ctx.beginPath(); ctx.moveTo(-7, 15); ctx.lineTo(-12, 39); ctx.moveTo(7, 15); ctx.lineTo(12, 39); ctx.stroke();
-      ctx.fillStyle = '#193c54'; ctx.beginPath(); ctx.ellipse(0, 0, 19, 23, 0, 0, 2 * Math.PI); ctx.fill();
-      ctx.fillStyle = '#e99d61'; ctx.beginPath(); ctx.arc(0, -19, 10, 0, 2 * Math.PI); ctx.fill();
-      ctx.fillStyle = '#e99d61'; [-arm, arm].forEach(x => { ctx.beginPath(); ctx.arc(x, 0, 9, 0, 2 * Math.PI); ctx.fill(); });
-      ctx.fillStyle = '#fff9b0'; ctx.shadowColor = '#e9a800'; ctx.shadowBlur = 18;
-      ctx.beginPath(); ctx.arc(arm, 0, 6, 0, 2 * Math.PI); ctx.fill(); ctx.restore();
-      const meterX = compact ? 20 : w * .70;
-      const meterY = compact ? h * .78 : h * .33;
-      const meterW = compact ? w - 40 : w * .23;
-      drawSceneLabel(ctx, meterX, meterY - 28, '同一秒轉過的角度');
-      ctx.fillStyle = '#dce8ee'; ctx.fillRect(meterX, meterY, meterW, 15);
-      ctx.fillStyle = '#e39050'; ctx.fillRect(meterX, meterY, meterW * Math.min(1, 1.8 / 5.54), 15);
-      ctx.fillStyle = '#087a70'; ctx.fillRect(meterX, meterY + 35, meterW * Math.min(1, omega / 5.54), 15);
-      drawSceneLabel(ctx, meterX, meterY + 60, `張開 1.80 → 現在 ${omega.toFixed(2)} rad/s`);
+      const floor = ctx.createRadialGradient(cx, cy, radius * .25, cx, cy, radius * 2.3);
+      floor.addColorStop(0, '#ffffff');
+      floor.addColorStop(1, '#e8f2f4');
+      ctx.fillStyle = floor;
+      ctx.fillRect(0, 0, w, h);
+      ctx.save();
+      ctx.strokeStyle = '#c6d8df';
+      ctx.lineWidth = 1.5;
+      [radius * .46, radius * .88].forEach(r => {
+        ctx.beginPath();
+        ctx.arc(cx, cy, r, 0, 2 * Math.PI);
+        ctx.stroke();
+      });
+      ctx.setLineDash([4, 7]);
+      ctx.strokeStyle = '#9fb5bf';
+      ctx.beginPath();
+      ctx.moveTo(cx, cy - radius * 1.18);
+      ctx.lineTo(cx, cy + radius * 1.18);
+      ctx.stroke();
+      ctx.restore();
+      drawCenteredText(ctx, '俯視：亮點隨衣袖一起轉動', cx, compact ? 27 : 35, '#334155', compact ? 11 : 14);
+
+      const arm = radius * (.28 + extension * .58);
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(skaterPhase);
+      ctx.lineCap = 'round';
+      ctx.strokeStyle = '#334155';
+      ctx.lineWidth = compact ? 10 : 13;
+      ctx.beginPath();
+      ctx.moveTo(-8, 22); ctx.lineTo(-13, 48);
+      ctx.moveTo(8, 22); ctx.lineTo(13, 48);
+      ctx.stroke();
+      ctx.strokeStyle = '#607d8b';
+      ctx.lineWidth = compact ? 5 : 7;
+      ctx.beginPath();
+      ctx.moveTo(-18, 48); ctx.lineTo(-5, 48);
+      ctx.moveTo(5, 48); ctx.lineTo(18, 48);
+      ctx.stroke();
+      for (const side of [-1, 1]) {
+        const elbowX = side * (20 + arm * .50);
+        const handX = side * arm;
+        const handY = 14 * (1 - extension);
+        ctx.strokeStyle = '#178a93';
+        ctx.lineWidth = compact ? 11 : 15;
+        ctx.beginPath();
+        ctx.moveTo(side * 15, -5);
+        ctx.lineTo(elbowX, -13);
+        ctx.lineTo(handX, handY);
+        ctx.stroke();
+        ctx.fillStyle = '#db9569';
+        ctx.beginPath();
+        ctx.arc(handX, handY, compact ? 6 : 8, 0, 2 * Math.PI);
+        ctx.fill();
+      }
+      ctx.fillStyle = '#205265';
+      ctx.beginPath();
+      ctx.ellipse(0, 1, compact ? 17 : 22, compact ? 22 : 28, 0, 0, 2 * Math.PI);
+      ctx.fill();
+      ctx.fillStyle = '#e9a374';
+      ctx.beginPath();
+      ctx.arc(0, -21, compact ? 11 : 14, 0, 2 * Math.PI);
+      ctx.fill();
+      ctx.fillStyle = '#263f4c';
+      ctx.beginPath();
+      ctx.arc(0, -25, compact ? 11 : 14, Math.PI, 2 * Math.PI);
+      ctx.fill();
+      ctx.fillStyle = '#fff3a0';
+      ctx.shadowColor = '#d6a400';
+      ctx.shadowBlur = 14;
+      ctx.beginPath();
+      ctx.arc(arm, 14 * (1 - extension), compact ? 5 : 6, 0, 2 * Math.PI);
+      ctx.fill();
+      ctx.restore();
+
+      const compareX = compact ? w * .5 : w * .76;
+      const compareY = compact ? h * .79 : h * .51;
+      const outerR = compact ? Math.min(60, w * .18) : Math.min(100, w * .095);
+      const innerR = outerR * .72;
+      drawCenteredText(ctx, '同樣 1 秒的轉角', compareX, compareY - outerR - (compact ? 17 : 30), '#334155', compact ? 12 : 15);
+      ctx.save();
+      ctx.lineCap = 'round';
+      for (const [r, angle, color] of [[outerR, 1.8, '#dc7747'], [innerR, omega, '#0f766e']]) {
+        ctx.strokeStyle = '#d8e3e8';
+        ctx.lineWidth = compact ? 5 : 7;
+        ctx.beginPath();
+        ctx.arc(compareX, compareY, r, 0, 2 * Math.PI);
+        ctx.stroke();
+        ctx.strokeStyle = color;
+        ctx.lineWidth = compact ? 6 : 8;
+        ctx.beginPath();
+        ctx.arc(compareX, compareY, r, -Math.PI / 2, -Math.PI / 2 + angle);
+        ctx.stroke();
+        const endAngle = -Math.PI / 2 + angle;
+        ctx.fillStyle = color;
+        ctx.beginPath();
+        ctx.arc(compareX + r * Math.cos(endAngle), compareY + r * Math.sin(endAngle), compact ? 5 : 6, 0, 2 * Math.PI);
+        ctx.fill();
+      }
+      ctx.restore();
+      ctx.fillStyle = '#334155';
+      ctx.font = `700 ${compact ? 11 : 13}px "Times New Roman", "Tinos", "DFKai-SB", serif`;
+      ctx.textAlign = 'center';
+      ctx.fillText(`伸手 ${Math.round(1.8 * 180 / Math.PI)}°`, compareX, compareY + outerR + (compact ? 18 : 26));
+      ctx.fillText(`現在 ${Math.round(omega * 180 / Math.PI)}°`, compareX, compareY + outerR + (compact ? 33 : 47));
     }
 
     function drawBareFieldCross(ctx, x, y, size, color, alpha) {
