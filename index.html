@@ -1882,7 +1882,7 @@
       </section>
 
       <section id="panel-film" class="panel" role="tabpanel">
-        <div class="module-head"><div><h2>薄膜干涉</h2><p class="module-copy">最先返回的兩束光分別由薄膜上、下表面反射。光程差與反射相位決定增強或減弱；反射率計算也包含膜內更高次的反射。</p></div></div>
+        <div class="module-head"><div><h2>薄膜干涉</h2><p class="module-copy">上、下表面的反射光沿同方向離開薄膜；圖中膜厚和橫向距離為方便觀察而放大，實際兩束光會重疊。光程差與反射相位決定增強或減弱；反射率計算也包含膜內更高次的反射。</p></div></div>
         <div class="values" aria-live="polite">
           <div class="badge" id="film-path">往返光程 = 0 nm</div>
           <div class="badge" id="film-phase">相位差 = <span data-latex="0\pi"></span></div>
@@ -10634,16 +10634,24 @@
       const result = thinFilmResult(lambda, nFilm, nSubstrate, theta);
       const top = h * .19;
       const thickness = number('film-thickness');
-      const depth = thickness === 0 ? 2 : Math.min(h * .26, 54 + Math.sqrt(thickness / 900) * h * .17);
+      const entry = { x: w * (compact ? .18 : .26), y: top };
+      const sourceLength = Math.min(top * .83, compact ? 72 : 112);
+      const lateral = Math.tan(result.thetaFilm);
+      const available = w - (compact ? 16 : 50) - entry.x - sourceLength * Math.sin(theta);
+      const rawDepth = 2 + Math.sqrt(thickness / 900) * h * .34;
+      const depth = Math.min(rawDepth, h * .28, available / Math.max(.2, 2 * lateral));
       const bottom = top + depth;
-      const entry = { x: w * (compact ? .32 : .29), y: top };
-      const sourceLength = Math.min(top * .85, compact ? 90 : 140);
       const source = { x: entry.x - sourceLength * Math.sin(theta), y: top - sourceLength * Math.cos(theta) };
-      const bounce = { x: entry.x + depth * Math.tan(result.thetaFilm), y: bottom };
-      const emerge = { x: bounce.x + depth * Math.tan(result.thetaFilm), y: top };
-      const sourceUpper = { x: emerge.x - sourceLength * Math.sin(theta), y: source.y };
-      const detector = { x: emerge.x + sourceLength * Math.sin(theta), y: source.y };
+      const bounce = { x: entry.x + depth * lateral, y: bottom };
+      const emerge = { x: bounce.x + depth * lateral, y: top };
+      const upperEnd = { x: entry.x + sourceLength * Math.sin(theta), y: source.y };
+      const lowerEnd = { x: emerge.x + sourceLength * Math.sin(theta), y: source.y };
       const color = `hsl(${Math.round((700 - lambda) * .9)} 72% 40%)`;
+      const beamColor = filmLightMode === 'mono' ? color : '#f7fbff';
+      const filmBeam = (a, b, width, alpha = 1) => {
+        if (filmLightMode === 'white') drawBeam(ctx, a, b, '#526979', width + 2.5, alpha * .7);
+        drawBeam(ctx, a, b, beamColor, width, alpha);
+      };
       ctx.fillStyle = '#f4f9fc';
       ctx.fillRect(0, 0, w, h);
       ctx.fillStyle = '#cce9ee';
@@ -10658,32 +10666,36 @@
       ctx.moveTo(0, bottom);
       ctx.lineTo(w, bottom);
       ctx.stroke();
-      if (filmLightMode === 'white') {
-        drawBeam(ctx, source, entry, '#718390', compact ? 5 : 7);
-        drawBeam(ctx, sourceUpper, emerge, '#718390', compact ? 5 : 7);
-      }
-      drawBeam(ctx, source, entry, filmLightMode === 'mono' ? color : '#fff', compact ? 3 : 5);
-      drawBeam(ctx, sourceUpper, emerge, filmLightMode === 'mono' ? color : '#fff', compact ? 3 : 5);
-      drawBeam(ctx, entry, bounce, color, 3.2, .75);
-      drawBeam(ctx, bounce, emerge, color, 3.2, .75);
-      drawBeam(ctx, emerge, detector, color, compact ? 4 : 6, .45 + .55 * Math.sqrt(result.reflectance));
-      ctx.fillStyle = '#fff'; ctx.strokeStyle = color; ctx.lineWidth = 2.5;
-      ctx.beginPath(); ctx.arc(detector.x, detector.y, compact ? 6 : 8, 0, 2 * Math.PI); ctx.fill(); ctx.stroke();
-      const dimensionX = Math.min(w - 28, Math.max(entry.x, emerge.x) + 34);
+      const detectorLeft = upperEnd.x - 9;
+      const detectorRight = lowerEnd.x + 9;
+      ctx.fillStyle = 'rgba(255,255,255,.62)';
+      ctx.strokeStyle = '#6f8897'; ctx.lineWidth = 1.5;
+      ctx.fillRect(detectorLeft, source.y - 7, detectorRight - detectorLeft, 14);
+      ctx.strokeRect(detectorLeft, source.y - 7, detectorRight - detectorLeft, 14);
+      filmBeam(source, entry, compact ? 3 : 5);
+      filmBeam(entry, upperEnd, compact ? 3 : 4, .65);
+      filmBeam(entry, bounce, compact ? 2.5 : 3.2, .75);
+      filmBeam(bounce, emerge, compact ? 2.5 : 3.2, .75);
+      filmBeam(emerge, lowerEnd, compact ? 3 : 4, .65);
+      ctx.fillStyle = '#2563eb';
+      ctx.beginPath(); ctx.arc(upperEnd.x, upperEnd.y, compact ? 4 : 6, 0, 2 * Math.PI); ctx.fill();
+      ctx.fillStyle = '#ea580c';
+      ctx.beginPath(); ctx.arc(lowerEnd.x, lowerEnd.y, compact ? 4 : 6, 0, 2 * Math.PI); ctx.fill();
+      const dimensionX = Math.min(w - 28, Math.max(entry.x, emerge.x) + (compact ? 20 : 34));
       ctx.strokeStyle = '#2a626e'; ctx.lineWidth = 1.5;
       ctx.beginPath(); ctx.moveTo(dimensionX, top); ctx.lineTo(dimensionX, bottom);
       ctx.moveTo(dimensionX - 5, top); ctx.lineTo(dimensionX + 5, top);
       ctx.moveTo(dimensionX - 5, bottom); ctx.lineTo(dimensionX + 5, bottom); ctx.stroke();
-      drawSceneLabel(ctx, dimensionX + 8, depth < 42 ? top - 34 : (top + bottom) / 2 - 10,
-        compact ? `t = ${thickness} nm` : `t = ${thickness} nm · 示意厚度`);
+      drawSceneLabel(ctx, compact ? w - 12 : dimensionX + 8, depth < 42 ? top - 34 : (top + bottom) / 2 - 10,
+        compact ? `t = ${thickness} nm` : `t = ${thickness} nm · 示意厚度`, compact ? 'right' : 'left');
       drawSceneLabel(ctx, 14, 13, '空氣 n = 1.00');
       if (depth > 42) drawSceneLabel(ctx, 14, (top + bottom) / 2 - 14, `薄膜 n = ${nFilm.toFixed(2)}`);
       drawSceneLabel(ctx, 14, bottom + 13, `基底 n = ${nSubstrate.toFixed(2)}`);
       if (!compact) {
-        drawSceneLabel(ctx, emerge.x - 10, top - 33, '① 上表面反射', 'right');
+        drawSceneLabel(ctx, entry.x - 12, top - 36, '① 上表面反射', 'right');
         drawSceneLabel(ctx, bounce.x + 10, bottom + 12, '② 下表面反射');
+        drawSceneLabel(ctx, detectorRight + 8, source.y - 14, '同方向收集');
       }
-      if (!compact) drawSceneLabel(ctx, Math.min(w - 140, detector.x + 9), detector.y - 15, '共同觀測點');
       const chartTop = h * .60;
       const chartBottom = h * .76;
       const chartLeft = compact ? 18 : 34;
@@ -10739,7 +10751,10 @@
         ctx.strokeRect(markerX - 2, stripY - 3, 5, stripH + 6);
         drawSceneLabel(ctx, chartLeft, stripY - 24, '白光：各波長分別計算反射率');
       } else {
-        ctx.fillStyle = color; ctx.fillRect(chartLeft, stripY, chartRight - chartLeft, stripH);
+        ctx.fillStyle = color;
+        ctx.globalAlpha = .10 + .90 * Math.sqrt(Math.min(result.reflectance / .12, 1));
+        ctx.fillRect(chartLeft, stripY, chartRight - chartLeft, stripH);
+        ctx.globalAlpha = 1;
         drawSceneLabel(ctx, chartLeft, stripY - 24, compact ? `單色光 ${lambda} nm · 僅改變亮度` :
           `單色光 ${lambda} nm：只有這個波長，干涉只改變反射強度`);
       }
@@ -10750,7 +10765,7 @@
       setText('film-angle-out', `${number('film-angle')}°`);
       $('film-path').innerHTML = `往返光程 = ${(2 * nFilm * number('film-thickness') * result.cosFilm).toFixed(0)} nm<small>${math('2n_f t\\cos\\theta_f')}</small>`;
       $('film-phase').innerHTML = `總相位差 ${math('\\Delta\\phi')} = ${(result.phase / Math.PI).toFixed(2)}${math('\\pi')}<small>包含兩個界面的反射相位</small>`;
-      $('film-reflectance').innerHTML = `${lambda} nm 反射率 = ${(result.reflectance * 100).toFixed(2)}%<small>包含薄膜內的多次反射</small>`;
+      $('film-reflectance').innerHTML = `${lambda} nm 反射率 = ${(result.reflectance * 100).toFixed(2)}%<small>斜入射採 s 偏振；含膜內多次反射</small>`;
       $('film-status').innerHTML = result.reflectance < .01 ? '選定波長反射很弱<small>兩束反射光幾乎抵銷</small>' : '選定波長仍有反射<small>改變膜厚觀察相長與相消交替</small>';
     }
 
