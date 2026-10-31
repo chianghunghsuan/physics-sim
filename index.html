@@ -606,6 +606,7 @@
       #huygens-canvas { height: 430px; min-height: 400px; }
       #mirror-canvas.parallel-expanded { height: 410px; min-height: 380px; }
       #microscope-canvas, #eye-canvas, #circular-canvas, #precession-canvas { height: 470px; min-height: 430px; }
+      #mechanics-view-circular:has(#circ-show-graph:checked) #circular-canvas { height: 600px; min-height: 600px; }
       #drive-canvas, #sound-canvas, #generator-canvas, #bell-canvas { height: 520px; min-height: 480px; }
       #camera-canvas { height: 610px; min-height: 610px; }
       #refraction-canvas { height: 500px; min-height: 440px; }
@@ -2936,7 +2937,7 @@
       const cycleDuration = Number.isFinite(movingDuration)
         ? Math.max(4 / f, Math.min(12, movingDuration))
         : 8;
-      const localTime = time % cycleDuration;
+      const localTime = (time + Math.min(3 / f, cycleDuration * .45)) % cycleDuration;
       const cx = sourceStart + (sourceMoves ? sourceDir * vsPx * localTime : 0);
       const ox = observerStart + (observerMoves ? obsDir * voPx * localTime : 0);
       const oy = cy;
@@ -6359,13 +6360,13 @@
       const compact = w < 680;
       const showGraph = $('circ-show-graph').checked;
       const sceneWidth = showGraph && !compact ? w * .56 : w;
-      const radius = Math.min(h * (compact ? (showGraph ? .18 : .235) : .25), sceneWidth * (compact ? .27 : .22), 132);
+      const radius = Math.min(h * (compact ? (showGraph ? .18 : .235) : .27), sceneWidth * (compact ? .27 : .23), 150);
       const circleCenter = {
-        x: showGraph && !compact ? sceneWidth * .42 : w * (compact ? .38 : .42),
-        y: h * (compact ? (showGraph ? .29 : .38) : .36)
+        x: showGraph && !compact ? sceneWidth * .39 : w * (compact ? .34 : .36),
+        y: h * (compact ? (showGraph ? .29 : .36) : .35)
       };
-      const horizontalAxisY = circleCenter.y + radius + (compact ? 54 : 62);
-      const verticalAxisX = circleCenter.x + radius + (compact ? 31 : 64);
+      const horizontalAxisY = circleCenter.y + radius + (compact ? 53 : 73);
+      const verticalAxisX = circleCenter.x + radius + (compact ? 33 : 106);
       const point = {
         x: circleCenter.x + radius * Math.cos(theta),
         y: circleCenter.y - radius * Math.sin(theta)
@@ -6441,12 +6442,13 @@
         const x = circleCenter.x + radius * ratio;
         const y = circleCenter.y - radius * ratio;
         drawCenteredText(ctx, label, x, horizontalAxisY + 22, '#64748b', compact ? 10 : 12);
-        drawSceneLabel(ctx, compact ? verticalAxisX - 9 : verticalAxisX + 11, y - 8, label, compact ? 'right' : 'left');
+        ctx.fillStyle = '#64748b';
+        ctx.font = `600 ${compact ? 10 : 12}px "Times New Roman", "Tinos", "DFKai-SB", serif`;
+        ctx.textAlign = 'left';
+        ctx.fillText(label, verticalAxisX + 15, y + 4);
       });
-      drawCenteredText(ctx, '水平投影 x（與藍點同一個 x 座標）', circleCenter.x, horizontalAxisY + 43, css('--green'), compact ? 10 : 13);
-      drawSceneLabel(ctx, compact ? verticalAxisX - 4 : verticalAxisX + 16, circleCenter.y - radius - 28, compact ? '鉛直 y' : '鉛直投影 y（同一個 y 座標）', compact ? 'right' : 'left');
-      drawSceneLabel(ctx, horizontalPoint.x + 10, horizontalPoint.y - 26, `x=${(xRatio * amplitude).toFixed(2)}`);
-      drawSceneLabel(ctx, compact ? verticalPoint.x - 11 : verticalPoint.x + 12, verticalPoint.y + 12, `y=${(yRatio * amplitude).toFixed(2)}`, compact ? 'right' : 'left');
+      drawCenteredText(ctx, compact ? '水平 x' : '水平投影 x', circleCenter.x, horizontalAxisY + (compact && showGraph ? -20 : 45), css('--green'), compact ? 11 : 14);
+      drawCenteredText(ctx, compact ? '鉛直 y' : '鉛直投影 y', verticalAxisX, circleCenter.y - radius - 22, css('--purple'), compact ? 11 : 14);
 
       if ($('circ-show-vectors').checked) {
         const tangent = { x: -Math.sin(theta), y: -Math.cos(theta) };
@@ -6463,7 +6465,7 @@
       if (showGraph) {
         const graphLeft = compact ? 34 : w * .61;
         const graphRight = w - 26;
-        const graphTop = compact ? h * .68 : 62;
+        const graphTop = compact ? h * .735 : 62;
         const graphBottom = h - 46;
         const graphMidX = graphTop + (graphBottom - graphTop) * .26;
         const graphMidY = graphTop + (graphBottom - graphTop) * .72;
