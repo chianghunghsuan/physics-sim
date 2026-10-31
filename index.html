@@ -2194,6 +2194,10 @@
             <label for="retro-speed">播放速度：<span id="retro-speed-out">0.10x</span></label>
             <input id="retro-speed" type="range" min="0.1" max="2" step="0.05" value="0.1">
           </div>
+          <div class="control">
+            <label for="retro-time">觀察時刻：<span id="retro-time-out">0.00 年</span></label>
+            <input id="retro-time" type="range" min="0" max="100" step="1" value="50" aria-label="拖曳逆行事件的觀察時刻並定格">
+          </div>
         </div>
         <div class="checks">
           <button type="button" class="preset" id="retro-jump">跳到逆行中心</button>
@@ -7439,8 +7443,8 @@
       const phase = phaseDeg * Math.PI / 180;
       const history = number('retro-history');
       const synodicPeriod = 1 / Math.abs(1 / planet.period - 1);
-      const rawYears = time * .2;
-      const years = ((rawYears + synodicPeriod / 2) % synodicPeriod) - synodicPeriod / 2;
+      const eventWindow = Math.min(history, synodicPeriod * .9);
+      const years = positiveModulo(time * .2 + eventWindow / 2, eventWindow) - eventWindow / 2;
       const state = retroState(planet, years, phase, model);
       const angularRate = retroAngularRate(planet, years, phase, model);
       const retrograde = angularRate < 0;
@@ -7450,6 +7454,8 @@
       setText('retro-phase-out', `${phaseDeg.toFixed(0)}°`);
       setText('retro-history-out', `${history.toFixed(2)} 年`);
       setText('retro-speed-out', `${number('retro-speed').toFixed(2)}x`);
+      $('retro-time').value = Math.min(100, Math.round((years / eventWindow + .5) * 100));
+      setText('retro-time-out', `${years >= 0 ? '+' : ''}${years.toFixed(2)} 年`);
       const innerPlanet = planet.type === 'inner';
       $('retro-planet-badge').innerHTML = `觀測${planet.name}<small>${innerPlanet ? '內' : '外'}行星公轉週期 ${planet.period.toFixed(2)} 年</small>`;
       $('retro-motion').classList.toggle('warning', retrograde);
@@ -7509,10 +7515,10 @@
       ctx.fill();
       ctx.restore();
       drawCenteredText(ctx, '太陽（焦點）', orbitCenter.x, orbitCenter.y + 23, css('--orange'), compact ? 10 : 13);
-      drawCenteredText(ctx, '地球', earthPoint.x - (compact ? 13 : 0), earthPoint.y + 18, css('--blue'), compact ? 11 : 14);
-      drawCenteredText(ctx, planet.name, planetPoint.x + (compact ? 14 : 0), planetPoint.y + 20, planet.color, compact ? 11 : 14);
+      drawCenteredText(ctx, '地球', earthPoint.x - (compact ? 15 : 10), earthPoint.y + 23, css('--blue'), compact ? 11 : 14);
+      drawCenteredText(ctx, planet.name, planetPoint.x + (compact ? 15 : 10), planetPoint.y - 15, planet.color, compact ? 11 : 14);
       if ($('retro-show-sight').checked) {
-        drawLabeledArrow(ctx, earthPoint, planetPoint, css('--green'), compact ? '' : '地球視線');
+        drawLabeledArrow(ctx, earthPoint, planetPoint, css('--green'), '');
       }
 
       // Three snapshots make the changing line of sight explicit before showing the sky trail.
@@ -7536,6 +7542,14 @@
           { t: years, label: '② 現在', color: css('--orange') },
           { t: years + deltaTime, label: '③ 稍後', color: css('--blue') }
         ];
+        ctx.save();
+        ctx.font = '700 13px "Times New Roman", "Tinos", "DFKai-SB", serif';
+        ctx.textAlign = 'center';
+        snapshots.forEach((item, index) => {
+          ctx.fillStyle = item.color;
+          ctx.fillText(item.label, panelX + panelW * (.22 + index * .28), panelY + 62);
+        });
+        ctx.restore();
         const angles = snapshots.map(item => retroState(planet, item.t, phase, model).angle);
         const maxDelta = Math.max(.04, ...angles.map(angle => Math.abs(signedAngleDelta(angle, state.angle))));
         const fanOrigin = { x: panelX + panelW * .50, y: panelY + panelH * .80 };
@@ -7547,7 +7561,7 @@
         snapshots.forEach((item, index) => {
           const displayAngle = -Math.PI / 2 + signedAngleDelta(angles[index], state.angle) / maxDelta * .55;
           const end = { x: fanOrigin.x + Math.cos(displayAngle) * panelH * .48, y: fanOrigin.y + Math.sin(displayAngle) * panelH * .48 };
-          drawLabeledArrow(ctx, fanOrigin, end, item.color, item.label, 2.8);
+          drawLabeledArrow(ctx, fanOrigin, end, item.color, '', 2.8);
         });
         drawCenteredText(ctx, '視線夾角為了看清楚已放大', panelX + panelW / 2, panelY + panelH - 8, '#64748b', 11);
       }
@@ -7557,18 +7571,19 @@
       const skyRight = w - 22;
       const skyTop = topBottom + 34;
       const skyBottom = h - 22;
-      const skyMidY = (skyTop + skyBottom) / 2 + 8;
+      const skyPlotBottom = skyBottom - 28;
+      const skyMidY = (skyTop + skyPlotBottom) / 2 + 8;
       const reference = retroState(planet, 0, phase, model);
       const referenceSamples = [];
       for (let i = 0; i <= 200; i += 1) {
-        const sampleTime = -history / 2 + history * i / 200;
+        const sampleTime = -eventWindow / 2 + eventWindow * i / 200;
         const sample = retroState(planet, sampleTime, phase, model);
         referenceSamples.push(Math.abs(signedAngleDelta(sample.angle, reference.angle)));
       }
       const longitudeSpan = Math.max(.07, ...referenceSamples) * 1.14;
       const samples = [];
       for (let i = 0; i <= 220; i += 1) {
-        const sampleTime = years - history / 2 + history * i / 220;
+        const sampleTime = -eventWindow / 2 + eventWindow * i / 220;
         const sample = retroState(planet, sampleTime, phase, model);
         samples.push({
           time: sampleTime,
@@ -7579,7 +7594,7 @@
       }
       const latitudeSpan = Math.max(.003, ...samples.map(sample => Math.abs(sample.latitude))) * 1.18;
       const skyX = longitude => (skyLeft + skyRight) / 2 + longitude / longitudeSpan * (skyRight - skyLeft) * .45;
-      const skyY = latitude => skyMidY - latitude / latitudeSpan * (skyBottom - skyTop) * .31;
+      const skyY = latitude => skyMidY - latitude / latitudeSpan * (skyPlotBottom - skyTop) * .31;
       ctx.save();
       const skyGradient = ctx.createLinearGradient(0, skyTop, 0, skyBottom);
       skyGradient.addColorStop(0, '#071526');
@@ -7593,7 +7608,7 @@
       ctx.stroke();
       for (let i = 0; i < 64; i += 1) {
         const sx = skyLeft + 12 + ((i * 83) % Math.max(20, skyRight - skyLeft - 24));
-        const sy = skyTop + 12 + ((i * 47 + i * i * 3) % Math.max(20, skyBottom - skyTop - 24));
+        const sy = skyTop + 12 + ((i * 47 + i * i * 3) % Math.max(20, skyPlotBottom - skyTop - 24));
         const size = i % 9 === 0 ? 1.8 : 1;
         ctx.fillStyle = i % 7 === 0 ? '#fde68a' : 'rgba(255,255,255,.75)';
         ctx.beginPath();
@@ -7638,16 +7653,18 @@
       ctx.fill();
       ctx.stroke();
       ctx.restore();
-      drawSceneLabel(ctx, currentX + 12, currentY - 10, `現在的${planet.name}`);
-      const retroSamples = samples.filter(sample => sample.retro);
-      if (retroSamples.length) {
-        const middleRetro = retroSamples[Math.floor(retroSamples.length / 2)];
-        drawSceneLabel(ctx, skyX(middleRetro.longitude), Math.max(skyTop + 22, skyY(middleRetro.latitude) - 26), '← 紅色折返段＝逆行');
-      }
       ctx.restore();
       drawCenteredText(ctx, `固定星空上的${planet.name}軌跡（左右：視黃經；上下：黃緯已放大）`, w / 2, skyTop - 12, '#334155', compact ? 11 : 14);
-      drawSceneLabel(ctx, skyLeft + 14, skyBottom - 8, '綠：順行 →');
-      drawSceneLabel(ctx, skyRight - 14, skyBottom - 8, '紅：逆行 ←', 'right');
+      ctx.save();
+      ctx.fillStyle = 'rgba(3, 16, 30, .85)';
+      ctx.fillRect(skyLeft + 2, skyPlotBottom, skyRight - skyLeft - 4, skyBottom - skyPlotBottom - 2);
+      ctx.font = `700 ${compact ? 10 : 13}px "Times New Roman", "Tinos", "DFKai-SB", serif`;
+      ctx.textAlign = 'center';
+      [['綠：順行 →', '#86efac'], ['紅：逆行 ←', '#fb7185'], ['○ 現在', '#ffffff']].forEach(([label, color], index) => {
+        ctx.fillStyle = color;
+        ctx.fillText(label, skyLeft + (skyRight - skyLeft) * (.17 + index * .33), skyBottom - 9);
+      });
+      ctx.restore();
     }
 
     function clampValue(value, min, max) {
@@ -12608,6 +12625,17 @@
 
     document.querySelectorAll('.mirror-parallel-mode').forEach(btn => {
       btn.addEventListener('click', () => setMirrorParallelMode(btn.dataset.mirrorParallel));
+    });
+
+    $('retro-time').addEventListener('input', () => {
+      const planet = retroPlanets[$('retro-planet').value];
+      const synodicPeriod = 1 / Math.abs(1 / planet.period - 1);
+      const eventWindow = Math.min(number('retro-history'), synodicPeriod * .9);
+      time = (Math.min(.999, number('retro-time') / 100) - .5) * eventWindow / .2;
+      running = false;
+      $('global-play').textContent = '播放';
+      last = performance.now();
+      drawActive();
     });
 
     document.querySelectorAll('input, select').forEach(input => {
