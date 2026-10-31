@@ -1797,7 +1797,7 @@
             <p><strong>講法：</strong>不是光像撞球一樣被分子彈開。入射電場使分子內束縛的電荷振盪，並向其他方向重新輻射同頻率的光；在瑞利近似下，散射強度約與頻率四次方成正比。先比較紅光與短波光，再看沿途的分子，最後切換正午與夕陽，分清抬頭看的天空光和直視太陽的透射光。紫光雖更易散射，人眼對紫光較不敏感，太陽光的光譜也不能視為各色等量。</p>
             <p><strong>模型界線：</strong>分子、電荷位移、散射事件與光學厚度都經教學放大。沿途光點移動速度相同，波長只控制散射機率；直射採 Beer–Lambert 衰減，天空色採單次散射、入射前後衰減的代表性視線，不是整個天空的輻射傳輸或實測當地天色。夕陽旁的天空可能轉暖，但遠離太陽的天空不必同色。「霧滴」選項只用弱波長依賴比較趨勢，並未完整求解 Mie 散射。</p>
             <p><strong>參考：</strong><a href="https://pr.ntnu.edu.tw/ntnunews/index.php?id=14816&amp;mode=data&amp;type_id=74" target="_blank" rel="noopener noreferrer">臺師大物理系解說</a> · <a href="https://www.astro.yale.edu/vdbosch/Physical_Processes_in_Astronomy.pdf" target="_blank" rel="noopener noreferrer">耶魯大學天文物理講義</a> · <a href="https://scied.ucar.edu/activity/blue-skies-and-red-sunsets" target="_blank" rel="noopener noreferrer">UCAR 藍天與夕陽實驗</a></p>
-            <p><strong>星光：</strong>亂流折射率變化讓固定瞳孔收到的光量起伏；微弱星點在示意的偵測門檻以下可暫時看不見。單條光線偏出瞳孔只是直觀模型，實際閃爍還涉及波前聚焦與散焦，不能以圖上的百分比預測某一顆星。</p>
+            <p><strong>星光：</strong>亂流折射率變化讓固定瞳孔收到的光量起伏；微弱星點在示意的辨識門檻以下可暫時看不見。圖中用光束偏折及收縮、散開計算示意進光量；真實閃爍涉及波前傳播與強度起伏，不能以圖上的百分比預測某一顆星。</p>
             <p><strong>真實影像與界線：</strong><a href="https://www.noaa.gov/jetstream/clouds/color-of-clouds" target="_blank" rel="noopener noreferrer">NOAA 雲色照片</a>展示雲會反映其所受的照明；<a href="https://www.weather.gov/lub/news-20080827volcanicsunsets" target="_blank" rel="noopener noreferrer">美國氣象局紫色晚霞照片</a>與氣膠條件有關。綠色暴風天空與大量冰水雲的關聯仍有爭議，<a href="https://www.nssl.noaa.gov/education/svrwx101/hail/faq/" target="_blank" rel="noopener noreferrer">NOAA 並未認定單一成因</a>，顏色也不是龍捲風判據。此頁只比較入射照明，不宣稱由它預測雲色。</p>
             <p><a href="https://science.nasa.gov/earth/earth-observatory/crepuscular-rays-and-light-scattering-150090/" target="_blank" rel="noopener noreferrer">NASA 夕陽與雲光實拍</a> · <a href="https://www.hyperphysics.gsu.edu/hbase/atmos/blusky.html" target="_blank" rel="noopener noreferrer">Georgia State University：霧滴的前向散射</a> · <a href="https://supernova.eso.org/germany/exhibition/0818/?lang=en" target="_blank" rel="noopener noreferrer">ESO：大氣擾動與星光閃爍</a></p>
           </section>
@@ -7968,7 +7968,7 @@
 
     function scintillationSample(t, elevation, turbulence) {
       const airMass = Math.min(7, 1 / (Math.sin(elevation * Math.PI / 180) + .08));
-      const scale = turbulence * (6 + airMass * 3.1);
+      const scale = 1.35 * turbulence * (6 + airMass * 3.1);
       const kicks = [
         Math.sin(t * 3.3) * .62,
         Math.sin(t * 5.7 + 1.3) * .30,
@@ -7976,7 +7976,18 @@
         Math.sin(t * 4.1 + 2.1) * .19
       ].map(value => value * scale);
       const offset = kicks.reduce((sum, value) => sum + value, 0);
-      return { kicks, offset, light: Math.exp(-.5 * Math.pow(offset / 8.5, 2)) };
+      const focus = Math.max(.45, Math.min(1.9, 1 + turbulence * Math.sqrt(airMass) *
+        (.28 * Math.sin(t * 2.7 + .8) + .16 * Math.sin(t * 4.9 + 1.9))));
+      let light = 0;
+      let totalWeight = 0;
+      for (let i = -4; i <= 4; i += 1) {
+        const rayOffset = i * 4.6;
+        const weight = Math.exp(-.5 * Math.pow(rayOffset / 10, 2));
+        const pupilDistance = Math.abs(offset + rayOffset * .45 * focus);
+        light += weight / (1 + Math.exp((pupilDistance - 17) / 2.5));
+        totalWeight += weight;
+      }
+      return { kicks, offset, focus, light: light / totalWeight };
     }
 
     function drawScintillationModel(ctx, w, h, elevation, density, turbulence) {
@@ -7993,19 +8004,33 @@
       ctx.strokeRect(graph.x, graph.y, graph.w, graph.h);
       const star = { x: scene.x + scene.w * .12, y: scene.y + scene.h * .49 };
       const pupil = { x: scene.x + scene.w * .84, y: star.y };
+      const rayScale = compact ? 13 / 17 : 1;
       const atmosphereX = scene.x + scene.w * .42;
       const layerXs = Array.from({ length: 4 }, (_, i) => atmosphereX + (i + .5) * scene.w * .072);
       if ($('scatter-show-layers').checked) {
-        ctx.fillStyle = 'rgba(56,189,248,.11)';
-        ctx.fillRect(atmosphereX, scene.y + 28, scene.w * .35, scene.h - 56);
+        const airTop = scene.y + 28;
+        const airHeight = scene.h - 56;
+        const airWidth = scene.w * .35;
+        ctx.fillStyle = 'rgba(56,189,248,.13)';
+        ctx.fillRect(atmosphereX, airTop, airWidth, airHeight);
         ctx.save();
-        ctx.beginPath(); ctx.rect(atmosphereX, scene.y + 28, scene.w * .35, scene.h - 56); ctx.clip();
+        ctx.beginPath(); ctx.rect(atmosphereX, airTop, airWidth, airHeight); ctx.clip();
         layerXs.forEach((baseX, i) => {
-          ctx.strokeStyle = `rgba(125,211,252,${.36 + .13 * Math.sin(time * (1.4 + i * .3) * turbulence) * Math.min(1, turbulence)})`;
-          ctx.lineWidth = compact ? 1.7 : 2.4;
+          for (let j = 0; j < 3; j += 1) {
+            const drift = positiveModulo(time * (40 + i * 6) * turbulence + j * airHeight / 3 + i * 37, airHeight + 96) - 48;
+            const eddyY = airTop + drift;
+            const eddyX = baseX + Math.sin(time * (1.4 + i * .3) * turbulence + j * 2) * (compact ? 7 : 13);
+            const halo = ctx.createRadialGradient(eddyX, eddyY, 2, eddyX, eddyY, compact ? 25 : 40);
+            halo.addColorStop(0, 'rgba(125,211,252,.26)');
+            halo.addColorStop(1, 'rgba(125,211,252,0)');
+            ctx.fillStyle = halo;
+            ctx.beginPath(); ctx.arc(eddyX, eddyY, compact ? 25 : 40, 0, 2 * Math.PI); ctx.fill();
+          }
+          ctx.strokeStyle = `rgba(125,211,252,${.54 + .16 * Math.sin(time * (1.4 + i * .3) * turbulence) * Math.min(1, turbulence)})`;
+          ctx.lineWidth = compact ? 2 : 2.7;
           ctx.beginPath();
           for (let y = scene.y + 30; y <= scene.y + scene.h - 30; y += 4) {
-            const x = baseX + (compact ? 5 : 10) * turbulence * Math.sin(y * .038 + time * (1.4 + i * .3) * turbulence + i * .7);
+            const x = baseX + (compact ? 11 : 19) * turbulence * Math.sin(y * .038 + time * (1.4 + i * .3) * turbulence + i * .7);
             if (y === scene.y + 30) ctx.moveTo(x, y); else ctx.lineTo(x, y);
           }
           ctx.stroke();
@@ -8013,7 +8038,7 @@
         for (let i = 0; i < 38; i += 1) {
           const x = atmosphereX + positiveModulo(i * 23 + time * turbulence * (13 + i % 4 * 3), scene.w * .35);
           const y = scene.y + 36 + positiveModulo(i * 47, scene.h - 72);
-          ctx.fillStyle = `rgba(173,223,238,${.14 + .18 * (1 + Math.sin(time * 2.8 * turbulence + i)) / 2})`;
+          ctx.fillStyle = `rgba(173,223,238,${.24 + .22 * (1 + Math.sin(time * 2.8 * turbulence + i)) / 2})`;
           ctx.beginPath(); ctx.arc(x, y, i % 5 === 0 ? 2.2 : 1.2, 0, 2 * Math.PI); ctx.fill();
         }
         ctx.restore();
@@ -8023,7 +8048,7 @@
       ctx.fillText('擾動空氣', atmosphereX, scene.y + 29);
       ctx.fillText('固定瞳孔', pupil.x - 32, compact ? pupil.y + 56 : scene.y + 29);
       drawStarShape(ctx, star.x, star.y, 11, 4, '#f8fafc', 1);
-      const aperture = compact ? 13 : 17;
+      const aperture = 17 * rayScale;
       ctx.strokeStyle = '#f8fafc'; ctx.lineWidth = 5;
       ctx.beginPath(); ctx.arc(pupil.x, pupil.y, aperture, -Math.PI / 2, Math.PI / 2); ctx.stroke();
       ctx.strokeStyle = '#f8fafc'; ctx.lineWidth = 2;
@@ -8031,13 +8056,16 @@
       ctx.lineTo(pupil.x + aperture + 3, pupil.y + 22); ctx.stroke();
       const rayCount = 9;
       for (let i = 0; i < rayCount; i += 1) {
-        const rayOffset = (i - 4) * (compact ? 3.4 : 4.6);
-        const endY = pupil.y + sample.offset + rayOffset * .45;
+        const rayOffset = (i - 4) * 4.6 * rayScale;
+        const endY = pupil.y + rayScale * sample.offset + rayOffset * .45 * sample.focus;
         const hit = Math.abs(endY - pupil.y) < aperture;
         const rayStartX = star.x + 12;
-        const rayY = x => star.y + rayOffset * .4
-          + rayOffset * .05 * (x - rayStartX) / (pupil.x - rayStartX)
-          + sample.kicks.reduce((sum, kick, index) => sum + kick * Math.max(0, Math.min(1, (x - layerXs[index]) / (pupil.x - layerXs[index]))), 0);
+        const rayY = x => {
+          const fraction = (x - rayStartX) / (pupil.x - rayStartX);
+          return star.y + rayOffset * .4 + rayOffset * .05 * fraction
+            + rayOffset * .45 * (sample.focus - 1) * fraction
+            + rayScale * sample.kicks.reduce((sum, kick, index) => sum + kick * Math.max(0, Math.min(1, (x - layerXs[index]) / (pupil.x - layerXs[index]))), 0);
+        };
         if ($('scatter-show-rays').checked) {
           ctx.strokeStyle = hit ? 'rgba(250,204,21,.72)' : 'rgba(148,163,184,.38)';
           ctx.lineWidth = hit ? 2 : 1.2;
@@ -8085,7 +8113,7 @@
       }
       ctx.stroke();
       ctx.fillStyle = '#fda4af'; ctx.font = '600 11px "Times New Roman", "Tinos", "DFKai-SB", serif';
-      ctx.fillText('示意辨識門檻', gx, Math.min(graph.y + graph.h - 10, thresholdY + 18));
+      ctx.fillText('示意辨識門檻', gx, Math.min(graph.y + graph.h - 10, gy + gh + 18));
       if (!compact) {
         ctx.fillStyle = '#cbd5e1'; ctx.font = '600 12px "Times New Roman", "Tinos", "DFKai-SB", serif';
         ctx.fillText('星點位置固定；亮度會起伏', gx, gy + gh + 35);
