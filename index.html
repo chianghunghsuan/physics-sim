@@ -3886,9 +3886,8 @@
         ctx.clip();
         points.forEach(([x, y], index) => {
           const emphasis = index === 0 || index === Math.floor((points.length - 1) / 2) || index === points.length - 1;
-          if (!emphasis) return;
-          ctx.strokeStyle = 'rgba(214,103,48,.75)';
-          ctx.lineWidth = 2.1;
+          ctx.strokeStyle = emphasis ? 'rgba(214,103,48,.78)' : `rgba(214,103,48,${Math.max(.08, .20 - points.length * .004)})`;
+          ctx.lineWidth = emphasis ? 2.1 : 1;
           ctx.beginPath(); ctx.arc(x, y, trackedRadius, -Math.PI / 2, Math.PI / 2); ctx.stroke();
         });
         ctx.restore();
@@ -3925,6 +3924,21 @@
           ctx.stroke();
         }
         ctx.restore();
+      }
+      if ($('huy-show-wavelets').checked && $('huy-show-envelope').checked && trackedRadius > 18) {
+        const sourceY = points[Math.floor((points.length - 1) / 2)][1];
+        const tangentX = barrierX + trackedRadius;
+        if (tangentX < w - 34) {
+          ctx.save();
+          ctx.strokeStyle = '#9d5731'; ctx.lineWidth = 1.8; ctx.setLineDash([4, 4]);
+          ctx.beginPath(); ctx.moveTo(barrierX + 5, sourceY); ctx.lineTo(tangentX - 5, sourceY); ctx.stroke();
+          ctx.setLineDash([]);
+          ctx.fillStyle = '#11856e'; ctx.strokeStyle = '#fff'; ctx.lineWidth = 2;
+          ctx.beginPath(); ctx.arc(tangentX, sourceY, 5, 0, 2 * Math.PI); ctx.fill(); ctx.stroke();
+          ctx.fillStyle = '#7a4932'; ctx.font = `700 ${compact ? 11 : 13}px "Times New Roman", "Tinos", "DFKai-SB", serif`;
+          ctx.fillText('vΔt', barrierX + Math.max(12, trackedRadius * .42), sourceY - 11);
+          ctx.restore();
+        }
       }
       drawSceneLabel(ctx, 12, 12, compact ? '入射波前' : '入射波前 →');
       if (!compact) drawSceneLabel(ctx, Math.min(w - 155, barrierX + 12), 12, '後續波前持續進入');
