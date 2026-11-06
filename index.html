@@ -10776,7 +10776,12 @@
         ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(swatchX, swatchY, swatchRadius + 4, 0, 2 * Math.PI); ctx.fill();
         ctx.fillStyle = spectrum.color; ctx.strokeStyle = '#617483'; ctx.lineWidth = 1.5;
         ctx.beginPath(); ctx.arc(swatchX, swatchY, swatchRadius, 0, 2 * Math.PI); ctx.fill(); ctx.stroke();
-        drawSceneLabel(ctx, swatchX, swatchY + swatchRadius + 10, '反射色', 'center');
+        ctx.save();
+        ctx.font = '700 13px "Times New Roman", "Tinos", "DFKai-SB", serif';
+        const swatchLabelWidth = ctx.measureText('反射色').width + 20;
+        ctx.restore();
+        drawSceneLabel(ctx, Math.min(w - swatchLabelWidth - 8, swatchX - swatchLabelWidth / 2),
+          swatchY + swatchRadius + 10, '反射色');
       }
       const chartTop = h * .60;
       const chartBottom = h * .76;
@@ -10802,8 +10807,15 @@
         ctx.beginPath(); ctx.moveTo(selectedX, chartTop); ctx.lineTo(selectedX, chartBottom); ctx.stroke(); ctx.restore();
         ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(selectedX, selectedY, 6, 0, 2 * Math.PI); ctx.fill();
         ctx.fillStyle = '#126c79'; ctx.beginPath(); ctx.arc(selectedX, selectedY, 4, 0, 2 * Math.PI); ctx.fill();
-        drawSceneLabel(ctx, chartLeft, chartTop - 28, '白光反射率：各波長分別計算');
-        drawSceneLabel(ctx, chartRight, chartTop - 4, `${(maxR * 100).toFixed(0)}%`, 'right');
+        drawSceneLabel(ctx, chartLeft, chartTop - 30, compact ? '反射率 / 波長' : '反射率（縱軸）隨波長（橫軸）變化');
+        drawSceneLabel(ctx, chartRight, chartBottom - 32, `縱軸上限 ${(maxR * 100).toFixed(0)}%`, 'right');
+        const markerLabel = `選定 ${lambda} nm：${(result.reflectance * 100).toFixed(2)}%`;
+        ctx.save();
+        ctx.font = '700 13px "Times New Roman", "Tinos", "DFKai-SB", serif';
+        const markerLabelWidth = ctx.measureText(markerLabel).width + 20;
+        ctx.restore();
+        drawSceneLabel(ctx, clampValue(selectedX - markerLabelWidth / 2, chartLeft, chartRight - markerLabelWidth),
+          chartBottom + 5, markerLabel);
       } else {
       const ampScale = Math.max(Math.abs(result.r01), Math.abs(result.r12), .04);
       ctx.strokeStyle = '#94a3b8';
@@ -10855,7 +10867,9 @@
         const markerX = chartLeft + (lambda - 400) / 300 * (chartRight - chartLeft);
         ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 2;
         ctx.strokeRect(markerX - 2, stripY - 3, 5, stripH + 6);
-        drawSceneLabel(ctx, chartLeft, stripY - 24, '白光：各波長分別計算反射率');
+        drawSceneLabel(ctx, chartLeft, stripY - 22, '反射光譜：白框對應上方選定波長');
+        drawSceneLabel(ctx, chartLeft, stripY + stripH + 5, '400 nm');
+        drawSceneLabel(ctx, chartRight, stripY + stripH + 5, '700 nm', 'right');
       } else {
         ctx.fillStyle = color;
         ctx.globalAlpha = .10 + .90 * Math.sqrt(Math.min(result.reflectance / .12, 1));
