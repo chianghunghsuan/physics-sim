@@ -1864,10 +1864,10 @@
       </section>
 
       <section id="panel-aberration" class="panel" role="tabpanel">
-        <div class="module-head"><div><h2>球面像差與拋物面鏡</h2><p class="module-copy" id="aberration-copy">球面鏡依每個入射點的法線反射平行光；邊緣光與近軸光穿過主軸的位置不同。切換拋物面鏡，用相同口徑比較。</p></div></div>
+        <div class="module-head"><div><h2>球面像差與拋物面鏡</h2><p class="module-copy" id="aberration-copy">用相同的頂點曲率與鏡面口徑，觀察軸上平行光經拋物面反射後是否共焦；再切換球面鏡比較。</p></div></div>
         <div class="lesson-steps" role="group" aria-label="聚焦元件種類">
-          <button type="button" class="aberration-mode active" data-aberration="sphere" aria-pressed="true">球面鏡</button>
-          <button type="button" class="aberration-mode" data-aberration="parabola" aria-pressed="false">拋物面鏡</button>
+          <button type="button" class="aberration-mode active" data-aberration="parabola" aria-pressed="true">拋物面鏡</button>
+          <button type="button" class="aberration-mode" data-aberration="sphere" aria-pressed="false">球面鏡</button>
           <button type="button" class="aberration-mode" data-aberration="lens" aria-pressed="false">球面透鏡</button>
         </div>
         <div class="values" aria-live="polite">
@@ -1878,8 +1878,8 @@
         </div>
         <div class="plot-wrap"><canvas id="aberration-canvas" role="img" aria-label="比較球面透鏡、球面鏡與拋物面鏡對平行光的聚焦。"></canvas></div>
         <div class="controls">
-          <div class="control"><label for="aberration-radius"><span id="aberration-radius-label">球面曲率半徑</span>：<span id="aberration-radius-out">16 cm</span></label><input id="aberration-radius" type="range" min="10" max="30" step="0.5" value="16"></div>
-          <div class="control"><label for="aberration-aperture"><span id="aberration-aperture-label">透鏡半口徑</span>：<span id="aberration-aperture-out">8.0 cm</span></label><input id="aberration-aperture" type="range" min="2" max="9" step="0.1" value="8"></div>
+          <div class="control"><label for="aberration-radius"><span id="aberration-radius-label">頂點曲率半徑</span>：<span id="aberration-radius-out">16 cm</span></label><input id="aberration-radius" type="range" min="10" max="30" step="0.5" value="16"></div>
+          <div class="control"><label for="aberration-aperture"><span id="aberration-aperture-label">鏡面半口徑</span>：<span id="aberration-aperture-out">8.0 cm</span></label><input id="aberration-aperture" type="range" min="2" max="9" step="0.1" value="8"></div>
           <div class="control" id="aberration-index-control"><label for="aberration-n">透鏡折射率：<span id="aberration-n-out">1.50</span></label><input id="aberration-n" type="range" min="1.35" max="1.8" step="0.01" value="1.5"></div>
           <div class="control"><label for="aberration-stop">光圈</label><select id="aberration-stop"><option value="all">全口徑</option><option value="central">遮住邊緣光</option></select></div>
         </div>
@@ -2275,7 +2275,7 @@
     const reflectionOffset = { x: 0, y: 0 };
     let draggingReflection = false;
     let filmLightMode = 'mono';
-    let aberrationMode = 'sphere';
+    let aberrationMode = 'parabola';
 
     function number(id) {
       return Number($(id).value);
@@ -10790,7 +10790,7 @@
     }
 
     function tracePlanoConvexRay(height, radius, aperture, index) {
-      const flat = radius - Math.sqrt(radius * radius - aperture * aperture) + 2.7;
+      const flat = 7.5;
       const front = radius - Math.sqrt(radius * radius - height * height);
       const normal = { x: Math.sqrt(radius * radius - height * height) / radius, y: -height / radius };
       const inside = refractVector({ x: 1, y: 0 }, normal, 1, index);
@@ -10821,8 +10821,8 @@
       const centralOnly = $('aberration-stop').value === 'central';
       const axisY = h * (compact ? .39 : .42);
       const mirrorX = w * (compact ? .78 : .69);
-      const sourceX = -Math.max(radius * 1.6, 26);
-      const scale = Math.min((mirrorX - 20) / -sourceX, h * .27 / aperture);
+      const sourceX = -32;
+      const scale = Math.min((mirrorX - 18) / -sourceX, h * .27 / 9);
       const px = x => mirrorX + x * scale;
       const py = y => axisY - y * scale;
       ctx.fillStyle = '#f5f9fb'; ctx.fillRect(0, 0, w, h);
@@ -10954,10 +10954,10 @@
       const edge = tracePlanoConvexRay(aperture * .96, radius, aperture, index);
       if (!near || !edge) return;
       const difference = near.focus - edge.focus;
-      const xLimit = Math.max(near.focus, edge.focus, 28) + 13;
-      const scale = Math.min((w - 40) / (xLimit + 18), h * .26 / aperture);
+      const scale = Math.min((w - 40) / 78, h * .24 / 9);
+      const xLimit = (w - 18 - 20) / scale - 15;
       const axisY = h * (compact ? .36 : .42);
-      const px = x => 20 + (x + 17) * scale;
+      const px = x => 20 + (x + 15) * scale;
       const py = y => axisY - y * scale;
       ctx.fillStyle = '#f8fafc';
       ctx.fillRect(0, 0, w, h);
@@ -11017,10 +11017,12 @@
           }
         });
       });
+      const offscreenFocus = near.focus > xLimit || edge.focus > xLimit;
       [
         { focus: near.focus, color: '#2563eb', label: '近軸 F' },
         { focus: edge.focus, color: '#ea580c', label: '邊緣 F' }
       ].forEach(marker => {
+        if (px(marker.focus) > w - 16) return;
         ctx.save();
         ctx.strokeStyle = marker.color;
         ctx.setLineDash([4, 4]);
@@ -11029,9 +11031,13 @@
         ctx.lineTo(px(marker.focus), axisY + 50);
         ctx.stroke();
         ctx.restore();
-        drawSceneLabel(ctx, px(marker.focus), axisY + (marker.color === '#2563eb' ? 30 : 10), marker.label, 'center');
+        const labelX = Math.max(8, Math.min(w - 95, px(marker.focus) - 38));
+        drawSceneLabel(ctx, labelX, axisY + (marker.color === '#2563eb' ? 44 : -76), marker.label);
       });
-      drawSceneLabel(ctx, px(near.flat), axisY + aperture * scale + 10, '球面平凸透鏡', 'center');
+      if (offscreenFocus) drawSceneLabel(ctx, w - (compact ? 115 : 150), axisY + 78,
+        compact ? '焦點在右側 →' : '焦點位於視窗右方 →');
+      drawSceneLabel(ctx, Math.max(8, px(near.flat) - 48),
+        axisY + Math.max(aperture * scale + 28, 100), '球面平凸透鏡');
       drawSceneLabel(ctx, 15, 15, centralOnly ? '光圈縮小：邊緣光被遮住' : '全口徑：邊緣光與近軸光焦點不同');
       if ($('aberration-show-zoom').checked) {
         const inset = { x: 16, y: h * .74, w: w - 32, h: h * .23 };
@@ -11068,7 +11074,10 @@
       $('aberration-near').innerHTML = `近軸焦點 = ${near.focus.toFixed(1)} cm<small>從球面頂點量起</small>`;
       $('aberration-edge').innerHTML = `邊緣焦點 = ${edge.focus.toFixed(1)} cm<small>球面邊緣實際折射光線</small>`;
       $('aberration-difference').innerHTML = `縱向球差 = ${Math.abs(difference).toFixed(2)} cm<small>兩焦點沿主軸的距離</small>`;
-      $('aberration-status').innerHTML = centralOnly ? '縮小光圈<small>邊緣光被遮住；較接近單一焦點</small>' : '全口徑<small>邊緣光通常較早穿過主軸</small>';
+      $('aberration-status').innerHTML = offscreenFocus
+        ? '焦點在視窗右方<small>尺規保持固定，焦距仍由上方讀值顯示</small>'
+        : centralOnly ? '縮小光圈<small>邊緣光被遮住；較接近單一焦點</small>'
+          : '全口徑<small>邊緣光通常較早穿過主軸</small>';
     }
 
     function instrumentBackdrop(ctx, w, h, title, subtitle) {
