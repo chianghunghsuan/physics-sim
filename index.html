@@ -251,12 +251,12 @@
       margin: 0 0 14px;
     }
     #scatter-process-controls[hidden], #scatter-wavelength-control[hidden] { display: none; }
-    button.brake-layer, button.motor-layer, button.scatter-scene, button.scatter-process, button.mirage-scene, button.huy-step {
+    button.brake-layer, button.motor-layer, button.scatter-scene, button.scatter-process, button.mirage-scene, button.huy-step, button.aberration-mode {
       background: #e2e8f0;
       color: var(--ink);
       padding: 8px 12px;
     }
-    button.brake-layer.active, button.motor-layer.active, button.scatter-scene.active, button.scatter-process.active, button.mirage-scene.active, button.huy-step.active {
+    button.brake-layer.active, button.motor-layer.active, button.scatter-scene.active, button.scatter-process.active, button.mirage-scene.active, button.huy-step.active, button.aberration-mode.active {
       background: #334155;
       color: #ffffff;
     }
@@ -1864,18 +1864,23 @@
       </section>
 
       <section id="panel-aberration" class="panel" role="tabpanel">
-        <div class="module-head"><div><h2>球面像差</h2><p class="module-copy">平行光進入單面球形、另一面平坦的透鏡；每條光線在兩個界面依照局部法線折射，邊緣光與近軸光因此交於不同位置。</p></div></div>
+        <div class="module-head"><div><h2>球面像差與拋物面鏡</h2><p class="module-copy" id="aberration-copy">球面鏡依每個入射點的法線反射平行光；邊緣光與近軸光穿過主軸的位置不同。切換拋物面鏡，用相同口徑比較。</p></div></div>
+        <div class="lesson-steps" role="group" aria-label="聚焦元件種類">
+          <button type="button" class="aberration-mode active" data-aberration="sphere" aria-pressed="true">球面鏡</button>
+          <button type="button" class="aberration-mode" data-aberration="parabola" aria-pressed="false">拋物面鏡</button>
+          <button type="button" class="aberration-mode" data-aberration="lens" aria-pressed="false">球面透鏡</button>
+        </div>
         <div class="values" aria-live="polite">
           <div class="badge" id="aberration-near">近軸焦點 = 0.0 cm</div>
           <div class="badge" id="aberration-edge">邊緣焦點 = 0.0 cm</div>
           <div class="badge" id="aberration-difference">縱向球差 = 0.0 cm</div>
           <div class="badge" id="aberration-status">近軸與邊緣光焦點分離</div>
         </div>
-        <div class="plot-wrap"><canvas id="aberration-canvas" role="img" aria-label="平行光穿過球面平凸透鏡，顯示不同高度光線的實際折射與焦點分離。"></canvas></div>
+        <div class="plot-wrap"><canvas id="aberration-canvas" role="img" aria-label="比較球面透鏡、球面鏡與拋物面鏡對平行光的聚焦。"></canvas></div>
         <div class="controls">
-          <div class="control"><label for="aberration-radius">球面曲率半徑：<span id="aberration-radius-out">16 cm</span></label><input id="aberration-radius" type="range" min="10" max="30" step="0.5" value="16"></div>
-          <div class="control"><label for="aberration-aperture">透鏡半口徑：<span id="aberration-aperture-out">8.0 cm</span></label><input id="aberration-aperture" type="range" min="2" max="9" step="0.1" value="8"></div>
-          <div class="control"><label for="aberration-n">透鏡折射率：<span id="aberration-n-out">1.50</span></label><input id="aberration-n" type="range" min="1.35" max="1.8" step="0.01" value="1.5"></div>
+          <div class="control"><label for="aberration-radius"><span id="aberration-radius-label">球面曲率半徑</span>：<span id="aberration-radius-out">16 cm</span></label><input id="aberration-radius" type="range" min="10" max="30" step="0.5" value="16"></div>
+          <div class="control"><label for="aberration-aperture"><span id="aberration-aperture-label">透鏡半口徑</span>：<span id="aberration-aperture-out">8.0 cm</span></label><input id="aberration-aperture" type="range" min="2" max="9" step="0.1" value="8"></div>
+          <div class="control" id="aberration-index-control"><label for="aberration-n">透鏡折射率：<span id="aberration-n-out">1.50</span></label><input id="aberration-n" type="range" min="1.35" max="1.8" step="0.01" value="1.5"></div>
           <div class="control"><label for="aberration-stop">光圈</label><select id="aberration-stop"><option value="all">全口徑</option><option value="central">遮住邊緣光</option></select></div>
         </div>
         <div class="checks"><label class="check"><input id="aberration-show-normals" type="checkbox" checked>顯示局部法線</label><label class="check"><input id="aberration-show-zoom" type="checkbox" checked>顯示焦點放大</label></div>
@@ -2245,7 +2250,7 @@
       wave: [['standing', '駐波疊加'], ['drive', '同源橫波與縱波'], ['sound', '揚聲器與麥克風'], ['doppler', '都卜勒效應'], ['ripple', '水波槽干涉'], ['wave2d', '二維波動疊加'], ['huygens', '惠更斯原理']],
       refraction: [['refraction', '折射與全反射'], ['mirage', '海市蜃樓'], ['prism', '稜鏡色散'], ['rainbow', '彩虹'], ['brewster', '布魯斯特角'], ['atmosphere', '大氣散射與星光閃爍']],
       physical: [['double', '雙狹縫干涉'], ['single', '單狹縫繞射'], ['film', '薄膜干涉']],
-      imaging: [['mirror', '面鏡成像'], ['lens', '透鏡成像'], ['aberration', '球面像差'], ['reflection', '鏡像文字'], ['trifold', '多面鏡'], ['microscope', '顯微鏡'], ['camera', '相機對焦'], ['eye', '眼睛成像']],
+      imaging: [['mirror', '面鏡成像'], ['lens', '透鏡成像'], ['aberration', '球面與拋物面聚焦'], ['reflection', '鏡像文字'], ['trifold', '多面鏡'], ['microscope', '顯微鏡'], ['camera', '相機對焦'], ['eye', '眼睛成像']],
       mechanics: [['circular', '圓周運動與投影'], ['skater', '滑冰者與角動量'], ['precession', '角動量與進動'], ['pulley', '滑輪組']],
       electromagnetism: [['brake', '磁煞車'], ['motor', '直流馬達'], ['generator', '交流發電機'], ['bell', '自斷電電鈴'], ['selector', '速度選擇器'], ['spectrometer', '質譜儀'], ['cyclotron', '粒子加速器（迴旋）']],
       astronomy: [['retrograde', '行星逆行']]
@@ -2270,6 +2275,7 @@
     const reflectionOffset = { x: 0, y: 0 };
     let draggingReflection = false;
     let filmLightMode = 'mono';
+    let aberrationMode = 'sphere';
 
     function number(id) {
       return Number($(id).value);
@@ -10795,10 +10801,153 @@
       return { front, flat, exitHeight, inside, outgoing, focus: flat - exitHeight * outgoing.x / outgoing.y };
     }
 
+    function traceReflectorRay(height, radius, parabolic) {
+      const surface = parabolic
+        ? -height * height / (2 * radius)
+        : -radius + Math.sqrt(radius * radius - height * height);
+      const slope = parabolic ? -height / radius : -height / Math.sqrt(radius * radius - height * height);
+      const nx = 1 / Math.sqrt(1 + slope * slope);
+      const ny = -slope * nx;
+      const outgoing = { x: 1 - 2 * nx * nx, y: -2 * nx * ny };
+      const focus = surface - height * outgoing.x / outgoing.y;
+      return { surface, outgoing, focus, normal: { x: nx, y: ny } };
+    }
+
+    function drawReflectorFocusing(ctx, w, h, radius, aperture) {
+      const compact = w < 650;
+      const parabolic = aberrationMode === 'parabola';
+      const near = traceReflectorRay(Math.min(.2, aperture * .07), radius, parabolic);
+      const edge = traceReflectorRay(aperture * .96, radius, parabolic);
+      const centralOnly = $('aberration-stop').value === 'central';
+      const axisY = h * (compact ? .39 : .42);
+      const mirrorX = w * (compact ? .78 : .69);
+      const sourceX = -Math.max(radius * 1.6, 26);
+      const scale = Math.min((mirrorX - 20) / -sourceX, h * .27 / aperture);
+      const px = x => mirrorX + x * scale;
+      const py = y => axisY - y * scale;
+      ctx.fillStyle = '#f5f9fb'; ctx.fillRect(0, 0, w, h);
+      ctx.fillStyle = 'rgba(37,99,235,.045)'; ctx.fillRect(0, 0, mirrorX, h * .72);
+      ctx.strokeStyle = '#9aaeba'; ctx.lineWidth = 1.3;
+      ctx.beginPath(); ctx.moveTo(14, axisY); ctx.lineTo(w - 14, axisY); ctx.stroke();
+      ctx.fillStyle = '#c6d6df'; ctx.strokeStyle = '#384e5a'; ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      for (let i = 0; i <= 100; i += 1) {
+        const y = -aperture + 2 * aperture * i / 100;
+        const x = parabolic ? -y * y / (2 * radius) : -radius + Math.sqrt(radius * radius - y * y);
+        if (i === 0) ctx.moveTo(px(x), py(y)); else ctx.lineTo(px(x), py(y));
+      }
+      ctx.lineTo(mirrorX + 15, py(aperture));
+      ctx.lineTo(mirrorX + 15, py(-aperture));
+      ctx.closePath(); ctx.fill(); ctx.stroke();
+      if (centralOnly) {
+        const opening = aperture * .35;
+        ctx.fillStyle = '#475569';
+        ctx.fillRect(px(-radius * .22), py(aperture), 5, (aperture - opening) * scale);
+        ctx.fillRect(px(-radius * .22), py(-opening), 5, (aperture - opening) * scale);
+      }
+      const maxFraction = centralOnly ? .33 : .96;
+      [-1, 1].forEach(sign => {
+        [.08, .26, .46, .70, .96].forEach(fraction => {
+          if (fraction > maxFraction) return;
+          const y = sign * aperture * fraction;
+          const ray = traceReflectorRay(y, radius, parabolic);
+          const color = fraction > .70 ? '#dc6339' : fraction < .30 ? '#2870b8' : '#188f8b';
+          const begin = { x: px(sourceX), y: py(y) };
+          const face = { x: px(ray.surface), y: py(y) };
+          const postFocus = Math.min(radius * .20,
+            aperture * .25 * Math.abs(ray.outgoing.x / ray.outgoing.y));
+          const endX = ray.focus - postFocus;
+          const end = { x: px(endX), y: py(y + (endX - ray.surface) * ray.outgoing.y / ray.outgoing.x) };
+          drawBeam(ctx, begin, face, color, fraction > .70 ? 2.6 : 1.9, .82);
+          drawBeam(ctx, face, end, color, fraction > .70 ? 2.6 : 1.9, .82);
+          if (sign === 1) {
+            ctx.fillStyle = color; ctx.strokeStyle = '#fff'; ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.arc(px(ray.focus), axisY, fraction > .70 ? 4 : 2.8, 0, 2 * Math.PI); ctx.fill(); ctx.stroke();
+          }
+          if (sign === 1 && fraction === .96 && $('aberration-show-normals').checked) {
+            const n = ray.normal;
+            ctx.save(); ctx.setLineDash([4, 4]); ctx.strokeStyle = '#425667'; ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(face.x - n.x * 35, face.y + n.y * 35);
+            ctx.lineTo(face.x + n.x * 35, face.y - n.y * 35);
+            ctx.stroke(); ctx.restore();
+          }
+        });
+      });
+      ctx.save(); ctx.setLineDash([4, 4]); ctx.strokeStyle = '#286bb1'; ctx.lineWidth = 1.5;
+      ctx.beginPath(); ctx.moveTo(px(near.focus), axisY - 34); ctx.lineTo(px(near.focus), axisY + 40); ctx.stroke();
+      if (!parabolic && !centralOnly) {
+        ctx.strokeStyle = '#dc6339'; ctx.beginPath();
+        ctx.moveTo(px(edge.focus), axisY - 34); ctx.lineTo(px(edge.focus), axisY + 40); ctx.stroke();
+      }
+      ctx.restore();
+      drawSceneLabel(ctx, Math.max(8, px(near.focus) - 16), axisY + 44, parabolic ? '共同 F' : '近軸 F');
+      if (!parabolic && !centralOnly) drawSceneLabel(ctx, px(edge.focus) + 4, axisY - 63, '邊緣 F');
+      if (!compact) drawSceneLabel(ctx, px(-radius) - 14, axisY + 77,
+        parabolic ? 'Cᵥ：僅頂點曲率中心' : 'C：球心');
+      drawSceneLabel(ctx, 15, 15, parabolic ? '拋物面：軸上平行光共焦' : '球面：邊緣與近軸光不共焦');
+      if ($('aberration-show-zoom').checked) {
+        const inset = { x: 16, y: h * .75, w: w - 32, h: h * .22 };
+        ctx.fillStyle = '#172a3b'; ctx.strokeStyle = '#77909b';
+        ctx.fillRect(inset.x, inset.y, inset.w, inset.h);
+        ctx.strokeRect(inset.x, inset.y, inset.w, inset.h);
+        const spot = limit => {
+          let spread = 0;
+          for (let i = 1; i <= 40; i += 1) {
+            const y = aperture * limit * i / 40;
+            const ray = traceReflectorRay(y, radius, parabolic);
+            const atNearFocus = y + (near.focus - ray.surface) * ray.outgoing.y / ray.outgoing.x;
+            spread = Math.max(spread, Math.abs(atNearFocus));
+          }
+          return Math.min(38, 4 + spread * scale * .8);
+        };
+        [['全口徑', .96], ['縮光圈', .33]].forEach(([label, limit], i) => {
+          const x = inset.x + inset.w * (i ? .75 : .25);
+          const y = inset.y + inset.h * .55;
+          const blur = spot(limit);
+          const glow = ctx.createRadialGradient(x, y, 0, x, y, blur);
+          glow.addColorStop(0, '#fff'); glow.addColorStop(.2, 'rgba(179,224,248,.9)');
+          glow.addColorStop(1, 'rgba(100,183,230,0)');
+          ctx.fillStyle = glow; ctx.beginPath(); ctx.arc(x, y, blur, 0, 2 * Math.PI); ctx.fill();
+          ctx.fillStyle = '#e2eef5'; ctx.font = `700 ${compact ? 11 : 13}px "Times New Roman", "Tinos", "DFKai-SB", serif`;
+          ctx.textAlign = 'center'; ctx.fillText(label, x, inset.y + 22);
+        });
+        ctx.strokeStyle = '#688392'; ctx.beginPath();
+        ctx.moveTo(inset.x + inset.w / 2, inset.y + 10);
+        ctx.lineTo(inset.x + inset.w / 2, inset.y + inset.h - 10); ctx.stroke();
+        ctx.textAlign = 'left';
+      }
+      $('aberration-near').innerHTML = `${parabolic ? '共同焦距' : '近軸焦距'} = ${(-near.focus).toFixed(2)} cm<small>${parabolic ? 'f = Rᵥ / 2，從鏡面頂點量起' : '從鏡面頂點量起'}</small>`;
+      $('aberration-edge').innerHTML = `邊緣光焦距 = ${(-edge.focus).toFixed(2)} cm<small>按局部法線反射後求交點</small>`;
+      $('aberration-difference').innerHTML = `焦距分散 = ${Math.abs(near.focus - edge.focus).toFixed(3)} cm<small>近軸與邊緣光的主軸交點距離</small>`;
+      $('aberration-status').innerHTML = parabolic
+        ? '軸上平行光共焦<small>離軸入射不保證無其他像差</small>'
+        : centralOnly ? '縮小光圈<small>邊緣光被擋住，焦點範圍縮小</small>'
+          : '球面像差<small>邊緣光比近軸光更靠近鏡面聚焦</small>';
+    }
+
     function drawAberration() {
       const { ctx, w, h } = resizeCanvas($('aberration-canvas'));
       const compact = w < 650;
       const radius = number('aberration-radius');
+      const mirror = aberrationMode !== 'lens';
+      const apertureInput = $('aberration-aperture');
+      apertureInput.max = mirror ? Math.min(9, radius * .68).toFixed(1) : '9';
+      if (Number(apertureInput.value) > Number(apertureInput.max)) apertureInput.value = apertureInput.max;
+      setText('aberration-radius-label', mirror ? '頂點曲率半徑' : '球面曲率半徑');
+      setText('aberration-aperture-label', mirror ? '鏡面半口徑' : '透鏡半口徑');
+      $('aberration-index-control').hidden = mirror;
+      $('aberration-copy').textContent = aberrationMode === 'parabola'
+        ? '用與球面鏡相同的頂點曲率和口徑，讓軸上平行光射向拋物面；每條光線依局部法線反射後，應在同一焦點相遇。'
+        : mirror ? '球面鏡依每個入射點的法線反射平行光；邊緣光與近軸光穿過主軸的位置不同。切換拋物面鏡，用相同口徑比較。'
+          : '平行光進入單面球形、另一面平坦的透鏡；每條光線在兩個界面依照局部法線折射，邊緣光與近軸光因此交於不同位置。';
+      if (mirror) {
+        const aperture = number('aberration-aperture');
+        setText('aberration-radius-out', `${radius.toFixed(1)} cm`);
+        setText('aberration-aperture-out', `${aperture.toFixed(1)} cm`);
+        drawReflectorFocusing(ctx, w, h, radius, aperture);
+        return;
+      }
       const aperture = Math.min(number('aberration-aperture'), radius * .88);
       const index = number('aberration-n');
       const near = tracePlanoConvexRay(Math.min(.3, aperture * .1), radius, aperture, index);
@@ -12786,6 +12935,16 @@
     document.querySelectorAll('.mirror-parallel-mode').forEach(btn => {
       btn.addEventListener('click', () => setMirrorParallelMode(btn.dataset.mirrorParallel));
     });
+
+    document.querySelectorAll('.aberration-mode').forEach(button => button.addEventListener('click', () => {
+      aberrationMode = button.dataset.aberration;
+      document.querySelectorAll('.aberration-mode').forEach(choice => {
+        const selected = choice === button;
+        choice.classList.toggle('active', selected);
+        choice.setAttribute('aria-pressed', String(selected));
+      });
+      drawActive();
+    }));
 
     $('retro-time').addEventListener('input', () => {
       const planet = retroPlanets[$('retro-planet').value];
