@@ -1899,8 +1899,8 @@
         <div class="presets" id="film-mono-shortcuts" role="group" aria-label="單色光快速調整相位"><button type="button" class="preset film-phase-jump" data-film-phase="constructive">跳到相長相位</button><button type="button" class="preset film-phase-jump" data-film-phase="destructive">跳到相消相位</button></div>
         <div class="plot-wrap"><canvas id="film-canvas" role="img" aria-label="薄膜兩表面的反射路徑、相位關係，以及可見光反射光譜。"></canvas></div>
         <div class="controls">
-          <div class="control"><label for="film-thickness">膜厚 t：<span id="film-thickness-out">100.00 nm</span></label><input id="film-thickness" type="range" min="0" max="900" step="0.01" value="100"></div>
-          <div class="control"><label for="film-n">薄膜折射率：<span id="film-n-out">1.38</span></label><input id="film-n" type="range" min="1.1" max="2.1" step="0.01" value="1.38"></div>
+          <div class="control"><label for="film-thickness">膜厚 t：<span id="film-thickness-out">150.00 nm</span></label><input id="film-thickness" type="range" min="0" max="900" step="0.01" value="150"></div>
+          <div class="control"><label for="film-n">薄膜折射率：<span id="film-n-out">1.23</span></label><input id="film-n" type="range" min="1.1" max="2.1" step="0.01" value="1.23"></div>
           <div class="control"><label for="film-substrate">基底折射率：<span id="film-substrate-out">1.52</span></label><input id="film-substrate" type="range" min="1" max="2.2" step="0.01" value="1.52"></div>
           <div class="control"><label for="film-wavelength">單色光波長：<span id="film-wavelength-out">550 nm</span></label><input id="film-wavelength" type="range" min="400" max="700" step="5" value="550"></div>
           <div class="control"><label for="film-angle">入射角：<span id="film-angle-out">25°</span></label><input id="film-angle" type="range" min="0" max="60" step="1" value="25"></div>
@@ -10704,6 +10704,11 @@
       const theta = number('film-angle') * Math.PI / 180;
       const result = thinFilmResult(lambda, nFilm, nSubstrate, theta);
       const spectrum = filmLightMode === 'white' ? filmReflectedSpectrum(nFilm, nSubstrate, theta) : null;
+      const rProduct = result.r01 * result.r12;
+      const peakReflectance = Math.max(
+        ((result.r01 + result.r12) / (1 + rProduct)) ** 2,
+        ((result.r01 - result.r12) / (1 - rProduct)) ** 2);
+      const relativeBrightness = peakReflectance > 1e-8 ? result.reflectance / peakReflectance : 0;
       const top = h * .19;
       const thickness = number('film-thickness');
       const entry = { x: w * (compact ? .18 : .26), y: top };
@@ -10759,7 +10764,7 @@
       ctx.moveTo(dimensionX - 5, top); ctx.lineTo(dimensionX + 5, top);
       ctx.moveTo(dimensionX - 5, bottom); ctx.lineTo(dimensionX + 5, bottom); ctx.stroke();
       const thicknessLabel = Number.isInteger(thickness) ? thickness.toFixed(0) : thickness.toFixed(2);
-      drawSceneLabel(ctx, compact ? w - 12 : dimensionX + 8, depth < 42 ? top - 34 : (top + bottom) / 2 - 10,
+      drawSceneLabel(ctx, compact ? w - 12 : dimensionX + 8, compact || depth < 42 ? top - 34 : (top + bottom) / 2 - 10,
         compact ? `t = ${thicknessLabel} nm` : `t = ${thicknessLabel} nm · 示意厚度`, compact ? 'right' : 'left');
       drawSceneLabel(ctx, 14, 13, '空氣 n = 1.00');
       if (depth > 42) drawSceneLabel(ctx, 14, (top + bottom) / 2 - 14, `薄膜 n = ${nFilm.toFixed(2)}`);
@@ -10782,9 +10787,27 @@
         ctx.restore();
         drawSceneLabel(ctx, Math.min(w - swatchLabelWidth - 8, swatchX - swatchLabelWidth / 2),
           swatchY + swatchRadius + 10, '反射色');
+      } else {
+        const glowX = w * (compact ? .76 : .82);
+        const glowY = h * .40;
+        const glowRadius = compact ? 30 : 42;
+        const barWidth = compact ? 84 : 112;
+        ctx.fillStyle = '#172633';
+        ctx.beginPath(); ctx.arc(glowX, glowY, glowRadius + 4, 0, 2 * Math.PI); ctx.fill();
+        ctx.save();
+        ctx.globalAlpha = Math.pow(relativeBrightness, .85);
+        ctx.shadowColor = color;
+        ctx.shadowBlur = 22 * relativeBrightness;
+        ctx.fillStyle = color;
+        ctx.beginPath(); ctx.arc(glowX, glowY, glowRadius, 0, 2 * Math.PI); ctx.fill();
+        ctx.restore();
+        drawSceneLabel(ctx, glowX - (compact ? 51 : 58), glowY - glowRadius - 37, '合成反射光');
+        ctx.fillStyle = '#172633'; ctx.fillRect(glowX - barWidth / 2, glowY + glowRadius + 10, barWidth, 9);
+        ctx.fillStyle = color;
+        ctx.fillRect(glowX - barWidth / 2, glowY + glowRadius + 10, barWidth * relativeBrightness, 9);
       }
-      const chartTop = h * .60;
-      const chartBottom = h * .76;
+      const chartTop = h * (spectrum ? .60 : .59);
+      const chartBottom = h * (spectrum ? .76 : .78);
       const chartLeft = compact ? 18 : 34;
       const chartRight = w - (compact ? 18 : 34);
       if (spectrum) {
@@ -10831,8 +10854,8 @@
         ctx.lineWidth = stroke === '#15803d' ? 3 : 1.8;
         ctx.beginPath();
         for (let i = 0; i <= 180; i += 1) {
-          const phase = i / 180 * 5 * Math.PI + time * 2;
-          const y = (chartTop + chartBottom) / 2 - sample(phase) / (ampScale * 2.1) * (chartBottom - chartTop) * .43;
+          const phase = i / 180 * 3 * Math.PI + time * 2;
+          const y = (chartTop + chartBottom) / 2 - sample(phase) / (ampScale * 2.1) * (chartBottom - chartTop) * .48;
           const x = chartLeft + i / 180 * (chartRight - chartLeft);
           if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
         }
@@ -10840,7 +10863,7 @@
       });
       const phaseFraction = .64;
       const phaseX = chartLeft + phaseFraction * (chartRight - chartLeft);
-      const phaseAtX = phaseFraction * 5 * Math.PI + time * 2;
+      const phaseAtX = phaseFraction * 3 * Math.PI + time * 2;
       const samples = [
         [result.r01 * Math.cos(phaseAtX), '#2563eb'],
         [result.r12 * Math.cos(phaseAtX + result.delta), '#ea580c'],
@@ -10849,7 +10872,7 @@
       ctx.save(); ctx.setLineDash([4, 4]); ctx.strokeStyle = '#52616b'; ctx.lineWidth = 1;
       ctx.beginPath(); ctx.moveTo(phaseX, chartTop - 5); ctx.lineTo(phaseX, chartBottom + 4); ctx.stroke(); ctx.restore();
       samples.forEach(([sample, fill]) => {
-        const y = (chartTop + chartBottom) / 2 - sample / (ampScale * 2.1) * (chartBottom - chartTop) * .43;
+        const y = (chartTop + chartBottom) / 2 - sample / (ampScale * 2.1) * (chartBottom - chartTop) * .48;
         ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(phaseX, y, 6, 0, 2 * Math.PI); ctx.fill();
         ctx.fillStyle = fill; ctx.beginPath(); ctx.arc(phaseX, y, 4, 0, 2 * Math.PI); ctx.fill();
       });
@@ -10872,11 +10895,11 @@
         drawSceneLabel(ctx, chartRight, stripY + stripH + 5, '700 nm', 'right');
       } else {
         ctx.fillStyle = color;
-        ctx.globalAlpha = .10 + .90 * Math.sqrt(Math.min(result.reflectance / .12, 1));
+        ctx.globalAlpha = .05 + .95 * Math.pow(relativeBrightness, .85);
         ctx.fillRect(chartLeft, stripY, chartRight - chartLeft, stripH);
         ctx.globalAlpha = 1;
-        drawSceneLabel(ctx, chartLeft, stripY - 24, compact ? `單色光 ${lambda} nm · 僅改變亮度` :
-          `單色光 ${lambda} nm：只有這個波長，干涉只改變反射強度`);
+        drawSceneLabel(ctx, chartLeft, stripY - 24, compact ? `反射亮度：最亮的 ${(relativeBrightness * 100).toFixed(0)}%` :
+          `單色光 ${lambda} nm：反射亮度為同條件最亮的 ${(relativeBrightness * 100).toFixed(0)}%`);
       }
       setText('film-thickness-out', `${thickness.toFixed(2)} nm`);
       setText('film-n-out', nFilm.toFixed(2));
@@ -10888,7 +10911,7 @@
       $('film-reflectance').innerHTML = `${lambda} nm 反射率 = ${(result.reflectance * 100).toFixed(2)}%<small>斜入射採 s 偏振；含膜內多次反射</small>`;
       $('film-status').innerHTML = spectrum
         ? `<span class="film-color-chip" style="background:${spectrum.color}"></span>白光反射色<small>可見光平均反射 ${(spectrum.meanReflectance * 100).toFixed(1)}% · 色樣自動曝光</small>`
-        : `${Math.cos(result.phase) > .999 ? '相長相位對齊' : Math.cos(result.phase) < -.999 ? '相消相位對齊' : '相位未完全對齊'}<small>${lambda} nm 反射率 ${(result.reflectance * 100).toFixed(2)}%；相消不一定完全消失</small>`;
+        : `${Math.cos(result.phase) > .999 ? '相長相位對齊' : Math.cos(result.phase) < -.999 ? '相消相位對齊' : '相位未完全對齊'}<small>實際反射率 ${(result.reflectance * 100).toFixed(2)}%；相對最亮 ${(relativeBrightness * 100).toFixed(0)}%</small>`;
       $('film-mono-shortcuts').hidden = filmLightMode !== 'mono';
       document.querySelectorAll('.film-phase-jump').forEach(button => {
         button.disabled = Math.abs(result.r01 * result.r12) < 1e-8;
