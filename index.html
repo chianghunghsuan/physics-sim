@@ -353,6 +353,7 @@
       line-height: 1.35;
     }
     .badge.warning small { color: #9a3412; }
+    .film-color-chip { display: inline-block; width: 18px; height: 18px; margin-right: 7px; vertical-align: -4px; border: 1px solid #64748b; border-radius: 3px; }
     .plot-wrap {
       position: relative;
       width: 100%;
@@ -1895,15 +1896,17 @@
           <div class="badge" id="film-status">上下兩束反射光疊加</div>
         </div>
         <div class="presets" role="group" aria-label="薄膜入射光模式"><button type="button" class="preset film-mode active" data-film-mode="mono" aria-pressed="true">單色光</button><button type="button" class="preset film-mode" data-film-mode="white" aria-pressed="false">白光光譜</button></div>
+        <div class="presets" id="film-mono-shortcuts" role="group" aria-label="單色光快速調整相位"><button type="button" class="preset film-phase-jump" data-film-phase="constructive">跳到相長相位</button><button type="button" class="preset film-phase-jump" data-film-phase="destructive">跳到相消相位</button></div>
         <div class="plot-wrap"><canvas id="film-canvas" role="img" aria-label="薄膜兩表面的反射路徑、相位關係，以及可見光反射光譜。"></canvas></div>
         <div class="controls">
-          <div class="control"><label for="film-thickness">膜厚 t：<span id="film-thickness-out">100 nm</span></label><input id="film-thickness" type="range" min="0" max="900" step="1" value="100"></div>
+          <div class="control"><label for="film-thickness">膜厚 t：<span id="film-thickness-out">100.00 nm</span></label><input id="film-thickness" type="range" min="0" max="900" step="0.01" value="100"></div>
           <div class="control"><label for="film-n">薄膜折射率：<span id="film-n-out">1.38</span></label><input id="film-n" type="range" min="1.1" max="2.1" step="0.01" value="1.38"></div>
           <div class="control"><label for="film-substrate">基底折射率：<span id="film-substrate-out">1.52</span></label><input id="film-substrate" type="range" min="1" max="2.2" step="0.01" value="1.52"></div>
           <div class="control"><label for="film-wavelength">單色光波長：<span id="film-wavelength-out">550 nm</span></label><input id="film-wavelength" type="range" min="400" max="700" step="5" value="550"></div>
           <div class="control"><label for="film-angle">入射角：<span id="film-angle-out">25°</span></label><input id="film-angle" type="range" min="0" max="60" step="1" value="25"></div>
         </div>
-        <div class="presets"><button type="button" class="preset" id="film-coating">抗反射鍍膜</button><button type="button" class="preset" id="film-bubble">肥皂膜</button></div>
+        <div class="presets"><button type="button" class="preset" id="film-coating">抗反射鍍膜</button><button type="button" class="preset" id="film-bubble">肥皂膜</button><button type="button" class="preset" id="film-green-suppressed">白光：綠光相消</button></div>
+        <p class="module-copy">反射色以等能量白光與 CIE 標準觀察者近似計算；色樣會自動曝光以看清色相，實際反射比例仍以讀值為準。真實顏色也受光源光譜、材料色散與螢幕影響。</p>
       </section>
 
       <section id="panel-electromagnetism" class="panel" role="tabpanel">
@@ -2275,6 +2278,7 @@
     const reflectionOffset = { x: 0, y: 0 };
     let draggingReflection = false;
     let filmLightMode = 'mono';
+    let filmSpectrumCache = null;
     let aberrationMode = 'parabola';
 
     function number(id) {
@@ -10644,6 +10648,53 @@
       return { r01, r12, delta, phase, reflectance, cosFilm, thetaFilm: Math.asin(sinFilm) };
     }
 
+    // Wyman, Sloan and Shirley (2013), piecewise Gaussian approximation to CIE 1931 XYZ.
+    const filmColorFits = [
+      [[.362, 442, .0624, .0374], [1.056, 599.8, .0264, .0323], [-.065, 501.1, .0490, .0382]],
+      [[.821, 568.8, .0213, .0247], [.286, 530.9, .0613, .0322]],
+      [[1.217, 437, .0845, .0278], [.681, 459, .0385, .0725]]
+    ];
+    function filmColorMatch(wavelength) {
+      return filmColorFits.map(terms => terms.reduce((sum, [weight, center, left, right]) => {
+        const offset = wavelength - center;
+        const scaled = offset * (offset < 0 ? left : right);
+        return sum + weight * Math.exp(-.5 * scaled * scaled);
+      }, 0));
+    }
+    function filmXyzToLinearRgb([x, y, z]) {
+      return [3.2406 * x - 1.5372 * y - .4986 * z,
+        -.9689 * x + 1.8758 * y + .0415 * z,
+        .0557 * x - .2040 * y + 1.0570 * z];
+    }
+    const filmColorSamples = Array.from({ length: 61 }, (_, i) => {
+      const wavelength = 400 + i * 5;
+      return { wavelength, match: filmColorMatch(wavelength) };
+    });
+    const filmWhiteXyz = [0, 1, 2].map(channel =>
+      filmColorSamples.reduce((sum, sample) => sum + sample.match[channel], 0));
+    const filmWhiteRgb = filmXyzToLinearRgb(filmWhiteXyz);
+
+    function filmReflectedSpectrum(nFilm, nSubstrate, incidence) {
+      const key = [number('film-thickness'), nFilm, nSubstrate, incidence].join('|');
+      if (filmSpectrumCache?.key === key) return filmSpectrumCache.value;
+      const xyz = [0, 0, 0];
+      const samples = filmColorSamples.map(({ wavelength, match }) => {
+        const reflectance = thinFilmResult(wavelength, nFilm, nSubstrate, incidence).reflectance;
+        for (let channel = 0; channel < 3; channel += 1) xyz[channel] += reflectance * match[channel];
+        return { wavelength, reflectance };
+      });
+      const meanReflectance = xyz[1] / filmWhiteXyz[1];
+      const linear = filmXyzToLinearRgb(xyz).map((value, channel) => Math.max(0, value / filmWhiteRgb[channel]));
+      const exposure = Math.min(450, .38 / Math.max(meanReflectance, .0005));
+      const rgb = linear.map(value => {
+        const v = Math.min(1, value * exposure);
+        return Math.round(255 * (v <= .0031308 ? 12.92 * v : 1.055 * Math.pow(v, 1 / 2.4) - .055));
+      });
+      const value = { samples, meanReflectance, color: `rgb(${rgb.join(',')})`, rgb };
+      filmSpectrumCache = { key, value };
+      return value;
+    }
+
     function drawThinFilm() {
       const { ctx, w, h } = resizeCanvas($('film-canvas'));
       const compact = w < 650;
@@ -10652,6 +10703,7 @@
       const lambda = number('film-wavelength');
       const theta = number('film-angle') * Math.PI / 180;
       const result = thinFilmResult(lambda, nFilm, nSubstrate, theta);
+      const spectrum = filmLightMode === 'white' ? filmReflectedSpectrum(nFilm, nSubstrate, theta) : null;
       const top = h * .19;
       const thickness = number('film-thickness');
       const entry = { x: w * (compact ? .18 : .26), y: top };
@@ -10666,7 +10718,7 @@
       const emerge = { x: bounce.x + depth * lateral, y: top };
       const upperEnd = { x: entry.x + sourceLength * Math.sin(theta), y: source.y };
       const lowerEnd = { x: emerge.x + sourceLength * Math.sin(theta), y: source.y };
-      const color = `hsl(${Math.round((700 - lambda) * .9)} 72% 40%)`;
+      const color = `rgb(${visibleWavelengthRgb(lambda).join(',')})`;
       const beamColor = filmLightMode === 'mono' ? color : '#f7fbff';
       const filmBeam = (a, b, width, alpha = 1) => {
         if (filmLightMode === 'white') drawBeam(ctx, a, b, '#526979', width + 2.5, alpha * .7);
@@ -10706,8 +10758,9 @@
       ctx.beginPath(); ctx.moveTo(dimensionX, top); ctx.lineTo(dimensionX, bottom);
       ctx.moveTo(dimensionX - 5, top); ctx.lineTo(dimensionX + 5, top);
       ctx.moveTo(dimensionX - 5, bottom); ctx.lineTo(dimensionX + 5, bottom); ctx.stroke();
+      const thicknessLabel = Number.isInteger(thickness) ? thickness.toFixed(0) : thickness.toFixed(2);
       drawSceneLabel(ctx, compact ? w - 12 : dimensionX + 8, depth < 42 ? top - 34 : (top + bottom) / 2 - 10,
-        compact ? `t = ${thickness} nm` : `t = ${thickness} nm · 示意厚度`, compact ? 'right' : 'left');
+        compact ? `t = ${thicknessLabel} nm` : `t = ${thicknessLabel} nm · 示意厚度`, compact ? 'right' : 'left');
       drawSceneLabel(ctx, 14, 13, '空氣 n = 1.00');
       if (depth > 42) drawSceneLabel(ctx, 14, (top + bottom) / 2 - 14, `薄膜 n = ${nFilm.toFixed(2)}`);
       drawSceneLabel(ctx, 14, bottom + 13, `基底 n = ${nSubstrate.toFixed(2)}`);
@@ -10716,10 +10769,42 @@
         drawSceneLabel(ctx, bounce.x + 10, bottom + 12, '② 下表面反射');
         drawSceneLabel(ctx, detectorRight + 8, source.y - 14, '同方向收集');
       }
+      if (spectrum) {
+        const swatchX = w * (compact ? .77 : .82);
+        const swatchY = h * .44;
+        const swatchRadius = compact ? 27 : 40;
+        ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(swatchX, swatchY, swatchRadius + 4, 0, 2 * Math.PI); ctx.fill();
+        ctx.fillStyle = spectrum.color; ctx.strokeStyle = '#617483'; ctx.lineWidth = 1.5;
+        ctx.beginPath(); ctx.arc(swatchX, swatchY, swatchRadius, 0, 2 * Math.PI); ctx.fill(); ctx.stroke();
+        drawSceneLabel(ctx, swatchX, swatchY + swatchRadius + 10, '反射色', 'center');
+      }
       const chartTop = h * .60;
       const chartBottom = h * .76;
       const chartLeft = compact ? 18 : 34;
       const chartRight = w - (compact ? 18 : 34);
+      if (spectrum) {
+        const maxR = Math.max(.025, ...spectrum.samples.map(sample => sample.reflectance)) * 1.12;
+        ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1;
+        ctx.beginPath(); ctx.moveTo(chartLeft, chartTop); ctx.lineTo(chartLeft, chartBottom);
+        ctx.lineTo(chartRight, chartBottom); ctx.stroke();
+        const spectrumY = reflectance => chartBottom - reflectance / maxR * (chartBottom - chartTop);
+        ctx.strokeStyle = '#126c79'; ctx.lineWidth = compact ? 2.5 : 3.2;
+        ctx.beginPath();
+        spectrum.samples.forEach((sample, index) => {
+          const x = chartLeft + (sample.wavelength - 400) / 300 * (chartRight - chartLeft);
+          const y = spectrumY(sample.reflectance);
+          if (index === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+        });
+        ctx.stroke();
+        const selectedX = chartLeft + (lambda - 400) / 300 * (chartRight - chartLeft);
+        const selectedY = spectrumY(result.reflectance);
+        ctx.save(); ctx.setLineDash([4, 4]); ctx.strokeStyle = '#475569';
+        ctx.beginPath(); ctx.moveTo(selectedX, chartTop); ctx.lineTo(selectedX, chartBottom); ctx.stroke(); ctx.restore();
+        ctx.fillStyle = '#ffffff'; ctx.beginPath(); ctx.arc(selectedX, selectedY, 6, 0, 2 * Math.PI); ctx.fill();
+        ctx.fillStyle = '#126c79'; ctx.beginPath(); ctx.arc(selectedX, selectedY, 4, 0, 2 * Math.PI); ctx.fill();
+        drawSceneLabel(ctx, chartLeft, chartTop - 28, '白光反射率：各波長分別計算');
+        drawSceneLabel(ctx, chartRight, chartTop - 4, `${(maxR * 100).toFixed(0)}%`, 'right');
+      } else {
       const ampScale = Math.max(Math.abs(result.r01), Math.abs(result.r12), .04);
       ctx.strokeStyle = '#94a3b8';
       ctx.beginPath();
@@ -10757,6 +10842,7 @@
         ctx.fillStyle = fill; ctx.beginPath(); ctx.arc(phaseX, y, 4, 0, 2 * Math.PI); ctx.fill();
       });
       drawSceneLabel(ctx, chartLeft, chartTop - 28, compact ? '兩束電場在同一點疊加' : '同一觀測點的電場：藍 ①　橘 ②　綠 合成（曲線顏色不是光色）');
+      }
       const stripY = h * .87;
       const stripH = compact ? 19 : 23;
       if (filmLightMode === 'white') {
@@ -10778,7 +10864,7 @@
         drawSceneLabel(ctx, chartLeft, stripY - 24, compact ? `單色光 ${lambda} nm · 僅改變亮度` :
           `單色光 ${lambda} nm：只有這個波長，干涉只改變反射強度`);
       }
-      setText('film-thickness-out', `${number('film-thickness')} nm`);
+      setText('film-thickness-out', `${thickness.toFixed(2)} nm`);
       setText('film-n-out', nFilm.toFixed(2));
       setText('film-substrate-out', nSubstrate.toFixed(2));
       setText('film-wavelength-out', `${lambda} nm`);
@@ -10786,7 +10872,13 @@
       $('film-path').innerHTML = `往返光程 = ${(2 * nFilm * number('film-thickness') * result.cosFilm).toFixed(0)} nm<small>${math('2n_f t\\cos\\theta_f')}</small>`;
       $('film-phase').innerHTML = `總相位差 ${math('\\Delta\\phi')} = ${(result.phase / Math.PI).toFixed(2)}${math('\\pi')}<small>包含兩個界面的反射相位</small>`;
       $('film-reflectance').innerHTML = `${lambda} nm 反射率 = ${(result.reflectance * 100).toFixed(2)}%<small>斜入射採 s 偏振；含膜內多次反射</small>`;
-      $('film-status').innerHTML = result.reflectance < .01 ? '選定波長反射很弱<small>兩束反射光幾乎抵銷</small>' : '選定波長仍有反射<small>改變膜厚觀察相長與相消交替</small>';
+      $('film-status').innerHTML = spectrum
+        ? `<span class="film-color-chip" style="background:${spectrum.color}"></span>白光反射色<small>可見光平均反射 ${(spectrum.meanReflectance * 100).toFixed(1)}% · 色樣自動曝光</small>`
+        : `${Math.cos(result.phase) > .999 ? '相長相位對齊' : Math.cos(result.phase) < -.999 ? '相消相位對齊' : '相位未完全對齊'}<small>${lambda} nm 反射率 ${(result.reflectance * 100).toFixed(2)}%；相消不一定完全消失</small>`;
+      $('film-mono-shortcuts').hidden = filmLightMode !== 'mono';
+      document.querySelectorAll('.film-phase-jump').forEach(button => {
+        button.disabled = Math.abs(result.r01 * result.r12) < 1e-8;
+      });
     }
 
     function tracePlanoConvexRay(height, radius, aperture, index) {
@@ -12991,14 +13083,39 @@
       wave2dProbe.y = (event.clientY - rect.top) / rect.height;
       drawActive();
     });
-    document.querySelectorAll('.film-mode').forEach(button => button.addEventListener('click', () => {
-      filmLightMode = button.dataset.filmMode;
+    function setFilmMode(mode) {
+      filmLightMode = mode;
       document.querySelectorAll('.film-mode').forEach(choice => {
         const selected = choice.dataset.filmMode === filmLightMode;
         choice.classList.toggle('active', selected);
         choice.setAttribute('aria-pressed', String(selected));
       });
       drawActive();
+    }
+    document.querySelectorAll('.film-mode').forEach(button => button.addEventListener('click', () => {
+      setFilmMode(button.dataset.filmMode);
+    }));
+    document.querySelectorAll('.film-phase-jump').forEach(button => button.addEventListener('click', () => {
+      const nFilm = number('film-n');
+      const nSubstrate = number('film-substrate');
+      const lambda = number('film-wavelength');
+      const angle = number('film-angle') * Math.PI / 180;
+      const result = thinFilmResult(lambda, nFilm, nSubstrate, angle);
+      if (Math.abs(result.r01 * result.r12) < 1e-8) return;
+      const period = lambda / (2 * nFilm * result.cosFilm);
+      const sameSign = result.r01 * result.r12 > 0;
+      const constructive = button.dataset.filmPhase === 'constructive';
+      const offset = constructive === sameSign ? 0 : .5;
+      let nearest = null;
+      for (let order = 0; order <= Math.ceil(900 / period); order += 1) {
+        const thickness = (order + offset) * period;
+        if (thickness < .01 || thickness > 900) continue;
+        if (nearest === null || Math.abs(thickness - number('film-thickness')) < Math.abs(nearest - number('film-thickness'))) nearest = thickness;
+      }
+      if (nearest !== null) {
+        $('film-thickness').value = nearest.toFixed(2);
+        drawActive();
+      }
     }));
 
     document.querySelectorAll('.ref-preset').forEach(button => {
@@ -13070,6 +13187,14 @@
       $('film-wavelength').value = '550';
       $('film-angle').value = '25';
       drawActive();
+    });
+    $('film-green-suppressed').addEventListener('click', () => {
+      $('film-n').value = '1.23';
+      $('film-substrate').value = '1.52';
+      $('film-thickness').value = '112';
+      $('film-wavelength').value = '550';
+      $('film-angle').value = '0';
+      setFilmMode('white');
     });
 
     let draggingMirrorRay = false;
